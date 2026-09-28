@@ -4,8 +4,8 @@ Loaded by file path rather than imported as `open_webui.utils.*` so these run on
 host without the application's dependencies (`open_webui/__init__.py` imports typer).
 
 Run with either:
-    python3 -m unittest discover -s backend/open_webui/utils -p 'test_*.py'
-    cd backend && pytest open_webui/utils/test_env_config.py
+    python3 -m unittest discover -s backend/tests -p 'test_*.py'
+    cd backend && pytest tests/test_env_config.py
 """
 
 import importlib.util
@@ -17,7 +17,10 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-_SPEC = importlib.util.spec_from_file_location('env_config', str(Path(__file__).resolve().parent / 'env_config.py'))
+# Directory holding open_webui's source modules (this file lives in backend/tests).
+HERE = Path(__file__).resolve().parent.parent / 'open_webui' / 'utils'
+
+_SPEC = importlib.util.spec_from_file_location('env_config', str(HERE / 'env_config.py'))
 env_config = importlib.util.module_from_spec(_SPEC)
 _SPEC.loader.exec_module(env_config)
 
@@ -143,7 +146,7 @@ class EnvNameAliasesMatchConfigPyTest(unittest.TestCase):
     must already resolve by the derived name.
     """
 
-    CONFIG_PY = Path(__file__).resolve().parents[1] / 'config.py'
+    CONFIG_PY = HERE.parent / 'config.py'  # backend/open_webui/config.py
 
     @classmethod
     def _expected_aliases(cls):

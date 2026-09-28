@@ -23,6 +23,12 @@ _UNQUOTED_COMMENT = re.compile(r'\s+#')
 
 _declared: set[str] = set()
 
+# Raw os.environ names the backend reads directly (env.py and config.py).
+# Populated at import time by record_direct_env_names(); used to warn about
+# .env entries that match neither a direct variable nor a dotted config key,
+# i.e. typos and stale settings that would otherwise be silently ignored.
+_direct_env_names: set[str] = set()
+
 
 def unquote(value: str) -> str:
     """Strip the shell-style quoting a dotenv value carries.
@@ -73,6 +79,52 @@ def declared_names() -> frozenset[str]:
 def reset_declared() -> None:
     """Drop the recorded names. For tests."""
     _declared.clear()
+
+
+def record_direct_env_names(names: set[str]) -> None:
+    """Remember every raw environment name the backend reads at import time.
+
+    Called from env.py (its own os.getenv names) and config.py (the same set,
+    which covers both files). Idempotent and additive so module import order
+    does not matter.
+    """
+    _direct_env_names.update(names)
+
+
+def direct_env_names() -> frozenset[str]:
+    return frozenset(_direct_env_names)
+
+
+def unknown_declared_names() -> list[str]:
+    """Declared .env names that nothing in the backend ever reads.
+
+    A name is recognised when it is either a variable some module reads via
+    os.getenv/os.environ, or the derived/aliased env name of a dotted config
+    key present in DEFAULTS (env_name_for maps the latter). Everything else is
+    a typo or a removed setting — previously invisible to the operator.
+    """
+    known = set(_direct_env_names)
+    for key in ENV_NAME_ALIASES.values():
+        known.add(key)
+    # Derived names for every known config key are handled through
+    # env_name_for(); iterate over aliases plus the mechanical derivation of
+    # alias keys themselves.
+    for alias_key, alias_name in ENV_NAME_ALIASES.items():
+        known.add(alias_key)
+        known.add(alias_name)
+    return sorted(name for name in _declared if name not in known)
+
+
+def warn_unknown_declared(log) -> list[str]:
+    """Log one warning per unrecognised .env entry. Returns the offenders."""
+    unknown = unknown_declared_names()
+    for name in unknown:
+        log.warning(
+            'Unknown environment variable %r declared in .env: no code reads it '
+            'and it matches no config key. Check for a typo or a removed setting.',
+            name,
+        )
+    return unknown
 
 
 def env_name_for(key: str) -> str:
@@ -307,6 +359,7 @@ ENV_NAME_ALIASES: dict[str, str] = {
     'WEB_SEARCH_PERPLEXITY_MODEL': 'PERPLEXITY_MODEL',
     'WEB_SEARCH_PERPLEXITY_SEARCH_API_URL': 'PERPLEXITY_SEARCH_API_URL',
     'WEB_SEARCH_PERPLEXITY_SEARCH_CONTEXT_USAGE': 'PERPLEXITY_SEARCH_CONTEXT_USAGE',
+    'WEB_SEARCH_PLAYWRIGHT_SEARCH_ENGINE': 'PLAYWRIGHT_SEARCH_ENGINE',
     'WEB_SEARCH_SEARCHAPI_API_KEY': 'SEARCHAPI_API_KEY',
     'WEB_SEARCH_SEARCHAPI_ENGINE': 'SEARCHAPI_ENGINE',
     'WEB_SEARCH_SEARXNG_LANGUAGE': 'SEARXNG_LANGUAGE',

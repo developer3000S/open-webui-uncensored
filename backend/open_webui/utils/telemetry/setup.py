@@ -11,6 +11,7 @@ from open_webui.env import (
     OTEL_OTLP_SPAN_EXPORTER,
     OTEL_SERVICE_NAME,
 )
+from open_webui.utils.telemetry.business_metrics import init_business_metrics
 from open_webui.utils.telemetry.instrumentors import Instrumentor
 from open_webui.utils.telemetry.metrics import setup_metrics
 from opentelemetry import trace
@@ -55,3 +56,5 @@ def setup(app: FastAPI, db_engine: Engine):
     # set up metrics only if enabled
     if ENABLE_OTEL_METRICS:
         setup_metrics(app, resource, db_engine)
+        # Application-domain instruments (LLM latency/tokens, retrieval depth).
+        init_business_metrics()

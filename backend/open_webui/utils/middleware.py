@@ -105,6 +105,7 @@ from open_webui.utils.task import (
     rag_template,
     tools_function_calling_generation_template,
 )
+from open_webui.utils.telemetry.business_metrics import record_retrieval
 from open_webui.utils.tools import (
     build_tool_server_headers,
     get_builtin_tools,
@@ -1783,7 +1784,7 @@ async def chat_completion_files_handler(
 
                 queries = queries_response.get('queries', [])
             except Exception:
-                pass
+                log.debug('Multi-query expansion failed; falling back to the original query', exc_info=True)
 
             await __event_emitter__(
                 {
@@ -1801,6 +1802,7 @@ async def chat_completion_files_handler(
 
         try:
             # Directly await async get_sources_from_items (no thread needed - fully async now)
+            _retrieval_start = time.perf_counter()
             sources = await get_sources_from_items(
                 request=request,
                 items=files,
@@ -1821,6 +1823,9 @@ async def chat_completion_files_handler(
                 full_context=all_full_context or await Config.get('rag.full_context'),
                 user=user,
             )
+            _retrieval_duration = time.perf_counter() - _retrieval_start
+            _doc_count = sum(len(s.get('document') or []) for s in sources or [] if isinstance(s, dict))
+            record_retrieval(_doc_count, _retrieval_duration)
         except Exception as e:
             log.exception(e)
 
@@ -2288,7 +2293,7 @@ async def process_chat_payload(request, form_data, user, metadata, model):
                 system_message.get('content'), form_data, metadata, user, replace=True
             )  # Required to handle system prompt variables
         except Exception:
-            pass
+            log.warning('Failed to apply system prompt variables; continuing with raw system message', exc_info=True)
 
     form_data = await convert_url_images_to_base64(form_data, user=user)
 
@@ -3141,7 +3146,7 @@ async def background_tasks_handler(ctx):
                             )
 
                     except Exception:
-                        pass
+                        log.warning('Failed to generate/store follow-up suggestions', exc_info=True)
 
             if not metadata.get('chat_id', '').startswith('local:') and not metadata.get('chat_id', '').startswith(
                 'channel:'
@@ -3242,7 +3247,7 @@ async def background_tasks_handler(ctx):
                                 }
                             )
                         except Exception:
-                            pass
+                            log.warning('Failed to generate/store chat tags', exc_info=True)
 
         if messages:
             await review_memory_after_turn(
@@ -3852,7 +3857,7 @@ async def streaming_chat_response_handler(response, ctx):
                 if form_data['messages'][-1]['role'] == 'assistant':
                     last_assistant_message = get_last_assistant_message(form_data['messages'])
             except Exception:
-                pass
+                log.debug('Could not extract last assistant message for tool-call replay', exc_info=True)
 
             content = (
                 message.get('content', '') if message else last_assistant_message if last_assistant_message else ''
@@ -4006,10 +4011,10 @@ async def streaming_chat_response_handler(response, ctx):
                                             },
                                         )
                                     except Exception:
-                                        pass
+                                        log.warning('Failed to persist stream error to chat message', exc_info=True)
                                     await event_emitter({'type': 'chat:completion', 'data': {'error': raw_error}})
                             except Exception:
-                                pass
+                                log.debug('Failed to parse SSE chunk as error JSON; skipping', exc_info=True)
                             continue
 
                         # Remove the prefix
@@ -4160,7 +4165,9 @@ async def streaming_chat_response_handler(response, ctx):
                                                     },
                                                 )
                                             except Exception:
-                                                pass
+                                                log.warning(
+                                                    'Failed to persist provider error to chat message', exc_info=True
+                                                )
                                             await event_emitter(
                                                 {
                                                     'type': 'chat:completion',

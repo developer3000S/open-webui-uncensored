@@ -8,6 +8,7 @@
 	"[Last] dddd [at] h:mm A": "[Vorige] dddd [om] h:mm A",
 	"[Today at] h:mm A": "[Vandaag om] h:mm A",
 	"[Yesterday at] h:mm A": "[Gisteren om] h:mm A",
+	"Playwright Search Engine": "Playwright-zoekmachine",
 	"{{ models }}": "{{ models }}",
 	"{{COUNT}} Available Skills": "",
 	"{{COUNT}} Available Tools": "{{COUNT}} beschikbare tools",

@@ -261,7 +261,7 @@ async def get_session_user_chat_usage_stats(
                         }
                     )
                 except Exception:
-                    pass
+                    log.debug('Failed to compute usage stats for chat %s; skipping it', chat.id, exc_info=True)
 
         return ChatUsageStatsListResponse(items=chat_stats, total=total)
 
@@ -986,10 +986,11 @@ async def unshare_all_chats(
     # Delete all shared_chat rows for this user
     result = await SharedChats.delete_all_by_user_id(user.id, db=db)
 
-    # Clear share_id on the original chats and remove access grants
-    for chat_id in chat_ids:
-        await Chats.update_chat_share_id_by_id(chat_id, None, db=db)
-        await AccessGrants.set_access_grants('shared_chat', chat_id, [], db=db)
+    # Clear share_id on the original chats and remove access grants.
+    # Batched: one UPDATE + one DELETE instead of 2N per-chat round-trips.
+    if chat_ids:
+        await Chats.clear_share_ids_by_ids(chat_ids, db=db)
+        await AccessGrants.delete_grants_for_resources('shared_chat', chat_ids, db=db)
 
     if result:
         await publish_event(

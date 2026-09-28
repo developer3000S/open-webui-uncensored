@@ -8,6 +8,7 @@
 	"[Last] dddd [at] h:mm A": "[Senaste] dddd [kl] h:mm A",
 	"[Today at] h:mm A": "Idag kl h:mm A",
 	"[Yesterday at] h:mm A": "Igår kl h:mm A",
+	"Playwright Search Engine": "Playwright-sökmotor",
 	"{{ models }}": "{{ models }}",
 	"{{COUNT}} Available Skills": "",
 	"{{COUNT}} Available Tools": "{{COUNT}} Tillgängliga verktyg",

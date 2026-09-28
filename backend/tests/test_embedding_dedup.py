@@ -7,14 +7,14 @@ when the stored vectors came from the same embedding engine and model and the te
 splits the same way — a vector adopted for text it was not computed from corrupts
 retrieval silently, because the vector store cannot tell borrowed vectors apart.
 
-Run: python3 backend/open_webui/test/test_embedding_dedup.py
+Run: python3 backend/tests/test_embedding_dedup.py
 """
 
 import sys
 import unittest
 from pathlib import Path
 
-BACKEND_DIR = Path(__file__).resolve().parents[2]
+BACKEND_DIR = Path(__file__).resolve().parent.parent
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 

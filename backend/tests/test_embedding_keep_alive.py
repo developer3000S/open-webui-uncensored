@@ -7,7 +7,7 @@ is the obvious thing an operator writes, so the conversion is asserted here.
 
 Needs the application's dependencies (config.py imports the app's env module), so on a bare
 host the module exits early; run it wherever the app itself runs:
-    python3 backend/open_webui/test/test_embedding_keep_alive.py
+    python3 backend/tests/test_embedding_keep_alive.py
 """
 
 import importlib.util
@@ -16,13 +16,21 @@ import unittest
 try:
     from open_webui import config as app_config
     from open_webui.config import RAG_EMBEDDING_IDLE_TIMEOUT, _ollama_keep_alive
-except ModuleNotFoundError as exc:  # pragma: no cover - host without deps
-    raise SystemExit(
-        f'skip: this test needs the application dependencies ({exc.name}). '
-        'Run it inside the container or in an installed venv.'
+except (ModuleNotFoundError, SystemExit) as exc:  # pragma: no cover - host without deps
+    # SystemExit: env.py exits hard when WEBUI_SECRET_KEY is unset (bare hosts).
+    # unittest.skip at module level keeps `unittest discover` green on bare hosts
+    # while still running for real wherever the app dependencies are installed.
+    _name = getattr(exc, 'name', None) or str(exc).splitlines()[0]
+    _SKIP_REASON: str | None = (
+        f'this test needs the application dependencies ({_name}); run it inside the container or an installed venv'
     )
 
+# Import succeeded: nothing to skip.
+else:
+    _SKIP_REASON = None
 
+
+@unittest.skipIf(_SKIP_REASON is not None, _SKIP_REASON)
 class OllamaKeepAliveTest(unittest.TestCase):
     def test_unitless_number_becomes_int_seconds(self) -> None:
         """A string '7200' is rejected by Ollama; the int 7200 means seconds."""
@@ -57,6 +65,7 @@ class OllamaKeepAliveTest(unittest.TestCase):
             )
 
 
+@unittest.skipIf(_SKIP_REASON is not None, _SKIP_REASON)
 class EmbeddingPayloadTest(unittest.TestCase):
     def test_ollama_requests_carry_keep_alive(self) -> None:
         """Without it the daemon applies its own default and the model is reloaded

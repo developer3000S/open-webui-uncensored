@@ -374,7 +374,11 @@ async def get_models(request: Request, user=Depends(get_verified_user)):
                 {'id': 'imagen-3.0-generate-002', 'name': 'imagen-3.0 generate-002'},
             ]
         elif image_config.IMAGE_GENERATION_ENGINE == 'comfyui':
-            # TODO - get models from comfyui
+            # Enumerate models from the configured ComfyUI instance by
+            # inspecting /object_info for model-loader nodes.  When a model
+            # node is pinned in the workflow config we list only that node's
+            # models; otherwise we aggregate across every known loader class
+            # instead of assuming CheckpointLoaderSimple exists on the server.
             headers = {'Authorization': f'Bearer {image_config.COMFYUI_API_KEY}'}
             session = await get_session()
             async with session.get(
@@ -383,6 +387,25 @@ async def get_models(request: Request, user=Depends(get_verified_user)):
                 ssl=AIOHTTP_CLIENT_SESSION_SSL,
             ) as r:
                 info = await r.json()
+
+            if not isinstance(info, dict):
+                raise ValueError('Unexpected response from ComfyUI /object_info')
+
+            def _model_list_for_class(class_type):
+                """Extract the selectable model names from a node class definition."""
+                node_info = info.get(class_type)
+                if not isinstance(node_info, dict):
+                    return []
+                required = (node_info.get('input') or {}).get('required') or {}
+                for key, spec in required.items():
+                    # Model inputs are COMBO lists whose first element is the
+                    # list of options and whose second carries metadata such as
+                    # {'default': ...}; anything else is not a model dropdown.
+                    if '_name' in key and isinstance(spec, (list, tuple)) and len(spec) >= 1:
+                        options = spec[0]
+                        if isinstance(options, (list, tuple)):
+                            return [str(model) for model in options]
+                return []
 
             workflow = json.loads(image_config.COMFYUI_WORKFLOW)
             model_node_id = None
@@ -394,28 +417,22 @@ async def get_models(request: Request, user=Depends(get_verified_user)):
                     break
 
             if model_node_id:
-                model_list_key = None
-
-                log.info(workflow[model_node_id]['class_type'])
-                for key in info[workflow[model_node_id]['class_type']]['input']['required']:
-                    if '_name' in key:
-                        model_list_key = key
-                        break
-
-                if model_list_key:
-                    return list(
-                        map(
-                            lambda model: {'id': model, 'name': model},
-                            info[workflow[model_node_id]['class_type']]['input']['required'][model_list_key][0],
-                        )
-                    )
+                class_type = (workflow.get(str(model_node_id)) or {}).get('class_type')
+                if not class_type:
+                    raise ValueError(f'Model node {model_node_id} missing class_type in workflow')
+                models = _model_list_for_class(class_type)
             else:
-                return list(
-                    map(
-                        lambda model: {'id': model, 'name': model},
-                        info['CheckpointLoaderSimple']['input']['required']['ckpt_name'][0],
-                    )
-                )
+                # No explicit model node configured: fall back to scanning all
+                # common checkpoint/LoRA loader classes present on the server.
+                models = []
+                seen = set()
+                for class_type in ('CheckpointLoaderSimple', 'CheckpointLoader', 'LoraLoader'):
+                    for model in _model_list_for_class(class_type):
+                        if model not in seen:
+                            seen.add(model)
+                            models.append(model)
+
+            return [{'id': model, 'name': model} for model in models]
         elif image_config.IMAGE_GENERATION_ENGINE == 'automatic1111' or image_config.IMAGE_GENERATION_ENGINE == '':
             session = await get_session()
             async with session.get(

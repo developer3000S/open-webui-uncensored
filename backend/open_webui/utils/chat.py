@@ -3,6 +3,7 @@ import json
 import logging
 import random
 import sys
+import time
 import uuid
 from typing import Any
 
@@ -34,6 +35,12 @@ from open_webui.utils.payload import convert_payload_openai_to_ollama
 from open_webui.utils.response import (
     convert_response_ollama_to_openai,
     convert_streaming_response_ollama_to_openai,
+)
+from open_webui.utils.telemetry.business_metrics import (
+    record_llm_duration,
+    record_llm_error,
+    record_llm_request,
+    record_llm_usage,
 )
 from starlette.responses import StreamingResponse
 
@@ -279,11 +286,19 @@ async def generate_chat_completion(
         if model.get('owned_by') == 'ollama':
             # Using /ollama/api/chat endpoint
             form_data = convert_payload_openai_to_ollama(form_data)
-            response = await generate_ollama_chat_completion(
-                request=request,
-                form_data=form_data,
-                user=user,
-            )
+            record_llm_request(model_id, stream=form_data.get('stream', False))
+            start_time = time.perf_counter()
+            try:
+                response = await generate_ollama_chat_completion(
+                    request=request,
+                    form_data=form_data,
+                    user=user,
+                )
+            except Exception as e:
+                record_llm_error(model_id, e)
+                raise
+            finally:
+                record_llm_duration(model_id, time.perf_counter() - start_time, stream=form_data.get('stream', False))
             if form_data.get('stream'):
                 response.headers['content-type'] = 'text/event-stream'
                 return StreamingResponse(
@@ -292,13 +307,26 @@ async def generate_chat_completion(
                     background=response.background,
                 )
             else:
-                return convert_response_ollama_to_openai(response)
+                converted = convert_response_ollama_to_openai(response)
+                record_llm_usage(model_id, converted.get('usage') if isinstance(converted, dict) else None)
+                return converted
         else:
-            return await generate_openai_chat_completion(
-                request=request,
-                form_data=form_data,
-                user=user,
-            )
+            record_llm_request(model_id, stream=form_data.get('stream', False))
+            start_time = time.perf_counter()
+            try:
+                result = await generate_openai_chat_completion(
+                    request=request,
+                    form_data=form_data,
+                    user=user,
+                )
+            except Exception as e:
+                record_llm_error(model_id, e)
+                raise
+            finally:
+                record_llm_duration(model_id, time.perf_counter() - start_time, stream=form_data.get('stream', False))
+            if isinstance(result, dict):
+                record_llm_usage(model_id, result.get('usage'))
+            return result
 
 
 chat_completion = generate_chat_completion

@@ -8,6 +8,7 @@
 	"[Last] dddd [at] h:mm A": "[Último] dddd [a las] h:mm A",
 	"[Today at] h:mm A": "[Hoy a las] h:mm A",
 	"[Yesterday at] h:mm A": "[Ayer a las] h:mm A",
+	"Playwright Search Engine": "Motor de búsqueda de Playwright",
 	"{{ models }}": "{{ models }}",
 	"{{COUNT}} Available Skills": "{{COUNT}} Habilidades disponibles",
 	"{{COUNT}} Available Tools": "{{COUNT}} Herramientas disponibles",

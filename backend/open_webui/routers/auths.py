@@ -495,7 +495,10 @@ async def ldap_auth(
 
         entry = connection_app.entries[0]
         entry_username = entry[f'{LDAP_ATTRIBUTE_FOR_USERNAME}'].value
-        email = entry[f'{LDAP_ATTRIBUTE_FOR_MAIL}'].value  # retrieve the Attribute value
+        email_attr = entry[f'{LDAP_ATTRIBUTE_FOR_MAIL}']
+        # .get_values() normalises single values and multi-valued attributes
+        # (e.g. several `mail` values on one entry) into a plain list.
+        email_values = email_attr.get_values() if email_attr is not None else []
 
         username_list = []  # list of usernames from LDAP attribute
         if isinstance(entry_username, list):
@@ -503,15 +506,24 @@ async def ldap_auth(
         else:
             username_list = [str(entry_username).lower()]
 
-        # TODO: support multiple emails if LDAP returns a list
-        if not email:
+        # Support multiple emails if LDAP returns a list: keep every non-empty
+        # value, lower-cased and de-duplicated while preserving order.
+        email_list = []
+        for value in email_values:
+            candidate = str(value).strip().lower()
+            if candidate and candidate not in email_list:
+                email_list.append(candidate)
+
+        if not email_list:
             raise HTTPException(400, 'User does not have a valid email address.')
-        elif isinstance(email, str):
-            email = email.lower()
-        elif isinstance(email, list):
-            email = email[0].lower()
-        else:
-            email = str(email).lower()
+        # Primary email drives user lookup/creation; additional addresses are
+        # logged so admins can reconcile duplicates across directories.
+        email = email_list[0]
+        if len(email_list) > 1:
+            log.info(
+                f'LDAP entry for {username_list[0]} has {len(email_list)} email addresses; '
+                f'using primary "{email}" (others: {email_list[1:]})'
+            )
 
         cn = str(entry['cn'])  # common name
         user_dn = entry.entry_dn  # user distinguished name

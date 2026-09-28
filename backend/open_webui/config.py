@@ -1369,6 +1369,10 @@ PLAYWRIGHT_WS_URL = os.getenv('PLAYWRIGHT_WS_URL', '')
 
 PLAYWRIGHT_TIMEOUT = int(os.getenv('PLAYWRIGHT_TIMEOUT', '10000'))
 
+# Front-end search engine rendered inside the Playwright browser when the
+# 'playwright' web-search provider is selected (see retrieval/web/playwright_search.py).
+PLAYWRIGHT_SEARCH_ENGINE = os.getenv('PLAYWRIGHT_SEARCH_ENGINE', 'duckduckgo')
+
 FIRECRAWL_API_KEY = os.getenv('FIRECRAWL_API_KEY', '')
 
 FIRECRAWL_API_BASE_URL = os.getenv('FIRECRAWL_API_BASE_URL', 'https://api.firecrawl.dev')
@@ -3024,6 +3028,7 @@ DEFAULT_CONFIG = {
     'web.search.tavily_extract_depth': TAVILY_EXTRACT_DEPTH,
     'web.loader.playwright_ws_url': PLAYWRIGHT_WS_URL,
     'web.loader.playwright_timeout': PLAYWRIGHT_TIMEOUT,
+    'web.search.playwright_search_engine': PLAYWRIGHT_SEARCH_ENGINE,
     'web.loader.firecrawl_api_key': FIRECRAWL_API_KEY,
     'web.loader.firecrawl_api_url': FIRECRAWL_API_BASE_URL,
     'web.loader.firecrawl_timeout': FIRECRAWL_TIMEOUT,
@@ -3240,3 +3245,21 @@ Config.configure(
     enable_persistent=ENABLE_PERSISTENT_CONFIG,
     enable_oauth_persistent=ENABLE_OAUTH_PERSISTENT_CONFIG,
 )
+
+
+def _register_read_env_names() -> None:
+    """Register every env var this module reads for .env typo detection.
+
+    Scans the module's own source so the set never drifts from the os.getenv()
+    calls it mirrors; runs once at import, after all of them have executed.
+    """
+    import re
+
+    from open_webui.utils.env_config import record_direct_env_names
+
+    source = Path(__file__).read_text(encoding='utf-8')
+    names = set(re.findall(r'os\.(?:getenv|environ\.get)\(\s*[\'"]([A-Za-z_][A-Za-z0-9_]*)[\'"]', source))
+    record_direct_env_names(names)
+
+
+_register_read_env_names()

@@ -7,7 +7,7 @@ cannot: a wedged coroutine left running after the waiter gives up, and a waiter 
 starves the loop it is waiting on -- which is exactly how the first version of this test
 failed, since blocking the loop's own thread means no coroutine ever advances.
 
-Run: python3 backend/open_webui/test/test_embedding_wait_integration.py
+Run: python3 backend/tests/test_embedding_wait_integration.py
 """
 
 import asyncio
@@ -17,7 +17,7 @@ import time
 from pathlib import Path
 
 _SPEC = importlib.util.spec_from_file_location(
-    'embedding_wait', str(Path(__file__).resolve().parents[1] / 'utils' / 'embedding_wait.py')
+    'embedding_wait', str(Path(__file__).resolve().parent.parent / 'open_webui' / 'utils' / 'embedding_wait.py')
 )
 embedding_wait = importlib.util.module_from_spec(_SPEC)
 _SPEC.loader.exec_module(embedding_wait)

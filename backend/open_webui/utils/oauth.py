@@ -469,8 +469,6 @@ async def get_discovery_urls(server_url) -> list[str]:
     return metadata.get_discovery_urls(server_url)
 
 
-# TODO: Some OAuth providers require Initial Access Tokens (IATs) for dynamic client registration.
-# This is not currently supported.
 async def get_oauth_client_info_with_dynamic_client_registration(
     request,
     client_id: str,
@@ -478,6 +476,10 @@ async def get_oauth_client_info_with_dynamic_client_registration(
     oauth_server_key: str | None = None,
     oauth_scope: str | None = None,
 ) -> OAuthClientInformationFull:
+    # Some OAuth providers require an Initial Access Token (IAT) for dynamic
+    # client registration (RFC 7591 section 2.2).  When `oauth_server_key` is
+    # provided it is sent as the `Initial-Access-Token` header on the
+    # registration request; otherwise registration proceeds unauthenticated.
     try:
         oauth_server_metadata = None
         oauth_server_metadata_url = None
@@ -550,9 +552,16 @@ async def get_oauth_client_info_with_dynamic_client_registration(
         )
 
         # Perform dynamic client registration and return client info
+        registration_headers = {}
+        if oauth_server_key:
+            registration_headers['Initial-Access-Token'] = oauth_server_key
+
         async with aiohttp.ClientSession(trust_env=True) as session:
             async with session.post(
-                registration_url, json=registration_data, ssl=AIOHTTP_CLIENT_SESSION_SSL
+                registration_url,
+                json=registration_data,
+                headers=registration_headers or None,
+                ssl=AIOHTTP_CLIENT_SESSION_SSL,
             ) as oauth_client_registration_response:
                 try:
                     registration_response_json = await oauth_client_registration_response.json()
@@ -881,7 +890,13 @@ class OAuthClientManager:
         return True
 
     async def _preflight_authorization_url(self, client, client_info: OAuthClientInformationFull) -> bool:
-        # TODO: Replace this logic with a more robust OAuth client registration validation
+        # Best-effort validation that a registered client is still usable:
+        # build an authorization URL and probe it.  Providers that reject the
+        # client (invalid_client / unknown redirect_uri) fail registration
+        # early instead of breaking at first use.  This heuristic relies on
+        # error-message matching; a stricter approach would validate against
+        # RFC 7591 §3.2.1 registration responses or perform an introspection
+        # call with the client credentials.
         # Only perform preflight checks for Starlette OAuth clients
         if not hasattr(client, 'create_authorization_url'):
             return True

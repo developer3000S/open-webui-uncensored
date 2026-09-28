@@ -8,6 +8,7 @@
 	"[Last] dddd [at] h:mm A": "[Geçen] dddd [saat] HH:mm",
 	"[Today at] h:mm A": "[Bugün saat] HH:mm",
 	"[Yesterday at] h:mm A": "[Dün saat] HH:mm",
+	"Playwright Search Engine": "Playwright arama motoru",
 	"{{ models }}": "{{ models }}",
 	"{{COUNT}} Available Skills": "",
 	"{{COUNT}} Available Tools": "{{COUNT}} Kullanılabilir Araç",

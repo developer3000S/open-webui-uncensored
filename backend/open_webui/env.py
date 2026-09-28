@@ -19,6 +19,22 @@ from cryptography.hazmat.primitives import serialization
 
 from open_webui.utils.env_config import parse_env_file, record_declared
 
+
+def _collect_env_names(source: str) -> None:
+    """Record every env var name this module reads, for .env typo detection.
+
+    Scans the module's own source instead of duplicating a list that would
+    drift from the os.getenv() calls it mirrors; runs once at import and only
+    when a .env file actually declares names worth checking.
+    """
+    from open_webui.utils.env_config import record_direct_env_names
+
+    names = set(re.findall(r'os\.(?:getenv|environ\.get)\(\s*[\'"]([A-Za-z_][A-Za-z0-9_]*)[\'"]', source))
+    record_direct_env_names(names)
+
+
+_collect_env_names(open(__file__, encoding='utf-8').read())
+
 ####################################
 # Load .env file
 ####################################
@@ -623,6 +639,13 @@ try:
 except (ValueError, TypeError):
     AIOHTTP_CLIENT_TIMEOUT_TOOL_SERVER_DATA = 10
 
+# Retry policy for outbound LLM provider calls (model listing, image/audio
+# generation, etc.).  Transient failures (connection errors, timeouts, 5xx,
+# 429) are retried with exponential backoff + jitter.  Set LLM_RETRY_ATTEMPTS
+# to 1 to disable retries entirely.
+LLM_RETRY_ATTEMPTS = int(os.getenv('LLM_RETRY_ATTEMPTS', '3'))
+LLM_RETRY_BASE_DELAY = float(os.getenv('LLM_RETRY_BASE_DELAY', '0.5'))
+
 
 # SSL verification for tool server connections specifically.
 # Accepts "True", "False", or a path to a CA bundle file.
@@ -732,6 +755,10 @@ if WEBUI_AUTH and WEBUI_SECRET_KEY == '':
         'you must set WEBUI_SECRET_KEY yourself to a long random value.\n'
         'See https://docs.openwebui.com/reference/env-configuration#webui_secret_key'
     )
+
+# Everything above this line has read its env vars; config.py registers the
+# remaining names at its own import. The check itself runs later, from main.py
+# once both modules are loaded — until then any name would look unknown.
 
 ENABLE_COMPRESSION_MIDDLEWARE = os.getenv('ENABLE_COMPRESSION_MIDDLEWARE', 'True').lower() == 'true'
 

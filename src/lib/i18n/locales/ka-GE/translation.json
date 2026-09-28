@@ -8,6 +8,7 @@
 	"[Last] dddd [at] h:mm A": "[ბოლო] dddd [დრო] h:mm A",
 	"[Today at] h:mm A": "[დღეს,] h:mm A",
 	"[Yesterday at] h:mm A": "[გუშინ, ] h:mm A",
+	"Playwright Search Engine": "Playwright საძიებო სისტემა",
 	"{{ models }}": "{{ მოდელები }}",
 	"{{COUNT}} Available Skills": "",
 	"{{COUNT}} Available Tools": "{{COUNT}} ხელმისაწვდომი ხელსაწყო",

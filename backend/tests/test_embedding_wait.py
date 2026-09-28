@@ -5,8 +5,8 @@ tests run on a bare host without the application's dependencies installed
 (`open_webui/__init__.py` imports typer, fastapi, ...).
 
 Run with either:
-    python3 -m unittest discover -s backend/open_webui/utils -p 'test_*.py'
-    cd backend && pytest open_webui/utils/test_embedding_wait.py
+    python3 -m unittest discover -s backend/tests -p 'test_*.py'
+    cd backend && pytest tests/test_embedding_wait.py
 """
 
 import importlib.util
@@ -15,8 +15,10 @@ from collections.abc import Callable
 from concurrent.futures import TimeoutError as FuturesTimeout
 from pathlib import Path
 
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+
 _SPEC = importlib.util.spec_from_file_location(
-    'embedding_wait', str(Path(__file__).resolve().parent / 'embedding_wait.py')
+    'embedding_wait', str(BACKEND_DIR / 'open_webui' / 'utils' / 'embedding_wait.py')
 )
 embedding_wait = importlib.util.module_from_spec(_SPEC)
 _SPEC.loader.exec_module(embedding_wait)

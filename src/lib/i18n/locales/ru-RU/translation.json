@@ -8,6 +8,7 @@
   "[Last] dddd [at] h:mm A": "[Последний] dddd [в] h:mm A",
   "[Today at] h:mm A": "[Сегодня в] h:mm A",
   "[Yesterday at] h:mm A": "[Вчера в] h:mm A",
+  "Playwright Search Engine": "Поисковая система Playwright",
   "{{ models }}": "{{ модели }}",
   "{{COUNT}} Available Skills": "{{COUNT}} доступных навыков",
   "{{COUNT}} Available Tools": "{{COUNT}} доступных инструментов",
