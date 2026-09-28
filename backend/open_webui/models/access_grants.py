@@ -395,6 +395,27 @@ class AccessGrantsTable:
 
             return [AccessGrantModel.model_validate(g) for g in results]
 
+    async def delete_grants_for_resources(
+        self,
+        resource_type: str,
+        resource_ids: list[str],
+        db: AsyncSession | None = None,
+    ) -> int:
+        """Delete all access grants for many resources of one type in a
+        single DELETE. Avoids the N+1 pattern of looping per-resource
+        ``set_access_grants(..., [])`` calls."""
+        if not resource_ids:
+            return 0
+        async with get_async_db_context(db) as session:
+            result = await session.execute(
+                delete(AccessGrant).where(
+                    AccessGrant.resource_type == resource_type,
+                    AccessGrant.resource_id.in_(resource_ids),
+                )
+            )
+            await session.commit()
+            return result.rowcount
+
     async def set_access_grants(
         self,
         resource_type: str,

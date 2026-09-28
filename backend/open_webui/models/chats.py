@@ -902,6 +902,20 @@ class ChatTable:
         except Exception:
             return None
 
+    async def clear_share_ids_by_ids(self, ids: list[str], db: AsyncSession | None = None) -> int:
+        """Batch-clear ``share_id`` for many chats in a single UPDATE.
+
+        Avoids the N+1 pattern of loading and writing each chat individually
+        (e.g. when unsharing all chats at once). Returns the number of rows
+        actually updated.
+        """
+        if not ids:
+            return 0
+        async with get_async_db_context(db) as session:
+            result = await session.execute(update(Chat).where(Chat.id.in_(ids)).values(share_id=None))
+            await session.commit()
+            return result.rowcount
+
     async def toggle_chat_pinned_by_id(self, id: str, db: AsyncSession | None = None) -> ChatModel | None:
         try:
             async with get_async_db_context(db) as session:
@@ -1230,6 +1244,33 @@ class ChatTable:
                 return ChatModel.model_validate(chat_item)
         except Exception:
             return None
+
+    async def get_chats_by_ids(
+        self,
+        ids: list[str],
+        db: AsyncSession | None = None,
+    ) -> list[ChatModel]:
+        """Batch-fetch chats by primary key in a single query.
+
+        Replaces per-id ``get_chat_by_id`` loops that produce N+1 round-trips
+        when a caller needs the full payload of many chats at once (e.g. usage
+        statistics or export endpoints). Results are returned in input order;
+        missing ids are silently skipped.
+        """
+        if not ids:
+            return []
+        async with get_async_db_context(db) as session:
+            result = await session.execute(select(Chat).filter(Chat.id.in_(ids)))
+            by_id = {}
+            for chat_item in result.scalars().all():
+                repaired_history = self._repair_chat_current_id(chat_item.chat or {})
+                if repaired_history:
+                    flag_modified(chat_item, 'chat')
+                if self._sanitize_chat_row(chat_item) or repaired_history:
+                    await session.commit()
+                    await session.refresh(chat_item)
+                by_id[chat_item.id] = ChatModel.model_validate(chat_item)
+        return [by_id[chat_id] for chat_id in ids if chat_id in by_id]
 
     async def get_chat_by_share_id(self, id: str, db: AsyncSession | None = None) -> ChatModel | None:
         """Look up a shared chat snapshot by its share token."""

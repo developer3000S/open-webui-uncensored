@@ -7,7 +7,7 @@ away gid and removes it at the end — never touches real document graphs.
 Run (from repo root):
   NEO4J_TEST_URI=bolt://localhost:7687 NEO4J_TEST_USER=neo4j \
   NEO4J_TEST_PASSWORD=... \
-  python3 backend/open_webui/test/test_graphrag_neo4j.py
+  python3 backend/tests/test_graphrag_neo4j.py
 """
 
 import os
@@ -15,7 +15,7 @@ import sys
 import unittest
 from pathlib import Path
 
-BACKEND_DIR = Path(__file__).resolve().parents[2]
+BACKEND_DIR = Path(__file__).resolve().parent.parent
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 

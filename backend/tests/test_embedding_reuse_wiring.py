@@ -11,14 +11,14 @@ Checked on the AST of the router rather than by importing it: pulling in
 `routers.retrieval` registers ORM tables with dangling foreign keys in `Base.metadata`,
 which breaks unrelated tests that call `create_all()`.
 
-Run: python3 backend/open_webui/test/test_embedding_reuse_wiring.py
+Run: python3 backend/tests/test_embedding_reuse_wiring.py
 """
 
 import ast
 import unittest
 from pathlib import Path
 
-RETRIEVAL_PY = Path(__file__).resolve().parents[1] / 'routers/retrieval.py'
+RETRIEVAL_PY = Path(__file__).resolve().parent.parent / 'open_webui' / 'routers' / 'retrieval.py'
 
 
 def process_file_node() -> ast.AsyncFunctionDef:

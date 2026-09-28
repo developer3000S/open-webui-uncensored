@@ -87,7 +87,8 @@ async def send_get_request(
     config=None,
 ):
     timeout = aiohttp.ClientTimeout(total=AIOHTTP_CLIENT_TIMEOUT_MODEL_LIST)
-    try:
+
+    async def _attempt():
         async with aiohttp.ClientSession(timeout=timeout, trust_env=True) as session:
             if request and config:
                 headers, cookies = await get_headers_and_cookies(request, url, key, config, user=user)
@@ -106,7 +107,21 @@ async def send_get_request(
                 cookies=cookies,
                 ssl=AIOHTTP_CLIENT_SESSION_SSL,
             ) as response:
+                if is_retryable_status(response.status):
+                    raise aiohttp.ClientResponseError(
+                        response.request_info,
+                        response.history,
+                        status=response.status,
+                        message=f'Retryable status {response.status} from {url}',
+                    )
                 return await response.json()
+
+    try:
+        return await retry_with_backoff(
+            _attempt,
+            retry_on=(aiohttp.ClientError, asyncio.TimeoutError, OSError),
+            operation=f'model list ({url})',
+        )
     except Exception as e:
         # Handle connection error here
         log.error(f'Connection error: {e}')

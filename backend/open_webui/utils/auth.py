@@ -302,6 +302,10 @@ def get_http_authorization_cred(auth_header: str | None):
         return None
     try:
         scheme, credentials = auth_header.split(' ')
+        # Only bearer-style schemes carry a token this codebase can consume;
+        # other schemes (e.g. Basic) must fall through to other auth methods.
+        if scheme.lower() not in ('bearer', 'token'):
+            return None
         return HTTPAuthorizationCredentials(scheme=scheme, credentials=credentials)
     except Exception:
         return None

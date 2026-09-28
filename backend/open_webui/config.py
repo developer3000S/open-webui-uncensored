@@ -3240,3 +3240,21 @@ Config.configure(
     enable_persistent=ENABLE_PERSISTENT_CONFIG,
     enable_oauth_persistent=ENABLE_OAUTH_PERSISTENT_CONFIG,
 )
+
+
+def _register_read_env_names() -> None:
+    """Register every env var this module reads for .env typo detection.
+
+    Scans the module's own source so the set never drifts from the os.getenv()
+    calls it mirrors; runs once at import, after all of them have executed.
+    """
+    import re
+
+    from open_webui.utils.env_config import record_direct_env_names
+
+    source = Path(__file__).read_text(encoding='utf-8')
+    names = set(re.findall(r'os\.(?:getenv|environ\.get)\(\s*[\'"]([A-Za-z_][A-Za-z0-9_]*)[\'"]', source))
+    record_direct_env_names(names)
+
+
+_register_read_env_names()

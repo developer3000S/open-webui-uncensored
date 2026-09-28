@@ -11,7 +11,7 @@ test_saving_a_bound_key would write through to it.
 
 Needs the application's dependencies (sqlalchemy, aiosqlite), so on a bare host the
 module exits early; run it wherever the app itself runs:
-    python3 backend/open_webui/test/test_env_config_precedence.py
+    python3 backend/tests/test_env_config_precedence.py
 """
 
 import asyncio
@@ -29,9 +29,11 @@ try:
     from open_webui.utils import env_config
     from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
     from sqlalchemy.pool import NullPool
-except ModuleNotFoundError as exc:  # pragma: no cover - host without deps
+except (ModuleNotFoundError, SystemExit) as exc:  # pragma: no cover - host without deps
+    # SystemExit: env.py exits hard when WEBUI_SECRET_KEY is unset (bare hosts).
+    name = getattr(exc, 'name', None) or str(exc).splitlines()[0]
     raise SystemExit(
-        f'skip: this test needs the application dependencies ({exc.name}). '
+        f'skip: this test needs the application dependencies ({name}). '
         'Run it inside the container or in an installed venv.'
     )
 

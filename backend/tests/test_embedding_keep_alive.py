@@ -7,7 +7,7 @@ is the obvious thing an operator writes, so the conversion is asserted here.
 
 Needs the application's dependencies (config.py imports the app's env module), so on a bare
 host the module exits early; run it wherever the app itself runs:
-    python3 backend/open_webui/test/test_embedding_keep_alive.py
+    python3 backend/tests/test_embedding_keep_alive.py
 """
 
 import importlib.util
@@ -16,9 +16,11 @@ import unittest
 try:
     from open_webui import config as app_config
     from open_webui.config import RAG_EMBEDDING_IDLE_TIMEOUT, _ollama_keep_alive
-except ModuleNotFoundError as exc:  # pragma: no cover - host without deps
+except (ModuleNotFoundError, SystemExit) as exc:  # pragma: no cover - host without deps
+    # SystemExit: env.py exits hard when WEBUI_SECRET_KEY is unset (bare hosts).
+    name = getattr(exc, 'name', None) or str(exc).splitlines()[0]
     raise SystemExit(
-        f'skip: this test needs the application dependencies ({exc.name}). '
+        f'skip: this test needs the application dependencies ({name}). '
         'Run it inside the container or in an installed venv.'
     )
 

@@ -1,6 +1,6 @@
 """Unit tests for the pure parts of the graph layer (no Neo4j, no LLM).
 
-Run: python3 backend/open_webui/test/test_graphrag_extractor.py
+Run: python3 backend/tests/test_graphrag_extractor.py
 """
 
 import sys
@@ -8,7 +8,7 @@ import unittest
 import unittest.mock
 from pathlib import Path
 
-BACKEND_DIR = Path(__file__).resolve().parents[2]
+BACKEND_DIR = Path(__file__).resolve().parent.parent
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
