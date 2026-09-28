@@ -8,6 +8,7 @@ import re
 import shutil
 import sys
 import traceback
+import warnings
 from io import StringIO
 from pathlib import Path
 from typing import Any
@@ -18,6 +19,17 @@ from bs4 import BeautifulSoup
 from cryptography.hazmat.primitives import serialization
 
 from open_webui.utils.env_config import parse_env_file, record_declared
+
+# Third-party deprecation notices that fire on every startup and imply no
+# action for this deployment. Suppressed at import time (before the libraries
+# are pulled in) because they would otherwise be printed once per process.
+warnings.filterwarnings(
+    'ignore',
+    message='grpcio < 1.83.0 does not support Post-Quantum Cryptography',
+    category=FutureWarning,
+    module='google.auth.transport.grpc',
+)
+
 
 
 def _collect_env_names(source: str) -> None:

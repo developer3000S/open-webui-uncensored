@@ -49,6 +49,7 @@ from open_webui.utils.payload import (
     apply_model_params_to_body_openai,
     apply_system_prompt_to_body,
 )
+from open_webui.utils.retry import is_retryable_status, retry_with_backoff
 from open_webui.utils.session_pool import (
     cleanup_response,
     get_session,
