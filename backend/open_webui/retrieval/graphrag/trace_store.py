@@ -141,14 +141,33 @@ def get_trace(trace_id: str) -> dict | None:
         return None
 
 
-def list_traces(limit: int = 50, tenant_id: str | None = None) -> list[dict]:
+def list_traces(
+    limit: int = 50,
+    tenant_id: str | None = None,
+    intent: str | None = None,
+    status: str | None = None,
+    action: str | None = None,
+    since_ts: float | None = None,
+    until_ts: float | None = None,
+) -> list[dict]:
+    """Filtered trace listing backed by the indexed scalar columns."""
+    conds: list[str] = []
+    args: list = []
+    for col, val in (('tenant_id', tenant_id), ('intent', intent), ('status', status), ('recommended_action', action)):
+        if val:
+            conds.append(f'{col} = ?')
+            args.append(val)
+    if since_ts is not None:
+        conds.append('created_ts >= ?')
+        args.append(since_ts)
+    if until_ts is not None:
+        conds.append('created_ts <= ?')
+        args.append(until_ts)
     q = 'SELECT payload FROM orchestrator_trace'
-    args: tuple = ()
-    if tenant_id:
-        q += ' WHERE tenant_id = ?'
-        args = (tenant_id,)
+    if conds:
+        q += ' WHERE ' + ' AND '.join(conds)
     q += ' ORDER BY created_ts DESC LIMIT ?'
-    args = args + (max(1, min(int(limit), 500)),)
+    args.append(max(1, min(int(limit), 500)))
     try:
         with _lock:
             conn = _connect()
@@ -210,3 +229,47 @@ def recent_feedback_quality(hours: int = 24) -> float | None:
         return round((avg + 1) / 2 if abs(avg) <= 1 else (avg - 1) / 4, 3)
     except Exception:
         return None
+
+
+def metrics_summary(hours: int = 24) -> dict:
+    """Aggregated drift metrics over recent traces + feedback (ТЗ §11.3)."""
+    since = time.time() - hours * 3600
+    out: dict = {'window_hours': hours}
+    try:
+        with _lock:
+            conn = _connect()
+            rows = conn.execute(
+                'SELECT status, recommended_action, intent, mode, total_latency_ms, total_cost_units '
+                'FROM orchestrator_trace WHERE created_ts > ?',
+                (since,),
+            ).fetchall()
+            out['traces'] = len(rows)
+            if rows:
+                lat = sorted(r[4] for r in rows)
+                n = len(lat)
+                out['latency_ms'] = {
+                    'p50': lat[n // 2],
+                    'p95': lat[min(n - 1, int(n * 0.95))],
+                    'avg': round(sum(lat) / n, 1),
+                }
+                out['cost_units_avg'] = round(sum(r[5] for r in rows) / n, 4)
+
+                def _share(pred) -> float:
+                    return round(sum(1 for r in rows if pred(r)) / n, 3)
+
+                out['status_shares'] = {s: _share(lambda r, s=s: r[0] == s) for s in ('answered', 'uncertain', 'refused', 'clarification')}
+                out['action_shares'] = {a: _share(lambda r, a=a: r[1] == a) for a in ('select', 'merge', 'escalate', 'clarify', 'refuse')}
+                by_intent: dict[str, list] = {}
+                for r in rows:
+                    by_intent.setdefault(r[2] or 'unknown', []).append(r[4])
+                out['by_intent'] = {k: {'count': len(v), 'p50_ms': sorted(v)[len(v) // 2]} for k, v in by_intent.items()}
+            fb = conn.execute(
+                "SELECT rating, COUNT(*) FROM orchestrator_feedback WHERE kind='explicit' AND created_ts > ? GROUP BY rating",
+                (since,),
+            ).fetchall()
+            out['feedback_counts'] = {str(r): c for r, c in fb}
+            out['feedback_quality'] = recent_feedback_quality(hours)
+    except Exception as e:
+        log.warning('orchestrator metrics failed: %s', e)
+        out['error'] = str(e)[:200]
+    return out

@@ -82,6 +82,13 @@ def _sources_from_response(response: dict) -> list[dict]:
     if response.get('citations'):
         for s in sources:
             s['citations'] = response['citations'][:10]
+    # Orchestration identity travels with the answer so the UI can attach
+    # feedback (👍/👎 → §4.7 endpoint) and open the "why this answer" trace.
+    if sources:
+        sources[0]['trace_id'] = response.get('trace_id')
+        sources[0]['response_id'] = response.get('response_id')
+        sources[0]['answer_status'] = response.get('status')
+        sources[0]['confidence'] = response.get('confidence')
     return sources
 
 
