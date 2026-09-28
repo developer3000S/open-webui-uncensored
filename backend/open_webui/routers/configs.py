@@ -154,6 +154,9 @@ class OAuthClientRegistrationForm(BaseModel):
     client_secret: str | None = None
     oauth_server_url: str | None = None
     oauth_scope: str | None = None
+    # Initial Access Token (RFC 7591 §2.2) for providers that require it for
+    # dynamic client registration.
+    oauth_server_key: str | None = None
 
 
 @router.post('/oauth/clients/register')
@@ -182,7 +185,11 @@ async def register_oauth_client(
             )
         else:
             oauth_client_info = await get_oauth_client_info_with_dynamic_client_registration(
-                request, oauth_client_id, oauth_server_url, oauth_scope=form_data.oauth_scope
+                request,
+                oauth_client_id,
+                oauth_server_url,
+                oauth_server_key=form_data.oauth_server_key,
+                oauth_scope=form_data.oauth_scope,
             )
         return {
             'status': True,

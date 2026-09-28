@@ -42,7 +42,8 @@
 		'external',
 		'yandex',
 		'youcom',
-		'linkup'
+		'linkup',
+		'playwright'
 	];
 	let webLoaderEngines = ['playwright', 'firecrawl', 'tavily', 'microsoft_web_iq', 'external'];
 
@@ -976,6 +977,64 @@
 									/>
 								</div>
 							</div>
+						{:else if webConfig.WEB_SEARCH_ENGINE === 'playwright'}
+							<div class="mb-2.5 flex w-full flex-col">
+								<div>
+									<div class=" self-center text-xs font-medium mb-1">
+										{$i18n.t('Playwright Search Engine')}
+									</div>
+
+									<div class="flex w-full">
+										<div class="flex-1">
+											<select
+												class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
+												bind:value={webConfig.PLAYWRIGHT_SEARCH_ENGINE}
+											>
+												<option value="duckduckgo">DuckDuckGo</option>
+												<option value="bing">Bing</option>
+												<option value="google">Google</option>
+												<option value="brave">Brave</option>
+												<option value="mojeek">Mojeek</option>
+											</select>
+										</div>
+									</div>
+								</div>
+
+								<div class="mt-2">
+									<div class=" self-center text-xs font-medium mb-1">
+										{$i18n.t('Playwright WebSocket URL')}
+									</div>
+
+									<div class="flex w-full">
+										<div class="flex-1">
+											<input
+												class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
+												type="text"
+												placeholder={$i18n.t('Enter Playwright WebSocket URL')}
+												bind:value={webConfig.PLAYWRIGHT_WS_URL}
+												autocomplete="off"
+											/>
+										</div>
+									</div>
+								</div>
+
+								<div class="mt-2">
+									<div class=" self-center text-xs font-medium mb-1">
+										{$i18n.t('Playwright Timeout (ms)')}
+									</div>
+
+									<div class="flex w-full">
+										<div class="flex-1">
+											<input
+												class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
+												placeholder={$i18n.t('Enter Playwright Timeout')}
+												bind:value={webConfig.PLAYWRIGHT_TIMEOUT}
+												autocomplete="off"
+											/>
+										</div>
+									</div>
+								</div>
+							</div>
 						{/if}
 
 						{#if webConfig.WEB_SEARCH_ENGINE === 'duckduckgo'}
@@ -1217,6 +1276,22 @@
 									</div>
 								</div>
 							</div>
+						<div class="mt-2">
+							<div class="self-center text-xs font-medium mb-1">
+								{$i18n.t('Playwright Search Engine')}
+							</div>
+
+							<select
+								class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
+								bind:value={webConfig.PLAYWRIGHT_SEARCH_ENGINE}
+							>
+								<option value="duckduckgo">DuckDuckGo</option>
+								<option value="bing">Bing</option>
+								<option value="google">Google</option>
+								<option value="brave">Brave</option>
+								<option value="mojeek">Mojeek</option>
+							</select>
+						</div>
 						</div>
 					{:else if webConfig.WEB_LOADER_ENGINE === 'firecrawl' && webConfig.WEB_SEARCH_ENGINE !== 'firecrawl'}
 						<div class="mb-2.5 flex w-full flex-col">

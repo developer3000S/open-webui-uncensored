@@ -31,15 +31,22 @@ try:
     from sqlalchemy.pool import NullPool
 except (ModuleNotFoundError, SystemExit) as exc:  # pragma: no cover - host without deps
     # SystemExit: env.py exits hard when WEBUI_SECRET_KEY is unset (bare hosts).
-    name = getattr(exc, 'name', None) or str(exc).splitlines()[0]
-    raise SystemExit(
-        f'skip: this test needs the application dependencies ({name}). '
-        'Run it inside the container or in an installed venv.'
+    # unittest.skip at module level keeps `unittest discover` green on bare hosts
+    # while still running for real wherever the app dependencies are installed.
+    _name = getattr(exc, 'name', None) or str(exc).splitlines()[0]
+    _SKIP_REASON: str | None = (
+        f'this test needs the application dependencies ({_name}); run it inside the container or an installed venv'
     )
+    Base = config_module = Config = env_config = None  # type: ignore[assignment]
+    create_async_engine = async_sessionmaker = NullPool = None  # type: ignore[assignment]
+# Import succeeded: nothing to skip.
+else:
+    _SKIP_REASON = None
 
 DB_FILE = Path(tempfile.mkdtemp(prefix='env-config-test-')) / 'test.db'
-engine = create_async_engine(f'sqlite+aiosqlite:///{DB_FILE}', poolclass=NullPool)
-Session = async_sessionmaker(engine, expire_on_commit=False)
+if _SKIP_REASON is None:
+    engine = create_async_engine(f'sqlite+aiosqlite:///{DB_FILE}', poolclass=NullPool)
+    Session = async_sessionmaker(engine, expire_on_commit=False)
 
 
 @asynccontextmanager
@@ -82,6 +89,7 @@ async def _stored_value(key):
         return None if row is None else row.value
 
 
+@unittest.skipIf(_SKIP_REASON is not None, _SKIP_REASON)
 class EnvPrecedenceTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:

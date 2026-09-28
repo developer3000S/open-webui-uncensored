@@ -8,6 +8,7 @@
 	"[Last] dddd [at] h:mm A": "[Deireanach] dddd [ag] h:mm A",
 	"[Today at] h:mm A": "[Inniu ag] h:mm A",
 	"[Yesterday at] h:mm A": "[Inné ag] h:mm A",
+	"Playwright Search Engine": "Inneall cuardaigh Playwright",
 	"{{ models }}": "{{ models }}",
 	"{{COUNT}} Available Skills": "{{COUNT}} Scileanna atá ar Fáil",
 	"{{COUNT}} Available Tools": "{{COUNT}} Uirlisí ar Fáil",

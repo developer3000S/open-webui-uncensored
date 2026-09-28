@@ -186,6 +186,37 @@ async def get_async_tool_function_and_apply_extra_params(
 
             annotation = type_hints.get(name, sig.parameters[name].annotation)
             args = set(get_args(annotation))
+
+            # Pydantic models as parameters: build/validate the model from the
+            # dict (or JSON string) the caller supplied.
+            if inspect.isclass(annotation) and issubclass(annotation, BaseModel):
+                if isinstance(value, annotation):
+                    continue
+                if isinstance(value, str):
+                    try:
+                        value = json.loads(value)
+                    except (json.JSONDecodeError, ValueError):
+                        pass
+                if isinstance(value, dict):
+                    kwargs[name] = annotation.model_validate(value)
+                continue
+            if args and any(
+                inspect.isclass(a) and issubclass(a, BaseModel) and not isinstance(a, type(None)) for a in args
+            ):
+                optional_model = next(
+                    (a for a in args if inspect.isclass(a) and issubclass(a, BaseModel)),
+                    None,
+                )
+                if optional_model is not None and not isinstance(value, optional_model):
+                    if isinstance(value, str):
+                        try:
+                            value = json.loads(value)
+                        except (json.JSONDecodeError, ValueError):
+                            pass
+                    if isinstance(value, dict):
+                        kwargs[name] = optional_model.model_validate(value)
+                    continue
+
             if isinstance(value, str) and (annotation is int or args == {int, type(None)}):
                 kwargs[name] = int(value)
             elif (
@@ -298,11 +329,11 @@ async def get_tools(request: Request, tool_ids: list[str], user: UserModel, extr
                 )
 
             for spec in tool.specs:
-                # TODO: Fix hack for OpenAI API
-                # Some times breaks OpenAI but others don't. Leaving the comment
-                for val in spec.get('parameters', {}).get('properties', {}).values():
-                    if val.get('type') == 'str':
-                        val['type'] = 'string'
+                # Normalize non-standard type names in the JSON schema so strict
+                # OpenAI function-calling validation doesn't reject the spec.
+                # Done recursively to also cover nested object/array properties,
+                # instead of only patching top-level 'type' == 'str' entries.
+                _normalize_json_schema_types(spec.get('parameters', {}))
 
                 # Remove internal reserved parameters (e.g. __id__, __user__)
                 spec['parameters']['properties'] = {
@@ -321,7 +352,8 @@ async def get_tools(request: Request, tool_ids: list[str], user: UserModel, extr
                     },
                 )
 
-                # TODO: Support Pydantic models as parameters
+                # Note: parameters typed as Pydantic models are validated/coerced
+                # from the incoming dict/JSON in get_async_tool_function_and_apply_extra_params.
                 if callable.__doc__ and callable.__doc__.strip() != '':
                     s = re.split(':(param|return)', callable.__doc__, 1)
                     spec['description'] = s[0]
@@ -775,6 +807,54 @@ def convert_function_to_pydantic_model(func: Callable) -> type[BaseModel]:
     model.__doc__ = function_description
 
     return model
+
+
+# Non-standard / Python-style JSON-schema type aliases that strict OpenAI
+# function-calling validation rejects (e.g. specs hand-authored with 'str').
+JSON_SCHEMA_TYPE_ALIASES = {
+    'str': 'string',
+    'int': 'integer',
+    'float': 'number',
+    'double': 'number',
+    'bool': 'boolean',
+    'dict': 'object',
+    'list': 'array',
+    'none': 'null',
+}
+
+
+def _normalize_json_schema_types(schema) -> None:
+    """Recursively normalize non-standard JSON-schema ``type`` values in place.
+
+    Replaces the previous top-level-only hack (`'str'` -> `'string'`) which
+    missed nested object/array properties and other Python-style aliases, and
+    which intermittently broke strict OpenAI function-calling validation.
+    """
+    if not isinstance(schema, dict):
+        return
+
+    t = schema.get('type')
+    if isinstance(t, str):
+        normalized = JSON_SCHEMA_TYPE_ALIASES.get(t.lower())
+        if normalized:
+            schema['type'] = normalized
+    elif isinstance(t, list):
+        schema['type'] = [JSON_SCHEMA_TYPE_ALIASES.get(x.lower(), x) if isinstance(x, str) else x for x in t]
+
+    for key in ('properties', 'patternProperties'):
+        subschemas = schema.get(key)
+        if isinstance(subschemas, dict):
+            for sub in subschemas.values():
+                _normalize_json_schema_types(sub)
+
+    for key in ('items', 'additionalProperties', 'contains'):
+        _normalize_json_schema_types(schema.get(key))
+
+    for key in ('anyOf', 'oneOf', 'allOf'):
+        subschemas = schema.get(key)
+        if isinstance(subschemas, list):
+            for sub in subschemas:
+                _normalize_json_schema_types(sub)
 
 
 def clean_properties(schema: dict):

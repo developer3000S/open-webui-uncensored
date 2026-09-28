@@ -8,6 +8,7 @@
 	"[Last] dddd [at] h:mm A": "[آخرین] dddd [در] h:mm A",
 	"[Today at] h:mm A": "[امروز در] h:mm A",
 	"[Yesterday at] h:mm A": "[دیروز در] h:mm A",
+	"Playwright Search Engine": "موتور جستجوی Playwright",
 	"{{ models }}": "{{ models }}",
 	"{{COUNT}} Available Skills": "",
 	"{{COUNT}} Available Tools": "{{COUNT}} ابزار موجود",

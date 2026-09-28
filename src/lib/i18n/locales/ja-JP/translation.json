@@ -8,6 +8,7 @@
 	"[Last] dddd [at] h:mm A": "dddd h:mm A",
 	"[Today at] h:mm A": "[今日の] h:mm A",
 	"[Yesterday at] h:mm A": "[昨日の] h:mm A",
+	"Playwright Search Engine": "Playwright 検索エンジン",
 	"{{ models }}": "{{ モデル }}",
 	"{{COUNT}} Available Skills": "",
 	"{{COUNT}} Available Tools": "{{COUNT}} 個の有効なツール",

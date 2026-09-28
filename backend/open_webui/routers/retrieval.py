@@ -94,6 +94,7 @@ from open_webui.retrieval.web.mojeek import search_mojeek
 from open_webui.retrieval.web.ollama import search_ollama_cloud
 from open_webui.retrieval.web.perplexity import search_perplexity
 from open_webui.retrieval.web.perplexity_search import search_perplexity_search
+from open_webui.retrieval.web.playwright_search import search_playwright
 from open_webui.retrieval.web.searchapi import search_searchapi
 from open_webui.retrieval.web.searxng import search_searxng
 from open_webui.retrieval.web.serpapi import search_serpapi
@@ -335,6 +336,7 @@ RETRIEVAL_CONFIG_KEYS = {
     'PERPLEXITY_SEARCH_CONTEXT_USAGE': 'web.search.perplexity_search_context_usage',
     'PLAYWRIGHT_TIMEOUT': 'web.loader.playwright_timeout',
     'PLAYWRIGHT_WS_URL': 'web.loader.playwright_ws_url',
+    'PLAYWRIGHT_SEARCH_ENGINE': 'web.search.playwright_search_engine',
     'RAG_AZURE_OPENAI_API_KEY': 'rag.azure_openai.api_key',
     'RAG_AZURE_OPENAI_API_VERSION': 'rag.azure_openai.api_version',
     'RAG_AZURE_OPENAI_BASE_URL': 'rag.azure_openai.base_url',
@@ -739,6 +741,7 @@ async def get_rag_config(request: Request, user=Depends(get_admin_user)):
             'ENABLE_WEB_LOADER_SSL_VERIFICATION': config.ENABLE_WEB_LOADER_SSL_VERIFICATION,
             'PLAYWRIGHT_WS_URL': config.PLAYWRIGHT_WS_URL,
             'PLAYWRIGHT_TIMEOUT': config.PLAYWRIGHT_TIMEOUT,
+            'PLAYWRIGHT_SEARCH_ENGINE': config.PLAYWRIGHT_SEARCH_ENGINE,
             'FIRECRAWL_API_KEY': config.FIRECRAWL_API_KEY,
             'FIRECRAWL_API_BASE_URL': config.FIRECRAWL_API_BASE_URL,
             'FIRECRAWL_TIMEOUT': config.FIRECRAWL_TIMEOUT,
@@ -817,6 +820,7 @@ class WebConfig(BaseModel):
     ENABLE_WEB_LOADER_SSL_VERIFICATION: bool | None = None
     PLAYWRIGHT_WS_URL: str | None = None
     PLAYWRIGHT_TIMEOUT: int | None = None
+    PLAYWRIGHT_SEARCH_ENGINE: str | None = None
     FIRECRAWL_API_KEY: str | None = None
     FIRECRAWL_API_BASE_URL: str | None = None
     FIRECRAWL_TIMEOUT: str | None = None
@@ -1289,6 +1293,7 @@ async def update_rag_config(request: Request, form_data: ConfigForm, user=Depend
         config.ENABLE_WEB_LOADER_SSL_VERIFICATION = form_data.web.ENABLE_WEB_LOADER_SSL_VERIFICATION
         config.PLAYWRIGHT_WS_URL = form_data.web.PLAYWRIGHT_WS_URL
         config.PLAYWRIGHT_TIMEOUT = form_data.web.PLAYWRIGHT_TIMEOUT
+        config.PLAYWRIGHT_SEARCH_ENGINE = form_data.web.PLAYWRIGHT_SEARCH_ENGINE
         config.FIRECRAWL_API_KEY = form_data.web.FIRECRAWL_API_KEY
         config.FIRECRAWL_API_BASE_URL = form_data.web.FIRECRAWL_API_BASE_URL
         config.FIRECRAWL_TIMEOUT = form_data.web.FIRECRAWL_TIMEOUT
@@ -1435,6 +1440,7 @@ async def update_rag_config(request: Request, form_data: ConfigForm, user=Depend
             'ENABLE_WEB_LOADER_SSL_VERIFICATION': config.ENABLE_WEB_LOADER_SSL_VERIFICATION,
             'PLAYWRIGHT_WS_URL': config.PLAYWRIGHT_WS_URL,
             'PLAYWRIGHT_TIMEOUT': config.PLAYWRIGHT_TIMEOUT,
+            'PLAYWRIGHT_SEARCH_ENGINE': config.PLAYWRIGHT_SEARCH_ENGINE,
             'FIRECRAWL_API_KEY': config.FIRECRAWL_API_KEY,
             'FIRECRAWL_API_BASE_URL': config.FIRECRAWL_API_BASE_URL,
             'FIRECRAWL_TIMEOUT': config.FIRECRAWL_TIMEOUT,
@@ -2495,8 +2501,20 @@ async def search_web(request: Request, engine: str, query: str, user=None) -> li
     blocking the event loop.
     """
 
-    # TODO: add playwright to search the web
     config = await get_retrieval_config()
+
+    # Real browser-based web search via Playwright (uses the configured
+    # PLAYWRIGHT_WS_URL remote browser when set, otherwise local headless Chromium).
+    if engine == 'playwright':
+        return await search_playwright(
+            query,
+            config.WEB_SEARCH_RESULT_COUNT,
+            config.WEB_SEARCH_DOMAIN_FILTER_LIST,
+            playwright_ws_url=config.PLAYWRIGHT_WS_URL or None,
+            playwright_timeout=config.PLAYWRIGHT_TIMEOUT,
+            engine=config.PLAYWRIGHT_SEARCH_ENGINE,
+        )
+
     if engine == 'ollama_cloud':
         return await asyncio.to_thread(
             search_ollama_cloud,
