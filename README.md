@@ -348,5 +348,5 @@ export HF_HUB_OFFLINE=1
 
 ---
 
-Сделано [Timothy Jaeryang Baek](https://github.com/tjbck) — давайте вместе сделаем Open WebUI ещё более удивительным! 💪
+Сделано [Developer3000](https://github.com/developer3000S) — давайте вместе сделаем Open WebUI ещё более удивительным! 💪
 
