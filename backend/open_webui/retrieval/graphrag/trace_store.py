@@ -59,6 +59,14 @@ CREATE TABLE IF NOT EXISTS orchestrator_feedback (
     created_ts REAL NOT NULL
 );
 CREATE INDEX IF NOT EXISTS ix_fb_trace ON orchestrator_feedback(trace_id);
+
+CREATE TABLE IF NOT EXISTS orchestrator_cache (
+    cache_key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    expires_ts REAL NOT NULL,
+    created_ts REAL NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_cache_expires ON orchestrator_cache(expires_ts);
 """
 
 
@@ -91,7 +99,43 @@ def _sweep(conn: sqlite3.Connection) -> None:
     cutoff = time.time() - days * 86400
     conn.execute('DELETE FROM orchestrator_trace WHERE created_ts < ?', (cutoff,))
     conn.execute('DELETE FROM orchestrator_feedback WHERE created_ts < ?', (cutoff,))
+    conn.execute('DELETE FROM orchestrator_cache WHERE expires_ts < ?', (time.time(),))
     conn.commit()
+
+
+# ── Persistent response cache (rec 3.1) ────────────────────────────────
+
+def cache_get(key: str) -> tuple[float, dict] | None:
+    """Return (expires_ts, value) or None; expired rows read as a miss."""
+    try:
+        with _lock:
+            conn = _connect()
+            row = conn.execute(
+                'SELECT value, expires_ts FROM orchestrator_cache WHERE cache_key = ?',
+                (key,),
+            ).fetchone()
+        if not row:
+            return None
+        value, expires = row[0], row[1]
+        if time.time() > expires:
+            return None
+        return (expires, json.loads(value))
+    except Exception:
+        return None
+
+
+def cache_put(key: str, value: dict, ttl_s: int) -> None:
+    try:
+        with _lock:
+            conn = _connect()
+            conn.execute(
+                'INSERT OR REPLACE INTO orchestrator_cache (cache_key, value, expires_ts, created_ts)'
+                ' VALUES (?, ?, ?, ?)',
+                (key, json.dumps(value, ensure_ascii=False, default=str), time.time() + ttl_s, time.time()),
+            )
+            conn.commit()
+    except Exception:
+        pass  # best-effort, like all observability writes
 
 
 def store_trace(record) -> None:

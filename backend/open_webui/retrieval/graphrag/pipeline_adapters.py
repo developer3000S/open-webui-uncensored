@@ -230,7 +230,22 @@ async def run_native(task, ctx, policy, runtime) -> CandidateResponse:
         except Exception as e:
             errors.append(f'{item.get("id")}: {e}')
     notes = [f'k={k}', f'variants={len(queries)}'] + ([f'errors: {e}' for e in errors[:3]] if errors else [])
-    return _digest(task, all_docs, all_metas, started, notes)
+    cand = _digest(task, all_docs, all_metas, started, notes)
+    # Cross-encoder rerank (rec 2.1): when the deployment has no reranker,
+    # optionally rescore merged candidates with a local CE model. Failures
+    # keep the original ordering — reranking is an upgrade, never a risk.
+    if cand.status != 'failed' and all_docs and reranking_unavailable(runtime):
+        from open_webui.retrieval.graphrag.reranker import rerank_documents
+
+        docs, metas = await rerank_documents(ctx.normalized_query, all_docs, all_metas, top_n=k * 2)
+        cand.context.docs = docs
+        cand.context.sources_meta = metas
+    return cand
+
+
+def reranking_unavailable(runtime) -> bool:
+    """True when the request carries no reranker but CE rerank may fill in."""
+    return runtime.get('reranking_function') is None
 
 
 async def run_hybrid(task, ctx, policy, runtime) -> CandidateResponse:
@@ -328,6 +343,15 @@ async def run_graph(task, ctx, policy, runtime) -> CandidateResponse:
     if emb_fn is None or not queries:
         return _failed(task, 'inputs_missing', started, ['embedding/query missing'])
 
+    # Circuit breaker (rec 3.2): after repeated Neo4j failures skip the graph
+    # rank for the cool-off window instead of paying its timeout per query.
+    from open_webui.retrieval.graphrag.circuit_breaker import registry as cb_registry
+
+    if not cb_registry.allow('neo4j'):
+        cand = _failed(task, 'circuit_open', started, ['neo4j breaker open — graph skipped'])
+        cand.status = 'failed'
+        return cand
+
     from open_webui.models.knowledge import Knowledges
     from open_webui.retrieval.graphrag.retrieval import graph_config, graph_retrieve_embedding
 
@@ -353,7 +377,15 @@ async def run_graph(task, ctx, policy, runtime) -> CandidateResponse:
     embeddings = await emb_fn(queries, prefix=cfg['query_prefix'])
     if not embeddings:
         return _failed(task, 'embedding_failed', started, [])
-    context = await graph_retrieve_embedding(embeddings[0], gids)
+    try:
+        context = await graph_retrieve_embedding(embeddings[0], gids)
+    except Exception as e:
+        # Neo4j unreachable/query error → count toward breaker, degrade honestly.
+        cb_registry.record_failure('neo4j')
+        cand = _failed(task, 'graph_unavailable', started, [f'graph backend failed: {e}'])
+        cand.status = 'failed'
+        return cand
+    cb_registry.record_success('neo4j')
     if not context:
         cand = _digest(task, [], [], started, ['graph: no entities above threshold'])
         cand.status = 'partial'

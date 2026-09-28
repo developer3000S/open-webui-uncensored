@@ -12,6 +12,7 @@ import logging
 from datetime import datetime, timezone
 
 from open_webui.retrieval.graphrag import trace_store
+from open_webui.retrieval.graphrag.circuit_breaker import registry as cb_registry
 from open_webui.retrieval.graphrag.confidence import record_outcome
 from open_webui.retrieval.graphrag.models import FeedbackRecord
 from open_webui.retrieval.graphrag.policy import DEFAULT_POLICY_DOC, POLICY_CONFIG_KEY, load_policy_doc
@@ -50,6 +51,8 @@ async def status_snapshot() -> dict:
         'cache': settings.cache_enabled,
         'shadow_percent': settings.shadow_percent,
         'eval_llm': settings.eval_llm_enabled,
+        # Dependency health (rec 3.2): closed/open/half_open per backend.
+        'circuit_breakers': cb_registry.status(),
         'recent_quality': trace_store.recent_feedback_quality(24),
     }
     return summary
@@ -199,8 +202,14 @@ def followup_suggestions(ctx_query: str, top_entities: list[str], limit: int = 3
     the UI something useful immediately, and the endpoint can be upgraded to
     graph traversal later without changing its contract."""
     out: list[str] = []
-    for e in (top_entities or [])[:limit]:
+    seen: set[str] = set()
+    for e in top_entities or []:
+        if len(out) >= limit:
+            break
         e = str(e).strip()
-        if e and e.lower() not in ctx_query.lower():
-            out.append(f'Подробнее про «{e}»?')
-    return out[:limit]
+        key = e.lower()
+        if not e or key in seen or key in ctx_query.lower():
+            continue
+        seen.add(key)
+        out.append(f'Подробнее про «{e}»?')
+    return out

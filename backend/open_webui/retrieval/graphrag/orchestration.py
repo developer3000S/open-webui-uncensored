@@ -38,16 +38,40 @@ log = logging.getLogger(__name__)
 
 ORCHESTRATOR_VERSION = '1.0.0'
 
-# In-process response cache (§4.1.2 п.10, §7.5): tiny LRU with TTL — this
-# deployment is single-container; correctness over speed (cache disabled by
-# default via ORCH_CACHE_ENABLED=false).
+# Response cache (rec 3.1): persisted in SQLite next to the trace store so it
+# survives restarts; falls back to an in-process LRU when the DB is not yet
+# available (unit tests, early boot). Cache keys already embed tenant + ACL
+# scope (§6.2), so cross-user leakage is structurally impossible; disabled by
+# default via ORCH_CACHE_ENABLED=false — correctness over speed (§7.5).
 _cache: dict[str, tuple[float, dict]] = {}
+
+
+def _persist_get(key: str):
+    try:
+        from open_webui.retrieval.graphrag import trace_store
+
+        return trace_store.cache_get(key)
+    except Exception:
+        return None
+
+
+def _persist_put(key: str, value: dict, ttl_s: int) -> None:
+    try:
+        from open_webui.retrieval.graphrag import trace_store
+
+        trace_store.cache_put(key, value, ttl_s)
+    except Exception as e:  # observability must never break the answer path
+        log.debug('orchestrator cache persist failed: %s', e)
 
 
 def _cache_get(key: str):
     entry = _cache.get(key)
     if not entry:
-        return None
+        entry = _persist_get(key)
+        if entry:
+            _cache[key] = entry  # promote hot entries into memory
+        else:
+            return None
     expires, value = entry
     if time.time() > expires:
         _cache.pop(key, None)
@@ -60,6 +84,7 @@ def _cache_put(key: str, value: dict, ttl_s: int) -> None:
         for k in sorted(_cache, key=lambda k: _cache[k][0])[:32]:
             _cache.pop(k, None)
     _cache[key] = (time.time() + ttl_s, value)
+    _persist_put(key, value, ttl_s)
 
 
 def _sources_from_response(response: dict) -> list[dict]:
@@ -239,6 +264,18 @@ async def orchestrate_retrieval(
             docs, metas = pack_context(row['document'], row['metadata'], token_budget=budget)
             packed.append({**row, 'document': docs, 'metadata': metas})
         src_rows = [p for p in packed if p['document']]
+
+        # UX hints (rec §4): follow-up questions derived from retrieved
+        # entities ride along with sources so the client can render them
+        # without an extra round-trip; deterministic and cheap by design.
+        try:
+            from open_webui.retrieval.graphrag.orch_api import followup_suggestions
+
+            suggestions = followup_suggestions(ctx.normalized_query, analysis.entities[:3])
+            if suggestions:
+                response.ui_hints = {**(response.ui_hints or {}), 'followups': suggestions}
+        except Exception as e:
+            log.debug('followup suggestions skipped: %s', e)
 
         trace.pipeline_runs = all_runs
         trace.candidates = [c.model_dump() for c in runtime['pool']]
