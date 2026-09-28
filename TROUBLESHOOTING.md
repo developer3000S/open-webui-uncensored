@@ -34,3 +34,21 @@ Open WebUI has a default timeout of 5 minutes for Ollama to finish generating th
    - Confirm that the Ollama Server URL is correctly set to `[OLLAMA URL]` (e.g., `http://localhost:11434`).
 
 By following these enhanced troubleshooting steps, connection issues should be effectively resolved. For further assistance or queries, feel free to reach out to us on our community Discord.
+
+## Knowledge Base / Embedding Issues
+
+**Upload stuck at "Uploading 0%" or file frozen in `processing`:** uploads and embedding now report progress over SSE and every embedding HTTP call has a deadline, so a wedged embedding server fails the job with the reason recorded on the file instead of hanging indefinitely. Refresh the page — live progress is reconciled via the pending-files poll; a failed upload drops its row rather than leaving a frozen one.
+
+**`503 server busy, maximum pending requests exceeded` from Ollama (embeddings):** the document's batches were flooding the embedding server. The default embedding batch size is `1` chunk per request and concurrent embedding requests are bounded (`RAG_EMBEDDING_CONCURRENT_REQUESTS`, fallback limit `4` when left at `0`). Raise both only for a GPU-backed or hosted embedding endpoint (Admin → Settings → RAG, or declare them in `.env`).
+
+**Cancellation seems to do nothing / cancelled file reappears as completed:** cancellation is cooperative and checked at each pipeline checkpoint (before processing, around the embedding step, before auto-linking); vectors already written for a cancelled file are cleaned up. Make sure the running image includes this fix — older builds removed the record while the background pipeline kept going and re-linked the file.
+
+**Same document embedded twice:** duplicate detection (`RAG_DEDUP_DUPLICATE_FILES`, on by default) copies vectors from an already-indexed file whose extracted-text hash matches, provided the embedding engine and model match. Collections created before this fix may contain re-split chunks that refuse reuse — re-add the file to rebuild them.
+
+### Deployment settings come from `.env`
+
+For containerized runs, `.env` in the repository root is the single source of deployment settings: it is mounted into the container, parsed by `backend/start.sh`, and re-read by `open_webui/env.py`, which ranks names declared there **above** the stored `config` table. If a setting (e.g. `VECTOR_DB`, `VALKEY_URL`, `rag.embedding_batch_size`) appears ignored:
+
+1. Check whether the name is declared in `.env` — if yes, the file wins after every restart, and Admin → Settings edits apply only until the next restart.
+2. Do not duplicate these names in `docker-compose.yaml` `environment:` blocks — the compose files intentionally omit them.
+3. Use a different file with `ENV_FILE=.env.staging docker compose up -d`.
