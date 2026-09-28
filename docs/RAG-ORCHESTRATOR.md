@@ -51,8 +51,12 @@ Preprocessing → Query Understanding → Policy / Confidence / Planner
 | `execution.py` | §4.3–4.4 | Диспетчер планов: параллельное/последовательное исполнение, per-task таймауты/retry, глобальный дедлайн, учёт бюджетов, дедуп кандидатов, предикат `insufficient()` |
 | `evaluation.py` | §4.5 | Relevance, Groundedness (классификация claims), Contradiction Detection, Citation Verification, Safety Filter → EvaluationReport с recommended_action |
 | `response_synthesizer.py` | §4.6 | Синтез FinalResponse: select/merge/clarify/uncertain/refuse, citations, warnings, request_id для аудита |
-| `trace_store.py` | §9.8, §4.7, §10.5, §11.3 | SQLite-хранилище трасс и фидбека (WAL), retention-чистка, метрики качества; запись best-effort |
-| `orchestration.py` | §10.4 | Сквозной контроль-цикл и интеграция: `orchestrate_retrieval(...)` возвращает sources в legacy-формате либо `None` (abstain → базовый путь) |
+| `trace_store.py` | §9.8, §4.7, §10.5, §11.3 | SQLite-хранилище трасс и фидбека (WAL), retention-чистка, метрики качества; персистентный кэш ответов (переживает рестарт); запись best-effort |
+| `orchestration.py` | §10.4 | Сквозной контроль-цикл и интеграция: `orchestrate_retrieval(...)` возвращает sources в legacy-формате либо `None` (abstain → базовый путь). Включает shadow-прогоны (§3) и follow-up подсказки |
+| `orch_api.py` | рец. 1.1, §15.6 | Сервисный слой admin-API: снапшот статуса, фильтрованный список трасс, explain-проекция «почему такой ответ», приём фидбека с калибровкой, policy get/put с валидацией, горячая перезапись настроек, генератор follow-up вопросов |
+| `query_rewrite.py` | рец. 2.2 | Дешёвый rewrite без LLM: декомпозиция составных вопросов («сравни X и Y» → подзапросы), причинные варианты, тематическая привязка по истории, HyDE-lite через лексикон сущностей |
+| `reranker.py` | рец. 2.1 | Опциональный cross-encoder rerank (`sentence-transformers`, ленивая загрузка модели, graceful fallback при отсутствии) |
+| `circuit_breaker.py` | рец. 3.2 | Circuit breaker для внешних зависимостей (Neo4j, embedding-провайдер): после N подряд отказов зависимость пропускается на время cool-off вместо оплаты таймаута каждым запросом |
 
 Существующие модули `extractor.py`, `worker.py`, `neo4j_client.py`,
 `retrieval.py`, `prompts.py`, `orchestrator.py` (legacy-шлюз `should_use_graph`)
@@ -80,8 +84,28 @@ Admin → Settings, см. §5):
 | `ORCH_EVALUATION_ENABLED` | `true` | Слой оценки кандидатов (§4.5) |
 | `ORCH_CITATION_VERIFICATION` | `true` | Проверка цитат (§4.5.6) |
 | `ORCH_SAFETY_FILTER` | `true` | Safety-фильтр ответа (§4.5.7, §6.3) |
-| `ORCH_CACHE_ENABLED` | `false` | Кэш результатов (ключ изолирован по tenant и правам, §6.2) |
+| `ORCH_CACHE_ENABLED` | `false` | Кэш результатов (персистентный SQLite + in-process LRU; ключ изолирован по tenant и правам, §6.2) |
 | `ORCH_TRACE_STORE` | `true` | Запись трасс и приём фидбека |
+
+Переменные новых слоёв (спринты 1–4):
+
+| Переменная | По умолчанию | Что включает |
+| --- | --- | --- |
+| `ORCH_SHADOW_PERCENT` | `0` | Shadow-режим: N% трафика прогоняется через оркестратор вхолостую (ответ берётся из baseline), трассы пишутся с меткой `shadow` — безопасное раскатывание и A/B-статистика |
+| `ORCH_EVAL_LLM` | `false` | LLM-judge для groundedness-проверки claims (§4.5.4) вместо чисто эвристической оценки |
+| `ORCH_CROSS_ENCODER` | `false` | Cross-encoder rerank в hybrid-пайплайне |
+| `ORCH_CE_MODEL` | `cross-encoder/ms-marco-MiniLM-L6-v2` | Модель cross-encoder (`sentence-transformers`) |
+| `ORCH_CE_MAX_DOCS` | `30` | Кап документов, подаваемых в reranker (защита latency-бюджета) |
+| `ORCH_HYDE` | `false` | HyDE-lite расширение запроса через лексикон графовых сущностей |
+| `ORCH_CB_THRESHOLD` | `3` | Подряд отказов зависимости до размыкания цепи (circuit breaker) |
+| `ORCH_CB_RESET_S` | `60` | Cool-off окно перед half-open probe |
+| `ORCH_CACHE_TTL_S` | `300` | TTL записей кэша ответов |
+| `ORCH_TRACE_RETENTION_DAYS` | `90` | Retention трасс/фидбека/кэша (§10.5) |
+| `ORCH_CONTEXT_TOKENS` | `8000` | Token-budget сборки контекста (§4.4.2) |
+
+Query rewrite (рец. 2.2) включён всегда — он не требует LLM-вызовов:
+декомпозиция составных вопросов, причинные варианты и тематическая привязка
+по истории применяются автоматически в native/hybrid пайплайнах.
 
 Режим маршрутизации: `GRAPHRAG_MODE=auto|off|force` (для графовой ветки,
 наследуется из legacy-настройки).
@@ -137,10 +161,20 @@ Admin → Settings, см. §5):
   той же базе и используются калибровкой уверенности (`record_outcome`):
   историческая точность по классам интентов напрямую влияет на будущую
   маршрутизацию (§11.3 — метрики дрейфа: `recent_feedback_quality`).
-- **Админ-API** (`/api/v1/graphrag`, требуется admin): `GET /status` — состояние
-  Neo4j и индексации; `POST /knowledge/{kb_id}/index`, `GET
-  /knowledge/{kb_id}/status`, `DELETE /knowledge/{kb_id}`, `GET
-  /knowledge/{kb_id}/graph` — управление графом знаний.
+- **Админ-API** (`/api/v1/graphrag/orchestrator/*`, требуется admin — рец. 1.1):
+  - `GET /status` — сводка оркестратора: флаги, состояние circuit breaker'ов, hit-rate кэша;
+  - `GET /traces?intent=&pipeline=&status=&from=&to=&limit=` — фильтрованный список трасс; `GET /traces/{id}` — полная трасса с кандидатами и отчётом оценки;
+  - `GET /explain/{trace_id}` — компактная проекция «почему такой ответ» для UI-панели объяснимости (§15.6);
+  - `POST /feedback` — приём рейтингов (−1/+1 или 1..5), привязанных к trace_id, с немедленной калибровкой уверенности;
+  - `GET /metrics?hours=24` — метрики дрейфа (§11.3): latency p50/p95, доли refusals/clarifications, средний groundedness по пайплайнам, качество фидбека;
+  - `GET /policy` / `PUT /policy` — чтение и валидированная запись policy-as-code документа (§4.2.2);
+  - `PATCH /settings` — горячая перезапись feature-флагов и порогов без рестарта.
+- **Follow-up подсказки (рец. §4).** `orch_api.followup_suggestions()` строит до
+  3 детерминированных уточняющих вопроса из извлечённых сущностей (дедуп по
+  регистронезависимому ключу, исключение уже упомянутых в запросе).
+- **Legacy-API графа** (`/api/v1/graphrag`): `POST /knowledge/{kb_id}/index`,
+  `GET /knowledge/{kb_id}/status`, `DELETE /knowledge/{kb_id}`,
+  `GET /knowledge/{kb_id}/graph` — управление графом знаний.
 
 ## 7. Безопасность (кратко, детали в ТЗ §6)
 
@@ -183,6 +217,22 @@ python3 backend/tests/test_graphrag_extractor.py
 python3 backend/tests/test_graphrag_neo4j.py
 ```
 
-Модули оркестрации импортируются без БД и внешних сервисов (ленивые импорты
-Config/Neo4j), поэтому их можно тестировать изолированно; новые тесты для
-`orchestration/evaluation/synthesis` — рекомендованный следующий шаг.
+Тесты оркестратора (спринты 1–4) — pytest из каталога `backend/`
+(`open_webui` должен быть в `PYTHONPATH`, плагин libtmux в CI отключают
+`PYTEST_DISABLE_PLUGIN_AUTOLOAD=1` при необходимости):
+
+```bash
+cd backend
+python3 -m pytest tests/test_orch_policy.py \
+                  tests/test_orch_escalation.py \
+                  tests/test_orch_sprint2.py \
+                  tests/test_orch_sprint34.py -q
+# 50 passed
+```
+
+Покрытие: матрица deny Policy Engine (§4.2.2), лестница эскалации §10.2 с
+mock-таймаутами, query rewrite и cross-encoder фолбэк, shadow-режим,
+персистентный кэш (переживание «рестарта»), жизненный цикл circuit breaker
+(closed→open→half_open→closed и повторное opening по failed probe),
+дедуп follow-up подсказок. Модули оркестрации импортируются без БД и внешних
+сервисов (ленивые импорты Config/Neo4j), поэтому тестируются изолированно.
