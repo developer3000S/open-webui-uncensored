@@ -37,7 +37,11 @@ def insufficient(pool, settings: OrchestratorSettings) -> bool:
     if not good:
         return True
     best = max(good, key=lambda c: c.self_confidence)
-    return best.self_confidence < settings.min_overall_score or best.metadata.latency_ms == 0 and not best.answer_text
+    # Explicit parentheses: escalation triggers when the best candidate is
+    # below the bar, OR when it looks like an empty zero-latency stub.
+    return (best.self_confidence < settings.min_overall_score) or (
+        best.metadata.latency_ms == 0 and not best.answer_text
+    )
 
 
 class Pool(list):

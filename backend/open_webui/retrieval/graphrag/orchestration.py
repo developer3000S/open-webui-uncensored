@@ -137,6 +137,15 @@ async def orchestrate_retrieval(
                     asyncio.get_running_loop().run_in_executor(None, trace_store.store_trace, trace.model_dump())
                 return _sources_from_response(hit)
 
+        # Query understanding runs before policy evaluation so the Policy
+        # Engine sees real risk signals (analysis.safety_risk_score/domain)
+        # rather than a noop stand-in — both deny paths of §4.2.2 п.10
+        # (context safety_flags AND analysis-derived risk) are checked in one
+        # pass. analyze_query is pure CPU/lexical work over already-fetched
+        # context, so running it ahead costs no extra latency budget.
+        analysis = analyze_query(ctx)
+        trace.query_analysis = analysis.model_dump()
+
         policy_doc = None
         try:
             from open_webui.models.config import Config
@@ -144,7 +153,7 @@ async def orchestrate_retrieval(
             policy_doc = await Config.get(POLICY_CONFIG_KEY)
         except Exception:
             pass
-        policy = evaluate_policy(ctx, _noop_analysis(), settings, load_policy_doc(policy_doc))
+        policy = evaluate_policy(ctx, analysis, settings, load_policy_doc(policy_doc))
         trace.policy_decision = policy.model_dump()
 
         if policy.deny:
@@ -153,9 +162,6 @@ async def orchestrate_retrieval(
             # safety posture upstream handle prompt-level refusal instead.
             log.info('orchestrator: policy deny (%s), abstaining from orchestrated path', policy.deny_reason)
             return None
-
-        analysis = analyze_query(ctx)
-        trace.query_analysis = analysis.model_dump()
 
         confidence = estimate_confidence(analysis, policy, settings)
         plan = build_plan(analysis, policy, confidence, settings)
@@ -267,14 +273,3 @@ async def orchestrate_retrieval(
             except Exception:
                 pass
         return None
-
-
-def _noop_analysis():
-    """Minimal analysis stand-in for the pre-analysis policy pass (deny check
-    needs only safety flags, which live on the context itself)."""
-
-    class _A:
-        safety_risk_score = 0.0
-        domain = None
-
-    return _A()

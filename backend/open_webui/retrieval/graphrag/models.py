@@ -139,7 +139,7 @@ class Budgets(ContractModel):
     max_candidates: int = 0
 
 
-class PolicyDecision(ContractModel, Budgets):
+class PolicyDecision(Budgets):
     policy_id: str = 'default'
     policy_version: str = '1'
     deny: bool = False

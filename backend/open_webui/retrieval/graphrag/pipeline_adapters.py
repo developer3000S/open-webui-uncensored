@@ -206,7 +206,10 @@ async def run_native(task, ctx, policy, runtime) -> CandidateResponse:
             for name in names:
                 res = await asyncio.to_thread(query_doc, name, embeddings[0], k, runtime.get('user'))
                 if res is not None:
-                    docs, metas, _ = _result_to_rows(res.model_dump())
+                    # `query_doc` returns a vector-store result object; the
+                    # hybrid path below returns plain dicts — normalize both.
+                    payload = res.model_dump() if hasattr(res, 'model_dump') else res
+                    docs, metas, _ = _result_to_rows(payload)
                     all_docs.extend(docs)
                     all_metas.extend(metas)
         except Exception as e:
@@ -251,8 +254,16 @@ async def run_hybrid(task, ctx, policy, runtime) -> CandidateResponse:
                     k_reranker=int(cfg.get('top_k_reranker') or k),
                     r=float(cfg.get('relevance_threshold') or 0.0),
                     hybrid_bm25_weight=float(cfg.get('hybrid_bm25_weight') or 0.5),
+                    # Legacy path fetches the whole collection and scores it
+                    # in-process; that costs real time/memory per collection
+                    # and would blow the task budget under the orchestrator's
+                    # parallel fan-out. Native hybrid (DB-side BM25+vector) is
+                    # mandatory here; unsupported backends fail this task
+                    # honestly instead of silently degrading (§4.3.1 п.6).
+                    native_hybrid_search=True,
                 )
-                docs, metas, _ = _result_to_rows(res)
+                payload = res.model_dump() if hasattr(res, 'model_dump') else res
+                docs, metas, _ = _result_to_rows(payload)
                 all_docs.extend(docs)
                 all_metas.extend(metas)
             except Exception as e:

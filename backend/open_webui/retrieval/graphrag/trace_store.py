@@ -105,7 +105,7 @@ def store_trace(record) -> None:
         with _lock:
             conn = _connect()
             conn.execute(
-                'INSERT OR REPLACE INTO orchestrator_trace VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                'INSERT OR REPLACE INTO orchestrator_trace VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
                 (
                     data.get('trace_id'),
                     data.get('request_id'),
@@ -173,7 +173,7 @@ def store_feedback(record) -> None:
         with _lock:
             conn = _connect()
             conn.execute(
-                'INSERT OR REPLACE INTO orchestrator_feedback VALUES (?,?,?,?,?,?,?,?,?,?)',
+                'INSERT OR REPLACE INTO orchestrator_feedback VALUES (?,?,?,?,?,?,?,?,?)',
                 (
                     data.get('feedback_id'),
                     data.get('trace_id'),
