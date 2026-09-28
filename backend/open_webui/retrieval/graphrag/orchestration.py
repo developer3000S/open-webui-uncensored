@@ -118,6 +118,11 @@ async def orchestrate_retrieval(
 
     t0 = time.perf_counter()
     trace = TraceRecord(request_id=new_id(), tenant_id=getattr(user, 'tenant_id', None), user_id=getattr(user, 'id', None))
+    # Shadow mode (§13.2 rollout, rec §3.3): a stable percentage of traffic is
+    # executed end-to-end for measurement but its answer is discarded — the
+    # user still gets the baseline path. Deterministic on request_id so a
+    # retried request lands in the same bucket.
+    shadow = settings.shadow_percent > 0 and (int(trace.request_id[:8], 16) % 100) < settings.shadow_percent
 
     try:
         ctx = preprocess_query(
@@ -180,6 +185,7 @@ async def orchestrate_retrieval(
             'embedding_function': embedding_function,
             'reranking_function': reranking_function,
             'settings': settings,
+            'history': history,
             'config': config or {},
             'available_items_types': [i.get('type') for i in items if isinstance(i, dict)],
             'pool': [],
@@ -210,7 +216,7 @@ async def orchestrate_retrieval(
                     pool.extend(pool2)
                     runtime['pool'] = pool
 
-        report = evaluate_candidates(list(runtime['pool']), ctx, analysis, policy, settings)
+        report = await evaluate_candidates(list(runtime['pool']), ctx, analysis, policy, settings)
         if report.recommended_action == 'escalate' and policy.escalation_allowed and not insufficient(runtime['pool'], settings):
             # evaluator asked to escalate but pool already cleared the bar —
             # trust the numbers, downgrade to select (§10.3 деэскалация).
@@ -250,6 +256,14 @@ async def orchestrate_retrieval(
 
         # Calibration feedback loop (§4.2.4 п.5): realized quality per intent.
         record_outcome(analysis.intent, report.confidence)
+
+        if shadow:
+            # Dry-run: record everything, deliver nothing (baseline answers).
+            trace.warnings.append(f'shadow_mode: percent={settings.shadow_percent}')
+            trace.ended_at = now_iso()
+            if settings.trace_store_enabled:
+                asyncio.get_running_loop().run_in_executor(None, trace_store.store_trace, trace.model_dump())
+            return None
 
         if response.status in ('answered', 'partial', 'uncertain') and src_rows:
             if settings.cache_enabled and response.status == 'answered':

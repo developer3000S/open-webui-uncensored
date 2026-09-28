@@ -138,6 +138,52 @@ def check_groundedness(candidate) -> tuple[float, list[Claim]]:
     return grounded, claims
 
 
+async def refine_groundedness_with_judge(cand, settings) -> None:
+    """LLM-judge groundedness verification (rec §1.2), ORCH_EVAL_LLM off by default.
+
+    Reuses the reranker endpoint as a cheap zero-shot verifier (the same
+    external service pattern as `get_reranking_function`): for each claim not
+    already fully supported, ask the judge whether the evidence entails it and
+    upgrade/downgrade the claim status accordingly. Any failure keeps the
+    heuristic verdict — evaluation must never become a single point of failure.
+    """
+    try:
+        import httpx
+
+        from open_webui.config import RERANKING_API_URL, RERANKING_API_KEY
+
+        if not RERANKING_API_URL:
+            return
+        evidence = "\n---\n".join((cand.context_documents or [])[:4])[:6000]
+        needs = [c for c in cand.claims if c.status != 'supported'][:6]
+        if not needs:
+            return
+        headers = {'Content-Type': 'application/json'}
+        if RERANKING_API_KEY:
+            headers['Authorization'] = f'Bearer {RERANKING_API_KEY}'
+        async with httpx.AsyncClient(timeout=min(8.0, settings.max_latency_ms / 1000)) as client:
+            for c in needs:
+                resp = await client.post(
+                    f'{RERANKING_API_URL.rstrip("/")}/verify',
+                    json={
+                        'system': 'Ты — строгий верификатор. Ответь одним словом: YES если утверждение подтверждается текстом-основанием, NO если нет, PARTIAL если частично.',
+                        'prompt': f'Основание:\n{evidence}\n\nУтверждение: {c.text}\n\nYES / NO / PARTIAL:',
+                    },
+                    headers=headers,
+                )
+                if resp.status_code != 200:
+                    return
+                verdict = (resp.json().get('result') or resp.text).strip().upper()[:10]
+                if 'YES' in verdict:
+                    c.status = 'supported'
+                elif 'PARTIAL' in verdict:
+                    c.status = 'partially_supported' if c.status not in ('supported',) else c.status
+                elif 'NO' in verdict and c.status in ('inferred', 'partially_supported'):
+                    c.status = 'unsupported'
+    except Exception as e:  # noqa: BLE001 — judge is best-effort
+        log.debug('llm-judge skipped: %s', e)
+
+
 # ── §4.5.5 Contradictions ──────────────────────────────────────────────
 
 def _numbers(text: str) -> list[float]:
@@ -244,7 +290,7 @@ def safety_screen(candidate, ctx, policy) -> tuple[float, list[str]]:
 
 # ── Orchestration of the layer (§4.5.8) ────────────────────────────────
 
-def evaluate_candidates(candidates, ctx, analysis, policy, settings: OrchestratorSettings) -> EvaluationReport:
+def _evaluate_sync(candidates, ctx, analysis, policy, settings: OrchestratorSettings) -> EvaluationReport:
     report = EvaluationReport()
     if not candidates:
         report.recommended_action = 'escalate'
@@ -252,10 +298,12 @@ def evaluate_candidates(candidates, ctx, analysis, policy, settings: Orchestrato
         return report
 
     unsupported: list[Claim] = []
+    grounded_pairs: list[tuple] = []
     for cand in candidates:
         rel = score_relevance(cand, ctx)
         grounded, claims = check_groundedness(cand)
         cand.claims = claims
+        grounded_pairs.append((cand, grounded))
         citation_q = verify_citations(cand) if settings.citation_verification_enabled else 0.5
         safety_s, violations = (1.0, [])
         if settings.safety_filter_enabled:
@@ -328,6 +376,34 @@ def evaluate_candidates(candidates, ctx, analysis, policy, settings: Orchestrato
         report.refusal_reason = 'no candidate produced usable evidence'
     return report
 
+
+async def evaluate_candidates(candidates, ctx, analysis, policy, settings: OrchestratorSettings) -> EvaluationReport:
+    """Async façade over the heuristic evaluator (rec §1.2).
+
+    When ORCH_EVAL_LLM is on, the best candidate's claim statuses are refined
+    by an LLM-judge and its groundedness recomputed before the report is
+    finalized. Off by default: the CPU heuristics alone decide (§15.1 cost)."""
+    report = _evaluate_sync(candidates, ctx, analysis, policy, settings)
+    if getattr(settings, 'eval_llm_enabled', False) and candidates:
+        try:
+            best = max((c for c in candidates if c.status != 'failed'), key=lambda c: c.self_confidence, default=None)
+            if best is not None:
+                await refine_groundedness_with_judge(best, settings)
+                grounded, _claims = check_groundedness(best)
+                for cs in report.candidate_scores:
+                    if cs.candidate_id == best.candidate_id:
+                        cs.groundedness = grounded
+                        cs.overall_score = round(
+                            0.30 * cs.relevance + 0.30 * grounded + 0.15 * cs.citation_quality
+                            + 0.15 * cs.safety + 0.10 * cs.consistency, 3)
+                        if grounded < settings.min_groundedness and 'low_groundedness' not in cs.flags:
+                            cs.flags.append('low_groundedness')
+                        elif grounded >= settings.min_groundedness and 'low_groundedness' in cs.flags:
+                            cs.flags.remove('low_groundedness')
+                report.confidence = max((cs.overall_score for cs in report.candidate_scores), default=report.confidence)
+        except Exception as e:  # noqa: BLE001 — evaluation stays best-effort
+            log.debug('judge refinement skipped: %s', e)
+    return report
 
 def unsupported_ratio(candidate) -> float:
     facts = [c for c in candidate.claims if c.type == 'fact']

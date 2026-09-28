@@ -48,6 +48,8 @@ async def status_snapshot() -> dict:
         },
         'trace_store': settings.trace_store_enabled,
         'cache': settings.cache_enabled,
+        'shadow_percent': settings.shadow_percent,
+        'eval_llm': settings.eval_llm_enabled,
         'recent_quality': trace_store.recent_feedback_quality(24),
     }
     return summary
@@ -151,3 +153,54 @@ async def update_settings(partial: dict) -> dict:
         await Config.set(f'{CONFIG_PREFIX}{key}', value)
         applied[key] = value
     return {'applied': applied, 'rejected': rejected}
+
+
+async def explain_trace(trace_id: str) -> dict | None:
+    """Human-readable "why this answer" rendering of a trace (rec §4 UX).
+
+    Projects the raw TraceRecord into the fields a UI panel needs: routing
+    rationale from the plan, per-pipeline latency/cost, evaluation verdict and
+    the list of used sources — without leaking other tenants' data (lookup is
+    by unique trace_id; tenant check stays with the calling router)."""
+    trace = trace_store.get_trace(trace_id)
+    if not trace:
+        return None
+    plan = trace.get('execution_plan') or {}
+    runs = trace.get('pipeline_runs') or []
+    report = trace.get('evaluation_report') or {}
+    response = trace.get('final_response') or {}
+    return {
+        'trace_id': trace.get('trace_id'),
+        'status': response.get('status'),
+        'confidence': response.get('confidence') or report.get('confidence'),
+        'intent': (trace.get('query_analysis') or {}).get('intent'),
+        'mode': plan.get('mode'),
+        'rationale': plan.get('rationale'),
+        'pipelines': [
+            {
+                'pipeline': r.get('pipeline'),
+                'status': r.get('status'),
+                'latency_ms': r.get('latency_ms'),
+                'error_code': r.get('error_code'),
+            }
+            for r in runs
+        ],
+        'total_latency_ms': trace.get('total_latency_ms'),
+        'total_cost_units': trace.get('total_cost_units'),
+        'warnings': trace.get('warnings') or [],
+        'citations': (response.get('citations') or [])[:10],
+    }
+
+
+def followup_suggestions(ctx_query: str, top_entities: list[str], limit: int = 3) -> list[str]:
+    """Cheap deterministic follow-up questions from retrieved entities (rec §4).
+
+    Full graph-neighbor suggestion generation would need an LLM hop; this gives
+    the UI something useful immediately, and the endpoint can be upgraded to
+    graph traversal later without changing its contract."""
+    out: list[str] = []
+    for e in (top_entities or [])[:limit]:
+        e = str(e).strip()
+        if e and e.lower() not in ctx_query.lower():
+            out.append(f'Подробнее про «{e}»?')
+    return out[:limit]

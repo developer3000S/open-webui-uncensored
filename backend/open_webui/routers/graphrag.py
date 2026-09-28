@@ -223,6 +223,17 @@ async def orchestrator_trace_detail(trace_id: str, user=Depends(get_admin_user))
     return trace
 
 
+@router.get('/orchestrator/explain/{trace_id}')
+async def orchestrator_explain(trace_id: str, user=Depends(get_admin_user)):
+    """Compact "why this answer" projection of a trace for UI panels (rec §4)."""
+    from open_webui.retrieval.graphrag import orch_api
+
+    explained = await asyncio.to_thread(orch_api.explain_trace, trace_id)
+    if explained is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Trace not found')
+    return explained
+
+
 @router.post('/orchestrator/feedback')
 async def orchestrator_feedback(payload: dict, user=Depends(get_admin_user)):
     """Store explicit feedback (§4.7) and calibrate confidence per intent."""

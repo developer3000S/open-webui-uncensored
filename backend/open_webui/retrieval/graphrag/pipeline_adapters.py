@@ -40,6 +40,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import logging
+import os
 import re
 import time
 
@@ -183,7 +184,16 @@ async def run_native(task, ctx, policy, runtime) -> CandidateResponse:
     started = time.time()
     request = runtime.get('request')
     items = ctx.items or []
-    queries = [ctx.normalized_query] if ctx.normalized_query else []
+    # Query rewriting (rec §2.2): decomposition/causal/topic variants are
+    # retrieved and merged into one deduped pool; the primary query leads so
+    # its hits keep priority in context packing.
+    from open_webui.retrieval.graphrag.query_rewrite import rewrite_variants
+
+    queries = rewrite_variants(
+        ctx.normalized_query,
+        intent=(ctx.metadata or {}).get('intent') if getattr(ctx, 'metadata', None) else None,
+        history=runtime.get('history'),
+    ) if ctx.normalized_query else []
     emb_fn = runtime.get('embedding_function')
     k = int(task.parameters.get('k') or 8)
     if not items or not queries or emb_fn is None:
@@ -194,6 +204,7 @@ async def run_native(task, ctx, policy, runtime) -> CandidateResponse:
 
     all_docs: list[str] = []
     all_metas: list[dict] = []
+    seen_hashes: set[str] = set()
     errors: list[str] = []
     for item in items:
         names = _collection_names(ctx, item)
@@ -201,20 +212,24 @@ async def run_native(task, ctx, policy, runtime) -> CandidateResponse:
             continue
         try:
             embeddings = await emb_fn(queries, prefix=RAG_EMBEDDING_QUERY_PREFIX)
-            if not embeddings:
-                continue
             for name in names:
-                res = await asyncio.to_thread(query_doc, name, embeddings[0], k, runtime.get('user'))
-                if res is not None:
-                    # `query_doc` returns a vector-store result object; the
-                    # hybrid path below returns plain dicts — normalize both.
-                    payload = res.model_dump() if hasattr(res, 'model_dump') else res
-                    docs, metas, _ = _result_to_rows(payload)
-                    all_docs.extend(docs)
-                    all_metas.extend(metas)
+                for qemb in (embeddings or [])[: len(queries)]:
+                    res = await asyncio.to_thread(query_doc, name, qemb, k, runtime.get('user'))
+                    if res is not None:
+                        # `query_doc` returns a vector-store result object; the
+                        # hybrid path below returns plain dicts — normalize both.
+                        payload = res.model_dump() if hasattr(res, 'model_dump') else res
+                        docs, metas, _ = _result_to_rows(payload)
+                        for d, m in zip(docs, metas):
+                            h = hashlib.sha256((d or '')[:500].encode()).hexdigest()
+                            if h in seen_hashes:
+                                continue
+                            seen_hashes.add(h)
+                            all_docs.append(d)
+                            all_metas.append(m)
         except Exception as e:
             errors.append(f'{item.get("id")}: {e}')
-    notes = [f'k={k}'] + ([f'errors: {e}' for e in errors[:3]] if errors else [])
+    notes = [f'k={k}', f'variants={len(queries)}'] + ([f'errors: {e}' for e in errors[:3]] if errors else [])
     return _digest(task, all_docs, all_metas, started, notes)
 
 
@@ -223,7 +238,13 @@ async def run_hybrid(task, ctx, policy, runtime) -> CandidateResponse:
     started = time.time()
     request = runtime.get('request')
     items = ctx.items or []
-    queries = [ctx.normalized_query] if ctx.normalized_query else []
+    from open_webui.retrieval.graphrag.query_rewrite import rewrite_variants
+
+    queries = rewrite_variants(
+        ctx.normalized_query,
+        intent=(ctx.metadata or {}).get('intent') if getattr(ctx, 'metadata', None) else None,
+        history=runtime.get('history'),
+    ) if ctx.normalized_query else []
     emb_fn = runtime.get('embedding_function')
     rerank_fn = runtime.get('reranking_function')
     k = int(task.parameters.get('k') or 8)
@@ -239,36 +260,62 @@ async def run_hybrid(task, ctx, policy, runtime) -> CandidateResponse:
     cfg = runtime.get('config') or {}
     all_docs: list[str] = []
     all_metas: list[dict] = []
+    seen_hashes: set[str] = set()
     errors: list[str] = []
     for item in items:
         names = _collection_names(ctx, item)
         for name in names:
-            try:
-                res = await query_doc_with_hybrid_search(
-                    collection_name=name,
-                    collection_result=None,
-                    query=queries[0],
-                    embedding_function=emb_fn,
-                    k=k,
-                    reranking_function=rerank_fn,
-                    k_reranker=int(cfg.get('top_k_reranker') or k),
-                    r=float(cfg.get('relevance_threshold') or 0.0),
-                    hybrid_bm25_weight=float(cfg.get('hybrid_bm25_weight') or 0.5),
-                    # Legacy path fetches the whole collection and scores it
-                    # in-process; that costs real time/memory per collection
-                    # and would blow the task budget under the orchestrator's
-                    # parallel fan-out. Native hybrid (DB-side BM25+vector) is
-                    # mandatory here; unsupported backends fail this task
-                    # honestly instead of silently degrading (§4.3.1 п.6).
-                    native_hybrid_search=True,
-                )
-                payload = res.model_dump() if hasattr(res, 'model_dump') else res
-                docs, metas, _ = _result_to_rows(payload)
-                all_docs.extend(docs)
-                all_metas.extend(metas)
-            except Exception as e:
-                errors.append(f'{name}: {e}')
-    notes = [f'bm25_weight={cfg.get("hybrid_bm25_weight", 0.5)}'] + [f'errors: {e}' for e in errors[:3]]
+            for q in queries[:2]:  # retrieval budget: primary + one rewrite
+                try:
+                    res = await query_doc_with_hybrid_search(
+                        collection_name=name,
+                        collection_result=None,
+                        query=q,
+                        embedding_function=emb_fn,
+                        k=k,
+                        reranking_function=rerank_fn,
+                        k_reranker=int(cfg.get('top_k_reranker') or k),
+                        r=float(cfg.get('relevance_threshold') or 0.0),
+                        hybrid_bm25_weight=float(cfg.get('hybrid_bm25_weight') or 0.5),
+                        # Legacy path fetches the whole collection and scores it
+                        # in-process; that costs real time/memory per collection
+                        # and would blow the task budget under the orchestrator's
+                        # parallel fan-out. Native hybrid (DB-side BM25+vector) is
+                        # mandatory here; unsupported backends fail this task
+                        # honestly instead of silently degrading (§4.3.1 п.6).
+                        native_hybrid_search=True,
+                    )
+                    payload = res.model_dump() if hasattr(res, 'model_dump') else res
+                    docs, metas, _ = _result_to_rows(payload)
+                    for d, m in zip(docs, metas):
+                        h = hashlib.sha256((d or '')[:500].encode()).hexdigest()
+                        if h in seen_hashes:
+                            continue
+                        seen_hashes.add(h)
+                        all_docs.append(d)
+                        all_metas.append(m)
+                except Exception as e:
+                    errors.append(f'{name}: {e}')
+    # Cross-encoder second pass over the merged multi-collection pool (rec §2.1):
+    # per-collection rerank inside hybrid search cannot compare candidates across
+    # collections or across rewrite variants — this global stage re-scores the
+    # union with the configured reranking model (CPU inference via the app's
+    # RERANKING_FUNCTION, executed off-loop) and keeps the best k.
+    if os.getenv('ORCH_CROSS_ENCODER', '').strip().lower() in ('1', 'true', 'yes', 'on') and rerank_fn is not None and len(all_docs) > k:
+        try:
+            from types import SimpleNamespace
+
+            docs_ns = [SimpleNamespace(page_content=d) for d in all_docs]
+            scores = await asyncio.to_thread(rerank_fn, ctx.normalized_query, docs_ns, runtime.get('user'))
+            order = sorted(range(len(all_docs)), key=lambda i: float(scores[i]), reverse=True)
+            all_docs = [all_docs[i] for i in order][: k * 2]
+            all_metas = [all_metas[i] for i in order][: k * 2]
+            notes_extra = ['cross_encoder=on']
+        except Exception as e:
+            notes_extra = [f'cross_encoder_failed: {e}']
+    else:
+        notes_extra = []
+    notes = [f'bm25_weight={cfg.get("hybrid_bm25_weight", 0.5)}', f'variants={min(len(queries), 2)}'] + notes_extra + [f'errors: {e}' for e in errors[:3]]
     return _digest(task, all_docs, all_metas, started, notes)
 
 

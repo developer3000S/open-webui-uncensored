@@ -57,6 +57,13 @@ class OrchestratorSettings:
     safety_filter_enabled: bool = field(default_factory=lambda: _env_flag('ORCH_SAFETY_FILTER', True))
     cache_enabled: bool = field(default_factory=lambda: _env_flag('ORCH_CACHE_ENABLED', False))
     trace_store_enabled: bool = field(default_factory=lambda: _env_flag('ORCH_TRACE_STORE', True))
+    # Shadow mode (§13.2 rollout): a percentage of traffic is run through the
+    # orchestrator in "dry-run" — traces are recorded, the user still gets the
+    # baseline answer. Used to prove quality deltas before enabling (§3.3 rec).
+    shadow_percent: int = field(default_factory=lambda: _env_int('ORCH_SHADOW_PERCENT', 0))
+    # LLM-judge groundedness verification (rec 1.2): off by default, CPU-only
+    # heuristics remain the standing evaluator.
+    eval_llm_enabled: bool = field(default_factory=lambda: _env_flag('ORCH_EVAL_LLM', False))
 
     # Routing mode inherited from the graph layer: auto | always | never.
     mode: str = field(default_factory=lambda: os.getenv('GRAPHRAG_MODE', 'auto').strip().lower())
