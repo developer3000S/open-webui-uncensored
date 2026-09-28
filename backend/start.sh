@@ -55,8 +55,13 @@ if [[ "${WEB_LOADER_ENGINE,,}" == "playwright" ]]; then
 fi
 
 # ── Secret key setup ─────────────────────────────────────────────────────────
-
-KEY_FILE="${WEBUI_SECRET_KEY_FILE:-.webui_secret_key}"
+# The key file lives inside the persistent volume (/app/backend/data), not the
+# container's ephemeral layer: with the default .webui_secret_key path a
+# `docker compose down` destroys the file, the next start generates a new key,
+# and every existing session token is invalidated. WEBUI_SECRET_KEY_FILE is
+# read from .env like the other deployment settings, so .env stays the single
+# source of truth.
+KEY_FILE="${WEBUI_SECRET_KEY_FILE:-data/.webui_secret_key}"
 WEBUI_SECRET_KEY_LENGTH="${WEBUI_SECRET_KEY_LENGTH:-24}"
 PORT="${PORT:-8080}"
 HOST="${HOST:-0.0.0.0}"
@@ -70,6 +75,7 @@ if [[ -z "${WEBUI_SECRET_KEY:-}" && -z "${WEBUI_JWT_SECRET_KEY:-}" ]]; then
       echo "WEBUI_SECRET_KEY_LENGTH must be a positive integer." >&2
       exit 1
     fi
+    mkdir -p "$(dirname "$KEY_FILE")"
     head -c "$WEBUI_SECRET_KEY_LENGTH" /dev/random | base64 > "$KEY_FILE"
   fi
 

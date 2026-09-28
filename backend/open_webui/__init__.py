@@ -10,7 +10,8 @@ import uvicorn
 
 app = typer.Typer()
 
-KEY_FILE = Path.cwd() / '.webui_secret_key'
+KEY_FILE_ENV = 'WEBUI_SECRET_KEY_FILE'
+DEFAULT_KEY_FILE = 'data/.webui_secret_key'
 DEFAULT_SECRET_KEY_LENGTH = 24
 
 
@@ -37,14 +38,20 @@ def serve(
     os.environ['FROM_INIT_PY'] = 'true'
     if os.getenv('WEBUI_SECRET_KEY') is None:
         typer.echo('Loading WEBUI_SECRET_KEY from file, not provided as an environment variable.')
-        if not KEY_FILE.exists():
+        # Resolved here, not at module level: the app's .env (which may
+        # override WEBUI_SECRET_KEY_FILE) is only loaded once open_webui.env
+        # imports, and the default path lives in the persistent data volume so
+        # the key survives `docker compose down`.
+        key_file = Path(os.getenv(KEY_FILE_ENV, DEFAULT_KEY_FILE))
+        if not key_file.exists():
             key_length = int(os.getenv('WEBUI_SECRET_KEY_LENGTH', DEFAULT_SECRET_KEY_LENGTH))
             if key_length < 1:
                 raise ValueError('WEBUI_SECRET_KEY_LENGTH must be a positive integer')
-            typer.echo(f'Generating a new secret key and saving it to {KEY_FILE}')
-            KEY_FILE.write_bytes(base64.b64encode(random.randbytes(key_length)))
-        typer.echo(f'Loading WEBUI_SECRET_KEY from {KEY_FILE}')
-        os.environ['WEBUI_SECRET_KEY'] = KEY_FILE.read_text()
+            typer.echo(f'Generating a new secret key and saving it to {key_file}')
+            key_file.parent.mkdir(parents=True, exist_ok=True)
+            key_file.write_bytes(base64.b64encode(random.randbytes(key_length)))
+        typer.echo(f'Loading WEBUI_SECRET_KEY from {key_file}')
+        os.environ['WEBUI_SECRET_KEY'] = key_file.read_text()
 
     if os.getenv('USE_CUDA_DOCKER', 'false') == 'true':
         typer.echo('CUDA is enabled, appending LD_LIBRARY_PATH to include torch/cudnn & cublas libraries.')
