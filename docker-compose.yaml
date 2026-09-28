@@ -1,0 +1,46 @@
+services:
+  ollama:
+    volumes:
+      - ollama:/root/.ollama
+    container_name: ollama
+    pull_policy: always
+    tty: true
+    restart: unless-stopped
+    image: ollama/ollama:${OLLAMA_DOCKER_TAG:-latest}
+
+  open-webui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ghcr.io/open-webui/open-webui:${WEBUI_DOCKER_TAG:-main}
+    container_name: open-webui
+    volumes:
+      - open-webui:/app/backend/data
+      # Mount updated start.sh to apply --proxy-headers fix without rebuilding
+      - ./backend/start.sh:/app/backend/start.sh:ro
+      # Settings are declared once, in .env, and read from the file by both
+      # layers that need them: backend/start.sh parses it before launching
+      # uvicorn (PORT, FORWARDED_ALLOW_IPS), and open_webui/env.py re-reads it
+      # and ranks its names above the stored config table. Neither an
+      # `environment:` block nor `env_file:` is used here: both would put a
+      # second copy of the same settings in front of that mechanism.
+      # Override the file with:  ENV_FILE=.env.staging docker compose up -d
+      # (interpolated host-side and mounted at the fixed container path).
+      - ./${ENV_FILE:-.env}:/app/.env:ro
+    ports:
+      - ${OPEN_WEBUI_PORT:-3000}:8080
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    # Default soft nofile of 1024 in the container exhausts descriptors during
+    # large-document embedding ("Too many open files"). Hard limit is 524288.
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 524288
+    restart: unless-stopped
+
+
+volumes:
+  open-webui: {}
+  ollama: {}
+

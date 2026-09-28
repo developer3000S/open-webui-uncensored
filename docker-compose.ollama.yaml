@@ -1,0 +1,35 @@
+services:
+  ollama:
+    volumes:
+      - ollama:/root/.ollama
+    container_name: ollama
+    pull_policy: always
+    tty: true
+    restart: unless-stopped
+    image: ollama/ollama:${OLLAMA_DOCKER_TAG-latest}
+
+  open-webui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ghcr.io/open-webui/open-webui:${WEBUI_DOCKER_TAG-main}
+    container_name: open-webui
+    volumes:
+      - open-webui:/app/backend/data
+      # This topology reaches Ollama over the compose network, so the URL comes
+      # from an env file instead of being duplicated here:
+      #   printf "OLLAMA_BASE_URL='http://ollama:11434'\n" > .env.ollama
+      #   ENV_FILE=.env.ollama docker compose -f docker-compose.ollama.yaml up -d
+      # Both start.sh and env.py read the mounted file, so nothing is exported.
+      - ./${ENV_FILE:-.env}:/app/.env:ro
+    depends_on:
+      - ollama
+    ports:
+      - ${OPEN_WEBUI_PORT-8083}:8080
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    restart: unless-stopped
+
+volumes:
+  ollama: {}
+  open-webui: {}
