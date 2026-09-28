@@ -1412,6 +1412,34 @@ async def get_sources_from_items(
     extracted_collections = []
     query_results = []
 
+    # Adaptive RAG orchestrator (§2–§4.6, §10.4): when enabled it replaces the
+    # baseline loop below with policy→analysis→plan→execute→evaluate→synthesize
+    # and returns sources in the same legacy shape. It abstains (None) on any
+    # internal miss or failure, so the vector/hybrid path always remains as
+    # fallback — a chat request can never break because of orchestration.
+    if not full_context and not bypass_embedding_and_retrieval and user is not None:
+        try:
+            from open_webui.retrieval.graphrag.orchestration import orchestrate_retrieval
+
+            orchestrated = await orchestrate_retrieval(
+                request,
+                queries,
+                items,
+                user,
+                embedding_function=embedding_function,
+                reranking_function=reranking_function,
+                k=k,
+                config={
+                    'hybrid_bm25_weight': hybrid_bm25_weight,
+                    'top_k_reranker': k_reranker,
+                    'relevance_threshold': r,
+                },
+            )
+            if orchestrated is not None:
+                return orchestrated
+        except Exception as e:
+            log.warning('orchestrator: falling back to baseline retrieval: %s', e)
+
     for item in items:
         query_result = None
         collection_names = []

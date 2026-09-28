@@ -10,6 +10,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import time
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from open_webui.models.access_grants import AccessGrants
@@ -172,3 +173,109 @@ async def inspect_knowledge_base_graph(kb_id: str, limit: int = 30, user=Depends
     for f in files:
         per_file[f.filename] = await asyncio.to_thread(graph.top_entities, f.id, limit)
     return {'knowledge_base_id': kb_id, 'by_file': per_file}
+
+
+# ── Adaptive RAG orchestrator admin API (ТЗ §9.8, §4.7, §11.3, §4.2.2) ──
+
+
+@router.get('/orchestrator/status')
+async def orchestrator_status(user=Depends(get_admin_user)):
+    """Effective orchestration config: flags, thresholds, budgets, quality."""
+    from open_webui.retrieval.graphrag import orch_api
+
+    return await orch_api.status_snapshot()
+
+
+@router.patch('/orchestrator/settings')
+async def orchestrator_update_settings(payload: dict, user=Depends(get_admin_user)):
+    """Hot-retune orchestration knobs (stored under rag.orchestrator.*)."""
+    from open_webui.retrieval.graphrag import orch_api
+
+    return await orch_api.update_settings(payload if isinstance(payload, dict) else {})
+
+
+@router.get('/orchestrator/traces')
+async def orchestrator_traces(
+    limit: int = 50,
+    intent: str | None = None,
+    status_filter: str | None = None,
+    action: str | None = None,
+    since_hours: float | None = None,
+    user=Depends(get_admin_user),
+):
+    """Recent TraceRecords (§9.8) without candidate payloads."""
+    from open_webui.retrieval.graphrag import orch_api
+
+    filters = {'limit': limit, 'intent': intent, 'status': status_filter, 'action': action}
+    if since_hours:
+        filters['since_ts'] = time.time() - since_hours * 3600
+    return {'traces': await asyncio.to_thread(orch_api.list_traces, **filters)}
+
+
+@router.get('/orchestrator/traces/{trace_id}')
+async def orchestrator_trace_detail(trace_id: str, user=Depends(get_admin_user)):
+    """Full trace incl. candidates and evaluation report (explainability §15.6)."""
+    from open_webui.retrieval.graphrag import orch_api
+
+    trace = await asyncio.to_thread(orch_api.get_trace, trace_id)
+    if trace is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Trace not found')
+    return trace
+
+
+@router.get('/orchestrator/explain/{trace_id}')
+async def orchestrator_explain(trace_id: str, user=Depends(get_admin_user)):
+    """Compact "why this answer" projection of a trace for UI panels (rec §4)."""
+    from open_webui.retrieval.graphrag import orch_api
+
+    explained = await asyncio.to_thread(orch_api.explain_trace, trace_id)
+    if explained is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Trace not found')
+    return explained
+
+
+@router.post('/orchestrator/feedback')
+async def orchestrator_feedback(payload: dict, user=Depends(get_admin_user)):
+    """Store explicit feedback (§4.7) and calibrate confidence per intent."""
+    from open_webui.retrieval.graphrag import orch_api
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='JSON object required')
+    rating = payload.get('rating')
+    if rating is not None:
+        try:
+            rating = int(rating)
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='rating must be an integer')
+        if rating not in (-1, 1, 2, 3, 4, 5):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='rating must be -1/+1 or 1..5')
+        payload['rating'] = rating
+    return await orch_api.submit_feedback(payload)
+
+
+@router.get('/orchestrator/metrics')
+async def orchestrator_metrics(hours: int = 24, user=Depends(get_admin_user)):
+    """Drift metrics (§11.3): latency p50/p95, refusal shares, feedback quality."""
+    from open_webui.retrieval.graphrag import trace_store
+
+    hours = max(1, min(int(hours), 24 * 30))
+    return await asyncio.to_thread(trace_store.metrics_summary, hours)
+
+
+@router.get('/orchestrator/policy')
+async def orchestrator_policy_get(user=Depends(get_admin_user)):
+    """Effective policy document (defaults merged with stored overlay)."""
+    from open_webui.retrieval.graphrag import orch_api
+
+    return await orch_api.get_policy()
+
+
+@router.put('/orchestrator/policy')
+async def orchestrator_policy_put(doc: dict, user=Depends(get_admin_user)):
+    """Validate-and-store the policy-as-code document (§4.2.2)."""
+    from open_webui.retrieval.graphrag import orch_api
+
+    try:
+        return await orch_api.put_policy(doc)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
