@@ -7,8 +7,8 @@ import mimetypes
 import os
 import sys
 import time
-from pathlib import Path
 from contextlib import asynccontextmanager
+from pathlib import Path
 from uuid import uuid4
 
 import aiohttp
@@ -84,18 +84,18 @@ from open_webui.env import (
     ENABLE_COMPRESSION_MIDDLEWARE,
     ENABLE_CUSTOM_MODEL_FALLBACK,
     ENABLE_EASTER_EGGS,
-    EXTERNAL_PWA_MANIFEST_URL,
     # OAuth Back-Channel Logout
     ENABLE_OAUTH_BACKCHANNEL_LOGOUT,
     ENABLE_OTEL,
     ENABLE_PUBLIC_ACTIVE_USERS_COUNT,
+    ENABLE_PYODIDE_FILE_PERSISTENCE,
     # SCIM
     ENABLE_SCIM,
     ENABLE_SIGNUP_PASSWORD_CONFIRMATION,
     ENABLE_STAR_SESSIONS_MIDDLEWARE,
-    ENABLE_PYODIDE_FILE_PERSISTENCE,
     ENABLE_VERSION_UPDATE_CHECK,
     ENABLE_WEBSOCKET_SUPPORT,
+    EXTERNAL_PWA_MANIFEST_URL,
     GLOBAL_LOG_LEVEL,
     INSTANCE_ID,
     LICENSE_KEY,
@@ -121,11 +121,13 @@ from open_webui.env import (
 from open_webui.events import (
     EVENTS,
     delete_event_webhook,
-    get_event_catalog as get_event_catalog_items,
     get_event_webhooks,
     migrate_legacy_webhook_config,
     publish_event,
     upsert_event_webhook,
+)
+from open_webui.events import (
+    get_event_catalog as get_event_catalog_items,
 )
 from open_webui.internal.db import engine, get_async_session
 from open_webui.models.access_grants import AccessGrants
@@ -144,6 +146,7 @@ from open_webui.routers import (
     calendar,
     channels,
     chats,
+    classify,
     configs,
     evaluations,
     files,
@@ -163,13 +166,12 @@ from open_webui.routers import (
     retrieval,
     scim,
     skills,
+    studio,
     tasks,
     terminals,
     tools,
     users,
     utils,
-    classify,
-    studio,
 )
 from open_webui.routers.retrieval import (
     get_ef,
@@ -2175,7 +2177,7 @@ async def get_app_version():
 @app.get('/api/version/updates')
 async def get_app_latest_release_version(user=Depends(get_verified_user)):
     if not ENABLE_VERSION_UPDATE_CHECK:
-        log.debug(f'Version update check is disabled, returning current version as latest version')
+        log.debug('Version update check is disabled, returning current version as latest version')
         return {'current': VERSION, 'latest': VERSION}
     try:
         timeout = aiohttp.ClientTimeout(total=1)
@@ -2245,7 +2247,7 @@ try:
         log.info('Using Redis for session')
     else:
         raise ValueError('No Redis URL provided')
-except Exception as e:
+except Exception:
     app.add_middleware(
         SessionMiddleware,
         secret_key=WEBUI_SECRET_KEY,
@@ -2617,7 +2619,9 @@ def swagger_ui_html(*args, **kwargs):
 applications.get_swagger_ui_html = swagger_ui_html
 
 # Uncensored AI Studio (React) frontend — served under /studio when built (app/dist).
-STUDIO_DIST_DIR = Path(os.environ.get('STUDIO_DIST_DIR', str(Path(__file__).resolve().parents[2] / 'studio' / 'app' / 'dist')))
+STUDIO_DIST_DIR = Path(
+    os.environ.get('STUDIO_DIST_DIR', str(Path(__file__).resolve().parents[2] / 'studio' / 'app' / 'dist'))
+)
 
 if os.path.exists(FRONTEND_BUILD_DIR):
     mimetypes.add_type('text/javascript', '.js')
@@ -2634,7 +2638,9 @@ if os.path.exists(FRONTEND_BUILD_DIR):
         )
         log.info(f"Uncensored AI Studio UI mounted at /studio from '{STUDIO_DIST_DIR}'")
     else:
-        log.info(f"Uncensored AI Studio UI build not found at '{STUDIO_DIST_DIR}' (build studio/app/frontend to enable /studio)")
+        log.info(
+            f"Uncensored AI Studio UI build not found at '{STUDIO_DIST_DIR}' (build studio/app/frontend to enable /studio)"
+        )
 
     app.mount(
         '/',

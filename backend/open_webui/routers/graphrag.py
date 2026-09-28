@@ -12,7 +12,6 @@ import logging
 import os
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-
 from open_webui.models.access_grants import AccessGrants
 from open_webui.models.knowledge import Knowledges
 from open_webui.utils.auth import get_admin_user
@@ -114,7 +113,6 @@ async def index_knowledge_base(request: Request, kb_id: str, user=Depends(get_ad
 async def knowledge_base_graph_status(kb_id: str, user=Depends(get_admin_user)):
     """Per-file graph progress for one knowledge base."""
     await _require_kb_write(kb_id, user)
-    from open_webui.models.files import Files
     from open_webui.retrieval.graphrag.worker import get_job
 
     files = await Knowledges.get_files_by_id(kb_id)

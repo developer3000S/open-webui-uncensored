@@ -1,18 +1,14 @@
 from __future__ import annotations
 
-import base64
 import json
 import logging
 import os
 import shutil
 import socket
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
 from pathlib import Path
-from typing import Optional, Union
 from urllib.parse import urlparse
 
-import redis
 import requests
 from authlib.integrations.starlette_client import OAuth
 from pydantic import BaseModel
@@ -25,10 +21,6 @@ from open_webui.env import (
     FRONTEND_BUILD_DIR,
     OFFLINE_MODE,
     OPEN_WEBUI_DIR,
-    REDIS_KEY_PREFIX,
-    REDIS_SENTINEL_HOSTS,
-    REDIS_SENTINEL_PORT,
-    REDIS_URL,
     WEBUI_AUTH,
     WEBUI_FAVICON_URL,
     WEBUI_NAME,
@@ -83,7 +75,7 @@ async def import_legacy_config_json():
     """Migrate legacy config.json → database on first run."""
     if not os.path.exists(f'{DATA_DIR}/config.json'):
         return
-    with open(f'{DATA_DIR}/config.json', 'r') as _f:
+    with open(f'{DATA_DIR}/config.json') as _f:
         await Config.upsert(json.load(_f))
     os.rename(f'{DATA_DIR}/config.json', f'{DATA_DIR}/old_config.json')
 
@@ -100,14 +92,14 @@ try:
             if item.is_file() or item.is_symlink():
                 try:
                     item.unlink()
-                except Exception as e:
+                except Exception:
                     pass
-except Exception as e:
+except Exception:
     pass
 
 for file_path in (FRONTEND_BUILD_DIR / 'static').glob('**/*'):
     if file_path.is_file():
-        target_path = STATIC_DIR / file_path.relative_to((FRONTEND_BUILD_DIR / 'static'))
+        target_path = STATIC_DIR / file_path.relative_to(FRONTEND_BUILD_DIR / 'static')
         target_path.parent.mkdir(parents=True, exist_ok=True)
         try:
             shutil.copyfile(file_path, target_path)
@@ -993,9 +985,13 @@ RAG_EMBEDDING_MODEL_AUTO_UPDATE = (
     not OFFLINE_MODE and os.getenv('RAG_EMBEDDING_MODEL_AUTO_UPDATE', 'True').lower() == 'true'
 )
 
-RAG_EMBEDDING_MAX_CONNECTIONS = int(os.getenv('RAG_EMBEDDING_MAX_CONNECTIONS')) if os.getenv('RAG_EMBEDDING_MAX_CONNECTIONS') else 100
+RAG_EMBEDDING_MAX_CONNECTIONS = (
+    int(os.getenv('RAG_EMBEDDING_MAX_CONNECTIONS')) if os.getenv('RAG_EMBEDDING_MAX_CONNECTIONS') else 100
+)
 RAG_EMBEDDING_MAX_RETRIES = int(os.getenv('RAG_EMBEDDING_MAX_RETRIES')) if os.getenv('RAG_EMBEDDING_MAX_RETRIES') else 3
-RAG_EMBEDDING_RETRY_BASE_DELAY = float(os.getenv('RAG_EMBEDDING_RETRY_BASE_DELAY')) if os.getenv('RAG_EMBEDDING_RETRY_BASE_DELAY') else 1.0
+RAG_EMBEDDING_RETRY_BASE_DELAY = (
+    float(os.getenv('RAG_EMBEDDING_RETRY_BASE_DELAY')) if os.getenv('RAG_EMBEDDING_RETRY_BASE_DELAY') else 1.0
+)
 EMBEDDING_MAX_CONNECTIONS = RAG_EMBEDDING_MAX_CONNECTIONS
 EMBEDDING_MAX_RETRIES = RAG_EMBEDDING_MAX_RETRIES
 EMBEDDING_RETRY_BASE_DELAY = RAG_EMBEDDING_RETRY_BASE_DELAY
@@ -1040,12 +1036,13 @@ RAG_EMBEDDING_REQUEST_TIMEOUT = int(os.getenv('RAG_EMBEDDING_REQUEST_TIMEOUT', '
 # all, which is the condition worth failing on. Applies when RAG_EMBEDDING_TIMEOUT is unset.
 RAG_EMBEDDING_IDLE_TIMEOUT = int(os.getenv('RAG_EMBEDDING_IDLE_TIMEOUT', '7200'))
 
+
 # How long Ollama keeps the embedding model resident after a request. Unset, the daemon
 # applies its own 5-minute default and evicts the weights, so the first request after any
 # gap pays a full reload before it starts computing. Defaults to the idle window the
 # embedding job is itself willing to wait out, which keeps the model loaded at least as
 # long as a legitimately slow CPU pass can run.
-def _ollama_keep_alive(raw: Optional[str]) -> Union[int, str]:
+def _ollama_keep_alive(raw: str | None) -> int | str:
     """Normalise keep_alive into the form the Ollama API accepts.
 
     Ollama parses a *string* keep_alive as a Go duration, so "7200" is rejected with
@@ -1251,7 +1248,7 @@ WEB_SEARCH_RESULT_COUNT = int(os.getenv('WEB_SEARCH_RESULT_COUNT', '3'))
 
 try:
     web_search_domain_filter_list = json.loads(os.getenv('WEB_SEARCH_DOMAIN_FILTER_LIST', '[]'))
-except Exception as e:
+except Exception:
     web_search_domain_filter_list = [
         # "wikipedia.com",
         # "wikimedia.org",
@@ -2806,8 +2803,8 @@ def load_oauth_providers():
             f'⚠️  OAuth providers configured ({provider_list}) but OPENID_PROVIDER_URL not set - logout will not work!'
         )
         log.warning(
-            f"Set OPENID_PROVIDER_URL to your OAuth provider's OpenID Connect discovery endpoint,"
-            f' or set OPENID_END_SESSION_ENDPOINT to a custom logout URL to fix logout functionality.'
+            "Set OPENID_PROVIDER_URL to your OAuth provider's OpenID Connect discovery endpoint,"
+            ' or set OPENID_END_SESSION_ENDPOINT to a custom logout URL to fix logout functionality.'
         )
 
 

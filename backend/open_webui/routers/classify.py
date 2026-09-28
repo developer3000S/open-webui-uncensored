@@ -1,12 +1,15 @@
-from fastapi import APIRouter, Depends, Request, HTTPException
-from pydantic import BaseModel
 import json
 
+from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import BaseModel
+
 router = APIRouter()
+
 
 class ClassifyRequest(BaseModel):
     text: str
     model: str | None = None
+
 
 @router.post('/classify')
 async def classify_endpoint(request: Request, payload: ClassifyRequest, user=Depends(lambda: None)):
@@ -18,6 +21,7 @@ async def classify_endpoint(request: Request, payload: ClassifyRequest, user=Dep
     # Assuming Config.get is async method to fetch config value
     try:
         from open_webui.models.config import Config
+
         model_name = payload.model or await Config.get('classify.model')
     except Exception:
         model_name = payload.model or 'gpt-4o-mini'
@@ -38,6 +42,6 @@ async def classify_endpoint(request: Request, payload: ClassifyRequest, user=Dep
         else:
             data = json.loads(str(body))
         content = data.get('choices', [{}])[0].get('message', {}).get('content', '').strip()
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=500, detail='Failed to parse classifier response')
     return {'label': content}

@@ -157,7 +157,11 @@ class EnvNameAliasesMatchConfigPyTest(unittest.TestCase):
                 if not isinstance(n, ast.Call):
                     continue
                 func = n.func
-                qualified = f'{func.value.id}.{func.attr}' if isinstance(func, ast.Attribute) and isinstance(func.value, ast.Name) else None
+                qualified = (
+                    f'{func.value.id}.{func.attr}'
+                    if isinstance(func, ast.Attribute) and isinstance(func.value, ast.Name)
+                    else None
+                )
                 if qualified in ('os.getenv', 'os.environ.get') and n.args:
                     arg = n.args[0]
                     if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
@@ -237,7 +241,15 @@ class EnvNameAliasesMatchConfigPyTest(unittest.TestCase):
     def test_aliases_cover_the_legacy_flag_names_this_deploy_uses(self):
         """The specific names .env pins here; if the alias for one disappears, the
         deployment's setting quietly stops applying again."""
-        for name in ('ENABLE_WEB_SEARCH', 'DEFAULT_MODEL_METADATA', 'ENABLE_CODE_INTERPRETER', 'ENABLE_NOTES', 'ENABLE_CALENDAR', 'ENABLE_AUTOMATIONS', 'ENABLE_CHANNELS'):
+        for name in (
+            'ENABLE_WEB_SEARCH',
+            'DEFAULT_MODEL_METADATA',
+            'ENABLE_CODE_INTERPRETER',
+            'ENABLE_NOTES',
+            'ENABLE_CALENDAR',
+            'ENABLE_AUTOMATIONS',
+            'ENABLE_CHANNELS',
+        ):
             self.assertIn(name, env_config.ENV_NAME_ALIASES.values(), name)
 
     @staticmethod
