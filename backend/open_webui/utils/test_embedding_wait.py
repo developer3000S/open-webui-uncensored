@@ -11,9 +11,9 @@ Run with either:
 
 import importlib.util
 import unittest
+from collections.abc import Callable
 from concurrent.futures import TimeoutError as FuturesTimeout
 from pathlib import Path
-from typing import Callable, Optional
 
 _SPEC = importlib.util.spec_from_file_location(
     'embedding_wait', str(Path(__file__).resolve().parent / 'embedding_wait.py')
@@ -48,9 +48,9 @@ class FakeFuture:
         self,
         clock: FakeClock,
         *,
-        completes_after: Optional[float] = None,
-        error: Optional[BaseException] = None,
-        on_timeout: Optional[Callable[[], None]] = None,
+        completes_after: float | None = None,
+        error: BaseException | None = None,
+        on_timeout: Callable[[], None] | None = None,
     ) -> None:
         self.clock = clock
         self.completes_after = completes_after
@@ -59,7 +59,7 @@ class FakeFuture:
         self.cancelled_count = 0
         self._done = error is not None
 
-    def result(self, timeout: Optional[float] = None) -> list:
+    def result(self, timeout: float | None = None) -> list:
         if self._done and self.error:
             raise self.error
         if timeout is None:

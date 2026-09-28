@@ -171,7 +171,7 @@ async def maybe_augment_with_graph(request, item, query_result, queries, embeddi
             return
         try:
             context = await asyncio.wait_for(graph_retrieve_embedding(embeddings[0], gids), timeout=AUGMENT_TIMEOUT_S)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             log.info('graphrag: graph retrieve timed out, keeping vector answer')
             return
         if context:

@@ -15,7 +15,6 @@ import hashlib
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import Optional
 
 from open_webui.config import (
     GRAPHRAG_CHUNK_CHAR_LIMIT,
@@ -50,7 +49,7 @@ class GraphJob:
     entities: int = 0
     relations: int = 0
     started_at: float = field(default_factory=time.time)
-    last_error: Optional[str] = None
+    last_error: str | None = None
     cancel: asyncio.Event = field(default_factory=asyncio.Event)
     done: bool = False
     status: str = 'processing'  # processing|completed|failed|cancelled
@@ -69,14 +68,14 @@ class GraphJob:
         }
 
 
-def get_job(file_id: str) -> Optional[GraphJob]:
+def get_job(file_id: str) -> GraphJob | None:
     return _running.get(file_id)
 
 
 def entity_uid(name: str, gid: str) -> str:
     # The graph `id` property must be stable across chunks that mention the same
     # name; casefold because Cyrillic models emit both nominal cases.
-    return hashlib.sha1(f'{gid}|{name.strip().casefold()}'.encode('utf-8')).hexdigest()
+    return hashlib.sha1(f'{gid}|{name.strip().casefold()}'.encode()).hexdigest()
 
 
 def _resolve_model(app) -> str:
@@ -336,7 +335,7 @@ async def run_graph_index(app, file_id: str, user_id: str, graph: Neo4jGraph) ->
         await _write_progress(file_id, job.snapshot())
 
 
-def schedule_graph_index(app, file_id: str, user_id: str) -> Optional[asyncio.Task]:
+def schedule_graph_index(app, file_id: str, user_id: str) -> asyncio.Task | None:
     """Fire-and-forget; returns None when disabled/unreachable/already running."""
     from open_webui.retrieval.graphrag.neo4j_client import GraphUnavailableError, get_graph
     from open_webui.retrieval.graphrag.orchestrator import graph_enabled

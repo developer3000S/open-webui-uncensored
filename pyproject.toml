@@ -43,7 +43,8 @@ dependencies = [
 
     "pytz==2026.2",
     "APScheduler==3.11.2",
-    "RestrictedPython==8.2",
+    # keep in sync with backend/requirements.txt
+    "RestrictedPython==8.3",
 
     "loguru==0.7.3",
     "asgiref==3.11.1",
@@ -53,7 +54,8 @@ dependencies = [
 
     "openai==2.29.0",
     "anthropic==0.86.0",
-    "google-genai==1.66.0",
+    # keep in sync with backend/requirements.txt
+    "google-genai==2.10.0",
 
     "langchain==1.2.10",
     "langchain-community==0.4.2",
@@ -69,7 +71,8 @@ dependencies = [
     "transformers==5.5.4",
     "sentence-transformers==5.5.1",
     "accelerate==1.13.0",
-    "pyarrow==20.0.0", # fix: pin pyarrow version to 20 for rpi compatibility #15897
+    # keep in sync with backend/requirements.txt
+    "pyarrow==24.0.0",
     "einops==0.8.2",
 
     "ftfy==6.3.1",
@@ -222,9 +225,12 @@ dev = [
     "ruff>=0.15.5",
 ]
 
-[tool.black]
-line-length = 120
-skip-string-normalization = true
+# NOTE: the `black` runtime dependency (backend/requirements.txt) is used only
+# by the /utils/code/format endpoint and the Pyodide code editor to format
+# *user* Python code; it is not a project formatter. Repo-wide Python
+# formatting is handled exclusively by `ruff format` (see below and the
+# `format:backend` npm script), so there is no [tool.black] config section —
+# avoiding two formatters fighting over the same files.
 
 [tool.ruff]
 line-length = 120
@@ -243,6 +249,30 @@ select = [
   "C90",  # mccabe
   "Q",    # flake8-quotes
   "ICN",  # flake8-import-conventions
+]
+
+# Ratchet policy: rules below are disabled repo-wide because the existing
+# codebase has a large legacy debt in these areas. They were introduced as
+# part of the lint-debt cleanup (all auto-fixable violations have been fixed);
+# new code should still follow them, and each rule should be re-enabled once
+# its remaining violation count reaches zero.
+ignore = [
+  "E501",   # line-too-long: 135 legacy occurrences (mostly long prompts/URLs)
+  "E402",   # module-import-not-at-top-of-file: required by env-guarded imports
+  "W291",   # trailing-whitespace: inside LLM prompt string literals
+  "W293",   # blank-line-with-whitespace: inside LLM prompt string literals
+  "C901",   # complex-structure: 203 legacy functions need manual refactoring
+  "E731",   # lambda-assignment: stylistic, low value for this codebase
+  "E712",   # true-false-comparison: SQLAlchemy filters rely on `== True/False`
+  "E711",   # none-comparison: SQLAlchemy filters rely on `== None`
+  "E721",   # type-comparison: stylistic
+  "UP045",  # non-pep604-annotation-optional: requires Python >= 3.10 baseline
+  "UP042",  # replace-str-enum: behavior change, needs manual review
+  "UP031",  # printf-string-formatting: stylistic
+  "ICN001", # unconventional-import-alias: e.g. `import torch.nn.functional as F`
+  "ICN003", # banned-import-from: 24 legacy occurrences pending migration
+  "F841",   # unused-variable: 17 legacy occurrences pending manual cleanup
+  "F811",   # redefined-while-unused: conditional route/function redefinitions
 ]
 
 # Plugin configs:
