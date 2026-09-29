@@ -52,3 +52,12 @@ For containerized runs, `.env` in the repository root is the single source of de
 1. Check whether the name is declared in `.env` — if yes, the file wins after every restart, and Admin → Settings edits apply only until the next restart.
 2. Do not duplicate these names in `docker-compose.yaml` `environment:` blocks — the compose files intentionally omit them.
 3. Use a different file with `ENV_FILE=.env.staging docker compose up -d`.
+
+### Container restarts endlessly / UI never comes up
+
+A `restart: always` deployment converts a startup failure into a silent crash-loop: the container repeatedly starts, dies, and restarts, so the UI stays down while the logs fill with the same traceback. The most common cause is `VECTOR_DB=valkey` declared in `.env`:
+
+- `backend/requirements.txt` lists `valkey-glide-sync` as an *optional* dependency (it is commented out), so a stock image does not have it. At startup `open_webui/retrieval/vector/factory.py` builds the client for the configured backend, and `retrieval/vector/dbs/valkey.py` raises `ImportError: valkey-glide-sync is required when VECTOR_DB=valkey`.
+- A declared but unreachable Valkey server breaks indexing the same way from the runtime side.
+
+Diagnose with `docker logs <container> --tail 40`; if the traceback ends in that `ImportError`, comment `VECTOR_DB`/`VALKEY_URL` out in `.env` and restart — the default (`chroma`) keeps indexes in the `data` volume. To actually use Valkey, install the client (`pip install valkey-glide-sync==2.3.1`) into the image *and* run a Valkey server first.
