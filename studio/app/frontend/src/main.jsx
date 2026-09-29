@@ -7,7 +7,16 @@ import App from "./App";
 // ("/api/...", "/v1/...", "/sdapi/..."), which on that origin collide with Open
 // WebUI's own routes. Open WebUI proxies the same endpoints under /studio, so
 // the path is rewritten in place. Standalone deployments are unaffected.
-if (typeof window !== "undefined" && window.location.pathname.split("/")[1] === "studio") {
+//
+// The embedded mode is flagged on <html> so CSS can hide the studio's own
+// sidebar: navigation lives in the Open WebUI sidebar section "AI Студия",
+// and showing both sidebars side by side duplicates every entry.
+const STUDIO_EMBEDDED =
+  typeof window !== "undefined" && window.location.pathname.split("/")[1] === "studio";
+
+if (STUDIO_EMBEDDED) {
+  document.documentElement.classList.add("studio-embedded");
+
   const STUDIO_PREFIX = "/studio";
   const STUDIO_ROUTE = /^\/(api|v1|sdapi)(\/|$)/;
 

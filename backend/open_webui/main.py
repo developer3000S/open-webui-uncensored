@@ -5,6 +5,7 @@ import json
 import logging
 import mimetypes
 import os
+import re
 import sys
 import time
 from contextlib import asynccontextmanager
@@ -766,7 +767,24 @@ async def studio_api_proxy(path: str, request: Request):
     """Reverse-proxy /studio/api/* -> studio management API (serve.cjs)."""
     if studio_http_client is None:
         raise HTTPException(status_code=503, detail='Studio upstream is not configured')
-    return await _studio_proxy_request(studio_http_client, f'/api/{path}', request)
+    return await _studio_proxy_request(
+        studio_http_client, f'/api/{path}', request, rewrite_media_urls=True
+    )
+
+
+@app.api_route(
+    '/studio/tts-outputs/{path:path}',
+    methods=['GET'],
+)
+async def studio_tts_outputs_proxy(path: str, request: Request):
+    """Reverse-proxy /studio/tts-outputs/* -> studio TTS audio files.
+
+    The studio's JSON responses embed these as root-relative <audio src> URLs,
+    which the fetch patch in the studio bundle does not cover.
+    """
+    if studio_http_client is None:
+        raise HTTPException(status_code=503, detail='Studio upstream is not configured')
+    return await _studio_proxy_request(studio_http_client, f'/tts-outputs/{path}', request)
 
 
 @app.api_route(
@@ -791,7 +809,7 @@ async def studio_sdapi_proxy(path: str, request: Request):
     return await _studio_proxy_request(studio_http_client, f'/sdapi/{path}', request)
 
 
-async def _studio_proxy_request(client, upstream_path: str, request: Request):
+async def _studio_proxy_request(client, upstream_path: str, request: Request, rewrite_media_urls=False):
     req_headers = {}
     for key, value in request.headers.items():
         if key.lower() in {'host', 'connection', 'content-length', 'transfer-encoding'}:
@@ -819,12 +837,36 @@ async def _studio_proxy_request(client, upstream_path: str, request: Request):
         res_headers[key] = value
     res_headers['X-Studio-Proxy'] = '1'
 
+    content_type = upstream_res.headers.get('content-type') or ''
+    if rewrite_media_urls and content_type.startswith('application/json'):
+        content = await upstream_res.aread()
+        await upstream_res.aclose()
+        return Response(
+            content=_rewrite_studio_media_urls(content),
+            media_type=content_type,
+            headers=res_headers,
+        )
+
     return StreamingResponse(
         upstream_res.aiter_raw(),
         status_code=upstream_res.status_code,
         headers=res_headers,
-        media_type=upstream_res.headers.get('content-type'),
+        media_type=content_type,
     )
+
+
+# Media URLs the studio embeds in its JSON (/api/output-file?... for gallery
+# images, /tts-outputs/... for TTS audio) are loaded via <img src>/<audio src>,
+# not fetch, so the studio's fetch patch cannot add the /studio prefix. The
+# proxy rewrites them in application/json bodies; the browser then requests
+# them under /studio where the proxy routes above serve them.
+_STUDIO_MEDIA_URL_RE = re.compile(rb'"(/api/output-file\?|/tts-outputs/)')
+
+
+def _rewrite_studio_media_urls(content: bytes) -> bytes:
+    if b'/api/output-file?' not in content and b'/tts-outputs/' not in content:
+        return content
+    return _STUDIO_MEDIA_URL_RE.sub(rb'"/studio\1', content)
 
 
 app.include_router(ollama.router, prefix='/ollama', tags=['ollama'])
