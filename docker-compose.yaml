@@ -1,22 +1,25 @@
-services:
-  ollama:
-    volumes:
-      - ollama:/root/.ollama
-    container_name: ollama
-    pull_policy: always
-    tty: true
-    restart: unless-stopped
-    image: ollama/ollama:${OLLAMA_DOCKER_TAG:-latest}
+# Unified stack: Open WebUI + Neo4j + Uncensored AI Studio
+#
+# docker-run.sh (docker run) is replaced by this file — everything lives in
+# one stack now, sharing one network and one .env.
+#
+#   docker compose up -d --build     bring the stack up
+#   docker compose down              stop it (data stays on disk)
+#   docker compose logs -f studio    follow one service
 
+services:
   open-webui:
+    # Build from this repo — pull from a registry is intentionally not used.
+    # All fixes (retry import, oauth, secret key in volume) are in git and
+    # land in the image at build time.
     build:
       context: .
       dockerfile: Dockerfile
-    image: ghcr.io/open-webui/open-webui:${WEBUI_DOCKER_TAG:-main}
+    image: open-webui-uncensored:local
     container_name: open-webui
     volumes:
       - open-webui:/app/backend/data
-      # Mount updated start.sh to apply --proxy-headers fix without rebuilding
+      # Mount updated start.sh to apply --proxy-headers fix without rebuilding.
       - ./backend/start.sh:/app/backend/start.sh:ro
       # Settings are declared once, in .env, and read from the file by both
       # layers that need them: backend/start.sh parses it before launching
@@ -25,10 +28,9 @@ services:
       # `environment:` block nor `env_file:` is used here: both would put a
       # second copy of the same settings in front of that mechanism.
       # Override the file with:  ENV_FILE=.env.staging docker compose up -d
-      # (interpolated host-side and mounted at the fixed container path).
       - ./${ENV_FILE:-.env}:/app/.env:ro
     ports:
-      - ${OPEN_WEBUI_PORT:-3000}:8080
+      - ${OPEN_WEBUI_PORT:-8083}:8080
     extra_hosts:
       - host.docker.internal:host-gateway
     # Default soft nofile of 1024 in the container exhausts descriptors during
@@ -38,9 +40,91 @@ services:
         soft: 65536
         hard: 524288
     restart: unless-stopped
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    networks:
+      - default
+      - open-webui-uncensored-net
 
+  neo4j:
+    # GraphRAG backend for open_webui/retrieval/graphrag. Memory caps are
+    # mandatory on a 16 GB CPU-only host. Bolt is published to loopback only
+    # for host-side debugging; the app reaches the graph over the shared
+    # network by service name.
+    image: neo4j:5.26
+    container_name: open-webui-neo4j
+    environment:
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:-MyPasword12345}
+      - NEO4J_server_memory_heap_max__size=1G
+      - NEO4J_server_memory_pagecache_size=512M
+    volumes:
+      - neo4j-data:/data
+    ports:
+      - 127.0.0.1:${NEO4J_BOLT_PORT:-7687}:7687
+    mem_limit: 2g
+    memswap_limit: 3g
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 5 bash -c '</dev/tcp/127.0.0.1/7687' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+    networks:
+      - open-webui-uncensored-net
+
+  studio:
+    # Uncensored AI Studio. Binaries, node runtime, models and outputs live in
+    # the repo on disk and are bind-mounted as /app, so the image only adds
+    # the system shared libraries the backends need. Nothing is rebuilt or
+    # re-downloaded inside the container.
+    build:
+      context: studio
+      dockerfile: Dockerfile
+    image: uncensored-studio:local
+    container_name: uncensored-studio
+    ports:
+      # Web UI of the studio.
+      - ${STUDIO_FRONTEND_PORT:-14200}:14200
+      # OpenAI-compatible API of llama-server. Published for debugging; the
+      # WebUI talks to it over the shared stack network as
+      # http://uncensored-studio:10086/v1
+      - ${STUDIO_LLM_PORT:-10086}:10086
+    volumes:
+      # Весь studio/ одним монтированием: linux.sh и serve.cjs вычисляют пути
+      # от своего расположения ($SCRIPT_DIR/app, ROOT=scripts/../..), поэтому
+      # app должна лежать именно в /app/app. Все бинарники, node-runtime,
+      # модели (app/models, app/llm-models, app/openvino-models,
+      # app/speech-models, app/tts-models) и выводы (app/outputs,
+      # app/tts-outputs) остаются на диске хоста и переживают пересоздание
+      # контейнера.
+      - ./studio:/app
+    environment:
+      - FRONTEND_PORT=14200
+      - LLM_PORT=10086
+      # Backends bind 0.0.0.0 so the WebUI can reach llama-server by service
+      # name over the stack network (serve.cjs reads HOST/BACKEND_HOST).
+      - HOST=0.0.0.0
+    restart: unless-stopped
+    networks:
+      - open-webui-uncensored-net
 
 volumes:
-  open-webui: {}
-  ollama: {}
+  # Existing volumes from the docker-run.sh deployment, reused as external so
+  # the compose project picks them up instead of creating fresh empty ones:
+  # open-webui-rus_open-webui holds webui.db, .webui_secret_key (sessions
+  # survive the migration), chroma indexes and uploads.
+  open-webui:
+    external: true
+    name: open-webui-rus_open-webui
+  neo4j-data:
+    external: true
+    name: open-webui-rus_neo4j-data
 
+networks:
+  open-webui-uncensored-net:
+    name: open-webui-uncensored_net
+    driver: bridge
+  default:
+    driver: bridge

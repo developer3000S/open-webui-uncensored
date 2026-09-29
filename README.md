@@ -209,6 +209,44 @@ Open WebUI можно установить с помощью pip, установ
 
 После установки вы сможете открыть Open WebUI по адресу [http://localhost:8083](http://localhost:8083). Удачи! 😄
 
+### Развёртывание единым Docker-стеком 📦
+
+Помимо одиночных `docker run`, проект поставляется с `docker-compose.yaml`, который
+поднимает **все три сервиса в одном стеке** и одной сети:
+
+| Сервис | Образ | Назначение |
+|---|---|---|
+| `open-webui` | `open-webui-uncensored:local` (сборка из этого репо) | Веб-интерфейс, порт `${OPEN_WEBUI_PORT:-8083}` |
+| `neo4j` | `neo4j:5.26` | GraphRAG для `retrieval/graphrag`, bolt только на loopback |
+| `studio` | `uncensored-studio:local` (сборка из `studio/`) | Uncensored AI Studio: LLM/Whisper/SD/Kokoro, OpenAI-совместимый API |
+
+```bash
+docker compose up -d --build
+docker compose down
+```
+
+Тома `open-webui` и `neo4j-data` объявлены `external` и привязаны к существующим
+`open-webui-rus_open-webui` / `open-webui-rus_neo4j-data` — поэтому переезд с
+`docker-run.sh` на compose **не теряет** `webui.db`, `.webui_secret_key` (сессии
+выживают), индексы chroma и загруженные файлы. Настройки читаются из `.env`
+(см. раздел «Deployment settings come from `.env`» в [TROUBLESHOOTING.md](TROUBLESHOOTING.md)).
+
+Студия не копирует бинарники в образ — весь `studio/app` (node-runtime, бэкенды,
+модели в `app/models/`, `app/llm-models/`, `app/openvino-models/`,
+`app/speech-models/`, `app/tts-models/` и выводы в `app/outputs/`,
+`app/tts-outputs/`) пробрасывается **bind mount** как `/app` и остаётся на диске
+хоста. Корневой `.dockerignore` исключает `studio/` из контекста сборки WebUI, а
+`studio/.dockerignore` — `app/` из контекста сборки студии (иначе в builder
+улетает 249 GB).
+
+**Подключение студии как источника моделей.** llama-server студии слушает
+`10086` на всех интерфейсах, а Open WebUI ходит к нему по имени сервиса через
+общую сеть стека. В **Admin → Settings → Connections** добавьте External OpenAI
+API connection с базой `http://uncensored-studio:10086/v1` — после этого модели
+из `app/llm-models/` появляются в списке. Модель загружается в llama-server по
+первому запросу (студия не стартует её автоматически — нужен один чат-запрос
+через UI студии на `http://localhost:14200`, либо переключение туда).
+
 ## Работа с GrafRAG / RAG
 
 ### 1. Убедитесь, что RAG включён

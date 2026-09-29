@@ -20,3 +20,6 @@ uploads
 _test
 backend/data/*
 Medical-Graph-RAG
+# Studio ships its own image (build context ./studio); its 249 GB of models
+# and backends must never enter the WebUI build context.
+studio
