@@ -25,7 +25,9 @@
 
 	let iframeEl: HTMLIFrameElement | null = null;
 
-	const studioUrl = '/studio';
+	// Trailing slash is required: '/studio' (no slash) is not matched by the
+	// studio_spa_proxy route and falls through to the OWUI SPA mount.
+	const studioUrl = '/studio/';
 
 	const requestTabSwitch = () => {
 		if (!iframeEl?.contentWindow || !tab) return;
