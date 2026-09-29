@@ -51,6 +51,22 @@ function App() {
   // Navigation
   const [activeTab, setActiveTab] = useState("generator");
 
+  // Deep-linking from the Open WebUI sidebar: the embedded page under /studio
+  // posts { type: "studio:tab", tab } so a click on a sidebar item switches the
+  // tab shown in the iframe. Same-origin only — in browser mode the iframe is
+  // served from the Open WebUI origin.
+  useEffect(() => {
+    const STUDIO_TABS = ["generator", "chat", "agents", "speech", "tts", "models", "settings"];
+    const onMessage = (event) => {
+      if (event.origin !== window.location.origin) return;
+      const { type, tab } = event.data ?? {};
+      if (type !== "studio:tab") return;
+      if (STUDIO_TABS.includes(tab)) setActiveTab(tab);
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
+
   // Prompts
   const [prompt, setPrompt] = useState("");
   const [negativePrompt, setNegativePrompt] = useState("");

@@ -84,6 +84,15 @@
 	import { slide } from 'svelte/transition';
 	import HotkeyHint from '../common/HotkeyHint.svelte';
 
+	import Photo from '../icons/Photo.svelte';
+	import ChatBubble from '../icons/ChatBubble.svelte';
+	import Users from '../icons/Users.svelte';
+	import Mic from '../icons/Mic.svelte';
+	import SoundHigh from '../icons/SoundHigh.svelte';
+	import FolderOpen from '../icons/FolderOpen.svelte';
+	import Settings from '../icons/Settings.svelte';
+	import Sparkles from '../icons/Sparkles.svelte';
+
 	const BREAKPOINT = 768;
 	const DEFAULT_PINNED_ITEMS = ['notes', 'workspace'];
 
@@ -108,6 +117,7 @@
 	let showChannels = false;
 	let showFolders = false;
 	let showSharedFolders = false;
+	let showStudio = localStorage.getItem('studioSidebarOpen') !== 'false';
 
 	let folders = {};
 	let folderRegistry = {};
@@ -160,6 +170,27 @@
 			playground: { label: 'Playground', href: '/playground', iconType: 'playground' }
 		};
 		return items[id];
+	};
+
+	// Uncensored AI Studio — раздел бокового меню, объединяющий вкладки студии
+	// (App.jsx activeTab) с навигацией Open WebUI.
+	const STUDIO_NAV_ITEMS = [
+		{ tab: 'generator', label: 'Генератор изображений', iconType: 'photo' },
+		{ tab: 'chat', label: 'Текстовый чат', iconType: 'chat' },
+		{ tab: 'agents', label: 'Агенты', iconType: 'agents' },
+		{ tab: 'speech', label: 'Распознавание речи', iconType: 'mic' },
+		{ tab: 'tts', label: 'Текст в речь', iconType: 'tts' },
+		{ tab: 'models', label: 'Менеджер моделей', iconType: 'models' },
+		{ tab: 'settings', label: 'Настройки', iconType: 'settings' }
+	];
+
+	const isStudioEnabled = () => $config?.features?.enable_studio;
+
+	const studioItemHref = (tab: string) => `/studio?tab=${tab}`;
+
+	const toggleStudioSection = () => {
+		showStudio = !showStudio;
+		localStorage.setItem('studioSidebarOpen', showStudio ? 'true' : 'false');
 	};
 
 	const initPinnedMenuSortable = () => {
@@ -974,6 +1005,63 @@
 						</div>
 					{/if}
 				{/each}
+
+				{#if isStudioEnabled()}
+					<hr class=" border-gray-100/40 dark:border-gray-800/30 my-1.5 w-full" />
+
+					<Tooltip content={'AI Студия'} placement="right">
+						<button
+							class=" cursor-pointer flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-850 transition group"
+							on:click={(e) => {
+								e.stopImmediatePropagation();
+								e.preventDefault();
+								goto('/studio');
+								itemClickHandler();
+							}}
+							draggable="false"
+							aria-label={'AI Студия'}
+						>
+							<div class=" self-center flex items-center justify-center size-9">
+								<Sparkles className="size-4.5" />
+							</div>
+						</button>
+					</Tooltip>
+
+					{#each STUDIO_NAV_ITEMS as item (item.tab)}
+						<Tooltip content={item.label} placement="right">
+							<a
+								class=" cursor-pointer flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-850 transition group"
+								href={studioItemHref(item.tab)}
+								on:click={async (e) => {
+									e.stopImmediatePropagation();
+									e.preventDefault();
+									goto(studioItemHref(item.tab));
+									itemClickHandler();
+								}}
+								draggable="false"
+								aria-label={item.label}
+							>
+								<div class=" self-center flex items-center justify-center size-9">
+									{#if item.iconType === 'photo'}
+										<Photo className="size-4.5" />
+									{:else if item.iconType === 'chat'}
+										<ChatBubble className="size-4.5" />
+									{:else if item.iconType === 'agents'}
+										<Users className="size-4.5" />
+									{:else if item.iconType === 'mic'}
+										<Mic className="size-4.5" />
+									{:else if item.iconType === 'tts'}
+										<SoundHigh className="size-4.5" />
+									{:else if item.iconType === 'models'}
+										<FolderOpen className="size-4.5" />
+									{:else if item.iconType === 'settings'}
+										<Settings className="size-4.5" />
+									{/if}
+								</div>
+							</a>
+						</Tooltip>
+					{/each}
+				{/if}
 			</div>
 		</button>
 
@@ -1228,6 +1316,97 @@
 						{/each}
 					</div>
 				</div>
+
+				{#if isStudioEnabled()}
+					<div class="mt-1.5">
+						<button
+							type="button"
+							class="w-full flex items-center px-2 py-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-900 transition"
+							on:click={() => toggleStudioSection()}
+							aria-expanded={showStudio}
+							aria-label="AI Студия"
+						>
+							<div class="self-center mr-3 shrink-0 text-gray-600 dark:text-gray-400">
+								<Sparkles className="size-4.5" strokeWidth="2" />
+							</div>
+							<div class="flex-1 self-center text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide truncate">
+								AI Студия
+							</div>
+							<div class="self-center text-gray-400 dark:text-gray-600">
+								{#if showStudio}
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke-width="2"
+										stroke="currentColor"
+										class="size-4"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											d="m4.5 15.75 7.5-7.5 7.5 7.5"
+										/>
+									</svg>
+								{:else}
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke-width="2"
+										stroke="currentColor"
+										class="size-4"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											d="m19.5 8.25-7.5 7.5-7.5-7.5"
+										/>
+									</svg>
+								{/if}
+							</div>
+						</button>
+
+						{#if showStudio}
+							<div
+								class="ml-3 pl-1 mt-[1px] flex flex-col border-s border-gray-100 dark:border-gray-900 text-gray-900 dark:text-gray-200"
+								transition:slide={{ duration: 150 }}
+							>
+								{#each STUDIO_NAV_ITEMS as item (item.tab)}
+									<a
+										id="sidebar-studio-{item.tab}-button"
+										class="group flex items-center space-x-3 rounded-xl px-2.5 py-2 hover:bg-gray-100 dark:hover:bg-gray-900 transition cursor-pointer select-none"
+										href={studioItemHref(item.tab)}
+										on:click={itemClickHandler}
+										draggable="false"
+										aria-label={item.label}
+									>
+										<div class="self-center text-gray-600 dark:text-gray-400">
+											{#if item.iconType === 'photo'}
+												<Photo className="size-4.5" strokeWidth="1.5" />
+											{:else if item.iconType === 'chat'}
+												<ChatBubble className="size-4.5" strokeWidth="1.5" />
+											{:else if item.iconType === 'agents'}
+												<Users className="size-4.5" strokeWidth="1.5" />
+											{:else if item.iconType === 'mic'}
+												<Mic className="size-4.5" strokeWidth="1.5" />
+											{:else if item.iconType === 'tts'}
+												<SoundHigh className="size-4.5" strokeWidth="1.5" />
+											{:else if item.iconType === 'models'}
+												<FolderOpen className="size-4.5" strokeWidth="1.5" />
+											{:else if item.iconType === 'settings'}
+												<Settings className="size-4.5" strokeWidth="1.5" />
+											{/if}
+										</div>
+										<div class="flex-1 self-center text-sm font-primary truncate">
+											{item.label}
+										</div>
+									</a>
+								{/each}
+							</div>
+						{/if}
+					</div>
+				{/if}
 
 				{#if ($models ?? []).length > 0 && (($settings?.pinnedModels ?? []).length > 0 || $config?.default_pinned_models)}
 					<Folder

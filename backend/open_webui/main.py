@@ -733,6 +733,99 @@ app.add_middleware(
 
 app.mount('/ws', socket_app)
 
+# Uncensored AI Studio — unified sidebar entry.
+# The Studio frontend (served at /studio) is browser-mode, so every request it
+# makes is root-relative ("/api/...", "/v1/...", "/sdapi/..."). A same-origin
+# <iframe> therefore needs those prefixes forwarded to the studio container,
+# not to Open WebUI's own /api.
+STUDIO_UPSTREAM = os.environ.get('STUDIO_UPSTREAM', '').strip()
+if STUDIO_UPSTREAM:
+    STUDIO_UPSTREAM = STUDIO_UPSTREAM.rstrip('/')
+
+
+def _studio_upstream_url(path: str) -> str | None:
+    if not STUDIO_UPSTREAM:
+        return None
+    return f'{STUDIO_UPSTREAM}{path}'
+
+
+studio_http_client = None
+if STUDIO_UPSTREAM:
+    import httpx
+
+    studio_http_client = httpx.AsyncClient(
+        base_url=STUDIO_UPSTREAM, timeout=httpx.Timeout(30.0, connect=10.0), follow_redirects=True
+    )
+
+
+@app.api_route(
+    '/studio/api/{path:path}',
+    methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'],
+)
+async def studio_api_proxy(path: str, request: Request):
+    """Reverse-proxy /studio/api/* -> studio management API (serve.cjs)."""
+    if studio_http_client is None:
+        raise HTTPException(status_code=503, detail='Studio upstream is not configured')
+    return await _studio_proxy_request(studio_http_client, f'/api/{path}', request)
+
+
+@app.api_route(
+    '/studio/v1/{path:path}',
+    methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'],
+)
+async def studio_v1_proxy(path: str, request: Request):
+    """Reverse-proxy /studio/v1/* -> studio LLM/image OpenAI-compatible API."""
+    if studio_http_client is None:
+        raise HTTPException(status_code=503, detail='Studio upstream is not configured')
+    return await _studio_proxy_request(studio_http_client, f'/v1/{path}', request)
+
+
+@app.api_route(
+    '/studio/sdapi/{path:path}',
+    methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'],
+)
+async def studio_sdapi_proxy(path: str, request: Request):
+    """Reverse-proxy /studio/sdapi/* -> studio stable-diffusion.cpp API."""
+    if studio_http_client is None:
+        raise HTTPException(status_code=503, detail='Studio upstream is not configured')
+    return await _studio_proxy_request(studio_http_client, f'/sdapi/{path}', request)
+
+
+async def _studio_proxy_request(client, upstream_path: str, request: Request):
+    req_headers = {}
+    for key, value in request.headers.items():
+        if key.lower() in {'host', 'connection', 'content-length', 'transfer-encoding'}:
+            continue
+        req_headers[key] = value
+
+    body = await request.body()
+    upstream_req = client.build_request(
+        request.method,
+        upstream_path,
+        content=body if body else None,
+        headers=req_headers,
+        params=dict(request.query_params),
+    )
+    try:
+        upstream_res = await client.send(upstream_req, stream=True)
+    except Exception as e:
+        logger.error(f'Studio proxy request failed: {e}')
+        raise HTTPException(status_code=502, detail=f'Studio is unreachable: {e}')
+
+    res_headers = {}
+    for key, value in upstream_res.headers.items():
+        if key.lower() in {'content-length', 'transfer-encoding', 'connection'}:
+            continue
+        res_headers[key] = value
+    res_headers['X-Studio-Proxy'] = '1'
+
+    return StreamingResponse(
+        upstream_res.aiter_raw(),
+        status_code=upstream_res.status_code,
+        headers=res_headers,
+        media_type=upstream_res.headers.get('content-type'),
+    )
+
 
 app.include_router(ollama.router, prefix='/ollama', tags=['ollama'])
 app.include_router(openai.router, prefix='/openai', tags=['openai'])
@@ -1937,6 +2030,7 @@ async def get_app_config(request: Request):
                     'enable_pyodide_file_persistence': ENABLE_PYODIDE_FILE_PERSISTENCE,
                     'enable_public_active_users_count': ENABLE_PUBLIC_ACTIVE_USERS_COUNT,
                     'enable_easter_eggs': ENABLE_EASTER_EGGS,
+                    'enable_studio': bool(STUDIO_UPSTREAM),
                     'enable_direct_connections': config.get('direct.enable'),
                     'enable_folders': config.get('folders.enable'),
                     'folder_max_file_count': config.get('folders.max_file_count'),
@@ -2618,29 +2712,58 @@ def swagger_ui_html(*args, **kwargs):
 
 applications.get_swagger_ui_html = swagger_ui_html
 
-# Uncensored AI Studio (React) frontend — served under /studio when built (app/dist).
-STUDIO_DIST_DIR = Path(
-    os.environ.get('STUDIO_DIST_DIR', str(Path(__file__).resolve().parents[2] / 'studio' / 'app' / 'dist'))
-)
+# Uncensored AI Studio (React) frontend.
+#
+# In the container topology the Studio build lives inside the studio container
+# (its 249 GB of models/backends are excluded from this image's build context),
+# so the UI itself is proxied from the studio service, not served from disk.
+# /studio/api, /studio/v1 and /studio/sdapi are handled by the reverse-proxy
+# routes registered above; everything else under /studio is the SPA.
+
+
+@app.get('/studio/{path:path}')
+async def studio_spa_proxy(path: str):
+    """Serve the Studio SPA (index.html + assets) from the studio container."""
+    if studio_http_client is None:
+        raise HTTPException(status_code=503, detail='Studio upstream is not configured')
+
+    asset_path = f'/{"" if not path else path}'
+    try:
+        upstream_res = await studio_http_client.get(asset_path)
+    except Exception as e:
+        logger.error(f'Studio SPA request failed: {e}')
+        raise HTTPException(status_code=502, detail=f'Studio is unreachable: {e}')
+
+    if upstream_res.status_code >= 400:
+        # SPA fallback: unknown sub-routes resolve to index.html
+        try:
+            index_res = await studio_http_client.get('/')
+        except Exception as e:
+            logger.error(f'Studio SPA index request failed: {e}')
+            raise HTTPException(status_code=502, detail=f'Studio is unreachable: {e}')
+        return Response(
+            content=index_res.content,
+            media_type='text/html',
+            headers={'X-Studio-Proxy': '1'},
+        )
+
+    content_type = upstream_res.headers.get('content-type')
+    if not content_type:
+        guessed, _ = mimetypes.guess_type(asset_path)
+        content_type = guessed or 'application/octet-stream'
+
+    return Response(
+        content=upstream_res.content,
+        media_type=content_type,
+        headers={'X-Studio-Proxy': '1'},
+    )
+
 
 if os.path.exists(FRONTEND_BUILD_DIR):
     mimetypes.add_type('text/javascript', '.js')
     pyodide_dir = FRONTEND_BUILD_DIR / 'pyodide'
     if os.path.exists(pyodide_dir):
         app.mount('/pyodide', CORSStaticFiles(directory=pyodide_dir), name='pyodide')
-
-    if STUDIO_DIST_DIR.exists():
-        # Unified project: Open WebUI on '/', Uncensored AI Studio UI on '/studio'.
-        app.mount(
-            '/studio',
-            SPAStaticFiles(directory=str(STUDIO_DIST_DIR), html=True),
-            name='studio-spa-static-files',
-        )
-        log.info(f"Uncensored AI Studio UI mounted at /studio from '{STUDIO_DIST_DIR}'")
-    else:
-        log.info(
-            f"Uncensored AI Studio UI build not found at '{STUDIO_DIST_DIR}' (build studio/app/frontend to enable /studio)"
-        )
 
     app.mount(
         '/',
