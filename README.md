@@ -225,6 +225,11 @@ docker compose up -d --build
 docker compose down
 ```
 
+То же самое делает `./docker-run.sh` — это рекомендуемая точка входа: он
+проверяет наличие `.env` и плагина Compose, затем вызывает
+`docker compose up -d --build --pull always` и ждёт готовности `open-webui`
+(подробности — в [START.md](START.md)).
+
 Тома `open-webui` и `neo4j-data` объявлены `external` и привязаны к существующим
 `open-webui-rus_open-webui` / `open-webui-rus_neo4j-data` — поэтому переезд с
 `docker-run.sh` на compose **не теряет** `webui.db`, `.webui_secret_key` (сессии
