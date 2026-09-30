@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { page } from '$app/stores';
+	import { showSidebar } from '$lib/stores';
 
 	// Studio tabs (App.jsx activeTab values) that can be opened via /studio?tab=<name>
 	const STUDIO_TABS = [
@@ -51,7 +52,11 @@
 	onDestroy(() => window.removeEventListener('message', onMessage));
 </script>
 
-<div class="flex flex-col w-full h-full overflow-hidden">
+<div
+	class="flex flex-col w-full h-full overflow-hidden {$showSidebar
+		? 'md:max-w-[calc(100%-var(--sidebar-width))]'
+		: ''}"
+>
 	<iframe
 		bind:this={iframeEl}
 		src={studioUrl}
