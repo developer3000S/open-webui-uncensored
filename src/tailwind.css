@@ -91,3 +91,30 @@
 }
 
 @custom-variant hover (&:hover);
+
+/*
+  Accent utilities backed by --accent-primary / --accent-secondary, so the
+  top status bar's palette picker actually restyles the UI. Fall back to the
+  project's default indigo when no accent theme is applied.
+*/
+@utility bg-primary {
+	background-color: var(--accent-primary, #6366f1);
+}
+@utility bg-primary-soft {
+	background-color: var(--accent-primary-soft, rgb(99 102 241 / 0.1));
+}
+@utility bg-secondary {
+	background-color: var(--accent-secondary, #38bdf8);
+}
+@utility text-primary {
+	color: var(--accent-primary, #6366f1);
+}
+@utility text-secondary {
+	color: var(--accent-secondary, #38bdf8);
+}
+@utility border-primary {
+	border-color: var(--accent-primary, #6366f1);
+}
+@utility ring-primary {
+	--tw-ring-color: var(--accent-primary, #6366f1);
+}

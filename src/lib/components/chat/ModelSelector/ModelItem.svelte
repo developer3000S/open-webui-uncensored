@@ -16,6 +16,7 @@
 	import { toast } from 'svelte-sonner';
 	import Tag from '$lib/components/icons/Tag.svelte';
 	import Label from '$lib/components/icons/Label.svelte';
+	import Sparkles from '$lib/components/icons/Sparkles.svelte';
 
 	const i18n = getContext('i18n');
 
@@ -183,6 +184,12 @@
 									clip-rule="evenodd"
 								/>
 							</svg>
+						</div>
+					</Tooltip>
+				{:else if item.model.connection_type === 'studio'}
+					<Tooltip content={`${$i18n.t('Studio')}`}>
+						<div class="translate-y-[1px]">
+							<Sparkles className="size-3" strokeWidth="2" />
 						</div>
 					</Tooltip>
 				{:else if item.model.connection_type === 'external'}

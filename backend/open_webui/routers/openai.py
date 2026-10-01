@@ -75,6 +75,21 @@ log = logging.getLogger(__name__)
 _STRIP_PROXY_HEADERS = frozenset({'Content-Encoding', 'Content-Length', 'Transfer-Encoding'})
 
 
+def _is_studio_url(url: str) -> bool:
+    """True when *url* points at the Uncensored AI Studio LLM endpoint.
+
+    The studio is reachable over the shared stack network as
+    ``http://uncensored-studio:<STUDIO_LLM_PORT>/v1``; the host part is stable,
+    so matching on it keeps the check independent of the configured port.
+    """
+    if not url:
+        return False
+    try:
+        return urlparse(url).hostname == 'uncensored-studio'
+    except Exception:
+        return False
+
+
 def _clean_proxy_headers(raw_headers) -> dict:
     """Return a copy of *raw_headers* with stale encoding headers removed."""
     return {k: v for k, v in raw_headers.items() if k not in _STRIP_PROXY_HEADERS}
@@ -498,6 +513,11 @@ async def get_all_models_responses(request: Request, user: UserModel) -> list:
             )
 
             connection_type = api_config.get('connection_type', 'external')
+            # The Uncensored AI Studio LLM endpoint is registered as an ordinary
+            # OpenAI connection, but the model picker groups it under "Studio".
+            # Tag it here so the frontend filter stays a pure UI concern.
+            if _is_studio_url(url):
+                connection_type = 'studio'
             prefix_id = api_config.get('prefix_id', None)
             tags = api_config.get('tags', [])
             provider = api_config.get('provider', '')
@@ -613,7 +633,8 @@ async def get_all_models(request: Request, user: UserModel) -> dict[str, list]:
                             'name': model.get('name', model_id),
                             'owned_by': 'openai',
                             'openai': model,
-                            'connection_type': model.get('connection_type', 'external'),
+                            'connection_type': model.get('connection_type')
+                            or ('studio' if _is_studio_url(base_url) else 'external'),
                             'provider': provider,
                             'urlIdx': idx,
                         }

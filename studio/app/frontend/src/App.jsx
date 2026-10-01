@@ -64,6 +64,9 @@ function App() {
       if (STUDIO_TABS.includes(tab)) setActiveTab(tab);
     };
     window.addEventListener("message", onMessage);
+    // Announce readiness so the embedding page re-sends the pending tab
+    // instead of racing with React mount.
+    window.parent?.postMessage({ type: "studio:ready" }, window.location.origin);
     return () => window.removeEventListener("message", onMessage);
   }, []);
 

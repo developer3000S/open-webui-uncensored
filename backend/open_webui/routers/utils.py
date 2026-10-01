@@ -110,3 +110,16 @@ async def download_db(user=Depends(get_admin_user)):
         media_type='application/octet-stream',
         filename='webui.db',
     )
+
+
+@router.get('/telemetry')
+async def get_telemetry(user=Depends(get_verified_user)):
+    """Host CPU/memory telemetry for the chat top status bar."""
+    import psutil
+
+    vm = psutil.virtual_memory()
+    return {
+        'cpu_usage': round(psutil.cpu_percent(interval=None), 1),
+        'ram_used_gb': round(vm.used / 1024**3, 1),
+        'ram_total_gb': round(vm.total / 1024**3, 1),
+    }

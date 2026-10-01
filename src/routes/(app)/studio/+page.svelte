@@ -19,9 +19,7 @@
 	let tab: StudioTab | null = null;
 	$: {
 		const t = $page.url.searchParams.get('tab');
-		tab = (STUDIO_TABS as readonly string[]).includes(t ?? '')
-			? (t as StudioTab)
-			: null;
+		tab = (STUDIO_TABS as readonly string[]).includes(t ?? '') ? (t as StudioTab) : null;
 	}
 
 	let iframeEl: HTMLIFrameElement | null = null;
@@ -34,6 +32,12 @@
 		if (!iframeEl?.contentWindow || !tab) return;
 		iframeEl.contentWindow.postMessage({ type: 'studio:tab', tab }, location.origin);
 	};
+
+	// The iframe loads once and is never reloaded on navigation, so a sidebar
+	// click only changes `tab` — the switch must be pushed to the iframe here.
+	$: if (iframeEl && tab) {
+		requestTabSwitch();
+	}
 
 	const onIframeLoad = () => {
 		requestTabSwitch();
