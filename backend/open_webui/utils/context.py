@@ -122,7 +122,11 @@ def get_model_context_length(model: dict) -> int | None:
       1. An explicit limit set on the Open WebUI model record itself.
       2. An explicit limit configured on the connection (`context_length`).
       3. The engine's live advertised window (llama.cpp `meta.n_ctx`,
-         Ollama `model_info.<arch>.context_length`).
+         Ollama `model_info.<arch>.context_length`) — the window the engine
+         was actually started with, so it outranks any stale record value.
+      4. The value published on the model record, which is what the UI
+         displays: merged OpenAI models carry the engine advertisement here
+         and presets inherit their base model's window.
 
     Returns None when nothing is known — callers must treat that as "no
     information" and fall back to their existing behaviour rather than
@@ -175,6 +179,13 @@ def get_model_context_length(model: dict) -> int | None:
         limit = _extract_meta_context(openai_model)
         if limit:
             return _clamp_context(limit)
+
+    # 4. The record's own published value — a hint that is only reached when
+    # the engine advertised nothing (external gateways) or the record was
+    # built away from the live engine (presets).
+    limit = _extract_kv_context(model)
+    if limit:
+        return _clamp_context(limit)
 
     return None
 

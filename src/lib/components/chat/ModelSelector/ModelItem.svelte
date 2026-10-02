@@ -123,6 +123,22 @@
 						</div>
 					{/if}
 				{/if}
+				{#if item.model?.context_length}
+					<div class="flex items-center translate-y-[0.5px]">
+						<Tooltip
+							content={$i18n.t('Context window: {{N}} tokens', { N: item.model.context_length })}
+							className="self-end"
+						>
+							<span
+								class="text-xs font-medium text-gray-600 dark:text-gray-400 line-clamp-1"
+							>
+								{Math.round(item.model.context_length / 1024) >= 1
+									? `${(item.model.context_length / 1024).toFixed(0)}K`
+									: item.model.context_length}
+							</span>
+						</Tooltip>
+					</div>
+				{/if}
 
 				{#if item.model.loaded}
 					<div class="flex items-center translate-y-[0.5px] px-0.5">

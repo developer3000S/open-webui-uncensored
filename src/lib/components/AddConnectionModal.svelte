@@ -48,6 +48,7 @@
 	let enable = true;
 	let apiVersion = '';
 	let apiType = ''; // '' = chat completions (default), 'responses' = Responses API
+	let contextLength = '';
 
 	let headers = '';
 
@@ -194,7 +195,8 @@
 				...(provider ? { provider } : {}),
 				...(!ollama && azure ? { azure: true } : {}),
 				...(azure ? { api_version: apiVersion } : {}),
-				...(apiType ? { api_type: apiType } : {})
+				...(apiType ? { api_type: apiType } : {}),
+				...(contextLength ? { context_length: Number(contextLength) } : {})
 			}
 		};
 
@@ -209,6 +211,7 @@
 		prefixId = '';
 		tags = [];
 		modelIds = [];
+		contextLength = '';
 	};
 
 	const init = () => {
@@ -225,6 +228,7 @@
 			tags = connection.config?.tags ?? [];
 			prefixId = connection.config?.prefix_id ?? '';
 			modelIds = connection.config?.model_ids ?? [];
+			contextLength = connection.config?.context_length ?? '';
 
 			if (ollama) {
 				connectionType = connection.config?.connection_type ?? 'local';
@@ -487,6 +491,36 @@
 											id="prefix-id-input"
 											bind:value={prefixId}
 											placeholder={$i18n.t('Prefix ID')}
+											autocomplete="off"
+										/>
+									</Tooltip>
+								</div>
+							</div>
+						</div>
+
+						<div class="flex gap-2 mt-2">
+							<div class="flex flex-col w-full">
+								<label
+									for="context-length-input"
+									class={`mb-0.5 text-xs text-gray-500
+								${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : ''}`}
+									>{$i18n.t('Context Length')}</label
+								>
+
+								<div class="flex-1">
+									<Tooltip
+										content={$i18n.t(
+											'Maximum context window (in tokens) used when the connection does not report one - leave empty to detect automatically'
+										)}
+									>
+										<input
+											class={`w-full text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
+											type="number"
+											min="512"
+											step="512"
+											id="context-length-input"
+											bind:value={contextLength}
+											placeholder={$i18n.t('Auto')}
 											autocomplete="off"
 										/>
 									</Tooltip>

@@ -123,6 +123,30 @@ class TestDetection(unittest.TestCase):
         model['info'] = {'params': {'context_length': 8192}}
         self.assertEqual(get_model_context_length(model), 8192)
 
+    def test_top_level_field_is_read(self):
+        # Merged models publish the window on the record itself; presets
+        # inherit their base model's window there.  Detection must see it.
+        self.assertEqual(get_model_context_length({'id': 'x', 'context_length': 32768}), 32768)
+
+    def test_api_config_beats_top_level_field(self):
+        # A per-connection override outranks the value published on the record.
+        model = {'id': 'x', 'context_length': 32768, 'api_config': {'context_length': 8192}}
+        self.assertEqual(get_model_context_length(model), 8192)
+
+    def test_engine_value_beats_record_field(self):
+        # The record's own value is only a hint: the engine was started with
+        # a smaller window than the record advertises, and the request must be
+        # planned against the window that is actually loaded.
+        model = studio_model(n_ctx=4096)
+        model['context_length'] = 32768
+        self.assertEqual(get_model_context_length(model), 4096)
+
+    def test_record_field_used_when_engine_is_silent(self):
+        # External gateways advertise nothing usable, so the record's value
+        # (copied from the connection config or a preset) is the fallback.
+        model = {'id': 'external-model', 'context_length': 32768}
+        self.assertEqual(get_model_context_length(model), 32768)
+
     def test_budget_reserves_completion_tokens(self):
         model = studio_model(n_ctx=4096)
         self.assertEqual(get_prompt_token_budget(model), 4096 - 512)

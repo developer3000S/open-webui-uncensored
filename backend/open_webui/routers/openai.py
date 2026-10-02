@@ -658,12 +658,16 @@ async def get_all_models(request: Request, user: UserModel) -> dict[str, list]:
                             'urlIdx': idx,
                         }
 
-                        # llama.cpp connections advertise the window the engine
-                        # was actually started with (`meta.n_ctx`) — the most
-                        # accurate limit available without asking the admin.
+                        # The context window the request must be planned against.
+                        # Precedence: the engine's live advertisement first
+                        # (`meta.n_ctx` is the window llama.cpp was actually
+                        # started with), then the admin's per-connection override
+                        # for gateways that advertise nothing usable.
                         context_length = _meta_context_length(model.get('meta'))
                         if context_length:
                             merged['context_length'] = context_length
+                        elif api_config.get('context_length'):
+                            merged['context_length'] = api_config['context_length']
 
                         loaded = get_llamacpp_model_loaded_state(
                             model,
