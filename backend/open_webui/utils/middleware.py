@@ -66,6 +66,7 @@ from open_webui.utils.access_control import has_connection_access, has_permissio
 from open_webui.utils.access_control.files import get_accessible_folder_files
 from open_webui.utils.chat import generate_chat_completion
 from open_webui.utils.code_interpreter import execute_code_jupyter
+from open_webui.utils.context import estimate_request_tokens, get_model_context_length, trim_request_to_context
 from open_webui.utils.context_compaction import compact_messages_for_request
 from open_webui.utils.files import (
     convert_markdown_base64_images,
@@ -2828,6 +2829,26 @@ async def process_chat_payload(request, form_data, user, metadata, model):
     # Merge any duplicate system messages into a single message at position 0
     # to prevent template parsing errors with strict chat templates (e.g. Qwen)
     form_data['messages'] = merge_system_messages(form_data.get('messages', []))
+
+    # Context-aware trimming: now that tools, files, sources and the system
+    # prompt have all been assembled, we know the request's real token cost.
+    # If it exceeds the model's window, compact history → drop tools → drop
+    # the oldest messages, in that order. Models with an unknown window are
+    # left untouched.
+    try:
+        form_data = await trim_request_to_context(
+            form_data,
+            model,
+            request=request,
+            user=user,
+            metadata=metadata,
+            compact=compact_messages_for_request,
+        )
+        # Trimming can orphan tool calls from their results; re-pair so the
+        # engine doesn't reject the message list.
+        form_data['messages'] = sanitize_tool_pairs(form_data.get('messages', []))
+    except Exception:
+        log.exception('Context-aware trimming failed; continuing with the full request')
 
     return form_data, metadata, events
 

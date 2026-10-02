@@ -30,8 +30,9 @@ log = logging.getLogger(__name__)
 
 async def fetch_ollama_models(request: Request, user: UserModel = None):
     raw_ollama_models = await ollama.get_all_models(request, user=user)
-    return [
-        {
+    models = []
+    for model in raw_ollama_models['models']:
+        entry = {
             'id': model['model'],
             'name': model['name'],
             'object': 'model',
@@ -42,8 +43,28 @@ async def fetch_ollama_models(request: Request, user: UserModel = None):
             'connection_type': model.get('connection_type', 'local'),
             'tags': model.get('tags', []),
         }
-        for model in raw_ollama_models['models']
-    ]
+
+        # Ollama reports the trained window in `details.context_length`.
+        # `/api/tags` exposes it directly, so the limit is known without an
+        # extra `/api/show` round-trip per model.
+        context_length = _ollama_context_length(model)
+        if context_length:
+            entry['context_length'] = context_length
+
+        models.append(entry)
+    return models
+
+
+def _ollama_context_length(model: dict) -> int | None:
+    """Read `details.context_length` from an Ollama `/api/tags` entry."""
+    details = model.get('details')
+    if not isinstance(details, dict):
+        return None
+    try:
+        value = int(details.get('context_length'))
+    except (TypeError, ValueError):
+        return None
+    return value if value > 0 else None
 
 
 async def fetch_openai_models(request: Request, user: UserModel = None):
@@ -196,6 +217,11 @@ async def get_all_models(request, refresh: bool = False, user: UserModel = None)
                 **({'provider': base_model.get('provider')} if base_model and base_model.get('provider') else {}),
                 **({'loaded': base_model.get('loaded')} if base_model and base_model.get('loaded') is not None else {}),
             }
+
+            # A preset inherits the base model's advertised window unless the
+            # admin overrode it on the custom model record itself.
+            if base_model and base_model.get('context_length'):
+                model['context_length'] = base_model['context_length']
 
             info = custom_model.model_dump()
             if 'params' in info:

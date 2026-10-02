@@ -135,6 +135,10 @@ type BaseModel = {
 	name: string;
 	info?: ModelConfig;
 	owned_by: 'ollama' | 'openai' | 'arena';
+	// Context window (tokens) advertised by the engine — llama.cpp `meta.n_ctx`
+	// for studio connections, `details.context_length` for Ollama. Absent when
+	// the provider reports nothing (most external OpenAI-compatible gateways).
+	context_length?: number;
 };
 
 export interface OpenAIModel extends BaseModel {

@@ -90,6 +90,25 @@ def _is_studio_url(url: str) -> bool:
         return False
 
 
+def _meta_context_length(meta) -> int | None:
+    """Read the context window a llama.cpp engine was started with.
+
+    `meta.n_ctx` is the live window; `meta.n_ctx_train` is what the model was
+    trained for and is only a fallback.  Both are optional, and external
+    OpenAI-compatible gateways typically send neither.
+    """
+    if not isinstance(meta, dict):
+        return None
+    for key in ('n_ctx', 'n_ctx_train'):
+        try:
+            value = int(meta.get(key))
+        except (TypeError, ValueError):
+            continue
+        if value > 0:
+            return value
+    return None
+
+
 def _clean_proxy_headers(raw_headers) -> dict:
     """Return a copy of *raw_headers* with stale encoding headers removed."""
     return {k: v for k, v in raw_headers.items() if k not in _STRIP_PROXY_HEADERS}
@@ -638,6 +657,13 @@ async def get_all_models(request: Request, user: UserModel) -> dict[str, list]:
                             'provider': provider,
                             'urlIdx': idx,
                         }
+
+                        # llama.cpp connections advertise the window the engine
+                        # was actually started with (`meta.n_ctx`) — the most
+                        # accurate limit available without asking the admin.
+                        context_length = _meta_context_length(model.get('meta'))
+                        if context_length:
+                            merged['context_length'] = context_length
 
                         loaded = get_llamacpp_model_loaded_state(
                             model,
