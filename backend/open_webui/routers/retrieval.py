@@ -1594,6 +1594,17 @@ def get_splitter_length_function(
     return len
 
 
+def _deterministic_chunk_id(collection_name: str, file_id: str, offset: int) -> str:
+    """Stable id for a chunk kept between embedding runs.
+
+    `offset` is the chunk's split position (`start_index` metadata when present,
+    otherwise the doc's index in the chunk list).  The same file embedded with the
+    same splitter configuration always yields the same chunk ids, so a retried run
+    can detect which chunks already exist and embed only the remainder.
+    """
+    return str(uuid.uuid5(uuid.NAMESPACE_OID, f'{collection_name}:{file_id}:{offset}'))
+
+
 def save_docs_to_vector_db(
     request: Request,
     docs,
@@ -1831,71 +1842,144 @@ def save_docs_to_vector_db(
         # a dict keeps the mutation shared across threads without a lock.
         last_embedding_tick = {'at': time.monotonic()}
 
+        # How many chunks were already persisted through progressive batch inserts.  A
+        # timeout midway leaves the done ones in the collection, so the caller can keep
+        # the file searchable and resume the remainder instead of failing the upload.
+        persisted_any = {'n': 0}
+
+        # ── Progressive indexing ────────────────────────────────────────────────
+        # Chunks are embedded in batches and each batch is persisted to the vector
+        # store as soon as its vectors land, so a large document becomes searchable
+        # while the job is still running and an interrupted job keeps the chunks it
+        # already paid for.
+        #
+        # For file-backed documents the chunk ids are deterministic
+        # (`file_id` + split offset), which makes the job resumable: a retried run
+        # embeds only the chunks missing from the collection instead of paying the
+        # embedding server for vectors it already computed.
+        file_id = (metadata or {}).get('file_id')
+        resumable = bool(file_id)
+        embed_texts = [t.replace('\n', ' ') for t in texts]
+
+        if resumable:
+            try:
+                stored_ids = VECTOR_DB_CLIENT.query(collection_name=collection_name, filter={'file_id': file_id})
+                existing = set(stored_ids.ids[0]) if stored_ids and stored_ids.ids else set()
+            except Exception:
+                log.debug(f'could not list existing chunks in {collection_name}', exc_info=True)
+                existing = set()
+
+            chunk_ids = [
+                _deterministic_chunk_id(collection_name, file_id, metadatas[i].get('start_index', i))
+                for i in range(len(texts))
+            ]
+            to_embed = [(i, cid) for i, cid in enumerate(chunk_ids) if cid not in existing]
+
+            if not to_embed:
+                log.info(f'all {len(chunk_ids)} chunks already embedded for {collection_name}')
+                _report('embedding', 1.0, total_chunks)
+                return True
+        else:
+            # Web/text/other non-file sources keep legacy random ids and the
+            # single bulk insert below; there is nothing to resume.
+            to_embed = [(i, None) for i in range(len(texts))]
+
+        missing_texts = [embed_texts[i] for i, _ in to_embed]
+        missing_metadatas = [metadatas[i] for i, _ in to_embed]
+        missing_ids = [cid for _, cid in to_embed]
+
+        # Attribute each embedded text occurrence to its (chunk-id, metadata) without
+        # re-splitting.  Byte-identical repeats within one document share a prefix
+        # queue; their metadata differs only by `start_index`, which is cosmetic, so
+        # the tie order is irrelevant.
+        by_text: dict[str, list[tuple[str | None, dict]]] = {}
+        for tx, c_id, mx in zip(missing_texts, missing_ids, missing_metadatas):
+            by_text.setdefault(tx, []).append((c_id, mx))
+
+        pre_done = len(chunk_ids) - len(to_embed) if resumable else 0
+
+        def _report_progress(processed: int) -> None:
+            done = pre_done + processed
+            share = 0.80 if total_chunks else 1.0
+            _report('embedding', 0.10 + share * (done / max(total_chunks, 1)), done)
+
         def _on_embedding_progress(processed: int, total: int) -> None:
             last_embedding_tick['at'] = time.monotonic()
-            share = 0.80 if total else 1.0
-            _report('embedding', 0.10 + share * (processed / max(total, 1)), processed)
+            _report_progress(processed)
+
+        # Validated per batch, mirroring the old post-hoc checks that guarded the
+        # full-document insert.
+        expected_dim: int | None = None
+
+        async def _on_batch(batch_texts: list[str], batch_embeddings: list[list[float]]) -> None:
+            """Persist a finished batch immediately (progressive indexing).
+
+            Invoked (and awaited) by the embedding coroutine on the main event loop, so
+            the blocking vector-store write is deferred to a worker thread.  A failure
+            in one batch aborts the job, but the batches already written stay in the
+            collection and are skipped by a resume run.
+            """
+            nonlocal expected_dim
+            if not batch_texts:
+                return
+            last_embedding_tick['at'] = time.monotonic()
+            items: list[dict] = []
+            for text, vec in zip(batch_texts, batch_embeddings):
+                if not isinstance(vec, (list, tuple)):
+                    raise ValueError('Invalid embedding: must be list/array')
+                if expected_dim is None:
+                    if len(vec) == 0:
+                        raise ValueError('Embedding dimension is 0')
+                    expected_dim = len(vec)
+                elif len(vec) != expected_dim:
+                    raise ValueError(
+                        f'Embedding dimension mismatch: expected {expected_dim}, got {len(vec)}'
+                    )
+                if any(not isinstance(x, (int, float)) or (x != x) for x in vec):
+                    raise ValueError('Invalid embedding values: NaN/Inf or non-numeric')
+                queue = by_text.get(text)
+                if not queue:
+                    raise ValueError(f'Embedding batch returned unexpected text: {text[:40]!r}')
+                c_id, meta = queue.pop(0)
+                if not isinstance(meta, dict):
+                    raise ValueError('Invalid metadata: must be dict')
+                if 'file_id' not in meta:
+                    raise ValueError('Missing file_id in metadata')
+                # Non-resumable sources have no stable id yet — mint one here.
+                item_id = c_id if c_id is not None else str(uuid.uuid4())
+                items.append({'id': item_id, 'text': text, 'vector': vec, 'metadata': meta})
+
+            if items:
+                persisted_any['n'] += len(items)
+                await asyncio.to_thread(VECTOR_DB_CLIENT.insert, collection_name, items)
 
         future = asyncio.run_coroutine_threadsafe(
             embedding_function(
-                list(map(lambda x: x.replace('\n', ' '), texts)),
+                missing_texts,
                 prefix=RAG_EMBEDDING_CONTENT_PREFIX,
                 user=user,
                 on_progress=_on_embedding_progress if on_progress else None,
+                on_batch=_on_batch,
             ),
             request.app.state.main_loop,
         )
         try:
-            embeddings = await_embedding(
+            await_embedding(
                 future,
                 total_timeout=embedding_timeout,
                 idle_timeout=RAG_EMBEDDING_IDLE_TIMEOUT if on_progress else None,
                 last_progress_at=lambda: last_embedding_tick['at'],
             )
         except (EmbeddingStalledError, EmbeddingTimeoutError) as e:
+            if persisted_any['n'] > 0:
+                # Some batches already landed — tell the caller to keep the file
+                # searchable and resume the rest in the background.
+                raise EmbeddingIncompleteError(str(e), persisted_any['n']) from e
             raise TimeoutError(str(e)) from e
-        log.info(f'embeddings generated {len(embeddings)} for {len(texts)} items')
 
-        items = [
-            {
-                'id': str(uuid.uuid4()),
-                'text': text,
-                'vector': embeddings[idx],
-                'metadata': metadatas[idx],
-            }
-            for idx, text in enumerate(texts)
-        ]
-
-        # Validate embeddings and metadata before insertion
-        if not items:
-            raise ValueError('No items to insert')
-        expected_dim = len(items[0]['vector'])
-        if expected_dim == 0:
-            raise ValueError('Embedding dimension is 0')
-        for idx, item in enumerate(items):
-            vec = item['vector']
-            if not isinstance(vec, (list, tuple)):
-                raise ValueError(f'Invalid embedding for item {idx}: must be list/array')
-            if len(vec) != expected_dim:
-                raise ValueError(
-                    f'Embedding dimension mismatch for item {idx}: expected {expected_dim}, got {len(vec)}'
-                )
-            if any(not isinstance(x, (int, float)) or (x != x) for x in vec):
-                raise ValueError(f'Invalid embedding values for item {idx}: NaN/Inf or non-numeric')
-            meta = item['metadata']
-            if not isinstance(meta, dict):
-                raise ValueError(f'Invalid metadata for item {idx}: must be dict')
-            if 'file_id' not in meta:
-                raise ValueError(f'Missing file_id in metadata for item {idx}')
-
-        log.info(f'adding to collection {collection_name}')
-        _report('embedding', 0.90)
-        VECTOR_DB_CLIENT.insert(
-            collection_name=collection_name,
-            items=items,
-        )
-
-        log.info(f'added {len(items)} items to collection {collection_name}')
+        # Each batch was persisted as it landed; the collection now holds the
+        # `missing_texts` chunks and nothing more is needed.
+        log.info(f'added {len(missing_texts)} items to collection {collection_name}')
         _report('embedding', 1.0, total_chunks)
         return True
     except Exception as e:
@@ -1907,6 +1991,99 @@ class ProcessFileForm(BaseModel):
     file_id: str
     content: str | None = None
     collection_name: str | None = None
+
+
+class EmbeddingIncompleteError(Exception):
+    """Embedding was cut short (timeout/idle) after some batches were persisted.
+
+    Raised instead of a hard failure so the caller can keep the file searchable with
+    the chunks that already landed and resume the remainder in the background.
+    """
+
+    def __init__(self, message: str, persisted_chunks: int):
+        super().__init__(message)
+        self.persisted_chunks = persisted_chunks
+
+
+# (collection_name, file_id) pairs currently being finished off in the background.
+# Mirrors the graphrag worker's in-memory dedup: prevents two uploads / two resume
+# passes from re-embedding the same file concurrently.
+_embedding_resume_running: set[tuple[str, str]] = set()
+
+
+async def resume_incomplete_embedding(
+    request: Request,
+    file,
+    docs,
+    collection_name: str,
+    config,
+    metadata: dict,
+    user,
+    add: bool,
+    split: bool,
+) -> bool:
+    """Finish embedding the chunks a timed-out run left behind.
+
+    Runs detached on the main loop after `save_docs_to_vector_db` raised
+    `EmbeddingIncompleteError`.  Deterministic chunk ids make the retry resumable:
+    each pass queries the collection, skips already-persisted chunks and embeds only
+    the remainder, so a large document converges across passes instead of being
+    blocked on a single 3600s ceiling.
+
+    Terminates on its own: when a pass makes no progress (embedding server wedged),
+    when the file was cancelled, or when a pass reports full success — whichever
+    comes first.  Returns True only once the file is fully embedded.
+    """
+    key = (collection_name, file.id)
+    if key in _embedding_resume_running:
+        return False
+    _embedding_resume_running.add(key)
+    last_persisted = 0
+    try:
+        while True:
+            if await embedding_cancelled(file.id):
+                await cleanup_cancelled_embedding(collection_name, file.id)
+                return False
+            try:
+                result = await run_in_threadpool(
+                    save_docs_to_vector_db,
+                    request,
+                    docs=docs,
+                    collection_name=collection_name,
+                    config=config,
+                    metadata=metadata,
+                    add=add,
+                    split=split,
+                    user=user,
+                    on_progress=None,
+                    reuse_from=None,
+                )
+                if not result:
+                    return False
+                log.info(f'background resume completed for {file.id} in {collection_name}')
+                return True
+            except EmbeddingIncompleteError as e:
+                # A pass hit the ceiling after persisting some chunks.  As long as the
+                # collection is still growing, keep going; a wedged embedding server
+                # stalls on the same count, which is the stop signal.
+                if e.persisted_chunks <= last_persisted:
+                    log.error(
+                        f'background resume made no progress for {file.id} in '
+                        f'{collection_name} ({e.persisted_chunks} chunks); giving up'
+                    )
+                    return False
+                last_persisted = e.persisted_chunks
+                log.info(
+                    f'background resume for {file.id} in {collection_name}: '
+                    f'{e.persisted_chunks} chunks persisted so far, continuing'
+                )
+                await asyncio.sleep(1)
+            except Exception as e:
+                log.exception(f'background resume failed for {file.id} in {collection_name}')
+                log.exception(e)
+                return False
+    finally:
+        _embedding_resume_running.discard(key)
 
 
 async def embedding_cancelled(file_id: str) -> bool:
@@ -2340,6 +2517,70 @@ async def process_file(
                             }
                     else:
                         raise Exception('Error saving document to vector database')
+                except EmbeddingIncompleteError as e:
+                    # Embedding hit the operator-set ceiling after some batches had
+                    # already landed in the collection.  The document is still useful:
+                    # its persisted chunks are searchable right away, so keep it in the
+                    # knowledge base listing instead of failing the upload, and let a
+                    # detached task embed whatever remains in the background.
+                    log.info(
+                        f'embedding incomplete for {file.id}: {e} '
+                        f'({e.persisted_chunks} chunks persisted); keeping file searchable'
+                    )
+
+                    # Fresh session for the final update.
+                    async with get_async_db() as session:
+                        await Files.update_file_metadata_by_id(
+                            file.id,
+                            {'collection_name': collection_name},
+                            db=session,
+                        )
+                        await Files.update_file_data_by_id(
+                            file.id,
+                            {'status': 'completed', 'progress': None},
+                            db=session,
+                        )
+                        await Files.update_file_hash_by_id(file.id, hash, db=session)
+
+                    await publish_event(
+                        request,
+                        EVENTS.RETRIEVAL_CONTENT_PROCESSED,
+                        actor=user,
+                        subject_id=file.id,
+                        subject_type='file',
+                        data={'collection_name': collection_name, 'filename': file.filename},
+                    )
+
+                    # Detached: resume embeds only the chunks missing from the
+                    # collection (deterministic ids), one pass per embedding-timeout
+                    # ceiling, until the document is fully covered.  The upload
+                    # response must not wait for it — on CPU embedding this can still
+                    # take minutes.
+                    asyncio.create_task(
+                        resume_incomplete_embedding(
+                            request,
+                            file,
+                            docs,
+                            collection_name,
+                            config,
+                            {
+                                'file_id': file.id,
+                                'name': file.filename,
+                                'hash': hash,
+                            },
+                            user,
+                            add=(True if form_data.collection_name else False),
+                            split=(not chunks_pre_split),
+                        ),
+                        name=f'embedding-resume-{file.id}',
+                    )
+
+                    return {
+                        'status': True,
+                        'collection_name': collection_name,
+                        'filename': file.filename,
+                        'content': text_content,
+                    }
                 except Exception as e:
                     log.exception(e)
                     await publish_event(

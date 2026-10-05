@@ -1124,6 +1124,23 @@ async def _emit_progress(on_progress, processed: int, total: int) -> None:
         log.debug('embedding progress callback failed', exc_info=True)
 
 
+async def _emit_batch(on_batch, texts: list[str], embeddings: list[list[float]]) -> None:
+    """Hand a finished batch to the caller's hook, which may be sync or async.
+
+    Progressive indexing relies on this: the caller persists each batch as it lands
+    instead of waiting for the whole job, so an interrupted upload keeps the chunks
+    it already paid for. A failing hook must never abort an embedding job.
+    """
+    if on_batch is None:
+        return
+    try:
+        result = on_batch(texts, embeddings)
+        if inspect.isawaitable(result):
+            await result
+    except Exception:
+        log.debug('embedding batch callback failed', exc_info=True)
+
+
 def get_embedding_function(
     embedding_engine,
     embedding_model,
@@ -1137,7 +1154,7 @@ def get_embedding_function(
 ) -> Awaitable:
     if embedding_engine == '':
         # Sentence transformers: CPU-bound sync operation
-        async def async_embedding_function(query, prefix=None, user=None, on_progress=None):
+        async def async_embedding_function(query, prefix=None, user=None, on_progress=None, on_batch=None):
             # Deferred so a missing local model degrades RAG instead of crashing boot.
             if embedding_function is None:
                 raise ValueError(
@@ -1153,7 +1170,7 @@ def get_embedding_function(
                     **({'prompt': prefix} if prefix else {}),
                 ).tolist()
 
-            if not isinstance(query, list) or on_progress is None:
+            if not isinstance(query, list) or (on_progress is None and on_batch is None):
                 return await asyncio.to_thread(encode, query, prefix)
 
             # `encode` already batches internally on `embedding_batch_size`, so slicing on the
@@ -1162,8 +1179,10 @@ def get_embedding_function(
             embeddings = []
             for start in range(0, len(query), batch_size):
                 batch = query[start : start + batch_size]
-                embeddings.extend(await asyncio.to_thread(encode, batch, prefix))
+                batch_embeddings = await asyncio.to_thread(encode, batch, prefix)
+                embeddings.extend(batch_embeddings)
                 await _emit_progress(on_progress, len(embeddings), len(query))
+                await _emit_batch(on_batch, batch, batch_embeddings)
             return embeddings
 
         return async_embedding_function
@@ -1179,7 +1198,7 @@ def get_embedding_function(
             azure_api_version=azure_api_version,
         )
 
-        async def async_embedding_function(query, prefix=None, user=None, on_progress=None):
+        async def async_embedding_function(query, prefix=None, user=None, on_progress=None, on_batch=None):
             if isinstance(query, list):
                 # Create batches
                 batches = [query[i : i + embedding_batch_size] for i in range(0, len(query), embedding_batch_size)]
@@ -1203,7 +1222,7 @@ def get_embedding_function(
                     else:
                         batch_coros = [embedding_function(batch, prefix=prefix, user=user) for batch in batches]
 
-                    if on_progress is None:
+                    if on_progress is None and on_batch is None:
                         batch_results = await asyncio.gather(*batch_coros)
                     else:
                         # Results must stay aligned with the input order, so progress is counted
@@ -1216,6 +1235,10 @@ def get_embedding_function(
                             result = await coro
                             processed += len(batch)
                             await _emit_progress(on_progress, min(processed, total), total)
+                            # The batch is persisted here rather than after the gather so an
+                            # interrupted job keeps the chunks whose vectors already landed.
+                            if result is not None:
+                                await _emit_batch(on_batch, batch, result)
                             return result
 
                         batch_results = await asyncio.gather(
@@ -1226,9 +1249,12 @@ def get_embedding_function(
                     batch_results = []
                     processed = 0
                     for batch in batches:
-                        batch_results.append(await embedding_function(batch, prefix=prefix, user=user))
+                        batch_result = await embedding_function(batch, prefix=prefix, user=user)
+                        batch_results.append(batch_result)
                         processed += len(batch)
                         await _emit_progress(on_progress, min(processed, len(query)), len(query))
+                        if batch_result is not None:
+                            await _emit_batch(on_batch, batch, batch_result)
 
                 # Flatten results — raise if any batch failed
                 embeddings = []
