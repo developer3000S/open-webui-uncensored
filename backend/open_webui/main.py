@@ -611,9 +611,11 @@ async def initialize_runtime_config(app: FastAPI):
         'rag.embedding_model',
         'rag.openai.api_base_url',
         'rag.ollama.base_url',
+        'rag.mistral.base_url',
         'rag.azure_openai.base_url',
         'rag.openai.api_key',
         'rag.ollama.api_key',
+        'rag.mistral.api_key',
         'rag.azure_openai.api_key',
         'rag.embedding_batch_size',
         'rag.azure_openai.api_version',
@@ -632,18 +634,26 @@ async def initialize_runtime_config(app: FastAPI):
             rag_config.get('rag.openai.api_base_url')
             if embedding_engine == 'openai'
             else (
-                rag_config.get('rag.ollama.base_url')
-                if embedding_engine == 'ollama'
-                else rag_config.get('rag.azure_openai.base_url')
+                rag_config.get('rag.mistral.base_url')
+                if embedding_engine == 'mistral'
+                else (
+                    rag_config.get('rag.ollama.base_url')
+                    if embedding_engine == 'ollama'
+                    else rag_config.get('rag.azure_openai.base_url')
+                )
             )
         ),
         key=(
             rag_config.get('rag.openai.api_key')
             if embedding_engine == 'openai'
             else (
-                rag_config.get('rag.ollama.api_key')
-                if embedding_engine == 'ollama'
-                else rag_config.get('rag.azure_openai.api_key')
+                rag_config.get('rag.mistral.api_key')
+                if embedding_engine == 'mistral'
+                else (
+                    rag_config.get('rag.ollama.api_key')
+                    if embedding_engine == 'ollama'
+                    else rag_config.get('rag.azure_openai.api_key')
+                )
             )
         ),
         embedding_batch_size=rag_config.get('rag.embedding_batch_size'),

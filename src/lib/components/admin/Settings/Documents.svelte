@@ -57,6 +57,9 @@
 	let OllamaUrl = '';
 	let OllamaKey = '';
 
+	let MistralUrl = '';
+	let MistralKey = '';
+
 	let querySettings = {
 		template: '',
 		r: 0.0,
@@ -120,6 +123,10 @@
 			ollama_config: {
 				key: OllamaKey,
 				url: OllamaUrl
+			},
+			mistral_config: {
+				key: MistralKey,
+				url: MistralUrl
 			},
 			openai_config: {
 				key: OpenAIKey,
@@ -288,6 +295,9 @@
 
 			OllamaKey = embeddingConfig.ollama_config.key;
 			OllamaUrl = embeddingConfig.ollama_config.url;
+
+			MistralKey = embeddingConfig.mistral_config.key;
+			MistralUrl = embeddingConfig.mistral_config.url;
 
 			AzureOpenAIKey = embeddingConfig.azure_openai_config.key;
 			AzureOpenAIUrl = embeddingConfig.azure_openai_config.url;
@@ -1057,6 +1067,8 @@
 												RAG_EMBEDDING_MODEL = 'text-embedding-3-small';
 											} else if (e.target.value === 'azure_openai') {
 												RAG_EMBEDDING_MODEL = 'text-embedding-3-small';
+											} else if (e.target.value === 'mistral') {
+												RAG_EMBEDDING_MODEL = 'mistral-embed';
 											} else if (e.target.value === '') {
 												RAG_EMBEDDING_MODEL = 'sentence-transformers/all-MiniLM-L6-v2';
 											}
@@ -1066,6 +1078,7 @@
 										<option value="ollama">{$i18n.t('Ollama')}</option>
 										<option value="openai">{$i18n.t('OpenAI')}</option>
 										<option value="azure_openai">{$i18n.t('Azure OpenAI')}</option>
+										<option value="mistral">{$i18n.t('Mistral')}</option>
 									</select>
 								</div>
 							</div>
@@ -1097,6 +1110,21 @@
 									<SensitiveInput
 										placeholder={$i18n.t('API Key')}
 										bind:value={OllamaKey}
+										required={false}
+									/>
+								</div>
+							{:else if RAG_EMBEDDING_ENGINE === 'mistral'}
+								<div class="my-0.5 flex gap-2 pr-2">
+									<input
+										class="flex-1 w-full text-sm bg-transparent outline-hidden"
+										placeholder={$i18n.t('API Base URL')}
+										bind:value={MistralUrl}
+										required
+									/>
+
+									<SensitiveInput
+										placeholder={$i18n.t('API Key')}
+										bind:value={MistralKey}
 										required={false}
 									/>
 								</div>
@@ -1207,7 +1235,7 @@
 							</div>
 						</div>
 
-						{#if RAG_EMBEDDING_ENGINE === 'ollama' || RAG_EMBEDDING_ENGINE === 'openai' || RAG_EMBEDDING_ENGINE === 'azure_openai'}
+						{#if RAG_EMBEDDING_ENGINE === 'ollama' || RAG_EMBEDDING_ENGINE === 'openai' || RAG_EMBEDDING_ENGINE === 'azure_openai' || RAG_EMBEDDING_ENGINE === 'mistral'}
 							<div class="  mb-2.5 flex w-full justify-between">
 								<div class="self-center text-xs font-medium">
 									<Tooltip

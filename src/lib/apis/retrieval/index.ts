@@ -187,6 +187,11 @@ type OpenAIConfigForm = {
 	url: string;
 };
 
+type MistralConfigForm = {
+	key: string;
+	url: string;
+};
+
 type AzureOpenAIConfigForm = {
 	key: string;
 	url: string;
@@ -195,6 +200,7 @@ type AzureOpenAIConfigForm = {
 
 type EmbeddingModelUpdateForm = {
 	openai_config?: OpenAIConfigForm;
+	mistral_config?: MistralConfigForm;
 	azure_openai_config?: AzureOpenAIConfigForm;
 	embedding_engine: string;
 	embedding_model: string;

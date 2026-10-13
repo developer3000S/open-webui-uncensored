@@ -927,6 +927,76 @@ async def agenerate_openai_batch_embeddings(
                 raise ValueError("Unexpected OpenAI embeddings response: missing 'data' key")
 
 
+def generate_mistral_batch_embeddings(
+    model: str,
+    texts: list[str],
+    url: str = 'https://api.mistral.ai/v1/embeddings',
+    key: str = '',
+    prefix: str = None,
+    user: UserModel = None,
+) -> list[list[float]]:
+    log.debug(f'generate_mistral_batch_embeddings:model {model} batch size: {len(texts)}')
+    json_data = {'input': texts, 'model': model}
+    if isinstance(RAG_EMBEDDING_PREFIX_FIELD_NAME, str) and isinstance(prefix, str):
+        json_data[RAG_EMBEDDING_PREFIX_FIELD_NAME] = prefix
+
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {key}',
+    }
+    if ENABLE_FORWARD_USER_INFO_HEADERS and user:
+        headers = include_user_info_headers(headers, user)
+
+    r = requests.post(
+        url,
+        headers=headers,
+        json=json_data,
+    )
+    r.raise_for_status()
+    data = r.json()
+    if 'data' in data:
+        return [elem['embedding'] for elem in data['data']]
+    else:
+        raise ValueError("Unexpected Mistral embeddings response: missing 'data' key")
+
+
+async def agenerate_mistral_batch_embeddings(
+    model: str,
+    texts: list[str],
+    url: str = 'https://api.mistral.ai/v1/embeddings',
+    key: str = '',
+    prefix: str = None,
+    user: UserModel = None,
+) -> list[list[float]]:
+    log.debug(f'agenerate_mistral_batch_embeddings:model {model} batch size: {len(texts)}')
+    form_data = {'input': texts, 'model': model}
+    if isinstance(RAG_EMBEDDING_PREFIX_FIELD_NAME, str) and isinstance(prefix, str):
+        form_data[RAG_EMBEDDING_PREFIX_FIELD_NAME] = prefix
+
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {key}',
+    }
+    if ENABLE_FORWARD_USER_INFO_HEADERS and user:
+        headers = include_user_info_headers(headers, user)
+
+    async with aiohttp.ClientSession(
+        trust_env=True, timeout=aiohttp.ClientTimeout(total=AIOHTTP_CLIENT_TIMEOUT)
+    ) as session:
+        async with session.post(
+            url,
+            headers=headers,
+            json=form_data,
+            ssl=AIOHTTP_CLIENT_SESSION_SSL,
+        ) as r:
+            r.raise_for_status()
+            data = await r.json()
+            if 'data' in data:
+                return [item['embedding'] for item in data['data']]
+            else:
+                raise ValueError("Unexpected Mistral embeddings response: missing 'data' key")
+
+
 def generate_azure_openai_batch_embeddings(
     model: str,
     texts: list[str],
@@ -1160,7 +1230,7 @@ def get_embedding_function(
                 raise ValueError(
                     'No embedding model is loaded. Set RAG_EMBEDDING_MODEL to a valid '
                     'SentenceTransformer model name, or configure an external '
-                    'RAG_EMBEDDING_ENGINE (ollama, openai, azure_openai).'
+                    'RAG_EMBEDDING_ENGINE (ollama, openai, azure_openai, mistral).'
                 )
 
             def encode(texts, prefix=None):
@@ -1186,7 +1256,7 @@ def get_embedding_function(
             return embeddings
 
         return async_embedding_function
-    elif embedding_engine in ['ollama', 'openai', 'azure_openai']:
+    elif embedding_engine in ['ollama', 'openai', 'azure_openai', 'mistral']:
         embedding_function = lambda query, prefix=None, user=None: generate_embeddings(
             engine=embedding_engine,
             model=embedding_model,
@@ -1323,6 +1393,13 @@ async def generate_embeddings(
             azure_api_version,
             prefix,
             user,
+        )
+        if embeddings is None:
+            return None
+        return embeddings[0] if isinstance(text, str) else embeddings
+    elif engine == 'mistral':
+        embeddings = await agenerate_mistral_batch_embeddings(
+            model, text if isinstance(text, list) else [text], url, key, prefix, user
         )
         if embeddings is None:
             return None

@@ -353,6 +353,8 @@ RETRIEVAL_CONFIG_KEYS = {
     'RAG_OLLAMA_BASE_URL': 'rag.ollama.base_url',
     'RAG_OPENAI_API_BASE_URL': 'rag.openai.api_base_url',
     'RAG_OPENAI_API_KEY': 'rag.openai.api_key',
+    'RAG_MISTRAL_BASE_URL': 'rag.mistral.base_url',
+    'RAG_MISTRAL_API_KEY': 'rag.mistral.api_key',
     'RAG_RERANKING_BATCH_SIZE': 'rag.reranking_batch_size',
     'RAG_RERANKING_ENGINE': 'rag.reranking_engine',
     'RAG_RERANKING_MODEL': 'rag.reranking_model',
@@ -460,6 +462,10 @@ async def get_embedding_config(request: Request, user=Depends(get_admin_user)):
             'url': config.RAG_OLLAMA_BASE_URL,
             'key': config.RAG_OLLAMA_API_KEY,
         },
+        'mistral_config': {
+            'url': config.RAG_MISTRAL_BASE_URL,
+            'key': config.RAG_MISTRAL_API_KEY,
+        },
         'azure_openai_config': {
             'url': config.RAG_AZURE_OPENAI_BASE_URL,
             'key': config.RAG_AZURE_OPENAI_API_KEY,
@@ -478,6 +484,11 @@ class OllamaConfigForm(BaseModel):
     key: str
 
 
+class MistralConfigForm(BaseModel):
+    url: str
+    key: str
+
+
 class AzureOpenAIConfigForm(BaseModel):
     url: str
     key: str
@@ -487,6 +498,7 @@ class AzureOpenAIConfigForm(BaseModel):
 class EmbeddingModelUpdateForm(BaseModel):
     openai_config: OpenAIConfigForm | None = None
     ollama_config: OllamaConfigForm | None = None
+    mistral_config: MistralConfigForm | None = None
     azure_openai_config: AzureOpenAIConfigForm | None = None
     RAG_EMBEDDING_ENGINE: str
     RAG_EMBEDDING_MODEL: str
@@ -527,6 +539,7 @@ async def update_embedding_config(request: Request, form_data: EmbeddingModelUpd
             'ollama',
             'openai',
             'azure_openai',
+            'mistral',
         ]:
             if form_data.openai_config is not None:
                 config.RAG_OPENAI_API_BASE_URL = form_data.openai_config.url
@@ -535,6 +548,10 @@ async def update_embedding_config(request: Request, form_data: EmbeddingModelUpd
             if form_data.ollama_config is not None:
                 config.RAG_OLLAMA_BASE_URL = form_data.ollama_config.url
                 config.RAG_OLLAMA_API_KEY = form_data.ollama_config.key
+
+            if form_data.mistral_config is not None:
+                config.RAG_MISTRAL_BASE_URL = form_data.mistral_config.url
+                config.RAG_MISTRAL_API_KEY = form_data.mistral_config.key
 
             if form_data.azure_openai_config is not None:
                 config.RAG_AZURE_OPENAI_BASE_URL = form_data.azure_openai_config.url
@@ -554,18 +571,26 @@ async def update_embedding_config(request: Request, form_data: EmbeddingModelUpd
                 config.RAG_OPENAI_API_BASE_URL
                 if config.RAG_EMBEDDING_ENGINE == 'openai'
                 else (
-                    config.RAG_OLLAMA_BASE_URL
-                    if config.RAG_EMBEDDING_ENGINE == 'ollama'
-                    else config.RAG_AZURE_OPENAI_BASE_URL
+                    config.RAG_MISTRAL_BASE_URL
+                    if config.RAG_EMBEDDING_ENGINE == 'mistral'
+                    else (
+                        config.RAG_OLLAMA_BASE_URL
+                        if config.RAG_EMBEDDING_ENGINE == 'ollama'
+                        else config.RAG_AZURE_OPENAI_BASE_URL
+                    )
                 )
             ),
             (
                 config.RAG_OPENAI_API_KEY
                 if config.RAG_EMBEDDING_ENGINE == 'openai'
                 else (
-                    config.RAG_OLLAMA_API_KEY
-                    if config.RAG_EMBEDDING_ENGINE == 'ollama'
-                    else config.RAG_AZURE_OPENAI_API_KEY
+                    config.RAG_MISTRAL_API_KEY
+                    if config.RAG_EMBEDDING_ENGINE == 'mistral'
+                    else (
+                        config.RAG_OLLAMA_API_KEY
+                        if config.RAG_EMBEDDING_ENGINE == 'ollama'
+                        else config.RAG_AZURE_OPENAI_API_KEY
+                    )
                 )
             ),
             config.RAG_EMBEDDING_BATCH_SIZE,
@@ -591,6 +616,10 @@ async def update_embedding_config(request: Request, form_data: EmbeddingModelUpd
             'ollama_config': {
                 'url': config.RAG_OLLAMA_BASE_URL,
                 'key': config.RAG_OLLAMA_API_KEY,
+            },
+            'mistral_config': {
+                'url': config.RAG_MISTRAL_BASE_URL,
+                'key': config.RAG_MISTRAL_API_KEY,
             },
             'azure_openai_config': {
                 'url': config.RAG_AZURE_OPENAI_BASE_URL,
@@ -1812,18 +1841,26 @@ def save_docs_to_vector_db(
                 config.RAG_OPENAI_API_BASE_URL
                 if config.RAG_EMBEDDING_ENGINE == 'openai'
                 else (
-                    config.RAG_OLLAMA_BASE_URL
-                    if config.RAG_EMBEDDING_ENGINE == 'ollama'
-                    else config.RAG_AZURE_OPENAI_BASE_URL
+                    config.RAG_MISTRAL_BASE_URL
+                    if config.RAG_EMBEDDING_ENGINE == 'mistral'
+                    else (
+                        config.RAG_OLLAMA_BASE_URL
+                        if config.RAG_EMBEDDING_ENGINE == 'ollama'
+                        else config.RAG_AZURE_OPENAI_BASE_URL
+                    )
                 )
             ),
             (
                 config.RAG_OPENAI_API_KEY
                 if config.RAG_EMBEDDING_ENGINE == 'openai'
                 else (
-                    config.RAG_OLLAMA_API_KEY
-                    if config.RAG_EMBEDDING_ENGINE == 'ollama'
-                    else config.RAG_AZURE_OPENAI_API_KEY
+                    config.RAG_MISTRAL_API_KEY
+                    if config.RAG_EMBEDDING_ENGINE == 'mistral'
+                    else (
+                        config.RAG_OLLAMA_API_KEY
+                        if config.RAG_EMBEDDING_ENGINE == 'ollama'
+                        else config.RAG_AZURE_OPENAI_API_KEY
+                    )
                 )
             ),
             config.RAG_EMBEDDING_BATCH_SIZE,

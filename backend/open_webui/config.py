@@ -1187,6 +1187,9 @@ RAG_OLLAMA_BASE_URL = os.getenv('RAG_OLLAMA_BASE_URL', OLLAMA_BASE_URL)
 
 RAG_OLLAMA_API_KEY = os.getenv('RAG_OLLAMA_API_KEY', '')
 
+RAG_MISTRAL_BASE_URL = os.getenv('RAG_MISTRAL_BASE_URL', 'https://api.mistral.ai/v1/embeddings')
+RAG_MISTRAL_API_KEY = os.getenv('RAG_MISTRAL_API_KEY', '')
+
 
 ENABLE_LOCAL_WEB_FETCH = (
     os.getenv(
@@ -2966,6 +2969,8 @@ DEFAULT_CONFIG = {
     'rag.azure_openai.api_version': RAG_AZURE_OPENAI_API_VERSION,
     'rag.ollama.base_url': RAG_OLLAMA_BASE_URL,
     'rag.ollama.api_key': RAG_OLLAMA_API_KEY,
+    'rag.mistral.base_url': RAG_MISTRAL_BASE_URL,
+    'rag.mistral.api_key': RAG_MISTRAL_API_KEY,
     'rag.youtube_loader_language': YOUTUBE_LOADER_LANGUAGE,
     'rag.youtube_loader_proxy_url': YOUTUBE_LOADER_PROXY_URL,
     'web.search.enable': ENABLE_WEB_SEARCH,
