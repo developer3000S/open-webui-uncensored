@@ -5,6 +5,7 @@
 
 	import Modal from '$lib/components/common/Modal.svelte';
 	import Spinner from '$lib/components/common/Spinner.svelte';
+	import { generateUUID } from '$lib/utils';
 	import DiffView from './DiffView.svelte';
 
 	import {
@@ -33,10 +34,10 @@
 	let result: { commit_sha?: string; pr_url?: string; pr_number?: string } | null = null;
 
 	// regenerate idempotency key whenever the dialog opens with a new changeset
-	let idempotencyKey = crypto.randomUUID();
+	let idempotencyKey = generateUUID();
 
 	$: if (show) {
-		branch = `coder/${(commitMessage || 'changes').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40) || crypto.randomUUID().slice(0, 8)}`;
+		branch = `coder/${(commitMessage || 'changes').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40) || generateUUID().slice(0, 8)}`;
 	}
 
 	const runPreview = async () => {
@@ -93,7 +94,7 @@
 		show = false;
 		preview = null;
 		result = null;
-		idempotencyKey = crypto.randomUUID();
+		idempotencyKey = generateUUID();
 	};
 </script>
 

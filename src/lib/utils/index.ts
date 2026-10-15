@@ -2159,3 +2159,41 @@ export const displayFileHandler = (
 		stores.showFileNavPath.set(path);
 	}
 };
+
+/**
+ * Generate an RFC-4122 v4 UUID that works in every context.
+ *
+ * `crypto.randomUUID` is only available in secure contexts (HTTPS or
+ * localhost). On plain-HTTP deployments (typical for self-hosted Open WebUI)
+ * it is undefined and calling it throws "crypto.randomUUID is not a
+ * function". Fall back to `crypto.getRandomValues`, then to Math.random.
+ */
+export const generateUUID = (): string => {
+	if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+		try {
+			return crypto.randomUUID();
+		} catch (_) {
+			/* fall through to manual generation */
+		}
+	}
+
+	const hex = '0123456789abcdef';
+	let uuid = '';
+	if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+		const bytes = new Uint8Array(32);
+		crypto.getRandomValues(bytes);
+		for (let i = 0; i < 32; i++) uuid += hex[bytes[i] % 16];
+	} else {
+		for (let i = 0; i < 32; i++) uuid += hex[Math.floor(Math.random() * 16)];
+	}
+
+	// set version (4) and variant (10xx) bits per RFC 4122
+	const variantNibble = ((parseInt(uuid.slice(16, 17), 16) & 0x3) | 0x8).toString(16);
+	return [
+		uuid.slice(0, 8),
+		uuid.slice(8, 12),
+		`4${uuid.slice(13, 16)}`,
+		`${variantNibble}${uuid.slice(17, 20)}`,
+		uuid.slice(20, 32)
+	].join('-');
+};
