@@ -15,7 +15,8 @@
 		disconnectGitHub,
 		validateCoderChangeset,
 		type CoderConnection,
-		type CoderChangeFile
+		type CoderChangeFile,
+		type CoderRepo
 	} from '$lib/apis/coder';
 	import { chatCompletion } from '$lib/apis/openai';
 
@@ -24,6 +25,7 @@
 	import CodeBracket from '$lib/components/icons/CodeBracket.svelte';
 	import ModelDropdown from '$lib/components/automations/ModelDropdown.svelte';
 	import RepoPanel from '$lib/components/coder/RepoPanel.svelte';
+	import RepositoryEnvironmentPanel from '$lib/components/coder/RepositoryEnvironmentPanel.svelte';
 	import ExportDialog from '$lib/components/coder/ExportDialog.svelte';
 
 	const i18n = getContext('i18n');
@@ -33,6 +35,11 @@
 	let coderEnabled = false;
 	let oauthConfigured = false;
 	let connection: CoderConnection = { connected: false };
+
+	// sub-navigation: workspace (chat) | environment (connected repositories)
+	type CoderTab = 'workspace' | 'environment';
+	let activeTab: CoderTab = 'workspace';
+	let environmentPanel: RepositoryEnvironmentPanel | undefined = undefined;
 
 	// repository context
 	let owner = '';
@@ -144,6 +151,16 @@ Rules:
 		}
 	};
 
+	// Selecting a repository in the Environment sub-section loads it for coding.
+	const handleSelectRepo = (event: CustomEvent) => {
+		const r = event.detail as CoderRepo;
+		owner = r.owner;
+		repo = r.name;
+		branch = r.default_branch ?? '';
+		attachments = [];
+		toast.success(`${r.full_name} — ${$i18n.t('repository loaded for coding')}`);
+	};
+
 	const removeAttachment = (path: string) => {
 		attachments = attachments.filter((a) => a.path !== path);
 	};
@@ -249,11 +266,15 @@ Rules:
 
 		// handle OAuth redirect params
 		const params = new URLSearchParams(window.location.search);
+		if (params.get('tab') === 'environment') {
+			activeTab = 'environment';
+		}
 		if (params.get('github_connected')) {
 			toast.success($i18n.t('GitHub account connected'));
 			// Reload connection BEFORE navigating — so the fresh mount shows connected state
 			await loadConnection();
-			goto('/coder', { replaceState: true });
+			activeTab = 'environment';
+			goto('/coder?tab=environment', { replaceState: true });
 		} else if (params.get('github_error')) {
 			const err = params.get('github_error');
 			toast.error(err === 'denied' ? $i18n.t('Authorization was cancelled') : $i18n.t('GitHub authorization failed'));
@@ -316,9 +337,29 @@ Rules:
 	{:else}
 		<!-- Header -->
 		<div class="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-800 shrink-0">
-			<div class="flex items-center gap-2 min-w-0">
-				<CodeBracket className="size-5 shrink-0 text-gray-500" />
-				<div class="font-semibold truncate">{$i18n.t('Coder')}</div>
+			<div class="flex items-center gap-3 min-w-0">
+				<div class="flex items-center gap-2 min-w-0">
+					<CodeBracket className="size-5 shrink-0 text-gray-500" />
+					<div class="font-semibold truncate">{$i18n.t('Coder')}</div>
+				</div>
+
+				<!-- Sub-navigation: Workspace / Environment -->
+				<div class="flex items-center gap-0.5 rounded-xl bg-gray-100 dark:bg-gray-800 p-0.5 text-xs shrink-0">
+					<button
+						type="button"
+						class="px-2.5 py-1 rounded-lg transition {activeTab === 'workspace'
+							? 'bg-white dark:bg-gray-700 shadow-sm font-medium text-black dark:text-white'
+							: 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}"
+						on:click={() => (activeTab = 'workspace')}>{$i18n.t('Workspace')}</button
+					>
+					<button
+						type="button"
+						class="px-2.5 py-1 rounded-lg transition {activeTab === 'environment'
+							? 'bg-white dark:bg-gray-700 shadow-sm font-medium text-black dark:text-white'
+							: 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}"
+						on:click={() => (activeTab = 'environment')}>{$i18n.t('Environment')}</button
+					>
+				</div>
 			</div>
 			<div class="flex items-center gap-2 text-xs text-gray-500 shrink-0">
 				<Github className="size-3.5" />
@@ -327,7 +368,73 @@ Rules:
 			</div>
 		</div>
 
-		<div class="flex flex-1 min-h-0">
+		{#if activeTab === 'environment'}
+			<!-- Sub-section: Environment — connected GitHub repositories -->
+			<div class="flex-1 min-h-0 overflow-y-auto scrollbar-thin">
+				<div class="max-w-3xl mx-auto px-4 py-6 space-y-6">
+					<div>
+						<div class="text-base font-semibold">{$i18n.t('Environment')}</div>
+						<div class="text-sm text-gray-500 mt-0.5">
+							{$i18n.t('Repositories connected to Coder for coding. Select a repository to load it and make it available for coding.')}
+						</div>
+					</div>
+
+					<!-- Connected GitHub account -->
+					<div class="rounded-2xl border border-gray-200 dark:border-gray-700 p-4 flex items-center gap-3">
+						<Github className="size-6 shrink-0" />
+						<div class="flex-1 min-w-0">
+							<div class="text-sm font-medium truncate">{connection.github_login}</div>
+							<div class="text-xs text-gray-500">{$i18n.t('GitHub account connected')}</div>
+						</div>
+						<button type="button" class="text-xs text-gray-500 hover:text-red-500 shrink-0" on:click={disconnect}>
+							{$i18n.t('Disconnect')}
+						</button>
+					</div>
+
+					<!-- Repository list -->
+					<div class="space-y-2">
+						<div class="flex items-center justify-between">
+							<div class="text-sm font-medium">{$i18n.t('Connected repositories')}</div>
+							<button
+								type="button"
+								class="text-xs px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+								on:click={() => environmentPanel?.refresh()}>{$i18n.t('Refresh')}</button
+							>
+						</div>
+
+						<RepositoryEnvironmentPanel
+							bind:this={environmentPanel}
+							{token}
+							selectedRepo={owner && repo ? `${owner}/${repo}` : ''}
+							on:select={handleSelectRepo}
+						/>
+
+						{#if owner && repo}
+							<div class="mt-4 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+								<div
+									class="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700"
+								>
+									<div class="text-xs font-medium truncate">
+										{$i18n.t('Loaded files of')} {owner}/{repo} @ {branch}
+									</div>
+									<button
+										type="button"
+										class="text-xs px-2.5 py-1 rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900 shrink-0"
+										on:click={() => {
+											activeTab = 'workspace';
+										}}>{$i18n.t('Open in workspace')}</button
+									>
+								</div>
+								<div class="h-[420px]">
+									<RepoPanel {token} bind:owner bind:repo bind:branch on:attach={handleAttach} />
+								</div>
+							</div>
+						{/if}
+					</div>
+				</div>
+			</div>
+		{:else}
+			<div class="flex flex-1 min-h-0">
 			<!-- Left: repository panel -->
 			<div class="w-[300px] shrink-0 border-r border-gray-100 dark:border-gray-800 hidden md:flex flex-col min-h-0">
 				<RepoPanel {token} bind:owner bind:repo bind:branch on:attach={handleAttach} />
@@ -489,13 +596,14 @@ Rules:
 			{/if}
 		</div>
 
-		<ExportDialog
-			bind:show={showExport}
-			{token}
-			{owner}
-			{repo}
-			baseBranch={branch}
-			changeset={{ files: changeset }}
-		/>
+			<ExportDialog
+				bind:show={showExport}
+				{token}
+				{owner}
+				{repo}
+				baseBranch={branch}
+				changeset={{ files: changeset }}
+			/>
+		{/if}
 	{/if}
 </div>

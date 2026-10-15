@@ -169,7 +169,14 @@
 			workspace: { label: 'Workspace', href: '/workspace', iconType: 'workspace' },
 			automations: { label: 'Automations', href: '/automations', iconType: 'automations' },
 			calendar: { label: 'Calendar', href: '/calendar', iconType: 'calendar' },
-			coder: { label: 'Coder', href: '/coder', iconType: 'coder' },
+			coder: {
+		label: 'Coder',
+		href: '/coder',
+		iconType: 'coder',
+		// Coder opens as a standalone application in a separate window
+		openInNewWindow: true,
+		windowFeatures: 'width=1400,height=900,resizable=yes,scrollbars=yes'
+	},
 			playground: { label: 'Playground', href: '/playground', iconType: 'playground' }
 		};
 		return items[id];
