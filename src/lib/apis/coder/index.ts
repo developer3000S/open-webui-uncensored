@@ -205,6 +205,32 @@ export const batchGetCoderFiles = async (
 	return handle(res);
 };
 
+export const searchCoderRepo = async (
+	token: string,
+	owner: string,
+	repo: string,
+	branch: string,
+	q: string,
+	paths: string[] = [],
+	maxResults = 15
+): Promise<{
+	query: string;
+	scanned_files: number;
+	considered_files: number;
+	matches: { path: string; hits: { line: number; snippet: string }[] }[];
+	errors: { path: string; message: string }[];
+}> => {
+	const params = new URLSearchParams({ owner, repo, branch, q, max_results: String(maxResults) });
+	if (paths.length > 0) params.set('paths', paths.join(','));
+	const res = await fetch(`${WEBUI_API_BASE_URL}/coder/search?${params.toString()}`, {
+		headers: {
+			Accept: 'application/json',
+			authorization: `Bearer ${token}`
+		}
+	});
+	return handle(res);
+};
+
 export const validateCoderChangeset = async (
 	token: string,
 	files: CoderChangeFile[]
