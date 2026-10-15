@@ -19,6 +19,7 @@ Endpoints (per technical specification Coder.md):
 """
 
 import logging
+import re
 import secrets
 import time
 from typing import Any
@@ -332,6 +333,84 @@ async def coder_files_batch(
         except Exception as exc:  # noqa: BLE001
             errors.append({'path': str(p), 'message': str(exc)})
     return {'files': files, 'errors': errors}
+
+
+@router.get('/search')
+async def coder_search(
+    request: Request,
+    owner: str,
+    repo: str,
+    branch: str,
+    q: str,
+    paths: str = '',
+    max_results: int = 15,
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    """Agent-style repository search (like Qwen Coder / OpenAI Codex / opencode grep tools).
+
+    Searches text content of the given files (or the whole repo tree when no paths
+    are provided) for a literal or regex query and returns matching line snippets.
+    """
+    await check_coder_permission(request, user)
+    if not (owner and repo and branch):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={'code': 'invalid_request', 'message': 'owner, repo and branch are required'})
+    try:
+        pattern = re.compile(q if len(q) <= 200 else q[:200], re.IGNORECASE)
+    except re.error:
+        pattern = re.compile(re.escape(q[:200]), re.IGNORECASE)
+
+    wanted = [p.strip() for p in paths.split(',') if p.strip()]
+    token = await _get_connection_token(user.id, db)
+
+    CODE_EXT = re.compile(r'\.(ts|tsx|js|jsx|mjs|cjs|py|go|rs|java|kt|scala|c|h|cpp|hpp|cs|rb|php|swift|lua|vue|svelte|sql|sh|bash|zsh|yaml|yml|json|toml|ini|cfg|md|txt|html|css|scss|less|xml|gradle|make|dockerfile)$', re.IGNORECASE)
+    SKIP_DIR = re.compile(r'(^|/)(node_modules|\.git|dist|build|out|vendor|venv|__pycache__|\.next|coverage|target)/', re.IGNORECASE)
+
+    try:
+        tree_entries = await GitHubClient.get_tree(token, owner, repo, branch)
+        candidates = [e['path'] for e in tree_entries if e.get('type') == 'blob' and not SKIP_DIR.search(e['path']) and CODE_EXT.search(e['path'])]
+        if wanted:
+            wset = set(wanted)
+            scoped = [p for p in candidates if p in wset]
+            if not scoped:
+                # fall back to raw requested paths even if extension filter excluded them
+                scoped = [p for p in wanted if not SKIP_DIR.search(p)]
+            candidates = scoped
+        candidates = candidates[:600]
+    except GitHubAPIError as exc:
+        raise HTTPException(status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY, detail={'code': exc.code, 'message': exc.message})
+
+    matches = []
+    errors = []
+    fetched = 0
+    for path in candidates:
+        if len(matches) >= max(1, min(max_results, 50)):
+            break
+        try:
+            safe_path = validate_path(path)
+            file = await GitHubClient.get_file(token, owner, repo, safe_path, branch)
+            fetched += 1
+            if file.get('binary'):
+                continue
+            lines = (file.get('content') or '').split('\n')
+            hit_lines = []
+            for i, line in enumerate(lines):
+                if pattern.search(line):
+                    start = max(0, i - 2)
+                    end = min(len(lines), i + 3)
+                    snippet = '\n'.join(f'{j+1}: {lines[j]}' for j in range(start, end))
+                    hit_lines.append({'line': i + 1, 'snippet': snippet[:1200]})
+                    if len(hit_lines) >= 3:
+                        break
+            if hit_lines:
+                matches.append({'path': safe_path, 'hits': hit_lines})
+        except ChangeSetValidationError as exc:
+            errors.append({'path': path, 'message': exc.message})
+        except GitHubAPIError as exc:
+            errors.append({'path': path, 'message': exc.message})
+        except Exception as exc:  # noqa: BLE001
+            errors.append({'path': path, 'message': str(exc)})
+    return {'query': q, 'scanned_files': fetched, 'considered_files': len(candidates), 'matches': matches, 'errors': errors}
 
 
 ############################

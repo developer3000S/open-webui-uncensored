@@ -4,6 +4,7 @@
 	import Sortable from 'sortablejs';
 
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import {
 		user,
 		chats,
@@ -34,6 +35,16 @@
 	import { onMount, getContext, tick, onDestroy } from 'svelte';
 
 	const i18n = getContext('i18n');
+
+	// Coder is a standalone application: when the user is on /coder (or opened it
+	// via window.open('/coder?standalone=1')) the main sidebar must stay hidden.
+	$: isCoderRoute = $page.url.pathname.startsWith('/coder');
+
+	// Force-hide the sidebar while the Coder route is active, and prevent it from
+	// being toggled back open there (see swipe handler and template guards below).
+	$: if (isCoderRoute && $showSidebar) {
+		showSidebar.set(false);
+	}
 
 	$: canImportChats = $user?.role === 'admin' || ($user?.permissions?.chat?.import ?? true);
 
@@ -519,7 +530,7 @@
 			if (touchend.screenX < touchstart.screenX) {
 				showSidebar.set(false);
 			}
-			if (touchend.screenX > touchstart.screenX) {
+			if (touchend.screenX > touchstart.screenX && !isCoderRoute) {
 				showSidebar.set(true);
 			}
 		}
@@ -602,6 +613,10 @@
 		});
 
 		showSidebar.set(!$mobile ? localStorage.sidebar === 'true' : false);
+		// Coder is a standalone app — never auto-restore the sidebar on /coder
+		if (isCoderRoute) {
+			showSidebar.set(false);
+		}
 
 		const unsubscribers = [
 			mobile.subscribe((value) => {
@@ -849,7 +864,7 @@
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 
-{#if $showSidebar}
+{#if $showSidebar && !isCoderRoute}
 	<div
 		class=" {$isApp
 			? ' ml-[4.5rem] md:ml-0'
@@ -888,7 +903,7 @@
 	}}
 />
 
-{#if !$mobile && !$showSidebar}
+{#if !$mobile && !$showSidebar && !isCoderRoute}
 	<div
 		class=" pt-[7px] pb-2 px-2 flex flex-col justify-between text-black dark:text-white hover:bg-gray-50/30 dark:hover:bg-gray-950/30 h-full z-10 transition-all border-e-[0.5px] border-gray-50 dark:border-gray-850/30"
 		id="sidebar"

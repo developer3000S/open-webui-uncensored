@@ -322,3 +322,12 @@ cypress/screenshots
 # Qwen Code session state (tmp, worktrees, agent transcripts), never project source
 .qwen/
 
+
+# Build artifacts (SvelteKit / Vite)
+.svelte-kit/
+/static/build/
+/vite-build/
+*.tsbuildinfo
+
+# Temporary patch scripts (dev tooling, not project source)
+.tmp_patch/
