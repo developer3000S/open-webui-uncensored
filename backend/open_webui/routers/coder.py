@@ -25,7 +25,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import RedirectResponse
-from open_webui.config import CODER_ENABLED, CODER_GITHUB_CLIENT_ID
+from open_webui.config import CODER_ENABLED, CODER_GITHUB_CLIENT_ID, WEBUI_URL
 from open_webui.constants import ERROR_MESSAGES
 from open_webui.internal.db import get_async_session
 from open_webui.models.coder import (
@@ -131,6 +131,30 @@ async def github_auth_start(request: Request, user=Depends(get_verified_user)):
     return {'url': authorize_url}
 
 
+def _coder_redirect_url(request: Request, query: str) -> str:
+    """Build an absolute redirect URL back to the /coder page.
+
+    A relative location ('/coder?...') breaks behind reverse proxies or when
+    the app is served under a path prefix — GitHub's OAuth flow requires an
+    absolute URL and browsers drop the query when the redirect target loses
+    the origin. Prefer WEBUI_URL, then standard proxy forwarding headers,
+    then the request URL itself.
+    """
+    base = (WEBUI_URL or '').strip().rstrip('/')
+    if not base:
+        forwarded_proto = request.headers.get('x-forwarded-proto', '').split(',')[0].strip()
+        forwarded_host = request.headers.get('x-forwarded-host', '').split(',')[0].strip()
+        if forwarded_host:
+            scheme = forwarded_proto or request.url.scheme
+            base = f'{scheme}://{forwarded_host}'
+            root_path = (getattr(request.app.state, 'ROOT_PATH', '') or '').strip('/')
+            if root_path:
+                base = f'{base}/{root_path}'
+        else:
+            base = str(request.base_url).rstrip('/')
+    return f'{base}/coder?{query}'
+
+
 @router.get('/github/auth/callback')
 async def github_auth_callback(
     request: Request,
@@ -139,14 +163,13 @@ async def github_auth_callback(
     error: str | None = None,
     db: AsyncSession = Depends(get_async_session),
 ):
-    frontend_base = '/coder'
     if error or not code or not state:
-        return RedirectResponse(url=f'{frontend_base}?github_error=denied', status_code=302)
+        return RedirectResponse(url=_coder_redirect_url(request, 'github_error=denied'), status_code=302)
 
     _prune_oauth_states()
     state_data = _oauth_states.pop(state, None)
     if not state_data:
-        return RedirectResponse(url=f'{frontend_base}?github_error=invalid_state', status_code=302)
+        return RedirectResponse(url=_coder_redirect_url(request, 'github_error=invalid_state'), status_code=302)
     user_id = state_data['user_id']
 
     try:
@@ -154,7 +177,7 @@ async def github_auth_callback(
         gh_user = await GitHubClient.get_user(token_data['access_token'])
     except GitHubAPIError as exc:
         log.exception('Coder GitHub OAuth callback failed')
-        return RedirectResponse(url=f'{frontend_base}?github_error=api_failure', status_code=302)
+        return RedirectResponse(url=_coder_redirect_url(request, 'github_error=api_failure'), status_code=302)
 
     encrypted = encrypt_secret(token_data['access_token'])
     await CoderGithubConnections.upsert(
@@ -167,7 +190,7 @@ async def github_auth_callback(
     )
     await CoderAudit.record(user_id=user_id, action='github_connect', target=gh_user['login'], db=db)
     await db.commit()
-    return RedirectResponse(url=f'{frontend_base}?github_connected=1', status_code=302)
+    return RedirectResponse(url=_coder_redirect_url(request, 'github_connected=1'), status_code=302)
 
 
 @router.get('/github/connection')

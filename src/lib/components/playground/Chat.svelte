@@ -17,7 +17,7 @@
 
 	import { chatCompletion } from '$lib/apis/openai';
 
-	import { splitStream } from '$lib/utils';
+	import { splitStream, generateUUID } from '$lib/utils';
 	import Collapsible from '../common/Collapsible.svelte';
 	import Dropdown from '../common/Dropdown.svelte';
 	import DropdownSub from '../common/DropdownSub.svelte';
@@ -223,7 +223,7 @@
 
 		// Add system message if present
 		if (system) {
-			const systemId = crypto.randomUUID();
+			const systemId = generateUUID();
 			messagesMap[systemId] = {
 				id: systemId,
 				parentId: null,
@@ -237,7 +237,7 @@
 
 		// Add conversation messages
 		for (const msg of messages) {
-			const msgId = crypto.randomUUID();
+			const msgId = generateUUID();
 
 			// Link parent to child
 			if (parentId && messagesMap[parentId]) {

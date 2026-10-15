@@ -2625,6 +2625,11 @@ async def get_manifest_json():
             'share_target': {
                 'action': '/',
                 'method': 'GET',
+                # GitHub OAuth and other form-encoded callbacks POST here,
+                # so the enctype must be declared explicitly. Without it
+                # browsers log "Manifest: Enctype should be set to either
+                # application/x-www-form-urlencoded or multipart/form-data".
+                'enctype': 'application/x-www-form-urlencoded',
                 'params': {'text': 'shared'},
             },
         }
