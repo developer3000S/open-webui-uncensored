@@ -2106,6 +2106,25 @@ AUTOMATION_MIN_INTERVAL = os.getenv('AUTOMATION_MIN_INTERVAL', '')
 
 AUTOMATION_AUTH_TOKEN_EXPIRES_IN = os.getenv('AUTOMATION_AUTH_TOKEN_EXPIRES_IN', '1h')
 
+# Coder section
+CODER_ENABLED = os.getenv('CODER_ENABLED', 'False').lower() == 'true'
+
+CODER_GITHUB_CLIENT_ID = os.getenv('CODER_GITHUB_CLIENT_ID', '')
+
+CODER_GITHUB_CLIENT_SECRET = os.getenv('CODER_GITHUB_CLIENT_SECRET', '')
+
+CODER_GITHUB_API_BASE_URL = os.getenv('CODER_GITHUB_API_BASE_URL', 'https://api.github.com')
+
+CODER_ENCRYPTION_KEY = os.getenv('CODER_ENCRYPTION_KEY', '')
+
+CODER_MAX_FILES_PER_CHANGESET = int(os.getenv('CODER_MAX_FILES_PER_CHANGESET', '20'))
+
+CODER_MAX_FILE_SIZE = int(os.getenv('CODER_MAX_FILE_SIZE', str(1 * 1024 * 1024)))
+
+CODER_MAX_TOTAL_DIFF_SIZE = int(os.getenv('CODER_MAX_TOTAL_DIFF_SIZE', str(3 * 1024 * 1024)))
+
+CODER_MAX_DIFF_LINES = int(os.getenv('CODER_MAX_DIFF_LINES', '4000'))
+
 ENABLE_NOTES = os.getenv('ENABLE_NOTES', 'True').lower() == 'true'
 
 ENABLE_USER_STATUS = os.getenv('ENABLE_USER_STATUS', 'True').lower() == 'true'
@@ -3135,6 +3154,7 @@ DEFAULT_CONFIG = {
     'automations.max_count': AUTOMATION_MAX_COUNT,
     'automations.min_interval': AUTOMATION_MIN_INTERVAL,
     'automations.auth_token_expires_in': AUTOMATION_AUTH_TOKEN_EXPIRES_IN,
+    'coder.enable': CODER_ENABLED,
     'notes.enable': ENABLE_NOTES,
     'users.enable_status': ENABLE_USER_STATUS,
     'evaluation.arena.enable': ENABLE_EVALUATION_ARENA_MODELS,

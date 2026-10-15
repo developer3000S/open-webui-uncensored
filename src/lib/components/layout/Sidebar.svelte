@@ -94,7 +94,7 @@
 	import Sparkles from '../icons/Sparkles.svelte';
 
 	const BREAKPOINT = 768;
-	const DEFAULT_PINNED_ITEMS = ['notes', 'workspace'];
+	const DEFAULT_PINNED_ITEMS = ['notes', 'coder', 'workspace'];
 
 	let scrollTop = 0;
 
@@ -154,6 +154,8 @@
 					$config?.features?.enable_calendar &&
 					($user?.role === 'admin' || $user?.permissions?.features?.calendar)
 				);
+			case 'coder':
+				return $config?.features?.enable_coder ?? false;
 			case 'playground':
 				return $user?.role === 'admin';
 			default:
@@ -167,6 +169,7 @@
 			workspace: { label: 'Workspace', href: '/workspace', iconType: 'workspace' },
 			automations: { label: 'Automations', href: '/automations', iconType: 'automations' },
 			calendar: { label: 'Calendar', href: '/calendar', iconType: 'calendar' },
+			coder: { label: 'Coder', href: '/coder', iconType: 'coder' },
 			playground: { label: 'Playground', href: '/playground', iconType: 'playground' }
 		};
 		return items[id];
@@ -996,6 +999,21 @@
 													d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"
 												/>
 											</svg>
+										{:else if itemId === 'coder'}
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												fill="none"
+												viewBox="0 0 24 24"
+												stroke-width="1.5"
+												stroke="currentColor"
+												class="size-4.5"
+												>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"
+												/>
+											</svg>
 										{:else if itemId === 'playground'}
 											<Code className="size-4.5" />
 										{/if}
@@ -1300,6 +1318,21 @@
 														stroke-linecap="round"
 														stroke-linejoin="round"
 														d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"
+													/>
+												</svg>
+											{:else if itemId === 'coder'}
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													fill="none"
+													viewBox="0 0 24 24"
+													stroke-width="1.5"
+													stroke="currentColor"
+													class="size-4.5"
+													>
+													<path
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"
 													/>
 												</svg>
 											{:else if itemId === 'playground'}
