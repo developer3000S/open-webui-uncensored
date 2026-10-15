@@ -64,7 +64,15 @@
 	let changeset: CoderChangeFile[] = [];
 	let changesetError: string | null = null;
 
-	let showExport = false;
+let showExport = false;
+
+// Coder runs as a standalone application when opened via window.open('/coder?standalone=1')
+// from the sidebar. In that mode we set a dedicated document title for the window.
+const isStandaloneWindow = browser && new URLSearchParams(window.location.search).get('standalone') === '1';
+
+$: if (browser) {
+document.title = isStandaloneWindow ? 'Coder' : `${$i18n.t('Coder')} — Open WebUI`;
+}
 
 	const CODER_MODEL_PATTERN = /(coder|codellama|starcoder|starpilot|deepseek|qwen.*code|codegeex|wizardcoder|magicoder|devstral|instructlab)/i;
 
@@ -274,7 +282,7 @@ Rules:
 			// Reload connection BEFORE navigating — so the fresh mount shows connected state
 			await loadConnection();
 			activeTab = 'environment';
-			goto('/coder?tab=environment', { replaceState: true });
+			goto('/coder?tab=environment&standalone=1', { replaceState: true });
 		} else if (params.get('github_error')) {
 			const err = params.get('github_error');
 			toast.error(err === 'denied' ? $i18n.t('Authorization was cancelled') : $i18n.t('GitHub authorization failed'));

@@ -152,7 +152,8 @@ def _coder_redirect_url(request: Request, query: str) -> str:
                 base = f'{base}/{root_path}'
         else:
             base = str(request.base_url).rstrip('/')
-    return f'{base}/coder?{query}'
+    # standalone=1 — Coder opens as a separate application window
+    return f'{base}/coder?standalone=1&{query}'
 
 
 @router.get('/github/auth/callback')
