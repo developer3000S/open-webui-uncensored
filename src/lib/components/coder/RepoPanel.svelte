@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext, onDestroy, createEventDispatcher } from 'svelte';
+	import { getContext, onMount, onDestroy, createEventDispatcher } from 'svelte';
 
 	import { toast } from 'svelte-sonner';
 
@@ -133,6 +133,15 @@
 	};
 
 	$: nodes = buildTree(tree);
+
+	onMount(async () => {
+		// Auto-load branches (and file tree) when the panel opens with a repo already selected
+		if (owner && repo) {
+			await loadBranches();
+		} else {
+			await searchRepos();
+		}
+	});
 
 	onDestroy(() => clearTimeout(repoSearchTimer));
 </script>

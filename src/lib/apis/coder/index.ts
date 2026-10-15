@@ -190,6 +190,21 @@ export const getCoderFile = async (
 	return handle(res);
 };
 
+export const batchGetCoderFiles = async (
+	token: string,
+	owner: string,
+	repo: string,
+	branch: string,
+	paths: string[]
+): Promise<{ files: { path: string; content: string }[]; errors: { path: string; message: string }[] }> => {
+	const res = await fetch(`${WEBUI_API_BASE_URL}/coder/files/batch`, {
+		method: 'POST',
+		headers: jsonHeaders(token),
+		body: JSON.stringify({ owner, repo, branch, paths })
+	});
+	return handle(res);
+};
+
 export const validateCoderChangeset = async (
 	token: string,
 	files: CoderChangeFile[]

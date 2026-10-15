@@ -14,9 +14,12 @@
 		getGitHubConnection,
 		disconnectGitHub,
 		validateCoderChangeset,
+		getCoderTree,
+		batchGetCoderFiles,
 		type CoderConnection,
 		type CoderChangeFile,
-		type CoderRepo
+		type CoderRepo,
+		type CoderTreeEntry
 	} from '$lib/apis/coder';
 	import { chatCompletion } from '$lib/apis/openai';
 
@@ -60,6 +63,14 @@
 	type Attachment = { path: string; content: string };
 	let attachments: Attachment[] = [];
 
+	// loaded repository workspace state — the model sees the full file list and key file contents
+	let repoTreeEntries: CoderTreeEntry[] = [];
+	let loadingRepoContext = false;
+
+	$: blobPaths = repoTreeEntries.filter((e) => e.type === 'blob').map((e) => e.path);
+	$: repoFileCount = blobPaths.length;
+	$: repoFileList = blobPaths.slice(0, 400).join('\n') || '(no files loaded yet)';
+
 	// current change set produced by the model
 	let changeset: CoderChangeFile[] = [];
 	let changesetError: string | null = null;
@@ -97,6 +108,7 @@ Rules:
 	const buildContextBlock = () => {
 		if (attachments.length === 0 && !(owner && repo)) return '';
 		let ctx = `\n\n<repository_context untrusted="true">\nrepo: ${owner}/${repo}\nbranch: ${branch}\n`;
+		ctx += `total_files_in_repo: ${repoFileCount}\nfile_list:\n${repoFileList}\n`;
 		for (const a of attachments) {
 			ctx += `\n--- FILE: ${a.path} ---\n${(a.content ?? '').slice(0, 40000)}\n`;
 		}
@@ -159,14 +171,65 @@ Rules:
 		}
 	};
 
-	// Selecting a repository in the Environment sub-section loads it for coding.
+	// Selecting a repository in the Environment sub-section loads it into the workspace.
 	const handleSelectRepo = (event: CustomEvent) => {
 		const r = event.detail as CoderRepo;
 		owner = r.owner;
 		repo = r.name;
 		branch = r.default_branch ?? '';
 		attachments = [];
+		repoTreeEntries = [];
 		toast.success(`${r.full_name} — ${$i18n.t('repository loaded for coding')}`);
+		// Load the repository directly into the Workspace (no intermediate panel)
+		activeTab = 'workspace';
+		loadRepoContext();
+	};
+
+	// Download the repository file tree and key files so the model actually sees them during coding
+	const loadRepoContext = async () => {
+		if (!(owner && repo && branch)) return;
+		loadingRepoContext = true;
+		try {
+			const res = await getCoderTree(token, owner, repo, branch);
+			repoTreeEntries = res.tree ?? [];
+			const blobs = repoTreeEntries.filter((e) => e.type === 'blob').map((e) => e.path);
+			const CODE_EXT = /\.(ts|tsx|js|jsx|py|go|rs|java|c|h|cpp|hpp|cs|rb|php|swift|kt|scala|vue|svelte|sql|sh)$/i;
+			const ROOT_DOC = /^(README|CONTRIBUTING|LICENSE|CHANGELOG|package\.json|pyproject\.toml|requirements\.txt|Cargo\.toml|go\.mod|pom\.xml|build\.gradle|Dockerfile|docker-compose\.ya?ml|Makefile)/i;
+			const isTest = /(^|\/)(tests?|spec|__tests__)\//i;
+			const picked: string[] = [];
+			const seen = new Set<string>();
+			const push = (p: string) => {
+				if (!seen.has(p) && !isTest.test(p)) {
+					seen.add(p);
+					picked.push(p);
+				}
+			};
+			for (const p of blobs) if (ROOT_DOC.test(p)) push(p);
+			for (const p of blobs) if (CODE_EXT.test(p)) push(p);
+			for (const p of blobs) push(p);
+			const paths = picked.slice(0, 25);
+			if (paths.length > 0) {
+				const batch = await batchGetCoderFiles(token, owner, repo, branch, paths);
+				const existing = new Set(attachments.map((a) => a.path));
+				attachments = [
+					...attachments,
+					...batch.files.filter((f) => !existing.has(f.path)).map((f) => ({ path: f.path, content: f.content }))
+				];
+			}
+		} catch (e: any) {
+			toast.error(e?.message ?? 'Failed to load repository into workspace');
+		} finally {
+			loadingRepoContext = false;
+		}
+	};
+
+	// Clear the chat conversation
+	const clearChat = () => {
+		if (sending) return;
+		messages = [];
+		changeset = [];
+		changesetError = null;
+		toast.success($i18n.t('Chat cleared'));
 	};
 
 	const removeAttachment = (path: string) => {
@@ -417,27 +480,6 @@ Rules:
 							on:select={handleSelectRepo}
 						/>
 
-						{#if owner && repo}
-							<div class="mt-4 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-								<div
-									class="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700"
-								>
-									<div class="text-xs font-medium truncate">
-										{$i18n.t('Loaded files of')} {owner}/{repo} @ {branch}
-									</div>
-									<button
-										type="button"
-										class="text-xs px-2.5 py-1 rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900 shrink-0"
-										on:click={() => {
-											activeTab = 'workspace';
-										}}>{$i18n.t('Open in workspace')}</button
-									>
-								</div>
-								<div class="h-[420px]">
-									<RepoPanel {token} bind:owner bind:repo bind:branch on:attach={handleAttach} />
-								</div>
-							</div>
-						{/if}
 					</div>
 				</div>
 			</div>
@@ -450,6 +492,29 @@ Rules:
 
 			<!-- Middle: chat -->
 			<div class="flex-1 flex flex-col min-w-0 min-h-0">
+				<!-- Chat toolbar: clear button -->
+				<div class="flex items-center justify-between px-4 py-1.5 border-b border-gray-100 dark:border-gray-800 shrink-0">
+					<div class="text-xs text-gray-500 truncate">
+						{#if loadingRepoContext}
+							{$i18n.t('Loading repository into workspace…')} — {owner}/{repo} @ {branch}
+						{:else if owner && repo}
+							{owner}/{repo} @ {branch} · {attachments.length} {$i18n.t('files in context')}
+						{:else}
+							{$i18n.t('No repository selected')}
+						{/if}
+					</div>
+					<button
+						type="button"
+						class="text-xs px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-40 flex items-center gap-1.5 shrink-0"
+						disabled={sending || messages.length === 0}
+						title={$i18n.t('Clear chat')}
+						on:click={clearChat}>
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-3.5">
+							<path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+						</svg>
+						{$i18n.t('Clear chat')}
+					</button>
+				</div>
 				<div class="flex-1 overflow-y-auto scrollbar-thin px-4 py-3 space-y-3">
 					{#if messages.length === 0}
 						<div class="h-full flex flex-col items-center justify-center text-center gap-2 text-gray-500 py-10">
