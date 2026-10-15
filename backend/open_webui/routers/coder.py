@@ -152,7 +152,8 @@ def _coder_redirect_url(request: Request, query: str) -> str:
                 base = f'{base}/{root_path}'
         else:
             base = str(request.base_url).rstrip('/')
-    return f'{base}/coder?{query}'
+    # standalone=1 — Coder opens as a separate application window
+    return f'{base}/coder?standalone=1&{query}'
 
 
 @router.get('/github/auth/callback')
@@ -298,6 +299,39 @@ async def coder_file(
     except GitHubAPIError as exc:
         raise HTTPException(status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY, detail={'code': exc.code, 'message': exc.message})
     return file
+
+
+@router.post('/files/batch')
+async def coder_files_batch(
+    request: Request,
+    form: dict,
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    """Fetch several repository files in one call (used to preload repo context for coding)."""
+    await check_coder_permission(request, user)
+    owner = form.get('owner', '')
+    repo = form.get('repo', '')
+    branch = form.get('branch', '')
+    paths = form.get('paths', [])[:30]
+    if not (owner and repo and branch):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={'code': 'invalid_request', 'message': 'owner, repo and branch are required'})
+    token = await _get_connection_token(user.id, db)
+    files = []
+    errors = []
+    for p in paths:
+        try:
+            safe_path = validate_path(str(p))
+            file = await GitHubClient.get_file(token, owner, repo, safe_path, branch)
+            if not file.get('binary'):
+                files.append({'path': safe_path, 'content': file.get('content', '')})
+        except ChangeSetValidationError as exc:
+            errors.append({'path': str(p), 'message': exc.message})
+        except GitHubAPIError as exc:
+            errors.append({'path': str(p), 'message': exc.message})
+        except Exception as exc:  # noqa: BLE001
+            errors.append({'path': str(p), 'message': str(exc)})
+    return {'files': files, 'errors': errors}
 
 
 ############################

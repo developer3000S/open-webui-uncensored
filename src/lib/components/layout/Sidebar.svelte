@@ -171,7 +171,7 @@
 			calendar: { label: 'Calendar', href: '/calendar', iconType: 'calendar' },
 			coder: {
 		label: 'Coder',
-		href: '/coder',
+		href: '/coder?standalone=1',
 		iconType: 'coder',
 		// Coder opens as a standalone application in a separate window
 		openInNewWindow: true,
@@ -747,6 +747,31 @@
 		}, 0);
 	};
 
+	// Обработчик клика для пунктов, открывающихся как отдельное приложение
+	// в новом окне браузера (например, Coder).
+	const openAppWindowHandler = (e, meta) => {
+		e.preventDefault();
+		e.stopPropagation();
+
+		const url = new URL(meta.href, window.location.origin).href;
+		const windowName = `${meta.label.replace(/\s+/g, '_').toLowerCase()}_app_window`;
+		const features = meta.windowFeatures ?? 'width=1400,height=900,resizable=yes,scrollbars=yes';
+
+		const appWindow = window.open(url, windowName, features);
+		if (appWindow) {
+			try {
+				appWindow.focus();
+			} catch (_) {
+				// some browsers block focus; ignore
+			}
+		} else {
+			// Popup blocked — fallback to normal navigation
+			goto(url);
+		}
+
+		itemClickHandler();
+	};
+
 	const itemClickHandler = async () => {
 		selectedChatId = null;
 		chatId.set('');
@@ -952,6 +977,10 @@
 									on:click={async (e) => {
 										e.stopImmediatePropagation();
 										e.preventDefault();
+										if (meta.openInNewWindow) {
+											openAppWindowHandler(e, meta);
+											return;
+										}
 										goto(meta.href);
 										itemClickHandler();
 									}}
@@ -1275,7 +1304,13 @@
 										id="sidebar-{itemId}-button"
 										class="grow flex items-center space-x-3 rounded-2xl px-2.5 py-2 hover:bg-gray-100 dark:hover:bg-gray-900 transition"
 										href={meta.href}
-										on:click={itemClickHandler}
+										on:click={(e) => {
+											if (meta.openInNewWindow) {
+												openAppWindowHandler(e, meta);
+												return;
+											}
+											itemClickHandler();
+										}}
 										draggable="false"
 										aria-label={$i18n.t(meta.label)}
 									>
