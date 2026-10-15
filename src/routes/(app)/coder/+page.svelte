@@ -251,6 +251,8 @@ Rules:
 		const params = new URLSearchParams(window.location.search);
 		if (params.get('github_connected')) {
 			toast.success($i18n.t('GitHub account connected'));
+			// Reload connection BEFORE navigating — so the fresh mount shows connected state
+			await loadConnection();
 			goto('/coder', { replaceState: true });
 		} else if (params.get('github_error')) {
 			const err = params.get('github_error');

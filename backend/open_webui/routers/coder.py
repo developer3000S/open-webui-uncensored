@@ -166,6 +166,7 @@ async def github_auth_callback(
         db=db,
     )
     await CoderAudit.record(user_id=user_id, action='github_connect', target=gh_user['login'], db=db)
+    await db.commit()
     return RedirectResponse(url=f'{frontend_base}?github_connected=1', status_code=302)
 
 

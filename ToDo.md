@@ -59,11 +59,11 @@
 
 ## Coder-секция — запуск в работу
 
-- [ ] **Вписать реальные OAuth-креды** в `.env`: `CODER_GITHUB_CLIENT_ID` и
+- [x] **Вписать реальные OAuth-креды** в `.env`: `CODER_GITHUB_CLIENT_ID` и
       `CODER_GITHUB_CLIENT_SECRET` от созданного OAuth-приложения GitHub
       (Settings → Developer settings → OAuth Apps). Callback URL:
       `http://<host>:8083/api/v1/coder/github/auth/callback`.
-- [ ] **Перезапустить контейнер** после правки `.env`, чтобы приложение
+- [x] **Перезапустить контейнер** после правки `.env`, чтобы приложение
       подхватило переменные и применило Alembic-миграцию (`coder_*` таблицы).
 - [ ] **Проверить подключение GitHub** в разделе Coder (кнопка
       «Подключить GitHub» → редирект на OAuth → возврат с установленным
