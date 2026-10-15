@@ -311,6 +311,7 @@ type Config = {
 		enable_version_update_check: boolean;
 		enable_pyodide_file_persistence?: boolean;
 		folder_max_file_count?: number;
+		enable_coder?: boolean;
 	};
 	oauth: {
 		providers: {

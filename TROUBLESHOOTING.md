@@ -61,3 +61,17 @@ A `restart: always` deployment converts a startup failure into a silent crash-lo
 - A declared but unreachable Valkey server breaks indexing the same way from the runtime side.
 
 Diagnose with `docker logs <container> --tail 40`; if the traceback ends in that `ImportError`, comment `VECTOR_DB`/`VALKEY_URL` out in `.env` and restart — the default (`chroma`) keeps indexes in the `data` volume. To actually use Valkey, install the client (`pip install valkey-glide-sync==2.3.1`) into the image *and* run a Valkey server first.
+
+## Coder Section Issues
+
+**Пункт «Coder» не появляется в боковом меню:** раздел управляется feature flag и по умолчанию выключен. Убедитесь, что в `.env` объявлено `CODER_ENABLED=true` и контейнер перезапущен (имена из `.env` применяются только при старте). Проверить состояние флага можно в ответе `GET /api/v1/config` — поле `features.enable_coder`.
+
+**Кнопка подключения GitHub возвращает ошибку или редирект на GitHub показывает `redirect_uri_mismatch`:** в OAuth-приложении GitHub (Settings → Developer settings → OAuth Apps) должен быть указан Authorization callback URL ровно вида `{BASE_URL}/api/v1/coder/github/auth/callback`, где `BASE_URL` — публичный адрес установки (для локального запуска по умолчанию `http://localhost:8083`). При смене порта/хоста callback нужно обновить в приложении. Также проверьте `CODER_GITHUB_CLIENT_ID`/`CODER_GITHUB_CLIENT_SECRET` в `.env`.
+
+**Ошибка при подключении после успешного OAuth (`CODER_AUTH_*`, соединение не устанавливается):** чаще всего это неверные/истёкшие креденшелы клиента или заблокированный доступ приложения к организации. Повторите подключение; если проблема повторяется, посмотрите код ошибки в ответе `/github/auth/callback` редиректа (`?github_error=`) и журнал аудита (`GET /api/v1/coder/audit`) — там фиксируются все значимые действия и сбои.
+
+**Экспорт завершается ошибкой `CODER_CONFLICT` / «protected branch»:** целевая защищённая ветка не принимает прямые коммиты — так и задумано: экспорт всегда пишет в новую ветку и создаёт Pull Request. Если конфликтует сама новая ветка (уже существует с другим содержимым), измените имя ветки в диалоге экспорта. Идемпотентный повтор с теми же параметрами не создаёт дублей коммита/PR.
+
+**Change Set отклоняется валидатором (`CODER_INVALID_PATH`, превышены лимиты):** запрещены пути вне репозитория (`..`), абсолютные пути и всё под `.git/`; действуют лимиты на размер файла (по умолчанию 1 МиБ), суммарный diff (3 МиБ), число файлов (20) и строк diff (4000) — переменные `CODER_MAX_*` в `.env`. Попросите модель разбить большую задачу на несколько меньших Change Set.
+
+**Таблицы `coder_*` отсутствуют в БД (ошибки на первом запросе):** схема создаётся Alembic-миграцией при старте приложения. Если миграция не применилась автоматически, выполните `alembic upgrade head` в окружении бэкенда. После смены `CODER_ENCRYPTION_KEY` ранее сохранённые зашифрованные токены становятся нечитаемыми — требуется переподключить GitHub.

@@ -148,6 +148,7 @@ from open_webui.routers import (
     channels,
     chats,
     classify,
+    coder,
     configs,
     evaluations,
     files,
@@ -921,6 +922,7 @@ app.include_router(classify.router, prefix='/api/v1/classify', tags=['classify']
 app.include_router(terminals.router, prefix='/api/v1/terminals', tags=['terminals'])
 app.include_router(automations.router, prefix='/api/v1/automations', tags=['automations'])
 app.include_router(calendar.router, prefix='/api/v1/calendars', tags=['calendars'])
+app.include_router(coder.router, prefix='/api/v1/coder', tags=['coder'])
 
 # Uncensored Local Studio bridge (llama.cpp / stable-diffusion.cpp / whisper.cpp / Kokoro TTS)
 app.include_router(studio.router, prefix='/api/v1/studio', tags=['studio'])
@@ -2020,6 +2022,7 @@ async def get_app_config(request: Request):
         'channels.enable',
         'calendar.enable',
         'automations.enable',
+        'coder.enable',
         'notes.enable',
         'web.search.enable',
         'web.search.confirmation.enable',
@@ -2089,6 +2092,7 @@ async def get_app_config(request: Request):
                     'enable_channels': config.get('channels.enable'),
                     'enable_calendar': config.get('calendar.enable'),
                     'enable_automations': config.get('automations.enable'),
+                    'enable_coder': config.get('coder.enable'),
                     'enable_notes': config.get('notes.enable'),
                     'enable_web_search': config.get('web.search.enable'),
                     'enable_web_search_confirmation': config.get('web.search.confirmation.enable'),
