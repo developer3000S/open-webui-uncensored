@@ -407,6 +407,17 @@ CODER_ENCRYPTION_KEY=<случайная строка не короче 32 си�
 | `CODER_MAX_TOTAL_DIFF_SIZE` | `3145728` (3 МиБ) | Суммарный лимит размера diff |
 | `CODER_MAX_DIFF_LINES` | `4000` | Максимум строк diff на файл |
 
+> [!WARNING]
+> Код читает **только** переменные из таблицы выше. В .env не должно быть
+> `CODER_GITHUB_PROVIDER`, `CODER_GITHUB_APP_ID`, `CODER_GITHUB_APP_PRIVATE_KEY_PATH`,
+> `CODER_GITHUB_BASE_URL`, `CODER_GITHUB_ENTERPRISE_MODE`, `CODER_MAX_FILE_SIZE_BYTES`,
+> `CODER_MAX_TOTAL_CHANGES_BYTES`, `CODER_MAX_FILES_PER_EXPORT`, `CODER_REQUIRE_PULL_REQUEST`,
+> `CODER_SECRET_SCANNING_MODE`, `CODER_AUDIT_RETENTION_DAYS`, `CODER_DEFAULT_MODEL` — их
+> бэкенд (`config.py` / `utils/coder/`) не читает, они не влияют на поведение. Это пережиток
+> ТЗ из `Coder.md`. Лимиты задаются именно как `CODER_MAX_FILE_SIZE`,
+> `CODER_MAX_TOTAL_DIFF_SIZE`, `CODER_MAX_FILES_PER_CHANGESET`; база API — только через
+> `CODER_GITHUB_API_BASE_URL`.
+
 После изменения переменных перезапустите контейнер. Схема БД обновляется автоматически при старте (миграция Alembic создаёт таблицы `coder_github_connection`, `coder_project`, `coder_export_job`, `coder_audit_event`).
 
 ### 2. GitHub OAuth-приложение
