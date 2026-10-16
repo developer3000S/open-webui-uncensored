@@ -130,7 +130,8 @@ The system will execute it and return matching file snippets in your next turn. 
 			listBudget -= p.length + 1;
 			listed++;
 		}
-		ctx += `file_list (${listed} of ${blobPaths.length} shown):\n${listParts.join('\n')}\n`;
+		const omitted = blobPaths.length - listed;
+		ctx += `file_list (${listed} of ${blobPaths.length} paths shown${omitted > 0 ? `, ${omitted} omitted to save tokens \u2014 use repo_search to locate them` : ''}):\n${listParts.join('\n')}\n`;
 		let used = 0;
 		for (const a of attachments) {
 			const head = `\n--- FILE: ${a.path} ---\n`;
