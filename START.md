@@ -294,7 +294,7 @@ cd studio
 1. `git config --global --add safe.directory /disk/llm` — фикc «dubious ownership».
 2. `git add .` → `git commit -m "..."`.
 3. `git gc --auto` и `git push origin main --no-thin` — стабильность на внешних дисках.
-4. **Пересборка фронтенда**: `cd app/frontend` → `npm install --no-bin-links` → создание wrapper-скриптов для `vite` и `tauri` (exFAT не поддерживает симлинки) → `npm run build`.
+4. **Пересборка фронтенда**: `cd app/frontend` → `npm install --no-bin-links` → создание wrapper-скриптов для `vite` и `tauri` (exFAT не поддерживает симлинки) → `npm run build`. При нехватке памяти (>2 ГБ) используйте `NODE_OPTIONS="--max-old-space-size=4096" npm run build`; перед сборкой можно очистить артефакты прошлой сборки: `rm -rf .svelte-kit static/build`.
 
 ---
 

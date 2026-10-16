@@ -30,19 +30,59 @@
 	let preview: CoderExportPreview | null = null;
 	let loadingPreview = false;
 	let exporting = false;
+	let exportError: string | null = null;
 
 	let result: { commit_sha?: string; pr_url?: string; pr_number?: string } | null = null;
 
 	// regenerate idempotency key whenever the dialog opens with a new changeset
 	let idempotencyKey = generateUUID();
 
+	// NOTE: this reactive block must NOT depend on `commitMessage` — previously every
+	// keystroke in the commit-message field re-ran it and wiped the branch name back to
+	// "coder/changes". It now fires once per dialog open and resets all transient state.
 	$: if (show) {
-		branch = `coder/${(commitMessage || 'changes').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40) || generateUUID().slice(0, 8)}`;
+		idempotencyKey = generateUUID();
+		preview = null;
+		result = null;
+		exportError = null;
+		branch = `coder/${new Date().toISOString().slice(0, 10)}-${generateUUID().slice(0, 8)}`;
 	}
+
+	// Map GitHub/Coder API error codes to human-readable messages
+	const describeError = (detail: any): string => {
+		if (!detail) return 'Request failed';
+		if (typeof detail === 'string') return detail;
+		const code = detail.code ?? '';
+		const msg = detail.message ?? '';
+		const path = detail.path ? ` (${detail.path})` : '';
+		switch (code) {
+			case 'CODER_GITHUB_UNAUTHORIZED':
+				return $i18n.t('Your GitHub connection has expired. Reconnect your account in the Environment tab, then try again.');
+			case 'CODER_GITHUB_RATE_LIMIT':
+				return $i18n.t('GitHub API rate limit exceeded. Try again in a few minutes.');
+			case 'CODER_FORBIDDEN':
+				return $i18n.t('Access denied by GitHub — your token may lack the required repository scopes (repo). Reconnect GitHub in the Environment tab.');
+			case 'CODER_BRANCH_PROTECTED':
+				return $i18n.t('The target branch is protected on GitHub. Export always pushes to a new branch and opens a pull request.');
+			case 'CODER_CONFLICT':
+				return $i18n.t('Conflict with the remote repository (the base branch moved). Run Preview again and retry.');
+			case 'CODER_VALIDATION_FAILED':
+				return `${$i18n.t('GitHub rejected the change set')}: ${msg}${path}`;
+			case 'CODER_FILE_NOT_FOUND':
+				return `${$i18n.t('File does not exist in the base branch')}${path}`;
+			case 'CODER_FILE_EXISTS':
+				return `${$i18n.t('File already exists in the base branch')}${path}`;
+			case 'CODER_GITHUB_UNAVAILABLE':
+				return $i18n.t('GitHub API is unreachable. Check server network connectivity and retry.');
+			default:
+				return msg ? `${code ? code + ': ' : ''}${msg}${path}` : 'Request failed';
+		}
+	};
 
 	const runPreview = async () => {
 		loadingPreview = true;
 		preview = null;
+		exportError = null;
 		try {
 			preview = await previewCoderExport(token, {
 				owner,
@@ -54,7 +94,9 @@
 				idempotency_key: idempotencyKey
 			});
 		} catch (e: any) {
-			toast.error(e?.message ?? 'Preview failed');
+			const msg = describeError(e?.detail ?? e?.message ?? e);
+			exportError = msg;
+			toast.error(msg);
 		} finally {
 			loadingPreview = false;
 		}
@@ -83,8 +125,9 @@
 			result = res;
 			toast.success($i18n.t('Changes exported successfully'));
 		} catch (e: any) {
-			const detail = e?.message ?? 'Export failed';
-			toast.error(detail);
+			const msg = describeError(e?.detail ?? e?.message ?? e);
+			exportError = msg;
+			toast.error(msg);
 		} finally {
 			exporting = false;
 		}
@@ -191,6 +234,12 @@
 							<DiffView diff={d.diff} action={d.action} />
 						</div>
 					{/each}
+				</div>
+			{/if}
+
+			{#if exportError}
+				<div class="text-xs rounded-xl bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 px-3 py-2">
+					{exportError}
 				</div>
 			{/if}
 

@@ -108,13 +108,19 @@ const jsonHeaders = (token: string) => ({
 	authorization: `Bearer ${token}`
 });
 
+export type ApiErrorDetail = { code?: string; message?: string; path?: string };
+
 const handle = async (res: Response) => {
 	if (!res.ok) {
 		const body = await res.json().catch(() => null);
 		const detail = body?.detail;
-		throw new Error(
+		const err: Error & { detail?: ApiErrorDetail | string; status?: number } = new Error(
 			typeof detail === 'string' ? detail : detail?.message || `Request failed (${res.status})`
 		);
+		// preserve structured error info ({code, message, path}) so the UI can map CODER_* codes
+		err.detail = detail ?? `Request failed (${res.status})`;
+		err.status = res.status;
+		throw err;
 	}
 	return res.json();
 };
