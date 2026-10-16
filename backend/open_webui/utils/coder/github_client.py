@@ -103,6 +103,8 @@ def _raise_for_status(response: httpx.Response) -> None:
 
 
 class GitHubClient:
+    GITHUB_API_BASE = GITHUB_API
+
     ####################
     # OAuth
     ####################
@@ -117,11 +119,24 @@ class GitHubClient:
         }
         try:
             async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
-                response = await client.post(url, json=body, headers={'Accept': 'application/json'})
+                # GitHub's OAuth token endpoint accepts only application/x-www-form-urlencoded
+                response = await client.post(
+                    url,
+                    data=body,
+                    headers={'Accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded'},
+                )
         except httpx.HTTPError as exc:
             raise GitHubAPIError('CODER_GITHUB_UNAVAILABLE', f'Cannot reach GitHub OAuth endpoint: {exc}')
         if response.status_code != 200:
-            raise GitHubAPIError('CODER_OAUTH_FAILED', 'GitHub OAuth token exchange failed', response.status_code)
+            try:
+                detail = response.json().get('error_description') or response.json().get('error')
+            except Exception:
+                detail = response.text[:200]
+            raise GitHubAPIError(
+                'CODER_OAUTH_FAILED',
+                f'GitHub OAuth token exchange failed ({response.status_code}): {detail}',
+                response.status_code,
+            )
         data = response.json()
         access_token = data.get('access_token')
         if not access_token:
@@ -242,7 +257,12 @@ class GitHubClient:
             json_body={'ref': f'refs/heads/{branch}', 'sha': sha},
         )
         if response.status_code == 422 and 'already exists' in response.text.lower():
-            return  # branch already present
+            # Race/retry artifact: the ref appeared between our existence check and this
+            # call. Reset it to the new commit instead of silently keeping the old one —
+            # otherwise the PR would be opened from a stale branch (or fail with
+            # "Not Found"/"No commits between base and head").
+            await GitHubClient.update_ref(token, owner, repo, branch, sha, force=True)
+            return
         _raise_for_status(response)
 
     @staticmethod
@@ -298,9 +318,31 @@ class GitHubClient:
             token=token,
             json_body={'title': title, 'head': head, 'base': base, 'body': body or ''},
         )
+        if response.status_code == 422 and 'already exists' in response.text.lower():
+            # Idempotent re-export onto the same head/base: reuse the open PR rather than failing.
+            pr = await GitHubClient.find_open_pull_request(token, owner, repo, head, base)
+            if pr:
+                return pr
         _raise_for_status(response)
         data = response.json()
         return {'html_url': data.get('html_url'), 'number': str(data.get('number'))}
+
+    @staticmethod
+    async def find_open_pull_request(token: str, owner: str, repo: str, head: str, base: str) -> dict | None:
+        """Return {html_url, number} of an open PR for head->base, or None."""
+        response = await _request(
+            'GET',
+            f'{GITHUB_API}/repos/{quote(owner)}/{quote(repo)}/pulls',
+            token=token,
+            params={'state': 'open', 'head': f'{owner}:{head}', 'base': base, 'per_page': 5},
+        )
+        if response.status_code != 200:
+            return None
+        pulls = response.json()
+        if not pulls:
+            return None
+        pr = pulls[0]
+        return {'html_url': pr.get('html_url'), 'number': str(pr.get('number'))}
 
 
 def CODER_GITHUB_CLIENT_ID_VALUE() -> str:

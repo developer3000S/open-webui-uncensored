@@ -20,6 +20,7 @@ Endpoints (per technical specification Coder.md):
 
 import logging
 import re
+from urllib.parse import quote
 import secrets
 import time
 from typing import Any
@@ -40,7 +41,7 @@ from open_webui.models.config import Config
 from open_webui.utils.auth import get_verified_user
 from open_webui.utils.coder.changeset import ChangeSetValidationError, generate_unified_diff, validate_changeset, validate_path
 from open_webui.utils.coder.crypto import decrypt_secret, encrypt_secret
-from open_webui.utils.coder.github_client import GitHubAPIError, GitHubClient
+from open_webui.utils.coder.github_client import GitHubAPIError, GitHubClient, _request as github_request
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -535,6 +536,22 @@ async def coder_export_start(
 
     try:
         await _run_export_job(job.id, token, form, normalized, user.id, db)
+    except HTTPException as http_exc:
+        # structured error from _run_export_job (e.g. missing repo scopes) — mark failed, pass through
+        detail = http_exc.detail if isinstance(http_exc.detail, dict) else {}
+        await CoderExportJobs.update(
+            job.id,
+            {'status': 'failed', 'error': f"{detail.get('code', 'CODER_EXPORT_FAILED')}: {detail.get('message', '')}"},
+            db,
+        )
+        await CoderAudit.record(
+            user_id=user.id,
+            action='export_failed',
+            target=f'{form.owner}/{form.repo}:{form.branch}',
+            payload={'job_id': job.id, 'code': detail.get('code')},
+            db=db,
+        )
+        raise
     except GitHubAPIError as exc:
         await CoderExportJobs.update(job.id, {'status': 'failed', 'error': f'{exc.code}: {exc.message}'}, db)
         await CoderAudit.record(
@@ -574,6 +591,37 @@ async def _run_export_job(job_id: str, token: str, form: CoderExportForm, normal
     await CoderExportJobs.update(job_id, {'status': 'running'}, db)
 
     owner, repo = form.owner, form.repo
+
+    # Fail fast with a clear message if the OAuth token lacks write access to this repo
+    # (otherwise GitHub returns an opaque 404/403 during ref creation).
+    try:
+        perms_response = await github_request(
+            'GET', f'{GitHubClient.GITHUB_API_BASE}/repos/{quote(owner)}/{quote(repo)}', token=token
+        )
+        if perms_response.status_code == 200:
+            pdata = perms_response.json()
+            push_allowed = bool((pdata.get('permissions') or {}).get('push'))
+            if not push_allowed:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail={
+                        'code': 'CODER_FORBIDDEN',
+                        'message': f'Your GitHub token does not have write access to {owner}/{repo}. '
+                        'Check repository roles/app installation permissions and reconnect GitHub in the Environment tab.',
+                    },
+                )
+    except GitHubAPIError as exc:
+        if exc.code == 'CODER_NOT_FOUND':
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    'code': 'CODER_NOT_FOUND',
+                    'message': f'Repository {owner}/{repo} is not accessible with your GitHub token '
+                    '(deleted, renamed, or outside the granted scopes). Reconnect GitHub in the Environment tab.',
+                },
+            )
+        raise
+
     base_sha = await GitHubClient.get_ref_commit_sha(token, owner, repo, form.base_branch)
 
     # create or reset working branch from base
