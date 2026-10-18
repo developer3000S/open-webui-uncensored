@@ -1007,6 +1007,8 @@
 	"External Web Search URL": "",
 	"Fade Effect for Streaming Text": "",
 	"Failed to add file.": "",
+	"Duplicate file?": "",
+	"A file with the same content already exists in this knowledge base. Add it anyway as a duplicate?": "",
 	"Failed to add members": "",
 	"Failed to archive chat.": "",
 	"Failed to attach file": "",

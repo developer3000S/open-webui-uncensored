@@ -22,7 +22,14 @@ from fastapi import (
     status,
 )
 from fastapi.responses import FileResponse, StreamingResponse
-from open_webui.config import BYPASS_ADMIN_ACCESS_CONTROL, STORAGE_LOCAL_CACHE, STORAGE_PROVIDER, UPLOAD_DIR
+from open_webui.config import (
+    BYPASS_ADMIN_ACCESS_CONTROL,
+    EMBEDDING_MAX_RETRIES,
+    EMBEDDING_RETRY_BASE_DELAY,
+    STORAGE_LOCAL_CACHE,
+    STORAGE_PROVIDER,
+    UPLOAD_DIR,
+)
 from open_webui.constants import ERROR_MESSAGES
 from open_webui.events import EVENTS, publish_event
 from open_webui.internal.db import get_async_db_context, get_async_session
@@ -116,129 +123,151 @@ async def process_uploaded_file(
     db: AsyncSession | None = None,
 ):
     async def _process_handler(db_session):
-        try:
-            content_type = file.content_type
+        max_retries = EMBEDDING_MAX_RETRIES
+        base_delay = EMBEDDING_RETRY_BASE_DELAY
 
-            # Cooperative cancellation: if the user cancelled before this
-            # background task started, drop any partial vectors and stop so
-            # the file is neither embedded nor re-linked to the knowledge base.
-            if await embedding_cancelled(file_item.id):
-                log.info(f'File {file_item.id} cancelled before processing, skipping')
-                await cleanup_cancelled_embedding(file_metadata.get('collection_name'), file_item.id)
-                return
-
-            # Detect mis-labeled text files (e.g. .ts → video/mp2t)
-            if content_type and content_type.startswith(('image/', 'video/')):
-                if _is_text_file(file_path):
-                    content_type = 'text/plain'
-
-            stt_supported = await Config.get('audio.stt.supported_content_types', [])
-
-            if content_type and strict_match_mime_type(stt_supported, content_type):
-                # Audio / STT-supported files → transcribe then index
-                file_path_processed = await asyncio.to_thread(Storage.get_file, file_path)
-                result = await transcribe(
-                    request,
-                    file_path_processed,
-                    file_metadata,
-                    user,
+        for attempt in range(1, max_retries + 1):
+            if attempt > 1:
+                delay = base_delay * (2 ** (attempt - 2))
+                log.info(
+                    f'Retrying file processing for {file_item.id} '
+                    f'(attempt {attempt}/{max_retries}) after {delay:.1f}s pause'
                 )
-                await process_file(
-                    request,
-                    ProcessFileForm(file_id=file_item.id, content=result.get('text', '')),
-                    user=user,
-                    db=db_session,
-                )
+                await asyncio.sleep(delay)
 
-            elif (
-                content_type
-                and content_type.startswith(('image/', 'video/'))
-                and await Config.get('rag.content_extraction_engine') != 'external'
-            ):
-                # Media files without an external extraction engine
-                if content_type.startswith('video/'):
-                    # Videos are stored as-is for downstream multimodal
-                    # processing (Tools, vision models). Attempting text
-                    # extraction causes "Timeout reached while detecting
-                    # encoding" errors.
-                    log.info(f'Video file detected ({content_type}), skipping text extraction')
-                    await Files.update_file_data_by_id(
-                        file_item.id,
-                        {'status': 'completed'},
+            try:
+                content_type = file.content_type
+
+                # Cooperative cancellation: if the user cancelled before this
+                # background task started, drop any partial vectors and stop so
+                # the file is neither embedded nor re-linked to the knowledge base.
+                if await embedding_cancelled(file_item.id):
+                    log.info(f'File {file_item.id} cancelled before processing, skipping')
+                    await cleanup_cancelled_embedding(file_metadata.get('collection_name'), file_item.id)
+                    return
+
+                # Detect mis-labeled text files (e.g. .ts → video/mp2t)
+                if content_type and content_type.startswith(('image/', 'video/')):
+                    if _is_text_file(file_path):
+                        content_type = 'text/plain'
+
+                stt_supported = await Config.get('audio.stt.supported_content_types', [])
+
+                if content_type and strict_match_mime_type(stt_supported, content_type):
+                    # Audio / STT-supported files → transcribe then index
+                    file_path_processed = await asyncio.to_thread(Storage.get_file, file_path)
+                    result = await transcribe(
+                        request,
+                        file_path_processed,
+                        file_metadata,
+                        user,
+                    )
+                    await process_file(
+                        request,
+                        ProcessFileForm(file_id=file_item.id, content=result.get('text', '')),
+                        user=user,
                         db=db_session,
                     )
-                else:
-                    raise Exception(f'File type {content_type} is not supported for processing')
 
-            else:
-                # Documents, or any file when an external engine is configured
-                if not content_type:
-                    log.info(f'File type {file.content_type} is not provided, but trying to process anyway')
-                await process_file(
-                    request,
-                    ProcessFileForm(file_id=file_item.id),
-                    user=user,
-                    db=db_session,
-                )
-
-            # Mirrors POST /knowledge/{id}/file/add so linking doesn't depend
-            # on the frontend staying connected after upload.
-            knowledge_id = file_metadata.get('knowledge_id')
-            if knowledge_id:
-                try:
-                    # Cooperative cancellation: if the user cancelled during
-                    # processing, skip the auto-link block so the file is not
-                    # re-linked to the knowledge base.
-                    if await embedding_cancelled(file_item.id):
-                        log.info(f'File {file_item.id} cancelled during processing, skipping auto-link')
-                        return
-
-                    # Gate like POST /knowledge/{id}/file/add: a client-supplied
-                    # metadata.knowledge_id must not let a non-writer attach files (CWE-862/863).
-                    knowledge = await Knowledges.get_knowledge_by_id(id=knowledge_id, db=db_session)
-                    can_write = bool(knowledge) and (
-                        knowledge.user_id == user.id
-                        or user.role == 'admin'
-                        or await AccessGrants.has_access(
-                            user_id=user.id,
-                            resource_type='knowledge',
-                            resource_id=knowledge.id,
-                            permission='write',
+                elif (
+                    content_type
+                    and content_type.startswith(('image/', 'video/'))
+                    and await Config.get('rag.content_extraction_engine') != 'external'
+                ):
+                    # Media files without an external extraction engine
+                    if content_type.startswith('video/'):
+                        # Videos are stored as-is for downstream multimodal
+                        # processing (Tools, vision models). Attempting text
+                        # extraction causes "Timeout reached while detecting
+                        # encoding" errors.
+                        log.info(f'Video file detected ({content_type}), skipping text extraction')
+                        await Files.update_file_data_by_id(
+                            file_item.id,
+                            {'status': 'completed'},
                             db=db_session,
-                        )
-                    )
-                    if not can_write:
-                        log.warning(
-                            f'Refusing to auto-link file {file_item.id} to knowledge '
-                            f'{knowledge_id}: user {user.id} lacks write access'
                         )
                     else:
-                        await Knowledges.add_file_to_knowledge_by_id(
-                            knowledge_id=knowledge_id,
-                            file_id=file_item.id,
-                            user_id=user.id,
-                            directory_id=file_metadata.get('directory_id'),
-                        )
-                        await process_file(
-                            request,
-                            ProcessFileForm(file_id=file_item.id, collection_name=knowledge_id),
-                            user=user,
-                            db=db_session,
-                        )
-                        log.info(f'Linked file {file_item.id} to knowledge {knowledge_id}')
-                except Exception as e:
-                    log.warning(f'Failed to link file {file_item.id} to knowledge {knowledge_id}: {e}')
+                        raise Exception(f'File type {content_type} is not supported for processing')
 
-        except Exception as e:
-            log.error(f'Error processing file: {file_item.id}')
-            await Files.update_file_data_by_id(
-                file_item.id,
-                {
-                    'status': 'failed',
-                    'error': str(e.detail) if hasattr(e, 'detail') else str(e),
-                },
-                db=db_session,
-            )
+                else:
+                    # Documents, or any file when an external engine is configured
+                    if not content_type:
+                        log.info(f'File type {file.content_type} is not provided, but trying to process anyway')
+                    await process_file(
+                        request,
+                        ProcessFileForm(file_id=file_item.id),
+                        user=user,
+                        db=db_session,
+                    )
+
+                # Mirrors POST /knowledge/{id}/file/add so linking doesn't depend
+                # on the frontend staying connected after upload.
+                knowledge_id = file_metadata.get('knowledge_id')
+                if knowledge_id:
+                    try:
+                        # Cooperative cancellation: if the user cancelled during
+                        # processing, skip the auto-link block so the file is not
+                        # re-linked to the knowledge base.
+                        if await embedding_cancelled(file_item.id):
+                            log.info(f'File {file_item.id} cancelled during processing, skipping auto-link')
+                            return
+
+                        # Gate like POST /knowledge/{id}/file/add: a client-supplied
+                        # metadata.knowledge_id must not let a non-writer attach files (CWE-862/863).
+                        knowledge = await Knowledges.get_knowledge_by_id(id=knowledge_id, db=db_session)
+                        can_write = bool(knowledge) and (
+                            knowledge.user_id == user.id
+                            or user.role == 'admin'
+                            or await AccessGrants.has_access(
+                                user_id=user.id,
+                                resource_type='knowledge',
+                                resource_id=knowledge.id,
+                                permission='write',
+                                db=db_session,
+                            )
+                        )
+                        if not can_write:
+                            log.warning(
+                                f'Refusing to auto-link file {file_item.id} to knowledge '
+                                f'{knowledge_id}: user {user.id} lacks write access'
+                            )
+                        else:
+                            await Knowledges.add_file_to_knowledge_by_id(
+                                knowledge_id=knowledge_id,
+                                file_id=file_item.id,
+                                user_id=user.id,
+                                directory_id=file_metadata.get('directory_id'),
+                            )
+                            await process_file(
+                                request,
+                                ProcessFileForm(file_id=file_item.id, collection_name=knowledge_id),
+                                user=user,
+                                db=db_session,
+                            )
+                            log.info(f'Linked file {file_item.id} to knowledge {knowledge_id}')
+                    except Exception as e:
+                        log.warning(f'Failed to link file {file_item.id} to knowledge {knowledge_id}: {e}')
+
+                # All processing succeeded on this attempt
+                return
+
+            except Exception as e:
+                log.warning(
+                    f'process_uploaded_file attempt {attempt}/{max_retries} failed for {file_item.id}: {e}'
+                )
+                if attempt < max_retries:
+                    continue
+                # All retries exhausted — mark failed
+                log.error(f'process_uploaded_file: all {max_retries} attempts failed for {file_item.id}')
+                await Files.update_file_data_by_id(
+                    file_item.id,
+                    {
+                        'status': 'failed',
+                        'error': str(e.detail) if hasattr(e, 'detail') else str(e),
+                    },
+                    db=db_session,
+                )
+                return
 
     try:
         if db:

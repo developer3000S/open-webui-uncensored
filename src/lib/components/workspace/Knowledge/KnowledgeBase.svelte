@@ -97,6 +97,8 @@
 	let syncing: string | null = null;
 	let showAccessControlModal = false;
 	let showResetConfirm = false;
+	let showDuplicateConfirm = false;
+	let pendingDuplicateFileId = null;
 
 	let minSize = 0;
 	type DirectoryFileEntry = { path: string; filename: string; file: File };
@@ -299,7 +301,11 @@
 											if (live && (live.percent ?? 0) > (server.percent ?? 0)) {
 												return item;
 											}
-											return { ...item, progress: server };
+											// Mutate in-place so the SSE callback's reference to this item
+											// (captured in its closure) stays valid and continues writing
+											// progress into the same object the UI renders.
+											item.progress = server;
+											return item;
 										});
 									}
 								} catch {}
@@ -845,11 +851,52 @@
 	};
 
 	const addFileHandler = async (fileId) => {
+		// First attempt without forcing. A 409 with `duplicate` flag means the
+		// content is already in this knowledge base — surface the choice to the
+		// user (cancel or force duplicate) instead of failing the add silently.
 		const res = await addFileToKnowledgeById(
 			localStorage.token,
 			id,
 			fileId,
-			currentDirectoryId
+			currentDirectoryId,
+			false
+		).catch((e) => {
+			// The API client re-throws `err.detail`, which for a 409 is
+			// `{ message, duplicate: true }`. Detect that without coupling to
+			// the exact message text.
+			if (e && e.duplicate === true) {
+				return { __duplicate: true };
+			}
+			toast.error(`${e}`);
+			return null;
+		});
+
+		if (res && res.__duplicate) {
+			pendingDuplicateFileId = fileId;
+			showDuplicateConfirm = true;
+			return;
+		}
+
+		if (res) {
+			toast.success($i18n.t('File added successfully.'));
+			init();
+		} else {
+			toast.error($i18n.t('Failed to add file.'));
+			fileItems = fileItems.filter((file) => file.id !== fileId);
+		}
+	};
+
+	const addDuplicateFileHandler = async () => {
+		const fileId = pendingDuplicateFileId;
+		if (!fileId) return;
+		pendingDuplicateFileId = null;
+
+		const res = await addFileToKnowledgeById(
+			localStorage.token,
+			id,
+			fileId,
+			currentDirectoryId,
+			true
 		).catch((e) => {
 			toast.error(`${e}`);
 			return null;
@@ -1891,6 +1938,21 @@
 		<div class="text-xs text-gray-500">
 			{$i18n.t('Delete all contents inside this directory')}
 		</div>
+	</div>
+</ConfirmDialog>
+
+<ConfirmDialog
+	bind:show={showDuplicateConfirm}
+	title={$i18n.t('Duplicate file?')}
+	on:confirm={addDuplicateFileHandler}
+	on:cancel={() => {
+		pendingDuplicateFileId = null;
+	}}
+>
+	<div class="text-sm text-gray-700 dark:text-gray-300 flex-1 line-clamp-3">
+		{$i18n.t(
+			'A file with the same content already exists in this knowledge base. Add it anyway as a duplicate?'
+		)}
 	</div>
 </ConfirmDialog>
 

@@ -925,7 +925,43 @@ def generate_openai_batch_embeddings(
         raise ValueError("Unexpected OpenAI embeddings response: missing 'data' key")
 
 
-@retry_with_backoff()
+async def _embed_openai_with_retry(
+    session: aiohttp.ClientSession,
+    url: str,
+    headers: dict,
+    form_data: dict,
+) -> dict:
+    last_error: BaseException | None = None
+    for attempt in range(EMBEDDING_MAX_RETRIES):
+        try:
+            async with session.post(
+                url,
+                headers=headers,
+                json=form_data,
+                ssl=AIOHTTP_CLIENT_SESSION_SSL,
+            ) as r:
+                if r.status in (429, 500, 502, 503, 504):
+                    # Safe to retry: nothing was written to the server state.
+                    raise aiohttp.ClientResponseError(
+                        r.request_info, r.history, status=r.status
+                    )
+                r.raise_for_status()
+                return await r.json()
+        except (
+            aiohttp.ClientError,
+            asyncio.TimeoutError,
+        ) as e:
+            last_error = e
+            if attempt < EMBEDDING_MAX_RETRIES - 1:
+                delay = EMBEDDING_RETRY_BASE_DELAY * (2**attempt)
+                log.warning(
+                    f'Transient OpenAI embedding error (attempt {attempt + 1}/{EMBEDDING_MAX_RETRIES}): {e}. '
+                    f'Retrying in {delay:.1f}s'
+                )
+                await asyncio.sleep(delay)
+    raise last_error
+
+
 async def agenerate_openai_batch_embeddings(
     model: str,
     texts: list[str],
@@ -949,18 +985,16 @@ async def agenerate_openai_batch_embeddings(
     async with aiohttp.ClientSession(
         trust_env=True, timeout=aiohttp.ClientTimeout(total=AIOHTTP_CLIENT_TIMEOUT)
     ) as session:
-        async with session.post(
+        data = await _embed_openai_with_retry(
+            session,
             f'{url}/embeddings',
-            headers=headers,
-            json=form_data,
-            ssl=AIOHTTP_CLIENT_SESSION_SSL,
-        ) as r:
-            r.raise_for_status()
-            data = await r.json()
-            if 'data' in data:
-                return [item['embedding'] for item in data['data']]
-            else:
-                raise ValueError("Unexpected OpenAI embeddings response: missing 'data' key")
+            headers,
+            form_data,
+        )
+        if 'data' in data:
+            return [item['embedding'] for item in data['data']]
+        else:
+            raise ValueError("Unexpected OpenAI embeddings response: missing 'data' key")
 
 
 @retry_with_backoff()
@@ -997,7 +1031,47 @@ def generate_mistral_batch_embeddings(
         raise ValueError("Unexpected Mistral embeddings response: missing 'data' key")
 
 
-@retry_with_backoff()
+async def _embed_mistral_with_retry(
+    session: aiohttp.ClientSession,
+    url: str,
+    headers: dict,
+    form_data: dict,
+) -> dict:
+    last_error: BaseException | None = None
+    for attempt in range(EMBEDDING_MAX_RETRIES):
+        try:
+            # The Mistral-compatible embedding server accepts the OpenAI-style
+            # `input` field (verified: 200 with dim=1024); `prompt` is rejected
+            # with HTTP 400. Payload is passed through unchanged.
+            mistral_data = form_data.copy()
+
+            async with session.post(
+                url,
+                headers=headers,
+                json=mistral_data,
+                ssl=AIOHTTP_CLIENT_SESSION_SSL,
+            ) as r:
+                if r.status in (429, 500, 502, 503, 504):
+                    raise aiohttp.ClientResponseError(
+                        r.request_info, r.history, status=r.status
+                    )
+                r.raise_for_status()
+                return await r.json()
+        except (
+            aiohttp.ClientError,
+            asyncio.TimeoutError,
+        ) as e:
+            last_error = e
+            if attempt < EMBEDDING_MAX_RETRIES - 1:
+                delay = EMBEDDING_RETRY_BASE_DELAY * (2**attempt)
+                log.warning(
+                    f'Transient Mistral embedding error (attempt {attempt + 1}/{EMBEDDING_MAX_RETRIES}): {e}. '
+                    f'Retrying in {delay:.1f}s'
+                )
+                await asyncio.sleep(delay)
+    raise last_error
+
+
 async def agenerate_mistral_batch_embeddings(
     model: str,
     texts: list[str],
@@ -1021,18 +1095,11 @@ async def agenerate_mistral_batch_embeddings(
     async with aiohttp.ClientSession(
         trust_env=True, timeout=aiohttp.ClientTimeout(total=AIOHTTP_CLIENT_TIMEOUT)
     ) as session:
-        async with session.post(
-            url,
-            headers=headers,
-            json=form_data,
-            ssl=AIOHTTP_CLIENT_SESSION_SSL,
-        ) as r:
-            r.raise_for_status()
-            data = await r.json()
-            if 'data' in data:
-                return [item['embedding'] for item in data['data']]
-            else:
-                raise ValueError("Unexpected Mistral embeddings response: missing 'data' key")
+        data = await _embed_mistral_with_retry(session, url, headers, form_data)
+        if 'data' in data:
+            return [item['embedding'] for item in data['data']]
+        else:
+            raise ValueError("Unexpected Mistral embeddings response: missing 'data' key")
 
 
 @retry_with_backoff()
@@ -1078,6 +1145,42 @@ def generate_azure_openai_batch_embeddings(
     raise Exception('Azure OpenAI embedding request failed: max retries (429) exceeded')
 
 
+async def _embed_azure_with_retry(
+    session: aiohttp.ClientSession,
+    url: str,
+    headers: dict,
+    form_data: dict,
+) -> dict:
+    last_error: BaseException | None = None
+    for attempt in range(EMBEDDING_MAX_RETRIES):
+        try:
+            async with session.post(
+                url,
+                headers=headers,
+                json=form_data,
+                ssl=AIOHTTP_CLIENT_SESSION_SSL,
+            ) as r:
+                if r.status in (429, 500, 502, 503, 504):
+                    raise aiohttp.ClientResponseError(
+                        r.request_info, r.history, status=r.status
+                    )
+                r.raise_for_status()
+                return await r.json()
+        except (
+            aiohttp.ClientError,
+            asyncio.TimeoutError,
+        ) as e:
+            last_error = e
+            if attempt < EMBEDDING_MAX_RETRIES - 1:
+                delay = EMBEDDING_RETRY_BASE_DELAY * (2**attempt)
+                log.warning(
+                    f'Transient Azure embedding error (attempt {attempt + 1}/{EMBEDDING_MAX_RETRIES}): {e}. '
+                    f'Retrying in {delay:.1f}s'
+                )
+                await asyncio.sleep(delay)
+    raise last_error
+
+
 async def agenerate_azure_openai_batch_embeddings(
     model: str,
     texts: list[str],
@@ -1104,18 +1207,11 @@ async def agenerate_azure_openai_batch_embeddings(
     async with aiohttp.ClientSession(
         trust_env=True, timeout=aiohttp.ClientTimeout(total=AIOHTTP_CLIENT_TIMEOUT)
     ) as session:
-        async with session.post(
-            full_url,
-            headers=headers,
-            json=form_data,
-            ssl=AIOHTTP_CLIENT_SESSION_SSL,
-        ) as r:
-            r.raise_for_status()
-            data = await r.json()
-            if 'data' in data:
-                return [item['embedding'] for item in data['data']]
-            else:
-                raise ValueError("Unexpected Azure OpenAI embeddings response: missing 'data' key")
+        data = await _embed_azure_with_retry(session, full_url, headers, form_data)
+        if 'data' in data:
+            return [item['embedding'] for item in data['data']]
+        else:
+            raise ValueError("Unexpected Azure OpenAI embeddings response: missing 'data' key")
 
 
 def generate_ollama_batch_embeddings(

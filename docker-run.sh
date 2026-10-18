@@ -36,6 +36,26 @@ fi
 echo "========================================="
 echo "Open WebUI + Neo4j + Uncensored AI Studio"
 echo "========================================="
+
+# --- Очистка перед сборкой ---------------------------------------------------
+echo "🧹 Останавливаем и удаляем старые контейнеры..."
+docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" down --remove-orphans || true
+
+echo "🗑️  Удаляем старые образы этого проекта..."
+# Удаляем только образы, созданные этим compose (не системные и не от других проектов)
+docker images --format '{{.Repository}}:{{.Tag}}' | \
+  grep -E '^open-webui|^open-webui-studio|^studio' | \
+  xargs -r docker rmi -f 2>/dev/null || true
+
+echo "🔌 Очищаем порты от зависших процессов..."
+for _port in 8083 7687 7474; do
+  pid=$(lsof -ti ":${_port}" 2>/dev/null || true)
+  if [[ -n "$pid" ]]; then
+    echo "   Порт ${_port} занят PID ${pid} — убиваем..."
+    kill -9 "$pid" 2>/dev/null || true
+  fi
+done
+
 echo "🔨 Сборка образов из локальных исходников..."
 # --build всегда пересобирает образы из локальных исходников: pull из реестра
 # не используется, а изменения в backend/ и studio/ должны попадать в образ.

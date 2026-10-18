@@ -1447,6 +1447,7 @@ async def get_knowledge_files_by_id(
 class KnowledgeFileIdForm(BaseModel):
     file_id: str
     directory_id: str | None = None
+    force_duplicate: bool = False
 
 
 @router.post('/{id}/file/add', response_model=KnowledgeFilesResponse | None)
@@ -1506,7 +1507,11 @@ async def add_file_to_knowledge_by_id(
     try:
         await process_file(
             request,
-            ProcessFileForm(file_id=form_data.file_id, collection_name=id),
+            ProcessFileForm(
+                file_id=form_data.file_id,
+                collection_name=id,
+                force_duplicate=form_data.force_duplicate,
+            ),
             user=user,
             db=db,
         )
@@ -1519,6 +1524,11 @@ async def add_file_to_knowledge_by_id(
             directory_id=form_data.directory_id,
             db=db,
         )
+    except HTTPException as e:
+        # A 409 from process_file (duplicate content) must reach the client
+        # untouched — the frontend uses it to prompt the user. Any other HTTP
+        # error keeps its status too.
+        raise e
     except Exception as e:
         log.debug(e)
         raise HTTPException(

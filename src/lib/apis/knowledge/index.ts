@@ -679,12 +679,14 @@ export const addFileToKnowledgeById = async (
 	token: string,
 	id: string,
 	fileId: string,
-	directoryId?: string | null
+	directoryId?: string | null,
+	forceDuplicate = false
 ) => {
 	let error = null;
 
-	const body: Record<string, string> = { file_id: fileId };
+	const body: Record<string, unknown> = { file_id: fileId };
 	if (directoryId) body.directory_id = directoryId;
+	if (forceDuplicate) body.force_duplicate = true;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/${id}/file/add`, {
 		method: 'POST',

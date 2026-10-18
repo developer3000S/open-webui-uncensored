@@ -1646,6 +1646,7 @@ def save_docs_to_vector_db(
     user=None,
     on_progress: Callable[[str, float, dict], None] | None = None,
     reuse_from: list[tuple[str, str]] | None = None,
+    force_duplicate: bool = False,
 ) -> bool:
     def _get_docs_info(docs: list[Document]) -> str:
         docs_info = set()
@@ -1684,7 +1685,10 @@ def save_docs_to_vector_db(
 
                 if existing_file_id != metadata.get('file_id'):
                     log.info(f'Document with hash {metadata["hash"]} already exists')
-                    raise ValueError(ERROR_MESSAGES.DUPLICATE_CONTENT)
+                    if force_duplicate:
+                        log.info('Duplicate requested by the caller — embedding anyway')
+                    else:
+                        raise ValueError(ERROR_MESSAGES.DUPLICATE_CONTENT)
 
     if split:
         if config.ENABLE_MARKDOWN_HEADER_TEXT_SPLITTER:
@@ -2028,6 +2032,7 @@ class ProcessFileForm(BaseModel):
     file_id: str
     content: str | None = None
     collection_name: str | None = None
+    force_duplicate: bool = False
 
 
 class EmbeddingIncompleteError(Exception):
@@ -2484,6 +2489,7 @@ async def process_file(
                         user=user,
                         on_progress=report_progress,
                         reuse_from=reuse_from,
+                        force_duplicate=form_data.force_duplicate,
                     )
                     log.info(f'added {len(docs)} items to collection {collection_name}')
 
@@ -2631,6 +2637,25 @@ async def process_file(
                     raise e
 
         except Exception as e:
+            # A duplicate content upload is not a broken file — the same text
+            # from another file_id is already in the target collection. Surface
+            # it as a 409 (Conflict) with a machine-readable flag so the caller
+            # (knowledge router / files upload) can offer the user a choice
+            # instead of silently dropping the file. The file row itself stays
+            # intact; nothing is marked failed and the hash is not cleared.
+            if (
+                isinstance(e, ValueError)
+                and str(e) == ERROR_MESSAGES.DUPLICATE_CONTENT
+            ):
+                log.info(f'Blocked duplicate content for file {file.id}: {str(e)}')
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail={
+                        'message': ERROR_MESSAGES.DUPLICATE_CONTENT,
+                        'duplicate': True,
+                    },
+                )
+
             log.exception(e)
             # Fresh session for error status update.
             async with get_async_db() as session:

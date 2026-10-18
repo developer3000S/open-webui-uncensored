@@ -1021,6 +1021,8 @@
 	"External Web Search URL": "URL-адрес внешнего веб-поиска",
 	"Fade Effect for Streaming Text": "Эффект затухания для потокового текста",
 	"Failed to add file.": "Не удалось добавить файл.",
+	"Duplicate file?": "Дублировать файл?",
+	"A file with the same content already exists in this knowledge base. Add it anyway as a duplicate?": "Файл с таким же содержимым уже есть в этой базе знаний. Всё равно добавить его как дубликат?",
 	"Failed to add members": "Не удалось добавить участников",
 	"Failed to archive chat.": "Не удалось архивировать чат.",
 	"Failed to attach file": "Не удалось прикрепить файл",
