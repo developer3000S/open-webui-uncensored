@@ -30,6 +30,32 @@ from open_webui.config import (
     RAG_EMBEDDING_QUERY_PREFIX,
     RAG_EMBEDDING_REQUEST_TIMEOUT,
 )
+
+import time
+from functools import wraps
+
+def retry_with_backoff(max_retries=EMBEDDING_MAX_RETRIES, base_delay=EMBEDDING_RETRY_BASE_DELAY):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            last_exception = None
+            for attempt in range(max_retries):
+                try:
+                    log.debug(f"Attempt {attempt + 1} of {max_retries} for {func.__name__}")
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    last_exception = e
+                    log.warning(f"Attempt {attempt + 1} failed for {func.__name__}: {str(e)}")
+                    if attempt == max_retries - 1:
+                        log.error(f"All {max_retries} attempts failed for {func.__name__}")
+                        raise EmbeddingRetryError(f"Failed after {max_retries} attempts: {str(e)}") from e
+                    delay = base_delay * (2 ** attempt)
+                    log.debug(f"Retrying in {delay} seconds...")
+                    time.sleep(delay)
+            raise last_exception
+        return wrapper
+    return decorator
+
 from open_webui.env import (
     AIOHTTP_CLIENT_ALLOW_REDIRECTS,
     AIOHTTP_CLIENT_SESSION_SSL,
@@ -72,6 +98,14 @@ class TransientEmbeddingError(Exception):
     retrying is guaranteed to succeed if the condition clears.
     """
 
+    pass
+
+
+class EmbeddingRetryError(Exception):
+    """Raised when an embedding request fails after all retries have been exhausted.
+
+    This indicates a persistent issue that requires manual intervention.
+    """
     pass
 
 
@@ -857,6 +891,7 @@ async def query_collection_with_hybrid_search(
     return merge_and_sort_query_results(results, k=k)
 
 
+@retry_with_backoff()
 def generate_openai_batch_embeddings(
     model: str,
     texts: list[str],
@@ -890,6 +925,7 @@ def generate_openai_batch_embeddings(
         raise ValueError("Unexpected OpenAI embeddings response: missing 'data' key")
 
 
+@retry_with_backoff()
 async def agenerate_openai_batch_embeddings(
     model: str,
     texts: list[str],
@@ -927,6 +963,7 @@ async def agenerate_openai_batch_embeddings(
                 raise ValueError("Unexpected OpenAI embeddings response: missing 'data' key")
 
 
+@retry_with_backoff()
 def generate_mistral_batch_embeddings(
     model: str,
     texts: list[str],
@@ -960,6 +997,7 @@ def generate_mistral_batch_embeddings(
         raise ValueError("Unexpected Mistral embeddings response: missing 'data' key")
 
 
+@retry_with_backoff()
 async def agenerate_mistral_batch_embeddings(
     model: str,
     texts: list[str],
@@ -997,6 +1035,7 @@ async def agenerate_mistral_batch_embeddings(
                 raise ValueError("Unexpected Mistral embeddings response: missing 'data' key")
 
 
+@retry_with_backoff()
 def generate_azure_openai_batch_embeddings(
     model: str,
     texts: list[str],
