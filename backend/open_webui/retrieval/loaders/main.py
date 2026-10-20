@@ -250,7 +250,21 @@ class Loader:
 
     def load(self, filename: str, file_content_type: str, file_path: str) -> list[Document]:
         loader = self._get_loader(filename, file_content_type, file_path)
-        docs = loader.load()
+        try:
+            docs = loader.load()
+        except ValueError as e:
+            # PyPDFParser's image extraction crashes on PDFs whose inline
+            # image byte counts don't match width*height*channels
+            # ("cannot reshape array of size ..."). Retry text-only instead of
+            # failing the whole upload.
+            if 'cannot reshape' not in str(e):
+                raise
+            log.warning(
+                f'PDF image extraction failed ({e}), retrying without image extraction: {file_path}'
+            )
+            self.kwargs = {**self.kwargs, 'PDF_EXTRACT_IMAGES': False}
+            loader = self._get_loader(filename, file_content_type, file_path)
+            docs = loader.load()
         return [Document(page_content=ftfy.fix_text(doc.page_content), metadata=doc.metadata) for doc in docs]
 
     async def aload(self, filename: str, file_content_type: str, file_path: str) -> list[Document]:
