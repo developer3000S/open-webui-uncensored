@@ -1228,6 +1228,8 @@ async def update_rag_config(request: Request, form_data: ConfigForm, user=Depend
 
     # File upload settings
     # Empty string means "clear to None" (unlimited/no compression),
+    config.RAG_AUTO_OCR_ON_EMPTY_PDF = form_data.RAG_AUTO_OCR_ON_EMPTY_PDF if form_data.RAG_AUTO_OCR_ON_EMPTY_PDF is not None else config.RAG_AUTO_OCR_ON_EMPTY_PDF
+
     # None means "don't change", int means "set to this value"
     if form_data.FILE_MAX_SIZE is not None:
         config.FILE_MAX_SIZE = None if form_data.FILE_MAX_SIZE == '' else form_data.FILE_MAX_SIZE
@@ -2209,6 +2211,72 @@ async def resolve_embedding_reuse_source(
     return sources or None
 
 
+async def check_duplicate_pre_embedding(
+    file_id: str,
+    content_hash: str,
+    target_collection: str | None,
+) -> dict | None:
+    """Check if a file with the same content hash already exists.
+
+    Queries the target collection (and the file's own per-file collection) for
+    chunks with the given content hash. If found with a different file_id, returns
+    a dict with the duplicate file's info so the caller can return a 409 with
+    context before spending compute on re-embedding.
+
+    Returns None if no duplicate found (safe to proceed with embedding).
+    Returns a dict with 'existing_file_id', 'existing_filename' if duplicate found.
+    """
+    if not content_hash:
+        return None
+
+    existing_file_ids: set[str] = set()
+
+    if target_collection:
+        own_collection = f'file-{file_id}'
+        collections_to_check = [target_collection]
+        if target_collection != own_collection:
+            collections_to_check.append(own_collection)
+        for coll in collections_to_check:
+            try:
+                if not await ASYNC_VECTOR_DB_CLIENT.has_collection(collection_name=coll):
+                    continue
+                result = await ASYNC_VECTOR_DB_CLIENT.query(
+                    collection_name=coll,
+                    filter={'hash': content_hash},
+                    limit=5,
+                )
+                if result and result.ids and result.ids[0]:
+                    for i, chunk_ids in enumerate(result.ids):
+                        if not chunk_ids:
+                            continue
+                        if result.metadatas and result.metadatas[i]:
+                            for meta in result.metadatas[i]:
+                                fid = meta.get('file_id')
+                                if fid and fid != file_id:
+                                    existing_file_ids.add(fid)
+            except Exception:
+                log.debug(
+                    'pre-check duplicate probe failed for collection %s', coll, exc_info=True
+                )
+
+    if not existing_file_ids:
+        return None
+
+    try:
+        existing_files = await Files.get_files_by_ids(list(existing_file_ids))
+    except Exception:
+        log.debug('could not look up duplicate file records', exc_info=True)
+        return None
+
+    if existing_files:
+        first = existing_files[0]
+        return {
+            'existing_file_id': first.id,
+            'existing_filename': first.filename,
+        }
+    return None
+
+
 async def _collection_has_chunks(collection_name: str, file_id: str) -> bool:
     """Whether a collection holds vectors for this file.
 
@@ -2363,6 +2431,78 @@ async def process_file(
                     ]
                 text_content = ' '.join([doc.page_content for doc in docs])
 
+            # Auto-OCR fallback for empty PDFs
+            if (
+                file_path
+                and file.filename.lower().endswith('.pdf')
+                and file.meta.get('content_type') == 'application/pdf'
+                and len(text_content.strip()) < 100  # Threshold: very short text
+            ):
+                log.info(
+                    'PDF %s has minimal extracted text (%d chars), attempting OCR fallback',
+                    file.filename,
+                    len(text_content.strip()),
+                )
+                # Check which OCR engine is available
+                ocr_engine = None
+                ocr_kwargs = {}
+                if config.MISTRAL_OCR_API_KEY:
+                    ocr_engine = 'mistral_ocr'
+                    ocr_kwargs = {
+                        'MISTRAL_OCR_API_BASE_URL': config.MISTRAL_OCR_API_BASE_URL,
+                        'MISTRAL_OCR_API_KEY': config.MISTRAL_OCR_API_KEY,
+                        'MISTRAL_OCR_USE_BASE64': config.MISTRAL_OCR_USE_BASE64,
+                    }
+                elif config.DATALAB_MARKER_API_KEY:
+                    ocr_engine = 'datalab_marker'
+                    ocr_kwargs = {
+                        'DATALAB_MARKER_API_KEY': config.DATALAB_MARKER_API_KEY,
+                        'DATALAB_MARKER_API_BASE_URL': config.DATALAB_MARKER_API_BASE_URL,
+                        'DATALAB_MARKER_FORCE_OCR': True,
+                    }
+                elif config.PADDLEOCR_VL_TOKEN:
+                    ocr_engine = 'paddleocr_vl'
+                    ocr_kwargs = {
+                        'PADDLEOCR_VL_BASE_URL': config.PADDLEOCR_VL_BASE_URL,
+                        'PADDLEOCR_VL_TOKEN': config.PADDLEOCR_VL_TOKEN,
+                    }
+                elif config.MINERU_API_URL:
+                    ocr_engine = 'mineru'
+                    ocr_kwargs = {
+                        'MINERU_API_URL': config.MINERU_API_URL,
+                        'MINERU_API_KEY': config.MINERU_API_KEY,
+                    }
+
+                if ocr_engine:
+                    log.info('Using %s OCR engine for fallback', ocr_engine)
+                    try:
+                        ocr_loader = build_loader_from_config(
+                            request,
+                            loader_config,
+                            engine=ocr_engine,
+                            **ocr_kwargs,
+                        )
+                        ocr_loader.user = user
+                        ocr_loader.metadata = loader.metadata
+                        ocr_docs = await ocr_loader.aload(
+                            file.filename,
+                            file.meta.get('content_type'),
+                            file_path,
+                        )
+                        if ocr_docs and any(doc.page_content.strip() for doc in ocr_docs):
+                            log.info('OCR fallback succeeded for %s', file.filename)
+                            docs = ocr_docs
+                            text_content = ' '.join([doc.page_content for doc in docs])
+                        else:
+                            log.warning('OCR fallback for %s produced no text', file.filename)
+                    except Exception as e:
+                        log.warning('OCR fallback failed for %s: %s', file.filename, e)
+                else:
+                    log.warning(
+                        'PDF %s has minimal extracted text but no OCR engine is configured',
+                        file.filename,
+                    )
+
             log.debug(f'text_content: {text_content}')
             await Files.update_file_data_by_id(
                 file.id,
@@ -2370,6 +2510,30 @@ async def process_file(
                 db=db,
             )
             hash = calculate_sha256_string(text_content)
+
+            if not form_data.force_duplicate and not config.BYPASS_EMBEDDING_AND_RETRIEVAL:
+                duplicate_info = await check_duplicate_pre_embedding(
+                    file.id,
+                    hash,
+                    collection_name,
+                )
+                if duplicate_info:
+                    log.info(
+                        'Pre-check found duplicate: file %s matches existing file %s (%s) in collection %s',
+                        file.id,
+                        duplicate_info['existing_file_id'],
+                        duplicate_info['existing_filename'],
+                        collection_name,
+                    )
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail={
+                            'message': f'This file is a duplicate of "{duplicate_info["existing_filename"]}"',
+                            'duplicate': True,
+                            'existing_file_id': duplicate_info['existing_file_id'],
+                            'existing_filename': duplicate_info['existing_filename'],
+                        },
+                    )
 
             if config.BYPASS_EMBEDDING_AND_RETRIEVAL:
                 await Files.update_file_data_by_id(file.id, {'status': 'completed'}, db=db)

@@ -1024,6 +1024,8 @@ RAG_DEDUP_DUPLICATE_FILES = os.getenv('RAG_DEDUP_DUPLICATE_FILES', 'True').lower
 RAG_EMBEDDING_CONCURRENT_REQUESTS = int(os.getenv('RAG_EMBEDDING_CONCURRENT_REQUESTS', '0'))
 RAG_EMBEDDING_CONCURRENT_REQUESTS_FALLBACK = int(os.getenv('RAG_EMBEDDING_CONCURRENT_REQUESTS_FALLBACK', '4'))
 
+RAG_AUTO_OCR_ON_EMPTY_PDF = os.getenv('RAG_AUTO_OCR_ON_EMPTY_PDF', 'True').lower() == 'true'
+
 # Dead line for a single embedding HTTP call. AIOHTTP_CLIENT_TIMEOUT defaults to None
 # (wait forever), so a request the embedding server never answers leaves the file in
 # `processing` indefinitely. Sized for CPU-only endpoints, where one batch can legitimately
@@ -1067,6 +1069,8 @@ RAG_EMBEDDING_CONTENT_PREFIX = os.getenv('RAG_EMBEDDING_CONTENT_PREFIX', None)
 
 RAG_EMBEDDING_PREFIX_FIELD_NAME = os.getenv('RAG_EMBEDDING_PREFIX_FIELD_NAME', None)
 
+RAG_AUTO_OCR_ON_EMPTY_PDF: bool = os.getenv('RAG_AUTO_OCR_ON_EMPTY_PDF', 'True').lower() == 'true'
+
 RAG_RERANKING_ENGINE = os.getenv('RAG_RERANKING_ENGINE', '')
 
 RAG_RERANKING_MODEL = os.getenv('RAG_RERANKING_MODEL', '')
@@ -1084,6 +1088,8 @@ RAG_RERANKING_BATCH_SIZE = int(os.getenv('RAG_RERANKING_BATCH_SIZE', '32'))
 
 RAG_EXTERNAL_RERANKER_URL = os.getenv('RAG_EXTERNAL_RERANKER_URL', '')
 
+RAG_AUTO_OCR_ON_EMPTY_PDF: bool = os.getenv('RAG_AUTO_OCR_ON_EMPTY_PDF', 'True').lower() == 'true'
+
 RAG_EXTERNAL_RERANKER_API_KEY = os.getenv('RAG_EXTERNAL_RERANKER_API_KEY', '')
 
 RAG_EXTERNAL_RERANKER_TIMEOUT = os.getenv('RAG_EXTERNAL_RERANKER_TIMEOUT', '')
@@ -1096,6 +1102,8 @@ ENABLE_MARKDOWN_HEADER_TEXT_SPLITTER = os.getenv('ENABLE_MARKDOWN_HEADER_TEXT_SP
 
 TIKTOKEN_CACHE_DIR = os.getenv('TIKTOKEN_CACHE_DIR', f'{CACHE_DIR}/tiktoken')
 TIKTOKEN_ENCODING_NAME = os.getenv('TIKTOKEN_ENCODING_NAME', 'cl100k_base')
+
+RAG_AUTO_OCR_ON_EMPTY_PDF: bool = os.getenv('RAG_AUTO_OCR_ON_EMPTY_PDF', 'True').lower() == 'true'
 
 
 # Config.env_bound() derives a key's .env name mechanically (rag.chunk_size ->
@@ -1180,6 +1188,8 @@ RAG_OPENAI_API_BASE_URL = os.getenv('RAG_OPENAI_API_BASE_URL', OPENAI_API_BASE_U
 RAG_OPENAI_API_KEY = os.getenv('RAG_OPENAI_API_KEY', OPENAI_API_KEY)
 
 RAG_AZURE_OPENAI_BASE_URL = os.getenv('RAG_AZURE_OPENAI_BASE_URL', '')
+
+RAG_AUTO_OCR_ON_EMPTY_PDF: bool = os.getenv('RAG_AUTO_OCR_ON_EMPTY_PDF', 'True').lower() == 'true'
 RAG_AZURE_OPENAI_API_KEY = os.getenv('RAG_AZURE_OPENAI_API_KEY', '')
 RAG_AZURE_OPENAI_API_VERSION = os.getenv('RAG_AZURE_OPENAI_API_VERSION', '')
 
@@ -1198,6 +1208,8 @@ ENABLE_LOCAL_WEB_FETCH = (
     ).lower()
     == 'true'
 )
+
+RAG_AUTO_OCR_ON_EMPTY_PDF: bool = os.getenv('RAG_AUTO_OCR_ON_EMPTY_PDF', 'True').lower() == 'true'
 # Deprecated compatibility alias; use ENABLE_LOCAL_WEB_FETCH for new deployments.
 ENABLE_RAG_LOCAL_WEB_FETCH = ENABLE_LOCAL_WEB_FETCH
 

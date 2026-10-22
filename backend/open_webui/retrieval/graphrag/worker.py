@@ -110,10 +110,10 @@ async def _collect_chunks(file_id: str) -> list[dict]:
         except Exception as e:
             log.warning('graphrag: cannot read collection %s: %s', collection, e)
             return
-        if not res or not res.get('ids'):
+        if not res or not res.ids:
             return
-        metadatas = res.get('metadatas') or [{} for _ in res['ids']]
-        for cid, doc, meta in zip(res['ids'], res['documents'], metadatas):
+        metadatas = res.metadatas or [{} for _ in res.ids]
+        for cid, doc, meta in zip(res.ids, res.documents, metadatas):
             if not doc:
                 continue
             if by_file and (meta or {}).get('file_id') not in (None, file_id):

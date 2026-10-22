@@ -1,9 +1,11 @@
 import asyncio
 import json
 import logging
+import os
 import sys
 
 import ftfy
+import pytesseract
 import requests
 from azure.identity import DefaultAzureCredential
 from langchain_community.document_loaders import (
@@ -22,11 +24,13 @@ from open_webui.env import (
     MINERU_MAX_MARKDOWN_BYTES,
     REQUESTS_VERIFY,
 )
+from open_webui.config import RAG_AUTO_OCR_ON_EMPTY_PDF
 from open_webui.retrieval.loaders.datalab_marker import DatalabMarkerLoader
 from open_webui.retrieval.loaders.external_document import ExternalDocumentLoader
 from open_webui.retrieval.loaders.mineru import MinerULoader
 from open_webui.retrieval.loaders.mistral import MistralLoader
 from open_webui.retrieval.loaders.paddleocr_vl import PaddleOCRVLLoader
+from open_webui.retrieval.loaders.tesseract_loader import TesseractLoader
 
 logging.basicConfig(stream=sys.stdout, level=GLOBAL_LOG_LEVEL)
 log = logging.getLogger(__name__)
@@ -252,6 +256,71 @@ class Loader:
         loader = self._get_loader(filename, file_content_type, file_path)
         try:
             docs = loader.load()
+
+            # OCR fallback for PDFs with no text
+            file_ext = file_path.split('.')[-1].lower()
+            if file_ext == 'pdf' and RAG_AUTO_OCR_ON_EMPTY_PDF:
+                # Check if all documents have empty or whitespace-only content
+                all_empty = all(not doc.page_content.strip() for doc in docs)
+                if all_empty:
+                    log.info(f'PDF "{filename}" has no extractable text, trying OCR fallback...')
+
+                    # Try Mistral OCR if configured
+                    if self.kwargs.get('MISTRAL_OCR_API_KEY'):
+                        try:
+                            loader = MistralLoader(
+                                base_url=self.kwargs.get('MISTRAL_OCR_API_BASE_URL'),
+                                api_key=self.kwargs.get('MISTRAL_OCR_API_KEY'),
+                                file_path=file_path,
+                                use_base64=self.kwargs.get('MISTRAL_OCR_USE_BASE64', False),
+                            )
+                            ocr_docs = loader.load()
+                            log.info(f'Mistral OCR fallback succeeded, extracted {len(ocr_docs)} chunks')
+                            return [
+                                Document(
+                                    page_content=ftfy.fix_text(doc.page_content), metadata=doc.metadata
+                                )
+                                for doc in ocr_docs
+                            ]
+                        except Exception as e:
+                            log.error(f'Mistral OCR fallback failed: {e}')
+
+                    # Try Paddle OCR VL if configured
+                    if self.kwargs.get('PADDLEOCR_VL_TOKEN'):
+                        try:
+                            loader = PaddleOCRVLLoader(
+                                api_url=self.kwargs.get('PADDLEOCR_VL_BASE_URL'),
+                                token=self.kwargs.get('PADDLEOCR_VL_TOKEN'),
+                                file_path=file_path,
+                            )
+                            ocr_docs = loader.load()
+                            log.info(f'PaddleOCR VL fallback succeeded, extracted {len(ocr_docs)} chunks')
+                            return [
+                                Document(
+                                    page_content=ftfy.fix_text(doc.page_content), metadata=doc.metadata
+                                )
+                                for doc in ocr_docs
+                            ]
+                        except Exception as e:
+                            log.error(f'PaddleOCR VL fallback failed: {e}')
+
+                    # Try Tesseract OCR if configured/available
+                    tesseract_path = self.kwargs.get('TESSERACT_OCR_BINARY_PATH') or os.getenv('TESSERACT_PATH', '/usr/bin/tesseract')
+                    if os.path.exists(tesseract_path) and pytesseract.get_tesseract_version():
+                        try:
+                            loader = TesseractLoader(file_path, lang=os.getenv('TESSERACT_LANG', 'rus+eng'))
+                            ocr_docs = loader.load()
+                            log.info(f'Tesseract OCR fallback succeeded, extracted {len(ocr_docs)} chunks')
+                            return [
+                                Document(
+                                    page_content=ftfy.fix_text(doc.page_content), metadata=doc.metadata
+                                )
+                                for doc in ocr_docs
+                            ]
+                        except Exception as e:
+                            log.error(f'Tesseract OCR fallback failed: {e}')
+
+                    log.warning(f'No OCR fallback available or failed for PDF "{filename}"')
         except ValueError as e:
             # PyPDFParser's image extraction crashes on PDFs whose inline
             # image byte counts don't match width*height*channels
@@ -678,6 +747,38 @@ class Loader:
                         "Processing .odt files requires the 'unstructured' package. "
                         'Install it with: pip install unstructured'
                     )
+            elif file_ext == 'rtf':
+                try:
+                    from unstructured.documents.elements import Element
+                    from unstructured.partition.rtf import partition_rtf
+
+                    elements = partition_rtf(filename=self.file_path, file=None)
+                    text_parts = []
+                    for element in elements:
+                        if hasattr(element, 'text') and element.text:
+                            text_parts.append(element.text)
+                    return [
+                        Document(
+                            page_content='\n\n'.join(text_parts) or '<No text content found>',
+                            metadata={'source': self.file_path},
+                        )
+                    ]
+                except ImportError:
+                    pass
+                try:
+                    import pypandoc
+
+                    text = pypandoc.convert_file(file_path, 'plain', format='rtf')
+                    return [
+                        Document(
+                            page_content=text.strip() if text else '<No text content found>',
+                            metadata={'source': self.file_path},
+                        )
+                    ]
+                except Exception as e:
+                    log.warning('RTF parsing failed: %s, falling back to plain text', e)
+                    loader = TextLoader(file_path, encoding=self._detect_text_encoding(file_path))
+                    return loader.load()
             elif self._is_text_file(file_ext, file_content_type):
                 loader = TextLoader(file_path, encoding=self._detect_text_encoding(file_path))
             else:

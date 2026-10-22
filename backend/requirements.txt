@@ -90,6 +90,8 @@ pillow==12.2.0
 opencv-python-headless==4.13.0.92
 rapidocr
 rank-bm25==0.2.2
+pytesseract
+pdf2image
 
 onnxruntime==1.27.0
 faster-whisper==1.2.1

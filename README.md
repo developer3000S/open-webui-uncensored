@@ -365,6 +365,58 @@ graph | agentic | tool) → Evaluation → Synthesis**, и пайплайн по
   - Параметры адаптивного оркестратора — под префиксом `rag.orchestrator.*` (например `rag.orchestrator.agentic_enabled`, `rag.orchestrator.conf_single`, `rag.orchestrator.max_latency_ms`); применяются на горячую, без рестарта. Полный перечень env-дефолтов и порогов — в [docs/RAG-ORCHESTRATOR.md](docs/RAG-ORCHESTRATOR.md).
 - После изменения параметров рекомендуется перезапустить бэкенд. Если имя переменной объявлено в `.env`, значение из файла имеет приоритет над сохранённой настройкой (см. раздел «Конфигурация развёртывания»).
 
+### 8.1. OCR-фоллбек для PDF без текстового слоя
+
+При загрузке PDF без текстового содержимого (например, сканированные изображения) включается автоматический OCR. Настройка контролируется переменной окружения `RAG_AUTO_OCR_ON_EMPTY_PDF`.
+
+**Как это работает:**
+1. При попытке извлечь текст из PDF, если содержимое пустое, запускается фоллбек через OCR.
+2. Сначала пробуются внешние OCR-двигатели (Mistral OCR, PaddleOCR-VL).
+3. Если они недоступны или не сработали, запускается локальный Tesseract OCR.
+
+**Активация:**
+```env
+RAG_AUTO_OCR_ON_EMPTY_PDF=True
+```
+
+**Настройка Tesseract OCR** (опционально):
+- `TESSERACT_OCR_BINARY_PATH` — путь к бинарнику tesseract (обычно не требуется)
+- `TESSERACT_PATH` — общая папка с материалами Tesseract
+- `TESSERACT_LANG` — язык OCR, по умолчанию `rus+eng`
+
+**Важно:** для работы Tesseract требуется установка самого tesseract-ocr и соответствующих языковых пакетов на хost-машине.
+
+### 8.2. Установка Tesseract OCR
+
+**Для работы локального OCR-движка Tesseract** необходимо установить сам `tesseract-ocr` и необходимые языковые пакеты. Ниже — инструкции для распространённых систем:
+
+**Ubuntu / Debian:**
+```bash
+# Устанавливаем Tesseract
+sudo apt-get update
+sudo apt-get install -y tesseract-ocr tesseract-ocr-rus tesseract-ocr-eng
+
+# Дополнительно требуются библиотеки для pdf2image
+sudo apt-get install -y poppler-utils
+```
+
+**CentOS / RHEL / Fedora:**
+```bash
+sudo dnf install -y tesseract tesseract-langpack-rus tesseract-langpack-eng poppler-utils
+```
+
+**macOS (Homebrew):**
+```bash
+brew install tesseract pkg-config poppler
+```
+
+**Альтернатива через pip:** если Tesseract установлен, но Python не видит его библиотеку, можно попробовать:
+```bash
+pip install pytesseract pdf2image
+```
+
+**Важно:** язык OCR задаётся переменной окружения `TESSERACT_LANG` (по умолчанию `rus+eng`). Это соответствует пакетам `tesseract-ocr-rus` и `tesseract-ocr-eng`.
+
 ### 9. Отладка
 - Просмотрите логи контейнера (`docker logs open-webui`) на наличие ошибок соединения с векторным хранилищем.
 - Убедитесь, что коллекция появилась в базе данных (например, запросом `SELECT * FROM knowledge;` при использовании PostgreSQL).
