@@ -240,7 +240,11 @@ async def process_uploaded_file(
                             )
                             await process_file(
                                 request,
-                                ProcessFileForm(file_id=file_item.id, collection_name=knowledge_id),
+                                ProcessFileForm(
+                                    file_id=file_item.id,
+                                    collection_name=knowledge_id,
+                                    force_duplicate=file_metadata.get('force_duplicate', False),
+                                ),
                                 user=user,
                                 db=db_session,
                             )
