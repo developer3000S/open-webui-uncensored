@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 🔄 **Duplicate detection pre-check.** Added a pre-check for duplicate content before proceeding with embedding. Duplicate files now return HTTP 409 with `duplicate:true` and `force_duplicate` option to allow intentional duplicates. Enhances error messages and gives users explicit control over duplicate handling.
 - ⚙️ **RAG_AUTO_OCR_ON_EMPTY_PDF setting.** New configuration option to enable/disable automatic OCR fallback for PDFs with no text. Default is `true` for better out-of-box support of scanned documents.
 
+- 🚀 **File processing timeout with progress monitoring.** Added adaptive timeout (`RAG_FILE_PROCESSING_TIMEOUT`) that monitors file upload progress. If progress updates (chunks being embedded) are detected, the timeout extends automatically, preventing premature cancellation of large files.
+- 📝 **Enhanced ExcelLoader logging.** Added detailed progression logging and error handling to `ExcelLoader` for better debugging of Excel file processing issues.
+- ⚙️ **Default timeout increased.** `RAG_FILE_PROCESSING_TIMEOUT` defaults to 1800 seconds (30 minutes), customizable via `.env` for very large files.
+
 ### Fixed
 
 - ⏳ **Uploads no longer freeze at "Uploading 0%".** A failed status stream, a failed upload, or a page refresh during an upload left the file row stuck at the very first progress tick, so the knowledge base showed a bar that never moved and no error was ever reported. The transfer-to-processing handover is now announced before the status stream is opened, a failed upload drops its row instead of leaving a frozen one, and the pending-files poll no longer overwrites this tab's live progress (or duplicates the row) while an upload is in flight.
