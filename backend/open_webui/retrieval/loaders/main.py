@@ -101,17 +101,24 @@ class ExcelLoader:
     def load(self) -> list[Document]:
         import pandas as pd
 
-        text_parts = []
-        xls = pd.ExcelFile(self.file_path)
-        for sheet_name in xls.sheet_names:
-            df = pd.read_excel(xls, sheet_name=sheet_name)
-            text_parts.append(f'Sheet: {sheet_name}\n{df.to_string(index=False)}')
-        return [
-            Document(
-                page_content='\n\n'.join(text_parts),
-                metadata={'source': self.file_path},
-            )
-        ]
+        try:
+            log.info(f"Loading Excel file: {self.file_path}")
+            text_parts = []
+            xls = pd.ExcelFile(self.file_path)
+            log.info(f"Excel file has {len(xls.sheet_names)} sheet(s)")
+            for sheet_name in xls.sheet_names:
+                log.debug(f"Reading sheet: {sheet_name}")
+                df = pd.read_excel(xls, sheet_name=sheet_name)
+                text_parts.append(f'Sheet: {sheet_name}\n{df.to_string(index=False)}')
+            return [
+                Document(
+                    page_content='\n\n'.join(text_parts),
+                    metadata={'source': self.file_path},
+                )
+            ]
+        except Exception as e:
+            log.exception(f"Error loading Excel file {self.file_path}: {e}")
+            raise
 
 
 class PptxLoader:

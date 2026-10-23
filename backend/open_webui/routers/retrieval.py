@@ -2401,7 +2401,20 @@ async def process_file(
                         'file_name': file.filename,
                         'file_content_type': file.meta.get('content_type'),
                     }
-                    docs = await loader.aload(file.filename, file.meta.get('content_type'), file_path)
+                    # Add timeout for file processing to avoid hangs
+                    file_processing_timeout = int(os.getenv('RAG_FILE_PROCESSING_TIMEOUT', '300'))
+                    try:
+                        docs = await asyncio.wait_for(
+                            loader.aload(file.filename, file.meta.get('content_type'), file_path),
+                            timeout=file_processing_timeout
+                        )
+                    except asyncio.TimeoutError:
+                        log.error(f"File processing timed out for {file.filename}")
+                        await Files.update_file_data_by_id(file.id, {'status': 'failed', 'progress': None}, db=db)
+                        raise HTTPException(
+                            status_code=status.HTTP_408_REQUEST_TIMEOUT,
+                            detail="File processing timed out"
+                        )
 
                     docs = [
                         Document(
