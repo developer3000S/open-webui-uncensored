@@ -147,6 +147,17 @@ class PptxLoader:
         ]
 
 
+class SimpleTextLoader:
+    """Simple loader that wraps pre-extracted text into a Document."""
+
+    def __init__(self, text: str, file_path: str):
+        self.text = text
+        self.file_path = file_path
+
+    def load(self) -> list[Document]:
+        return [Document(page_content=self.text, metadata={'source': self.file_path})]
+
+
 class TikaLoader:
     def __init__(self, url, file_path, mime_type=None, extract_images=None):
         self.url = url
@@ -708,10 +719,15 @@ class Loader:
 
                     loader = UnstructuredWordDocumentLoader(file_path)
                 except ImportError:
-                    raise ValueError(
-                        "Processing .doc files requires the 'unstructured' package. "
-                        'Install it with: pip install unstructured'
-                    )
+                    # Fallback: Use docx2txt which can read .doc files (though with limited formatting)
+                    try:
+                        import docx2txt
+
+                        text = docx2txt.process(file_path)
+                        loader = SimpleTextLoader(text, file_path)
+                    except ImportError:
+                        # Last resort: plain text loading
+                        loader = TextLoader(file_path, encoding=self._detect_text_encoding(file_path))
             elif file_content_type in [
                 'application/vnd.ms-excel',
                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

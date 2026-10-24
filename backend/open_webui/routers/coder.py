@@ -67,6 +67,54 @@ async def check_coder_permission(request: Request, user):
         )
 
 
+def _client_ip(request: Request) -> str | None:
+    # Учитываем прокси: первый ненулевой адрес из X-Forwarded-For
+    forwarded = request.headers.get('x-forwarded-for')
+    if forwarded:
+        return forwarded.split(',')[0].strip() or None
+    if request.client and request.client.host not in (None, '', 'testclient'):
+        return request.client.host
+    return None
+
+
+def _user_agent(request: Request) -> str | None:
+    ua = request.headers.get('user-agent')
+    return ua.strip() if ua and ua.strip() else None
+
+
+def _correlation_id(request: Request) -> str | None:
+    # Заголовок запроса (traceparent/X-Correlation-ID) или span/otel контекст
+    for header in ('x-correlation-id', 'x-request-id', 'traceparent'):
+        value = request.headers.get(header)
+        if value:
+            return value.strip().split('-')[0] if header == 'traceparent' else value.strip()
+    return None
+
+
+async def _audit(
+    request: Request,
+    user_id: str,
+    action: str,
+    target: str | None = None,
+    payload: dict | None = None,
+    db: AsyncSession = None,
+) -> None:
+    """§14.1/§11.4: записать событие аудита с сетевым и корреляционным контекстом."""
+    try:
+        await CoderAudit.record(
+            user_id=user_id,
+            action=action,
+            target=target,
+            payload=payload,
+            correlation_id=_correlation_id(request),
+            ip_address=_client_ip(request),
+            user_agent=_user_agent(request),
+            db=db,
+        )
+    except Exception:
+        log.debug('coder audit record failed', exc_info=True)
+
+
 async def _get_connection_token(user_id: str, db: AsyncSession) -> str:
     connection = await CoderGithubConnections.get_by_user_id(user_id, db)
     if not connection:
@@ -191,7 +239,7 @@ async def github_auth_callback(
         scopes=token_data['scope'],
         db=db,
     )
-    await CoderAudit.record(user_id=user_id, action='github_connect', target=gh_user['login'], db=db)
+    await _audit(request, user_id, action='github_connect', target=gh_user['login'], db=db)
     await db.commit()
     return RedirectResponse(url=_coder_redirect_url(request, 'github_connected=1'), status_code=302)
 
@@ -214,7 +262,7 @@ async def github_connection(request: Request, user=Depends(get_verified_user), d
 async def github_disconnect(request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
     await check_coder_permission(request, user)
     await CoderGithubConnections.delete_by_user_id(user.id, db)
-    await CoderAudit.record(user_id=user.id, action='github_disconnect', db=db)
+    await _audit(request, user.id, action='github_disconnect', db=db)
     return {'status': True}
 
 
@@ -526,7 +574,8 @@ async def coder_export_start(
         project_id=project.id if project else None,
         db=db,
     )
-    await CoderAudit.record(
+    await _audit(
+        request,
         user_id=user.id,
         action='export_start',
         target=f'{form.owner}/{form.repo}:{form.branch}',
@@ -544,7 +593,8 @@ async def coder_export_start(
             {'status': 'failed', 'error': f"{detail.get('code', 'CODER_EXPORT_FAILED')}: {detail.get('message', '')}"},
             db,
         )
-        await CoderAudit.record(
+        await _audit(
+            request,
             user_id=user.id,
             action='export_failed',
             target=f'{form.owner}/{form.repo}:{form.branch}',
@@ -554,7 +604,8 @@ async def coder_export_start(
         raise
     except GitHubAPIError as exc:
         await CoderExportJobs.update(job.id, {'status': 'failed', 'error': f'{exc.code}: {exc.message}'}, db)
-        await CoderAudit.record(
+        await _audit(
+            request,
             user_id=user.id,
             action='export_failed',
             target=f'{form.owner}/{form.repo}:{form.branch}',
@@ -571,7 +622,8 @@ async def coder_export_start(
         )
 
     refreshed = await CoderExportJobs.get_by_id(job.id, db)
-    await CoderAudit.record(
+    await _audit(
+        request,
         user_id=user.id,
         action='export_completed',
         target=f'{form.owner}/{form.repo}:{form.branch}',

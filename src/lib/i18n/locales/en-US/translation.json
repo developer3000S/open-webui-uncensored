@@ -2573,5 +2573,7 @@
 	"New branch name": "New branch name",
 	"Pull request is created automatically for every export.": "Pull request is created automatically for every export.",
 	"No changes yet": "No changes yet",
-	"Ask the model to generate code changes.": "Ask the model to generate code changes."
+	"Ask the model to generate code changes.": "Ask the model to generate code changes.",
+	"RAG quality hit?": "Good RAG quality",
+	"RAG quality miss?": "Bad RAG quality"
 }

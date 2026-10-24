@@ -61,6 +61,7 @@ from open_webui.retrieval.vector.main import (
     VectorDBBase,
     VectorItem,
 )
+from open_webui.retrieval.cache import get_cache_service
 
 
 class AsyncVectorDBClient:
@@ -74,6 +75,7 @@ class AsyncVectorDBClient:
 
     def __init__(self, sync_client: VectorDBBase) -> None:
         self._sync = sync_client
+        self._cache = get_cache_service()
 
     @property
     def sync(self) -> VectorDBBase:
@@ -89,13 +91,19 @@ class AsyncVectorDBClient:
         return await asyncio.to_thread(self._sync.has_collection, collection_name)
 
     async def delete_collection(self, collection_name: str) -> None:
-        return await asyncio.to_thread(self._sync.delete_collection, collection_name)
+        result = await asyncio.to_thread(self._sync.delete_collection, collection_name)
+        self._cache.invalidate_collection(collection_name)
+        return result
 
     async def insert(self, collection_name: str, items: list[VectorItem]) -> None:
-        return await asyncio.to_thread(self._sync.insert, collection_name, items)
+        result = await asyncio.to_thread(self._sync.insert, collection_name, items)
+        self._cache.invalidate_collection(collection_name)
+        return result
 
     async def upsert(self, collection_name: str, items: list[VectorItem]) -> None:
-        return await asyncio.to_thread(self._sync.upsert, collection_name, items)
+        result = await asyncio.to_thread(self._sync.upsert, collection_name, items)
+        self._cache.invalidate_collection(collection_name)
+        return result
 
     async def search(
         self,
@@ -104,7 +112,30 @@ class AsyncVectorDBClient:
         filter: dict | None = None,
         limit: int = 10,
     ) -> SearchResult | None:
-        return await asyncio.to_thread(self._sync.search, collection_name, vectors, filter, limit)
+        # Generate cache key
+        cache_key = self._cache.generate_key(
+            collection_name=collection_name,
+            query=None,
+            vectors=vectors,
+            limit=limit,
+            filter=filter,
+        )
+
+        # Try cache first
+        cached_result = self._cache.get(cache_key)
+        if cached_result is not None:
+            return cached_result
+
+        # Execute search
+        result = await asyncio.to_thread(
+            self._sync.search, collection_name, vectors, filter, limit
+        )
+
+        # Store in cache if result is not None
+        if result is not None:
+            self._cache.set(cache_key, result)
+
+        return result
 
     async def hybrid_search(
         self,
@@ -115,7 +146,23 @@ class AsyncVectorDBClient:
         limit: int = 10,
         hybrid_bm25_weight: float = 0.5,
     ) -> SearchResult | None:
-        return await asyncio.to_thread(
+        # Generate cache key
+        cache_key = self._cache.generate_key(
+            collection_name=collection_name,
+            query=query,
+            vectors=vectors,
+            limit=limit,
+            filter=filter,
+            hybrid_bm25_weight=hybrid_bm25_weight,
+        )
+
+        # Try cache first
+        cached_result = self._cache.get(cache_key)
+        if cached_result is not None:
+            return cached_result
+
+        # Execute search
+        result = await asyncio.to_thread(
             self._sync.hybrid_search,
             collection_name,
             query,
@@ -124,6 +171,12 @@ class AsyncVectorDBClient:
             limit,
             hybrid_bm25_weight,
         )
+
+        # Store in cache if result is not None
+        if result is not None:
+            self._cache.set(cache_key, result)
+
+        return result
 
     async def query(
         self,
@@ -134,7 +187,8 @@ class AsyncVectorDBClient:
         return await asyncio.to_thread(self._sync.query, collection_name, filter, limit)
 
     async def get(self, collection_name: str) -> GetResult | None:
-        return await asyncio.to_thread(self._sync.get, collection_name)
+        result = await asyncio.to_thread(self._sync.get, collection_name)
+        return result
 
     async def get_with_embeddings(
         self,
@@ -149,10 +203,14 @@ class AsyncVectorDBClient:
         ids: list[str] | None = None,
         filter: dict | None = None,
     ) -> None:
-        return await asyncio.to_thread(self._sync.delete, collection_name, ids, filter)
+        result = await asyncio.to_thread(self._sync.delete, collection_name, ids, filter)
+        self._cache.invalidate_collection(collection_name)
+        return result
 
     async def reset(self) -> None:
-        return await asyncio.to_thread(self._sync.reset)
+        result = await asyncio.to_thread(self._sync.reset)
+        self._cache.clear()
+        return result
 
 
 ASYNC_VECTOR_DB_CLIENT = AsyncVectorDBClient(VECTOR_DB_CLIENT)

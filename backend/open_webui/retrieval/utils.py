@@ -29,6 +29,9 @@ from open_webui.config import (
     RAG_EMBEDDING_PREFIX_FIELD_NAME,
     RAG_EMBEDDING_QUERY_PREFIX,
     RAG_EMBEDDING_REQUEST_TIMEOUT,
+    RAG_CONTEXTUAL_RERANK,
+    RAG_CONTEXTUAL_HISTORY_LENGTH,
+    RAG_CONTEXTUAL_RERANK_WEIGHT,
 )
 
 import time
@@ -73,6 +76,7 @@ from open_webui.models.knowledge import Knowledges
 from open_webui.models.notes import Notes
 from open_webui.models.users import UserModel
 from open_webui.retrieval.external import retrieve_external_knowledge
+from open_webui.retrieval.query_rephrasing import get_query_rephrasing_service
 from open_webui.retrieval.loaders.youtube import YoutubeLoader
 from open_webui.retrieval.vector.async_client import ASYNC_VECTOR_DB_CLIENT
 from open_webui.retrieval.vector.factory import VECTOR_DB_CLIENT
@@ -85,7 +89,7 @@ from open_webui.utils.misc import get_message_list
 log = logging.getLogger(__name__)
 
 
-from typing import Any
+from typing import Any, List, Optional
 
 from langchain_core.callbacks import CallbackManagerForRetrieverRun
 from langchain_core.retrievers import BaseRetriever
@@ -339,6 +343,65 @@ class VectorSearchRetriever(BaseRetriever):
         )
 
         return _search_result_to_documents(result)
+
+
+class GraphSearchRetriever(BaseRetriever):
+    """Graph-based retriever using GraphRAG."""
+    collection_name: str  # Knowledge ID
+    embedding_function: Any
+
+    def _get_relevant_documents(self, query: str, *, run_manager: CallbackManagerForRetrieverRun) -> list[Document]:
+        raise NotImplementedError("GraphSearchRetriever only supports async retrieval")
+
+    async def _aget_relevant_documents(
+        self,
+        query: str,
+        *,
+        run_manager: CallbackManagerForRetrieverRun,
+    ) -> list[Document]:
+        # Import inside the function to avoid circular dependencies
+        from open_webui.retrieval.graphrag.retrieval import graph_retrieve_embedding
+        from open_webui.models.knowledge import Knowledges
+
+        # Check if graph is enabled for this knowledge
+        kb = await Knowledges.get_knowledge_by_id(self.collection_name)
+        if not kb:
+            return []
+
+        meta = (kb.meta or {}).get('graph') if kb else None
+        if not meta or meta.get('status') != 'indexed':
+            return []
+
+        # Get files associated with this knowledge
+        files = await Knowledges.get_files_by_id(kb.id)
+        if not files:
+            return []
+
+        gids = [f.id for f in files]
+        if not gids:
+            return []
+
+        # Embed the query
+        query_embedding = await self.embedding_function(query, RAG_EMBEDDING_QUERY_PREFIX)
+        if not query_embedding:
+            return []
+
+        # Retrieve graph context
+        context = await graph_retrieve_embedding(query_embedding, gids)
+        if not context:
+            return []
+
+        # Return as a single document
+        return [
+            Document(
+                page_content=context,
+                metadata={
+                    'source': f'{kb.name or kb.id}: граф знаний',
+                    'file_id': kb.id,
+                    'name': 'knowledge-graph',
+                }
+            )
+        ]
 
 
 def query_doc(collection_name: str, query_embedding: list[float], k: int, user: UserModel = None):
@@ -625,6 +688,134 @@ async def query_doc_with_hybrid_search(
         raise e
 
 
+async def query_doc_with_multistrategy_search(
+    collection_name: str,
+    collection_result: GetResult | None,
+    query: str,
+    embedding_function,
+    k: int,
+    reranking_function,
+    k_reranker: int,
+    r: float,
+    bm25_weight: float,
+    vector_weight: float,
+    graph_weight: float,
+    enable_enriched_texts: bool = False,
+    conversation_history: Optional[List[str]] = None,
+) -> dict:
+    try:
+        if collection_result is None:
+            collection_result = await ASYNC_VECTOR_DB_CLIENT.get(collection_name=collection_name)
+
+        if not collection_result or not collection_result.documents or not collection_result.documents[0]:
+            log.warning(f'query_doc_with_multistrategy_search:no_docs {collection_name}')
+            return {'documents': [], 'metadatas': [], 'distances': []}
+
+        original_texts = collection_result.documents[0]
+        bm25_metadatas = [
+            {**meta, CHUNK_HASH_KEY: _content_hash(original_texts[idx])}
+            for idx, meta in enumerate(collection_result.metadatas[0])
+        ]
+
+        bm25_texts = get_enriched_texts(collection_result) if enable_enriched_texts else original_texts
+
+        bm25_retriever = BM25Retriever.from_texts(
+            texts=bm25_texts,
+            metadatas=bm25_metadatas,
+        )
+        bm25_retriever.k = k
+
+        vector_search_retriever = VectorSearchRetriever(
+            collection_name=collection_name,
+            embedding_function=embedding_function,
+            top_k=k,
+        )
+
+        graph_search_retriever = GraphSearchRetriever(
+            collection_name=collection_name,
+            embedding_function=embedding_function,
+        )
+
+        # Normalize weights: ensure they sum to 1
+        total_weight = bm25_weight + vector_weight + graph_weight
+        if total_weight <= 0:
+            raise ValueError("Weights must sum to a positive value")
+
+        bm25_weight = bm25_weight / total_weight
+        vector_weight = vector_weight / total_weight
+        graph_weight = graph_weight / total_weight
+
+        # Build ensemble with all three retrievers
+        retrievers = []
+        weights = []
+        if bm25_weight > 0:
+            retrievers.append(bm25_retriever)
+            weights.append(bm25_weight)
+        if vector_weight > 0:
+            retrievers.append(vector_search_retriever)
+            weights.append(vector_weight)
+        if graph_weight > 0:
+            retrievers.append(graph_search_retriever)
+            weights.append(graph_weight)
+
+        if not retrievers:
+            raise ValueError("No retrievers selected")
+
+        ensemble_retriever = EnsembleRetriever(
+            retrievers=retrievers,
+            weights=weights,
+            id_key=CHUNK_HASH_KEY,
+        )
+
+        # Choose compressor based on contextual rerank configuration
+        if RAG_CONTEXTUAL_RERANK and conversation_history:
+            compressor = ContextualRerankCompressor(
+                embedding_function=embedding_function,
+                top_n=k_reranker,
+                reranking_function=reranking_function,
+                r_score=r,
+                conversation_history=conversation_history,
+                context_weight=RAG_CONTEXTUAL_RERANK_WEIGHT,
+            )
+        else:
+            compressor = RerankCompressor(
+                embedding_function=embedding_function,
+                top_n=k_reranker,
+                reranking_function=reranking_function,
+                r_score=r,
+            )
+
+        compression_retriever = ContextualCompressionRetriever(
+            base_compressor=compressor, base_retriever=ensemble_retriever
+        )
+
+        result = await compression_retriever.ainvoke(query)
+
+        distances = [d.metadata.get('score') for d in result]
+        documents = [d.page_content for d in result]
+        metadatas = [d.metadata for d in result]
+
+        if k < k_reranker:
+            sorted_items = sorted(zip(distances, documents, metadatas), key=lambda x: x[0], reverse=True)
+            sorted_items = sorted_items[:k]
+            if sorted_items:
+                distances, documents, metadatas = map(list, zip(*sorted_items))
+            else:
+                distances, documents, metadatas = [], [], []
+
+        result = {
+            'distances': [distances],
+            'documents': [documents],
+            'metadatas': [metadatas],
+        }
+
+        log.info('query_doc_with_multistrategy_search:result ' + f'{result["metadatas"]} {result["distances"]}')
+        return result
+    except Exception as e:
+        log.exception(f'Error querying doc {collection_name} with multistrategy search: {e}')
+        raise e
+
+
 def merge_get_results(get_results: list[dict]) -> dict:
     # Initialize lists to store combined data
     combined_documents = []
@@ -712,6 +903,7 @@ async def query_collection(
     queries: list[str],
     embedding_function,
     k: int,
+    chat_id: str | None = None,
 ) -> dict:
     config = await Config.get_many(
         'rag.enable_hybrid_search',
@@ -719,7 +911,54 @@ async def query_collection(
         'rag.relevance_threshold',
         'rag.hybrid_bm25_weight',
         'rag.enable_hybrid_search_enriched_texts',
+        'rag.enable_multistrategy_search',
+        'rag.multistrategy_bm25_weight',
+        'rag.multistrategy_vector_weight',
+        'rag.multistrategy_graph_weight',
+        'rag.contextual_rerank',
     )
+    # Fetch conversation history if contextual rerank is enabled and chat_id is provided
+    conversation_history = []
+    if config.get('rag.contextual_rerank') and chat_id:
+        try:
+            # Get messages for the chat
+            messages_map = await Chats.get_messages_map_by_chat_id(chat_id)
+            if messages_map:
+                # Extract messages, sort by time, and take last N
+                messages = list(messages_map.values())
+                # Sort by created_at (default field, fall back to creation time)
+                messages.sort(key=lambda m: m.get('created_at', 0))
+                # Take the most recent RAG_CONTEXTUAL_HISTORY_LENGTH messages
+                recent_messages = messages[-RAG_CONTEXTUAL_HISTORY_LENGTH:]
+                conversation_history = [msg.get('message') for msg in recent_messages if msg.get('message')]
+        except Exception as e:
+            log.debug(f'Failed to fetch conversation history for chat {chat_id}: {e}')
+
+    # When request is provided, try multistrategy search first if enabled
+    if request and config.get('rag.enable_multistrategy_search'):
+        try:
+            reranking_function = (
+                (lambda query, documents: request.app.state.RERANKING_FUNCTION(query, documents))
+                if request.app.state.RERANKING_FUNCTION
+                else None
+            )
+            return await query_collection_with_multistrategy_search(
+                collection_names=collection_names,
+                queries=queries,
+                embedding_function=embedding_function,
+                k=k,
+                reranking_function=reranking_function,
+                k_reranker=config.get('rag.top_k_reranker'),
+                r=config.get('rag.relevance_threshold'),
+                bm25_weight=config.get('rag.multistrategy_bm25_weight'),
+                vector_weight=config.get('rag.multistrategy_vector_weight'),
+                graph_weight=config.get('rag.multistrategy_graph_weight'),
+                enable_enriched_texts=config.get('rag.enable_hybrid_search_enriched_texts'),
+                conversation_history=conversation_history,
+            )
+        except Exception as e:
+            log.debug(f'Multi-strategy search failed, falling back to hybrid search: {e}')
+
     # When request is provided, try hybrid search + reranking if enabled
     if request and config.get('rag.enable_hybrid_search'):
         try:
@@ -887,6 +1126,90 @@ async def query_collection_with_hybrid_search(
 
     if error and not results:
         raise Exception('Hybrid search failed for all collections. Using Non-hybrid search as fallback.')
+
+    return merge_and_sort_query_results(results, k=k)
+
+
+async def query_collection_with_multistrategy_search(
+    collection_names: list[str],
+    queries: list[str],
+    embedding_function,
+    k: int,
+    reranking_function,
+    k_reranker: int,
+    r: float,
+    bm25_weight: float,
+    vector_weight: float,
+    graph_weight: float,
+    enable_enriched_texts: bool = False,
+    conversation_history: Optional[List[str]] = None,
+) -> dict:
+    results = []
+    error = False
+
+    # Fetch every collection's contents once up front so the
+    # per-query/per-document loop below can reuse them. Each fetch
+    # offloads to a worker thread, so run them concurrently with
+    # `asyncio.gather` instead of awaiting them serially — otherwise
+    # latency scales linearly with `len(collection_names)`.
+    log.debug(
+        'query_collection_with_multistrategy_search: prefetching %d collections',
+        len(collection_names),
+    )
+
+    async def _fetch_collection(name: str):
+        try:
+            return name, await ASYNC_VECTOR_DB_CLIENT.get(collection_name=name)
+        except Exception as e:
+            log.exception(f'Failed to fetch collection {name}: {e}')
+            return name, None
+
+    collection_results = dict(await asyncio.gather(*(_fetch_collection(name) for name in collection_names)))
+
+    log.info(f'Starting multistrategy search for {len(queries)} queries in {len(collection_names)} collections...')
+
+    async def process_query(collection_name, query):
+        try:
+            result = await query_doc_with_multistrategy_search(
+                collection_name=collection_name,
+                collection_result=collection_results[collection_name],
+                query=query,
+                embedding_function=embedding_function,
+                k=k,
+                reranking_function=reranking_function,
+                k_reranker=k_reranker,
+                r=r,
+                bm25_weight=bm25_weight,
+                vector_weight=vector_weight,
+                graph_weight=graph_weight,
+                enable_enriched_texts=enable_enriched_texts,
+                conversation_history=conversation_history,
+            )
+            return result, None
+        except Exception as e:
+            log.exception(f'Error when querying the collection with multistrategy search: {e}')
+            return None, e
+
+    # Prepare tasks for all collections and queries
+    # Avoid running any tasks for collections that failed to fetch data (have assigned None)
+    tasks = [
+        (collection_name, query)
+        for collection_name in collection_names
+        if collection_results[collection_name] is not None
+        for query in queries
+    ]
+
+    # Run all queries in parallel using asyncio.gather
+    task_results = await asyncio.gather(*[process_query(collection_name, query) for collection_name, query in tasks])
+
+    for result, err in task_results:
+        if err is not None:
+            error = True
+        elif result is not None:
+            results.append(result)
+
+    if error and not results:
+        raise Exception('Multi-strategy search failed for all collections. Using Non-hybrid search as fallback.')
 
     return merge_and_sort_query_results(results, k=k)
 
@@ -1319,8 +1642,18 @@ async def _emit_progress(on_progress, processed: int, total: int) -> None:
 
     A failing hook must never abort an embedding job, so errors are swallowed here.
     """
+    # Перефразировка запроса через LLM (если включено)
+    _rephrasing_service = get_query_rephrasing_service()
+    if _rephrasing_service:
+        try:
+            rephrased_query, _ = _rephrasing_service.rephrase_sync(query)
+            query = rephrased_query
+        except Exception:
+            pass  # Не влиять на оригинальный запрос
+
     if on_progress is None:
         return
+
     try:
         result = on_progress(processed, total)
         if inspect.isawaitable(result):
@@ -2091,6 +2424,71 @@ class RerankCompressor(BaseDocumentCompressor):
                     page_content=doc.page_content,
                     metadata=metadata,
                 )
+                final_results.append(doc)
+            return final_results
+        else:
+            log.warning('No valid scores found, check your reranking function. Returning original documents.')
+            return documents
+
+
+class ContextualRerankCompressor(RerankCompressor):
+    """Rerank documents using query relevance and conversation history context."""
+    conversation_history: Optional[List[str]] = None
+    context_weight: float = RAG_CONTEXTUAL_RERANK_WEIGHT
+
+    async def acompress_documents(
+        self,
+        documents: Sequence[Document],
+        query: str,
+        callbacks: Callbacks | None = None,
+    ) -> Sequence[Document]:
+        doc_texts = [doc.page_content for doc in documents]
+
+        # Compute base scores (query-document similarity)
+        scores = None
+        if self.reranking_function is not None:
+            scores = await asyncio.to_thread(self.reranking_function, query, doc_texts)
+            if not isinstance(scores, list):
+                scores = list(scores)
+        else:
+            from sentence_transformers import util as st_util
+            query_embedding = await self.embedding_function(query, RAG_EMBEDDING_QUERY_PREFIX)
+            doc_embeddings = await self.embedding_function(doc_texts, RAG_EMBEDDING_CONTENT_PREFIX)
+            scores = st_util.cos_sim(query_embedding, doc_embeddings)[0].tolist()
+
+        # Combine with conversation history context if available
+        if self.conversation_history and len(self.conversation_history) > 0:
+            from sentence_transformers import util as st_util
+            # Use unique history messages to avoid duplicate embeddings
+            unique_history = list(set(self.conversation_history))
+            history_embeddings = await self.embedding_function(unique_history, RAG_EMBEDDING_QUERY_PREFIX)
+            doc_embeddings = await self.embedding_function(doc_texts, RAG_EMBEDDING_CONTENT_PREFIX)
+            context_sims = []
+            for doc_emb in doc_embeddings:
+                sims = st_util.cos_sim(doc_emb, history_embeddings)[0].tolist()
+                avg_sim = sum(sims) / len(sims) if sims else 0.0
+                context_sims.append(avg_sim)
+
+            # Weighted combination: query_score * (1 - weight) + context_sim * weight
+            combined = []
+            for s, cs in zip(scores, context_sims):
+                new_score = s * (1 - self.context_weight) + cs * self.context_weight
+                combined.append(new_score)
+            scores = combined
+
+        # Apply r_score filter and slice to top_n
+        if scores is not None:
+            docs_with_scores = list(zip(documents, scores))
+            if self.r_score:
+                filtered = [(d, s) for d, s in docs_with_scores if s >= self.r_score]
+            else:
+                filtered = docs_with_scores
+            sorted_docs = sorted(filtered, key=lambda x: x[1], reverse=True)
+            final_results = []
+            for doc, doc_score in sorted_docs[:self.top_n]:
+                metadata = doc.metadata
+                metadata['score'] = doc_score
+                doc = Document(page_content=doc.page_content, metadata=metadata)
                 final_results.append(doc)
             return final_results
         else:

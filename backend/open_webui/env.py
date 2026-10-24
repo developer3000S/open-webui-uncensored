@@ -715,6 +715,20 @@ except ValueError:
     AIOHTTP_POOL_DNS_TTL = 300
 
 RAG_EMBEDDING_TIMEOUT = os.getenv('RAG_EMBEDDING_TIMEOUT', '')
+RAG_CACHE_BACKEND = os.getenv('RAG_CACHE_BACKEND', 'memory')
+
+RAG_REDIS_HOST = os.getenv('RAG_REDIS_HOST', 'localhost')
+RAG_REDIS_PORT = int(os.getenv('RAG_REDIS_PORT', '6379'))
+RAG_REDIS_DB = int(os.getenv('RAG_REDIS_DB', '0'))
+RAG_REDIS_PASSWORD = os.getenv('RAG_REDIS_PASSWORD', None)
+RAG_REDIS_MAX_CONNECTIONS = int(os.getenv('RAG_REDIS_MAX_CONNECTIONS', '50'))
+
+# Репрайзинг запросов через LLM
+RAG_QUERY_REPHRASER='true'
+RAG_QUERY_REPHRASER_MODEL='mistral'
+RAG_QUERY_REPHRASER_EMBEDDING_ENGINE='openai'
+RAG_QUERY_REPHRASER_API_BASE_URL='https://api.openai.com/v1'
+
 
 if RAG_EMBEDDING_TIMEOUT == '':
     RAG_EMBEDDING_TIMEOUT = None

@@ -52,6 +52,7 @@ from open_webui.env import (
 from open_webui.events import EVENTS, publish_event
 from open_webui.internal.db import get_async_db, get_async_session
 from open_webui.models.config import Config
+from open_webui.models.files import File as FileModel
 from open_webui.models.files import FileModel, Files, FileUpdateForm
 from open_webui.models.knowledge import Knowledges
 
@@ -2231,6 +2232,39 @@ async def check_duplicate_pre_embedding(
 
     existing_file_ids: set[str] = set()
 
+    # === Deduplication by path and metadata ===
+    try:
+        file = await db.get(FileModel, file_id)
+        if file:
+            # Check by path
+            if file.path:
+                duplicate_by_path = await db.query(FileModel).filter(
+                    FileModel.path == file.path,
+                    FileModel.id != file_id
+                ).first()
+                if duplicate_by_path:
+                    existing_file_ids.add(duplicate_by_path.id)
+
+            # Check by metadata (filename, size, content_type)
+            if file.meta and file.filename:
+                meta_size = file.meta.get('size')
+                meta_content_type = file.meta.get('content_type')
+                if meta_size is not None:  # size is a good discriminator
+                    # Query for files with same filename and size
+                    query = db.query(FileModel).filter(
+                        FileModel.id != file_id,
+                        FileModel.filename == file.filename,
+                        FileModel.meta['size'] == meta_size
+                    )
+                    # Only add content_type filter if present
+                    if meta_content_type:
+                        query = query.filter(FileModel.meta['content_type'] == meta_content_type)
+                    duplicate_by_meta = query.first()
+                    if duplicate_by_meta:
+                        existing_file_ids.add(duplicate_by_meta.id)
+    except Exception:
+        log.debug('deduplication by path or metadata failed', exc_info=True)
+
     if target_collection:
         own_collection = f'file-{file_id}'
         collections_to_check = [target_collection]
@@ -3584,6 +3618,7 @@ class QueryCollectionsForm(BaseModel):
 async def query_collection_handler(
     request: Request,
     form_data: QueryCollectionsForm,
+    chat_id: str | None = Query(None),
     user=Depends(get_verified_user),
 ):
     config = await get_retrieval_config()
@@ -3625,6 +3660,7 @@ async def query_collection_handler(
                     query, prefix=prefix, user=user
                 ),
                 k=form_data.k if form_data.k else config.TOP_K,
+                chat_id=chat_id,
             )
 
     except HTTPException:
@@ -3901,3 +3937,15 @@ async def process_files_batch(
         },
     )
     return response
+
+@router.get('/cache/stats')
+async def get_cache_stats(request: Request, user=Depends(get_verified_user)):
+    """Информация о работе кэширования поиска RAG."""
+    stats = get_cache_service().get_stats()
+    return stats
+
+@router.get('/cache/stats')
+async def get_cache_stats(request: Request, user=Depends(get_verified_user)):
+    """Информация о работе кэширования поиска RAG."""
+    stats = get_cache_service().get_stats()
+    return stats

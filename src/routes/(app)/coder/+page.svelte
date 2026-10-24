@@ -17,10 +17,16 @@
 		getCoderTree,
 		batchGetCoderFiles,
 		searchCoderRepo,
+		listProjects,
+		createProject,
+		deleteProject,
+		getProject,
 		type CoderConnection,
 		type CoderChangeFile,
 		type CoderRepo,
-		type CoderTreeEntry
+		type CoderTreeEntry,
+		type Project,
+		type CreateProjectForm
 	} from '$lib/apis/coder';
 	import { chatCompletion } from '$lib/apis/openai';
 
@@ -40,10 +46,16 @@
 	let oauthConfigured = false;
 	let connection: CoderConnection = { connected: false };
 
-	// sub-navigation: workspace (chat) | environment (connected repositories)
-	type CoderTab = 'workspace' | 'environment';
+	// sub-navigation: workspace (chat) | environment (connected repositories) | projects
+	type CoderTab = 'workspace' | 'environment' | 'projects';
 	let activeTab: CoderTab = 'workspace';
 	let environmentPanel: RepositoryEnvironmentPanel | undefined = undefined;
+
+	// Project state
+	let projects: Project[] = [];
+	let loadingProjects = false;
+	let showCreateProject = false;
+	let newProjectName = '';
 
 	// repository context
 	let owner = '';
@@ -437,6 +449,75 @@ The system will execute it and return matching file snippets in your next turn. 
 		showExport = true;
 	};
 
+	// Project management functions
+	async function loadProjects() {
+		loadingProjects = true;
+		try {
+			projects = await listProjects(token);
+		} catch (e: any) {
+			toast.error(e?.message ?? 'Failed to load projects');
+		} finally {
+			loadingProjects = false;
+		}
+	}
+
+	async function handleCreateProject() {
+		if (!newProjectName.trim()) return;
+		if (!(owner && onLoadRepo && branch)) {
+			toast.error($i18n.t('No repository selected'));
+			return;
+		}
+		const form: CreateProjectForm = {
+			owner,
+			repo,
+			default_branch: branch
+		};
+		try {
+			await createProject(token, form);
+			newProjectName = '';
+			await loadProjects();
+		} catch (e: any) {
+			toast.error(e?.message ?? 'Failed to create project');
+		}
+	}
+
+	async function handleDeleteProject(projectId: string) {
+		if (!confirm('Are you sure you want to delete this project?')) return;
+		try {
+			await deleteProject(token, projectId);
+			await loadProjects();
+		} catch (e: any) {
+			toast.error(e?.message ?? 'Failed to delete project');
+		}
+	}
+
+	async function handleLoadProject(project: Project) {
+		if (!project.id) return;
+		try {
+			const loaded = await getProject(token, project.id);
+			owner = loaded.owner;
+			repo = loaded.repo;
+			branch = loaded.default_branch ?? '';
+			activeTab = 'workspace';
+			await loadRepoContext();
+			toast.success(`Project ${loaded.owner}/${loaded.repo} loaded`);
+		} catch (e: any) {
+			toast.error(e?.message ?? 'Failed to load project');
+		}
+	}
+
+	function toggleCreateProject(visible?: boolean) {
+		if (visible !== undefined) {
+			showCreateProject = visible;
+		} else {
+			showCreateProject = !showCreateProject;
+		}
+	}
+
+	$: if (activeTab === 'projects') {
+		loadProjects();
+	}
+
 	onMount(async () => {
 		if (!browser) return;
 		token = localStorage.token ?? '';
@@ -520,7 +601,7 @@ The system will execute it and return matching file snippets in your next turn. 
 					<div class="font-semibold truncate">{$i18n.t('Coder')}</div>
 				</div>
 
-				<!-- Sub-navigation: Workspace / Environment -->
+				<!-- Sub-navigation: Workspace / Environment / Projects -->
 				<div class="flex items-center gap-0.5 rounded-xl bg-gray-100 dark:bg-gray-800 p-0.5 text-xs shrink-0">
 					<button
 						type="button"
@@ -535,6 +616,13 @@ The system will execute it and return matching file snippets in your next turn. 
 							? 'bg-white dark:bg-gray-700 shadow-sm font-medium text-black dark:text-white'
 							: 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}"
 						on:click={() => (activeTab = 'environment')}>{$i18n.t('Environment')}</button
+					>
+					<button
+						type="button"
+						class="px-2.5 py-1 rounded-lg transition {activeTab === 'projects'
+							? 'bg-white dark:bg-gray-700 shadow-sm font-medium text-black dark:text-white'
+							: 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}"
+						on:click={() => (activeTab = 'projects')}>{$i18n.t('Projects')}</button
 					>
 				</div>
 			</div>
@@ -589,7 +677,75 @@ The system will execute it and return matching file snippets in your next turn. 
 					</div>
 				</div>
 			</div>
-		{:else}
+		{:else if activeTab === 'projects'}
+			<div class="flex-1 min-h-0 overflow-y-auto scrollbar-thin p-4">
+				<div class="max-w-3xl mx-auto">
+					<div class="flex items-center justify-between mb-4">
+						<h2 class="text-lg font-bold">{$i18n.t('Saved Projects')}</h2>
+						<button
+							type="button"
+							class="px-3 py-1 text-sm bg-gray-900 text-white dark:bg-white dark:text-gray-900 rounded-lg hover:bg-gray-700 dark:hover:bg-gray-300"
+							on:click=toggleCreateProject}>
+							{$i18n.t('Create Project')}
+						</button>
+					</div>
+					{#if showCreateProject}
+						<div class="mb-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+							<h3 class="font-semibold mb-2">{$i18n.t('Create New Project')}</h3>
+							<input
+								type="text"
+								bind:value={newProjectName}
+								placeholder="Project name (optional)"
+								class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
+							/>
+							<p class="text-xs text-gray-500 mt-1">{$i18n.t('Currently bound to:') :sourceRepo}</p>
+							<div class="flex gap-2 mt-2">
+								<button
+									type="button"
+									class="px-3 py-1 bg-gray-900 text-white dark:bg-white dark:text-gray-900 rounded-lg text-sm hover:bg-gray-700 dark:hover:bg-gray-300"
+									on:click={handleCreateProject}>
+									{$i18n.t('Create')}
+								</button>
+								<button
+									type="button"
+									class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg text-sm"
+									on:click={() => toggleCreateProject(false)}>
+									{$i18n.t('Cancel')}
+								</button>
+							</div>
+						</div>
+					{/if}
+					{#if loadingProjects}
+						<div class="text-gray-500">{$i18n.t('Loading projects...')}</div>
+					{:else if projects.length === 0}
+						<div class="text-gray-500 text-center py-10">{$i18n.t('No projects saved yet. Create one to get started.')}</div>
+					{:else}
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+							{#each projects as project (project.id)}
+								<div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-400 dark:hover:border-gray-500">
+									<div class="font-semibold mb-1">{project.owner}/{project.repo}</div>
+									<div class="text-sm text-gray-500 mb-2">{project.default_branch}</div>
+									<div class="flex gap-2">
+										<button
+											type="button"
+											class="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
+											on:click={() => handleLoadProject(project)}>
+											{$i18n.t('Load')}
+										</button>
+										<button
+											type="button"
+											class="px-3 py-1 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600"
+											on:click={() => handleDeleteProject(project.id)}>
+											{$i18n.t('Delete')}
+										</button>
+									</div>
+								</div>
+							{/each}
+						</div>
+					{/if}
+				</div>
+			</div>
+			:else
 			<div class="flex flex-1 min-h-0">
 			<!-- Left: repository panel -->
 			<div class="w-[300px] shrink-0 border-r border-gray-100 dark:border-gray-800 hidden md:flex flex-col min-h-0">

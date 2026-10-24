@@ -131,6 +131,7 @@ from open_webui.events import (
     get_event_catalog as get_event_catalog_items,
 )
 from open_webui.internal.db import engine, get_async_session
+from open_webui.retrieval.query_rephrasing import init_query_rephrasing_service
 from open_webui.models.access_grants import AccessGrants
 from open_webui.models.channels import Channels
 from open_webui.models.chats import ChatForm, Chats
@@ -343,6 +344,9 @@ async def lifespan(app: FastAPI):
     # when the first user lands on the / route.
     log.info('Installing external dependencies of functions and tools...')
     await install_tool_and_function_dependencies()
+
+    # Initialize query rephrasing service with configuration
+    init_query_rephrasing_service()
 
     app.state.redis = get_redis_client(async_mode=True)
 

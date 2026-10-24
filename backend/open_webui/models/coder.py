@@ -84,6 +84,11 @@ class CoderAuditEvent(Base):
     action = Column(Text, nullable=False)  # e.g. github_connect | export_start | export_completed | export_failed
     target = Column(Text, nullable=True)  # e.g. owner/repo[:branch]
     payload = Column(JSON, nullable=True)  # без секретов и без содержимого файлов
+    # §11.4: correlation/id контекста запроса для склейки событий одного вызова
+    correlation_id = Column(Text, nullable=True)
+    # §11.4: сетевой контекст события
+    ip_address = Column(Text, nullable=True)
+    user_agent = Column(Text, nullable=True)
     created_at = Column(BigInteger, nullable=False)
 
     __table_args__ = (
@@ -159,6 +164,9 @@ class CoderAuditEventModel(BaseModel):
     action: str
     target: str | None = None
     payload: dict | None = None
+    correlation_id: str | None = None
+    ip_address: str | None = None
+    user_agent: str | None = None
     created_at: int
 
 
@@ -275,6 +283,10 @@ class CoderProjects:
         await db.flush()
         return project
 
+    async def delete(self, project_id: str, db: AsyncSession) -> bool:
+        result = await db.execute(delete(CoderProject).where(CoderProject.id == project_id))
+        return result.rowcount > 0
+
 
 class CoderExportJobs:
     async def get_by_id(self, job_id: str, db: AsyncSession) -> CoderExportJob | None:
@@ -346,6 +358,9 @@ class CoderAudit:
         action: str,
         target: str | None = None,
         payload: dict | None = None,
+        correlation_id: str | None = None,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
         db: AsyncSession = None,
     ) -> CoderAuditEvent:
         event = CoderAuditEvent(
@@ -354,6 +369,9 @@ class CoderAudit:
             action=action,
             target=target,
             payload=payload,
+            correlation_id=correlation_id,
+            ip_address=ip_address,
+            user_agent=user_agent,
             created_at=int(time.time()),
         )
         db.add(event)
@@ -366,6 +384,13 @@ class CoderAudit:
             .where(CoderAuditEvent.user_id == user_id)
             .order_by(CoderAuditEvent.created_at.desc())
             .limit(limit)
+        )
+        return result.scalars().all()
+
+    async def list_all(self, db: AsyncSession, limit: int = 100) -> list[CoderAuditEvent]:
+        """Admin overview: audit events across all users (§14.1)."""
+        result = await db.execute(
+            select(CoderAuditEvent).order_by(CoderAuditEvent.created_at.desc()).limit(limit)
         )
         return result.scalars().all()
 

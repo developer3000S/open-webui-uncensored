@@ -49,6 +49,7 @@ from open_webui.retrieval.vector.async_client import ASYNC_VECTOR_DB_CLIENT
 from open_webui.routers.audio import transcribe
 from open_webui.routers.retrieval import ProcessFileForm, cleanup_cancelled_embedding, embedding_cancelled, process_file
 from open_webui.storage.provider import Storage
+from open_webui.retrieval.secret_scanning import get_secret_scanner
 from open_webui.utils.auth import get_admin_user, get_verified_user
 from open_webui.utils.misc import strict_match_mime_type
 from pydantic import BaseModel
@@ -274,6 +275,20 @@ async def process_uploaded_file(
                 return
 
     try:
+        # Secret scanning
+        scanner = get_secret_scanner()
+        findings = scanner.scan_file_path(file_path)
+        if scanner.should_block(findings):
+            # Delete the file because it's blocked
+            await asyncio.to_thread(Storage.delete_file, file_path)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"File contains sensitive data. {scanner.format_findings(findings)}",
+            )
+        elif findings:
+            # Log warnings
+            log.warning(scanner.format_findings(findings))
+
         if db:
             await _process_handler(db)
         else:

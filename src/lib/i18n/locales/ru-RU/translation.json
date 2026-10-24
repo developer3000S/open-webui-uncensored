@@ -2595,5 +2595,7 @@
 	"New branch name": "Имя новой ветки",
 	"Pull request is created automatically for every export.": "Pull request создаётся автоматически при каждом экспорте.",
 	"No changes yet": "Изменений пока нет",
-	"Ask the model to generate code changes.": "Попросите модель сгенерировать изменения кода."
+	"Ask the model to generate code changes.": "Попросите модель сгенерировать изменения кода.",
+	"RAG quality hit?": "Хорошее качество RAG",
+	"RAG quality miss?": "Плохое качество RAG"
 }

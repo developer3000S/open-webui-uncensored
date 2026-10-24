@@ -949,6 +949,16 @@ ENABLE_RAG_HYBRID_SEARCH_ENRICHED_TEXTS = (
     os.getenv('ENABLE_RAG_HYBRID_SEARCH_ENRICHED_TEXTS', 'False').lower() == 'true'
 )
 
+# Мульти-стратегический поиск (векторный + BM25 + графовый)
+RAG_MULTISTRATEGY_ENABLED = os.getenv('ENABLE_RAG_MULTISTRATEGY_SEARCH', '').lower() == 'true'
+RAG_MULTISTRATEGY_BM25_WEIGHT = float(os.getenv('RAG_MULTISTRATEGY_BM25_WEIGHT', '0.3'))
+RAG_MULTISTRATEGY_VECTOR_WEIGHT = float(os.getenv('RAG_MULTISTRATEGY_VECTOR_WEIGHT', '0.5'))
+RAG_MULTISTRATEGY_GRAPH_WEIGHT = float(os.getenv('RAG_MULTISTRATEGY_GRAPH_WEIGHT', '0.2'))
+
+# Контекстное переупорядочивание на основе истории диалога
+RAG_CONTEXTUAL_RERANK = os.getenv('RAG_CONTEXTUAL_RERANK', 'False').lower() == 'true'
+RAG_CONTEXTUAL_HISTORY_LENGTH = int(os.getenv('RAG_CONTEXTUAL_HISTORY_LENGTH', '5'))
+
 RAG_FULL_CONTEXT = os.getenv('RAG_FULL_CONTEXT', 'False').lower() == 'true'
 
 RAG_FILE_MAX_COUNT = int(os.getenv('RAG_FILE_MAX_COUNT')) if os.getenv('RAG_FILE_MAX_COUNT') else None

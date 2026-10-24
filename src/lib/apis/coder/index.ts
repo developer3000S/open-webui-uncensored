@@ -102,6 +102,21 @@ export type CoderAuditEvent = {
 	created_at: number;
 };
 
+export type Project = {
+	id: string;
+	owner: string;
+	repo: string;
+	default_branch: string | null;
+	created_at: number;
+	updated_at: number;
+};
+
+export type CreateProjectForm = {
+	owner: string;
+	repo: string;
+	default_branch: string | null;
+};
+
 const jsonHeaders = (token: string) => ({
 	Accept: 'application/json',
 	'Content-Type': 'application/json',
@@ -278,4 +293,33 @@ export const listCoderExportJobs = async (token: string): Promise<{ jobs: CoderE
 export const getCoderAuditEvents = async (token: string): Promise<{ events: CoderAuditEvent[] }> => {
 	const res = await fetch(`${WEBUI_API_BASE_URL}/coder/audit`, { headers: jsonHeaders(token) });
 	return handle(res);
+};
+
+// Project management API functions
+export const listProjects = async (token: string): Promise<Project[]> => {
+	const res = await fetch(`${WEBUI_API_BASE_URL}/coder/projects`, { headers: jsonHeaders(token) });
+	const data = await handle(res);
+	return data.projects || [];
+};
+
+export const getProject = async (token: string, projectId: string): Promise<Project> => {
+	const res = await fetch(`${WEBUI_API_BASE_URL}/coder/projects/${projectId}`, { headers: jsonHeaders(token) });
+	return handle(res);
+};
+
+export const createProject = async (token: string, form: CreateProjectForm): Promise<Project> => {
+	const res = await fetch(`${WEBUI_API_BASE_URL}/coder/projects`, {
+		method: 'POST',
+		headers: jsonHeaders(token),
+		body: JSON.stringify(form)
+	});
+	return handle(res);
+};
+
+export const deleteProject = async (token: string, projectId: string): Promise<void> => {
+	const res = await fetch(`${WEBUI_API_BASE_URL}/coder/projects/${projectId}`, {
+		method: 'DELETE',
+		headers: jsonHeaders(token)
+	});
+	await handle(res);
 };
