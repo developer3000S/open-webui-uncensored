@@ -42,8 +42,9 @@ export type CoderFile = {
 };
 
 export type CoderChangeFile = {
-	action: 'create' | 'update' | 'delete';
+	action: 'create' | 'update' | 'delete' | 'rename';
 	path: string;
+	old_path?: string | null;
 	content?: string | null;
 };
 

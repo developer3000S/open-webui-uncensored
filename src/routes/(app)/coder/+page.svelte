@@ -895,9 +895,15 @@ The system will execute it and return matching file snippets in your next turn. 
 										? 'bg-green-100 text-green-700 dark:bg-green-950/50 dark:text-green-400'
 										: f.action === 'delete'
 											? 'bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400'
+											: f.action === 'rename'
+												? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/50 dark:text-yellow-400'
 											: 'bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400'}"
 								>{f.action}</span>
-								<span class="text-xs font-mono truncate">{f.path}</span>
+								{#if f.action === 'rename'}
+									<span class="text-xs font-mono truncate">{f.old_path} → {f.path}</span>
+								{:else}
+									<span class="text-xs font-mono truncate">{f.path}</span>
+								{/if}
 							</div>
 						{/each}
 					{/if}
