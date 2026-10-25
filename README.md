@@ -539,6 +539,14 @@ http://<ваш-хост>/api/v1/coder/github/auth/callback
 - Секреты клиента OAuth и пользовательские токены никогда не отдаются фронтенду; все вызовы GitHub API выполняются бэкендом.
 - Экспорт возможен только при наличии валидного Change Set и подтверждении пользователя; PR обязателен даже для репозиториев без защиты веток.
 
+### 6. Тестирование
+
+Реализован comprehensive набор тестов для Coder:
+- **Unit-тесты** (`test_coder_changeset.py`, `test_coder_crypto.py`): валидация путей, Change Set, шифрование/расшифровка токенов, генерация diff (59 успешно пройдено).
+- **Integration-тесты** (`test_coder_integration.py`): mock GitHub клиент, OAuth, repo/file/commit/PR операции (8 тестов).
+- **Security-тесты** (`test_coder_security.py`): защита от path traversal, XSS, resource consumption, политики allowlist (14 тестов).
+- **E2E-тесты** (`test_coder_e2e.py`): написаны основные сценарии, требуют GUI-среды и запущенного приложения для автоматизированного браузера.
+
 ### Другие способы установки
 
 Мы предлагаем разные варианты установки, включая нативные методы без Docker, Docker Compose, Kustomize и Helm. Посетите нашу [документацию Open WebUI](https://docs.openwebui.com/getting-started/) или присоединяйтесь к нашему [Discord-сообществу](https://discord.gg/5rJgQTnV4s) за подробными рекомендациями.
