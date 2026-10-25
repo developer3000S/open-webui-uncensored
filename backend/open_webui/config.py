@@ -982,6 +982,11 @@ RAG_ALLOWED_FILE_EXTENSIONS = [
 
 RAG_EMBEDDING_ENGINE = os.getenv('RAG_EMBEDDING_ENGINE', '')
 
+RAG_QUERY_REPHRASER = os.getenv('RAG_QUERY_REPHRASER', 'true').lower() == 'true'
+RAG_QUERY_REPHRASER_MODEL = os.getenv('RAG_QUERY_REPHRASER_MODEL', 'mistral')
+RAG_QUERY_REPHRASER_EMBEDDING_ENGINE = os.getenv('RAG_QUERY_REPHRASER_EMBEDDING_ENGINE', 'openai')
+RAG_QUERY_REPHRASER_API_BASE_URL = os.getenv('RAG_QUERY_REPHRASER_API_BASE_URL', 'https://api.openai.com/v1')
+
 PDF_EXTRACT_IMAGES = os.getenv('PDF_EXTRACT_IMAGES', 'False').lower() == 'true'
 
 PDF_LOADER_MODE = os.getenv('PDF_LOADER_MODE', 'page')
@@ -2147,6 +2152,29 @@ CODER_MAX_TOTAL_DIFF_SIZE = int(os.getenv('CODER_MAX_TOTAL_DIFF_SIZE', str(3 * 1
 
 CODER_MAX_DIFF_LINES = int(os.getenv('CODER_MAX_DIFF_LINES', '4000'))
 
+# Запрещенные пути в Change Set
+CODER_BLOCKED_PATH_PATTERNS = [
+    p.strip()
+    for p in os.getenv('CODER_BLOCKED_PATHS', '.env,*.pem,secrets/*,.git/*').split(',')
+    if p.strip()
+]
+
+# Разрешенные репозитории (владельца/репозиторий, например: my-org/repo, или wildcard: my-org/*)
+CODER_ALLOWED_REPOS = [
+    r.strip()
+    for r in os.getenv('CODER_ALLOWED_REPOS', '').split(',')
+    if r.strip()
+]
+
+# Время хранения аудита (в днях)
+CODER_AUDIT_RETENTION_DAYS = int(os.getenv('CODER_AUDIT_RETENTION_DAYS', '90'))
+
+# Retry policy и таймауты GitHub API
+CODER_GITHUB_RETRY_POLICY = os.getenv('CODER_GITHUB_RETRY_POLICY', 'exponential')
+CODER_GITHUB_RETRY_MAX = int(os.getenv('CODER_GITHUB_RETRY_MAX', '3'))
+CODER_GITHUB_RETRY_DELAY = int(os.getenv('CODER_GITHUB_RETRY_DELAY', '1'))
+CODER_GITHUB_TIMEOUT = int(os.getenv('CODER_GITHUB_TIMEOUT', '30'))
+
 ENABLE_NOTES = os.getenv('ENABLE_NOTES', 'True').lower() == 'true'
 
 ENABLE_USER_STATUS = os.getenv('ENABLE_USER_STATUS', 'True').lower() == 'true'
@@ -3003,6 +3031,10 @@ DEFAULT_CONFIG = {
     'rag.chunk_min_size_target': CHUNK_MIN_SIZE_TARGET,
     'rag.chunk_overlap': CHUNK_OVERLAP,
     'rag.template': RAG_TEMPLATE,
+    'rag.query_rephraser.enable': RAG_QUERY_REPHRASER,
+    'rag.query_rephraser.model': RAG_QUERY_REPHRASER_MODEL,
+    'rag.query_rephraser.engine': RAG_QUERY_REPHRASER_EMBEDDING_ENGINE,
+    'rag.query_rephraser.api_base_url': RAG_QUERY_REPHRASER_API_BASE_URL,
     'rag.openai.api_base_url': RAG_OPENAI_API_BASE_URL,
     'rag.openai.api_key': RAG_OPENAI_API_KEY,
     'rag.azure_openai.base_url': RAG_AZURE_OPENAI_BASE_URL,
@@ -3281,6 +3313,13 @@ DEFAULT_CONFIG = {
     'ldap.group.enable_management': ENABLE_LDAP_GROUP_MANAGEMENT,
     'ldap.group.enable_creation': ENABLE_LDAP_GROUP_CREATION,
     'ldap.server.attribute_for_groups': LDAP_ATTRIBUTE_FOR_GROUPS,
+    # Coder settings (admin-layer configurable)
+    'coder.max_files_per_changeset': CODER_MAX_FILES_PER_CHANGESET,
+    'coder.retry_policy': CODER_GITHUB_RETRY_POLICY,
+    'coder.retry_max': CODER_GITHUB_RETRY_MAX,
+    'coder.retry_delay': CODER_GITHUB_RETRY_DELAY,
+    'coder.timeout': CODER_GITHUB_TIMEOUT,
+    'coder.audit_retention_days': CODER_AUDIT_RETENTION_DAYS,
 }
 
 

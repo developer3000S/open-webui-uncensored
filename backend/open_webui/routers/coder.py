@@ -27,7 +27,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import RedirectResponse
-from open_webui.config import CODER_ENABLED, CODER_GITHUB_CLIENT_ID, WEBUI_URL
+from open_webui.config import CODER_ENABLED, CODER_GITHUB_CLIENT_ID, CODER_AUDIT_RETENTION_DAYS, WEBUI_URL
 from open_webui.constants import ERROR_MESSAGES
 from open_webui.internal.db import get_async_session
 from open_webui.models.coder import (
@@ -495,7 +495,7 @@ async def coder_export_preview(
     """Validate change set against the live repository and produce unified diffs."""
     await check_coder_permission(request, user)
     try:
-        normalized = validate_changeset(form.changeset.files)
+        normalized = validate_changeset(form.changeset.files, repo=f"{form.owner}/{form.repo}")
     except ChangeSetValidationError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -552,7 +552,7 @@ async def coder_export_start(
         return {'job_id': existing.id, 'status': existing.status, 'replayed': True}
 
     try:
-        normalized = validate_changeset(form.changeset.files)
+        normalized = validate_changeset(form.changeset.files, repo=f"{form.owner}/{form.repo}")
     except ChangeSetValidationError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -775,4 +775,22 @@ async def coder_audit(request: Request, user=Depends(get_verified_user), db: Asy
             {'id': e.id, 'action': e.action, 'target': e.target, 'payload': e.payload, 'created_at': e.created_at}
             for e in events
         ]
+    }
+
+
+@router.post('/audit/cleanup')
+async def coder_audit_cleanup(request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+    """Admin endpoint to cleanup old audit events."""
+    # Only admins can cleanup audit logs
+    if user.get('role') != 'admin':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=ERROR_MESSAGES.UNAUTHORIZED)
+
+    # Get retention days from config, fallback to env var default
+    retention_days = await Config.get('coder.audit_retention_days', CODER_AUDIT_RETENTION_DAYS)
+    deleted_count = await CoderAudit.cleanup_old_events(retention_days, db)
+
+    return {
+        'message': 'Audit cleanup completed',
+        'deleted_count': deleted_count,
+        'retention_days': retention_days,
     }

@@ -394,6 +394,15 @@ class CoderAudit:
         )
         return result.scalars().all()
 
+    async def cleanup_old_events(self, retention_days: int, db: AsyncSession) -> int:
+        """Delete audit events older than specified retention period (in days)."""
+        from sqlalchemy import delete, select
+        cutoff_time = time.time() - (retention_days * 24 * 60 * 60)
+        stmt = delete(CoderAuditEvent).where(CoderAuditEvent.created_at < cutoff_time)
+        result = await db.execute(stmt)
+        await db.commit()
+        return result.rowcount
+
 
 ####################
 # Singleton instances
