@@ -23,7 +23,7 @@
 
 	let repos: CoderRepo[] = [];
 	let branches: CoderBranch[] = [];
-	let tree: CoderTreeEntry[] = [];
+	let tree: CoderTreeEntry[] = []; let repoKey = '';
 
 	let repoQuery = '';
 	let repoSearchTimer: ReturnType<typeof setTimeout>;
@@ -136,8 +136,9 @@
 
 	// Reactive: load branches when owner/repo become set
 	$: if (owner && repo) {
-		// Only load if we haven't loaded branches yet to avoid redundant calls
-		if (!branches.length) {
+		const key = `${owner}/${repo}`;
+		if (key !== repoKey) {
+			repoKey = key;
 			loadBranches();
 		}
 	}
