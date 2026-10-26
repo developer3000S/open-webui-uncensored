@@ -19,9 +19,11 @@
 		"i18n:parse": "i18next --config i18next-parser.config.ts && prettier --write \"src/lib/i18n/**/*.{js,json}\"",
 		"cy:open": "cypress open",
 		"test:frontend": "vitest --passWithNoTests",
-		"pyodide:fetch": "node scripts/prepare-pyodide.js"
+		"pyodide:fetch": "node scripts/prepare-pyodide.js",
+		"test": "vitest run"
 	},
 	"devDependencies": {
+		"@eslint/js": "^9.17.0",
 		"@sveltejs/adapter-auto": "3.2.2",
 		"@sveltejs/adapter-static": "^3.0.2",
 		"@sveltejs/kit": "^2.5.27",
@@ -31,9 +33,12 @@
 		"@tailwindcss/typography": "^0.5.13",
 		"cypress": "^13.15.0",
 		"eslint": "^9.17.0",
+		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-cypress": "^3.4.0",
 		"eslint-plugin-svelte": "^3.20.0",
+		"globals": "^15.14.0",
 		"i18next-parser": "^9.0.1",
+		"jsdom": "^30.1.3",
 		"postcss": "^8.4.31",
 		"prettier": "^3.3.3",
 		"prettier-plugin-svelte": "^3.2.6",
@@ -44,12 +49,9 @@
 		"tailwindcss": "^4.0.0",
 		"tslib": "^2.4.1",
 		"typescript": "^5.5.4",
+		"typescript-eslint": "^8.31.1",
 		"vite": "^5.4.21",
-		"vitest": "^1.6.1",
-		"@eslint/js": "^9.17.0",
-		"eslint-config-prettier": "^10.1.8",
-		"globals": "^15.14.0",
-		"typescript-eslint": "^8.31.1"
+		"vitest": "^1.6.1"
 	},
 	"type": "module",
 	"dependencies": {
@@ -65,6 +67,7 @@
 		"@pyscript/core": "^0.7.29",
 		"@sveltejs/adapter-node": "^2.0.0",
 		"@sveltejs/svelte-virtual-list": "^3.0.1",
+		"@testing-library/svelte": "^5.4.2",
 		"@tiptap/core": "^3.0.7",
 		"@tiptap/extension-bubble-menu": "^3.0.7",
 		"@tiptap/extension-code": "^3.0.7",

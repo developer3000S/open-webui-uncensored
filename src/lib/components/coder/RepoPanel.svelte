@@ -134,6 +134,14 @@
 
 	$: nodes = buildTree(tree);
 
+	// Reactive: load branches when owner/repo become set
+	$: if (owner && repo) {
+		// Only load if we haven't loaded branches yet to avoid redundant calls
+		if (!branches.length) {
+			loadBranches();
+		}
+	}
+
 	onMount(async () => {
 		// Auto-load branches (and file tree) when the panel opens with a repo already selected
 		if (owner && repo) {
