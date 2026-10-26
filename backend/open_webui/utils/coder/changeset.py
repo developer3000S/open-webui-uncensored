@@ -9,15 +9,19 @@ Rules (per technical specification):
 """
 
 import difflib
+import fnmatch
 import posixpath
+import re
 
 from open_webui.config import (
+    CODER_BLOCKED_PATH_PATTERNS,
+    CODER_ALLOWED_REPOS,
     CODER_MAX_FILE_SIZE,
     CODER_MAX_FILES_PER_CHANGESET,
     CODER_MAX_TOTAL_DIFF_SIZE,
 )
 
-ALLOWED_ACTIONS = {'create', 'update', 'delete'}
+ALLOWED_ACTIONS = {'create', 'update', 'delete', 'rename'}
 
 
 class ChangeSetValidationError(Exception):
@@ -26,6 +30,14 @@ class ChangeSetValidationError(Exception):
         self.message = message
         self.path = path
         super().__init__(message)
+
+
+def _is_path_blocked(path: str) -> bool:
+    """Проверяет, соответствует ли путь запрещенным шаблонам."""
+    for pattern in CODER_BLOCKED_PATH_PATTERNS:
+        if fnmatch.fnmatch(path, pattern):
+            return True
+    return False
 
 
 def validate_path(path: str) -> str:
@@ -46,14 +58,29 @@ def validate_path(path: str) -> str:
         raise ChangeSetValidationError('CODER_INVALID_PATH', 'Path traversal is not allowed', path)
     if '.git' in segments:
         raise ChangeSetValidationError('CODER_INVALID_PATH', "'.git' paths are not allowed", path)
+    # Проверка по запрещенным путям
+    if _is_path_blocked(normalized):
+        raise ChangeSetValidationError(
+            'CODER_BLOCKED_PATH',
+            f'Path "{normalized}" is blocked by policy',
+            normalized,
+        )
     return normalized
 
 
-def validate_changeset(files: list[dict]) -> dict:
+def validate_changeset(files: list[dict], repo: str | None = None) -> dict:
     """Validate a raw change set payload. Returns normalized change set.
 
     Raises ChangeSetValidationError on the first violation.
     """
+    # Optionally validate allowed repos
+    if repo and not is_repo_allowed(repo):
+        raise ChangeSetValidationError(
+            'CODER_DISALLOWED_REPO',
+            f'Repository "{repo}" is not in the allowed list',
+            None,
+        )
+
     if not isinstance(files, list):
         raise ChangeSetValidationError('CODER_INVALID_CHANGESET', "'files' must be a list")
     if len(files) == 0:
@@ -75,7 +102,7 @@ def validate_changeset(files: list[dict]) -> dict:
         action = (item.get('action') or '').strip().lower()
         if action not in ALLOWED_ACTIONS:
             raise ChangeSetValidationError(
-                'CODER_INVALID_ACTION', f"Unknown action '{action}', expected create|update|delete",
+                'CODER_INVALID_ACTION', f"Unknown action '{action}', expected create|update|delete|rename",
                 item.get('path'),
             )
 
@@ -85,7 +112,23 @@ def validate_changeset(files: list[dict]) -> dict:
         seen_paths.add(path)
 
         content = item.get('content')
-        if action in ('create', 'update'):
+        if action == 'rename':
+            old_path = item.get('old_path')
+            if not old_path:
+                raise ChangeSetValidationError(
+                    'CODER_INVALID_ACTION', f"'old_path' is required for action 'rename'", path,
+                )
+            old_path = validate_path(old_path)
+            if old_path in seen_paths:
+                raise ChangeSetValidationError('CODER_DUPLICATE_PATH', f'Duplicate path in change set: {old_path}', old_path)
+            seen_paths.add(old_path)
+            # Content must be None for rename
+            if content is not None:
+                raise ChangeSetValidationError(
+                    'CODER_INVALID_CONTENT', f"'content' must be None for action 'rename'", path,
+                )
+            normalized_files.append({'action': action, 'path': path, 'old_path': old_path, 'content': None})
+        elif action in ('create', 'update'):
             if not isinstance(content, str):
                 raise ChangeSetValidationError(
                     'CODER_INVALID_CONTENT', f"'content' is required for action '{action}'", path,
@@ -94,6 +137,11 @@ def validate_changeset(files: list[dict]) -> dict:
             if size > CODER_MAX_FILE_SIZE:
                 raise ChangeSetValidationError(
                     'CODER_FILE_TOO_LARGE', f'File exceeds size limit ({CODER_MAX_FILE_SIZE} bytes)', path,
+                )
+            # Check for XSS patterns
+            if re.search(r'<script', content, re.IGNORECASE):
+                raise ChangeSetValidationError(
+                    'CODER_INVALID_CONTENT', 'Potential XSS content detected', path
                 )
             total_size += size
             normalized_files.append({'action': action, 'path': path, 'content': content})
@@ -122,3 +170,16 @@ def generate_unified_diff(old_content: str | None, new_content: str | None, path
         diff_lines = diff_lines[:CODER_MAX_DIFF_LINES]
         diff_lines.append(f'\n... diff truncated at {CODER_MAX_DIFF_LINES} lines ...\n')
     return ''.join(diff_lines)
+
+
+def is_repo_allowed(repo: str) -> bool:
+    """Check if the repository is in the allowed list from CODER_ALLOWED_REPOS.
+
+    Supports glob-style patterns (e.g., 'org/*', 'my-repo').
+    """
+    if not CODER_ALLOWED_REPOS:
+        return True
+    for pattern in CODER_ALLOWED_REPOS:
+        if fnmatch.fnmatch(repo, pattern):
+            return True
+    return False

@@ -545,7 +545,7 @@ http://<ваш-хост>/api/v1/coder/github/auth/callback
 - **Unit-тесты** (`test_coder_changeset.py`, `test_coder_crypto.py`): валидация путей, Change Set, шифрование/расшифровка токенов, генерация diff (59 успешно пройдено).
 - **Integration-тесты** (`test_coder_integration.py`): mock GitHub клиент, OAuth, repo/file/commit/PR операции (8 тестов).
 - **Security-тесты** (`test_coder_security.py`): защита от path traversal, XSS, resource consumption, политики allowlist (14 тестов).
-- **E2E-тесты** (`test_coder_e2e.py`): написаны основные сценарии, требуют GUI-среды и запущенного приложения для автоматизированного браузера.
+- **E2E-тесты** (`test_coder_e2e.py`): headless-Firefox на запущенном приложении — загрузка страницы `/coder`, клик по кнопке "Connect GitHub" с проверкой перехода на github.com OAuth, проверка `/api/v1/coder/config`. Требуют запущенного контейнера `open-webui` с `CODER_ENABLED=true` и заведённого тестового пользователя `e2e@test.local`.
 
 ### Другие способы установки
 

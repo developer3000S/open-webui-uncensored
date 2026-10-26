@@ -38,6 +38,7 @@ from open_webui.config import (
     RAG_RERANKING_MODEL_TRUST_REMOTE_CODE,
     UPLOAD_DIR,
 )
+from open_webui.config import RAG_QUERY_REPHRASER
 from open_webui.constants import ERROR_MESSAGES
 from open_webui.env import (
     DEVICE_TYPE,
@@ -3558,11 +3559,23 @@ async def query_doc_handler(
     await _validate_collection_access([form_data.collection_name], user)
 
     try:
+        # Rephrase query if enabled
+        original_query = form_data.query
+        rephrased_query = original_query
+        rephrase_metadata = None
+        if RAG_QUERY_REPHRASER:
+            try:
+                service = get_query_rephrasing_service()
+                rephrased_query, rephrase_metadata = await service.rephrase(original_query)
+            except Exception as e:
+                log.error(f"Query rephrasing failed: {e}")
+                # Use original query if rephrasing fails
+
         if config.ENABLE_RAG_HYBRID_SEARCH and (form_data.hybrid is None or form_data.hybrid):
-            return await query_doc_with_hybrid_search(
+            results = await query_doc_with_hybrid_search(
                 collection_name=form_data.collection_name,
                 collection_result=None,
-                query=form_data.query,
+                query=rephrased_query,
                 embedding_function=lambda query, prefix: request.app.state.EMBEDDING_FUNCTION(
                     query, prefix=prefix, user=user
                 ),
@@ -3582,17 +3595,22 @@ async def query_doc_handler(
             )
         else:
             query_embedding = await request.app.state.EMBEDDING_FUNCTION(
-                form_data.query, prefix=RAG_EMBEDDING_QUERY_PREFIX, user=user
+                rephrased_query, prefix=RAG_EMBEDDING_QUERY_PREFIX, user=user
             )
-            # query_doc wraps a blocking VECTOR_DB_CLIENT.search call;
-            # offload so the request's event loop stays responsive.
-            return await asyncio.to_thread(
+            results = await asyncio.to_thread(
                 query_doc,
                 collection_name=form_data.collection_name,
                 query_embedding=query_embedding,
                 k=form_data.k if form_data.k else config.TOP_K,
                 user=user,
             )
+
+        return {
+            "original_query": original_query,
+            "rephrased_query": rephrased_query,
+            "rephrase_metadata": rephrase_metadata,
+            "results": results,
+        }
     except HTTPException:
         raise
     except Exception as e:
@@ -3625,10 +3643,22 @@ async def query_collection_handler(
     await _validate_collection_access(form_data.collection_names, user)
 
     try:
+        # Rephrase query if enabled
+        original_query = form_data.query
+        rephrased_query = original_query
+        rephrase_metadata = None
+        if RAG_QUERY_REPHRASER:
+            try:
+                service = get_query_rephrasing_service()
+                rephrased_query, rephrase_metadata = await service.rephrase(original_query)
+            except Exception as e:
+                log.error(f"Query rephrasing failed: {e}")
+                # Use original query if rephrasing fails
+
         if config.ENABLE_RAG_HYBRID_SEARCH and (form_data.hybrid is None or form_data.hybrid):
-            return await query_collection_with_hybrid_search(
+            results = await query_collection_with_hybrid_search(
                 collection_names=form_data.collection_names,
-                queries=[form_data.query],
+                queries=[rephrased_query],
                 embedding_function=lambda query, prefix: request.app.state.EMBEDDING_FUNCTION(
                     query, prefix=prefix, user=user
                 ),
@@ -3652,10 +3682,10 @@ async def query_collection_handler(
                 ),
             )
         else:
-            return await query_collection(
+            results = await query_collection(
                 request,
                 collection_names=form_data.collection_names,
-                queries=[form_data.query],
+                queries=[rephrased_query],
                 embedding_function=lambda query, prefix: request.app.state.EMBEDDING_FUNCTION(
                     query, prefix=prefix, user=user
                 ),
@@ -3663,6 +3693,12 @@ async def query_collection_handler(
                 chat_id=chat_id,
             )
 
+        return {
+            "original_query": original_query,
+            "rephrased_query": rephrased_query,
+            "rephrase_metadata": rephrase_metadata,
+            "results": results,
+        }
     except HTTPException:
         raise
     except Exception as e:

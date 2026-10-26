@@ -685,7 +685,7 @@ The system will execute it and return matching file snippets in your next turn. 
 						<button
 							type="button"
 							class="px-3 py-1 text-sm bg-gray-900 text-white dark:bg-white dark:text-gray-900 rounded-lg hover:bg-gray-700 dark:hover:bg-gray-300"
-							on:click=toggleCreateProject}>
+							on:click={() => toggleCreateProject()}>
 							{$i18n.t('Create Project')}
 						</button>
 					</div>
@@ -698,7 +698,7 @@ The system will execute it and return matching file snippets in your next turn. 
 								placeholder="Project name (optional)"
 								class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
 							/>
-							<p class="text-xs text-gray-500 mt-1">{$i18n.t('Currently bound to:') :sourceRepo}</p>
+							<p class="text-xs text-gray-500 mt-1">{$i18n.t('Currently bound to:')} {owner && repo ? `${owner}/${repo}` : '--'}</p>
 							<div class="flex gap-2 mt-2">
 								<button
 									type="button"

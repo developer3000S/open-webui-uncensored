@@ -958,6 +958,7 @@ RAG_MULTISTRATEGY_GRAPH_WEIGHT = float(os.getenv('RAG_MULTISTRATEGY_GRAPH_WEIGHT
 # Контекстное переупорядочивание на основе истории диалога
 RAG_CONTEXTUAL_RERANK = os.getenv('RAG_CONTEXTUAL_RERANK', 'False').lower() == 'true'
 RAG_CONTEXTUAL_HISTORY_LENGTH = int(os.getenv('RAG_CONTEXTUAL_HISTORY_LENGTH', '5'))
+RAG_CONTEXTUAL_RERANK_WEIGHT = float(os.getenv('RAG_CONTEXTUAL_RERANK_WEIGHT', '0.5'))
 
 RAG_FULL_CONTEXT = os.getenv('RAG_FULL_CONTEXT', 'False').lower() == 'true'
 

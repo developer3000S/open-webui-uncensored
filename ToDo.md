@@ -14,8 +14,10 @@
       токенов, генерация diff, обработка ошибок GitHub API, идемпотентность.
 - [x] Integration-тесты (mock GitHub): OAuth callback, repo/tree/file,
       blob→tree→commit→ref, PR, отзыв токена, protected branch, rate limit.
-- [x] E2E-тесты основных сценариев (соединить → выбрать repo → файл → Change Set
-      → diff → экспорт → PR → ссылки → отключить). Требуют GUI-среды для автоматизированного браузера.
+- [x] E2E-тесты (headless Firefox): загрузка `/coder`, кнопка "Connect GitHub" →
+      github.com OAuth, `/api/v1/coder/config`. Полный поток подключения GitHub
+      требует реальных OAuth-аккредитов. Проговорено: запуск тестов требует контейнера
+      с `CODER_ENABLED=true` и тестового пользователя `e2e@test.local`.
 - [x] Security-тесты: path traversal, IDOR, CSRF, XSS, token leakage,
       unauthorized export, replay, resource consumption.
 

@@ -7,7 +7,7 @@ Provides query improvement via LLM: rephrasing, decomposition, and expansion.
 import os
 import logging
 from typing import Optional, List, Dict, Tuple
-from open_webui.env import RAG_QUERY_REPHRASER, RAG_QUERY_REPRESSOR_MODEL, RAG_QUERY_REPRESSOR_EMBEDDING_ENGINE, RAG_QUERY_REPRESSOR_API_BASE_URL
+from open_webui.env import RAG_QUERY_REPHRASER, RAG_QUERY_REPHRASER_MODEL, RAG_QUERY_REPHRASER_EMBEDDING_ENGINE, RAG_QUERY_REPHRASER_API_BASE_URL
 from open_webui.retrieval.utils import get_embedding_function, get_reranking_function
 
 log = logging.getLogger(__name__)
@@ -25,9 +25,9 @@ class QueryRephrasingService:
 
     def __init__(self, enabled: bool = True):
         self.enabled = enabled
-        self.model = RAG_QUERY_REPRESSOR_MODEL
-        self.engine = RAG_QUERY_REPRESSOR_EMBEDDING_ENGINE
-        self.api_base_url = RAG_QUERY_REPRESSOR_API_BASE_URL
+        self.model = RAG_QUERY_REPHRASER_MODEL
+        self.engine = RAG_QUERY_REPHRASER_EMBEDDING_ENGINE
+        self.api_base_url = RAG_QUERY_REPHRASER_API_BASE_URL
 
     async def rephrase(self, query: str, conversation_history: Optional[List[str]] = None) -> Tuple[str, Dict]:
         """
@@ -141,7 +141,8 @@ def get_query_rephrasing_service() -> QueryRephrasingService:
     """Get the singleton query rephrasing service instance."""
     global _rephrasing_service
     if _rephrasing_service is None:
-        _rephrasing_service = QueryRephrasingService(enabled=True)
+        enabled = os.getenv('RAG_QUERY_REPHRASER', 'False').lower() == 'true'
+        _rephrasing_service = QueryRephrasingService(enabled=enabled)
     return _rephrasing_service
 
 

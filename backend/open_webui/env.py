@@ -716,6 +716,9 @@ except ValueError:
 
 RAG_EMBEDDING_TIMEOUT = os.getenv('RAG_EMBEDDING_TIMEOUT', '')
 RAG_CACHE_BACKEND = os.getenv('RAG_CACHE_BACKEND', 'memory')
+ENABLE_RAG_SEARCH_CACHE = os.getenv('ENABLE_RAG_SEARCH_CACHE', 'true').lower() == 'true'
+RAG_CACHE_SIZE = os.getenv('RAG_CACHE_SIZE', '10000')
+RAG_CACHE_TTL = os.getenv('RAG_CACHE_TTL', '3600')
 
 RAG_REDIS_HOST = os.getenv('RAG_REDIS_HOST', 'localhost')
 RAG_REDIS_PORT = int(os.getenv('RAG_REDIS_PORT', '6379'))

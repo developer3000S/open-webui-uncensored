@@ -76,7 +76,6 @@ from open_webui.models.knowledge import Knowledges
 from open_webui.models.notes import Notes
 from open_webui.models.users import UserModel
 from open_webui.retrieval.external import retrieve_external_knowledge
-from open_webui.retrieval.query_rephrasing import get_query_rephrasing_service
 from open_webui.retrieval.loaders.youtube import YoutubeLoader
 from open_webui.retrieval.vector.async_client import ASYNC_VECTOR_DB_CLIENT
 from open_webui.retrieval.vector.factory import VECTOR_DB_CLIENT
@@ -1642,15 +1641,6 @@ async def _emit_progress(on_progress, processed: int, total: int) -> None:
 
     A failing hook must never abort an embedding job, so errors are swallowed here.
     """
-    # Перефразировка запроса через LLM (если включено)
-    _rephrasing_service = get_query_rephrasing_service()
-    if _rephrasing_service:
-        try:
-            rephrased_query, _ = _rephrasing_service.rephrase_sync(query)
-            query = rephrased_query
-        except Exception:
-            pass  # Не влиять на оригинальный запрос
-
     if on_progress is None:
         return
 

@@ -10,13 +10,11 @@ import os
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
-from open_webui.env import WEBUI_SECRET_KEY
-
 NONCE_LENGTH = 12
 
 
 def _get_key() -> bytes:
-    secret = os.getenv('CODER_ENCRYPTION_KEY', '') or WEBUI_SECRET_KEY
+    secret = os.getenv('CODER_ENCRYPTION_KEY', '') or os.getenv('WEBUI_SECRET_KEY', '')
     if not secret:
         raise RuntimeError('CODER_ENCRYPTION_KEY / WEBUI_SECRET_KEY is required for Coder token encryption')
     return hashlib.sha256(secret.encode()).digest()
