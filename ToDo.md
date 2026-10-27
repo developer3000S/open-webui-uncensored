@@ -109,7 +109,7 @@ API-маршруты, названия состояний, тексты кноп
       `CODER_SANDBOX_TTL_MINUTES` с админским sweep (`POST /sandbox/sweep`).
       MVP выполнен как изолированный FS-root без контейнерного рантайма
       (выполнение кода в песочнице не предусмотрено — см. docs/CODER.md §10.9).
-- [x] **iframe-превью**: панель «Preview» в Workspace; живый рендер статики
+- [x] **iframe-превью**: панель «Preview» в Workspace; живой рендер статики
       через `GET /sandbox/session/{id}/preview?v=` (cache-buster = hot-reload),
       кнопка refresh; публикация работает через тот же iframe-механизм.
 - [x] **Редактор кода в браузере**: эндпоинты read/write/delete файлов
