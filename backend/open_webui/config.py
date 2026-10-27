@@ -2145,11 +2145,12 @@ CODER_GITHUB_API_BASE_URL = os.getenv('CODER_GITHUB_API_BASE_URL', 'https://api.
 
 CODER_ENCRYPTION_KEY = os.getenv('CODER_ENCRYPTION_KEY', '')
 
-CODER_MAX_FILES_PER_CHANGESET = int(os.getenv('CODER_MAX_FILES_PER_CHANGESET', '20'))
+# §13.4 ТЗ: не более 50 файлов и 5 МиБ на change set
+CODER_MAX_FILES_PER_CHANGESET = int(os.getenv('CODER_MAX_FILES_PER_CHANGESET', '50'))
 
 CODER_MAX_FILE_SIZE = int(os.getenv('CODER_MAX_FILE_SIZE', str(1 * 1024 * 1024)))
 
-CODER_MAX_TOTAL_DIFF_SIZE = int(os.getenv('CODER_MAX_TOTAL_DIFF_SIZE', str(3 * 1024 * 1024)))
+CODER_MAX_TOTAL_DIFF_SIZE = int(os.getenv('CODER_MAX_TOTAL_DIFF_SIZE', str(5 * 1024 * 1024)))
 
 CODER_MAX_DIFF_LINES = int(os.getenv('CODER_MAX_DIFF_LINES', '4000'))
 
@@ -2160,12 +2161,33 @@ CODER_BLOCKED_PATH_PATTERNS = [
     if p.strip()
 ]
 
+# Разрешенные пути GitHub-хостов (для GHE; по умолчанию только github.com)
+CODER_ALLOWED_GITHUB_HOSTS = [
+    h.strip().lower()
+    for h in os.getenv('CODER_ALLOWED_GITHUB_HOSTS', 'github.com,api.github.com').split(',')
+    if h.strip()
+]
+
+# Разрешенные организации (пусто = все); поддерживаются glob-шаблоны, например "my-org", "team-*"
+CODER_ALLOWED_ORGS = [
+    o.strip()
+    for o in os.getenv('CODER_ALLOWED_ORGS', '').split(',')
+    if o.strip()
+]
+
 # Разрешенные репозитории (владельца/репозиторий, например: my-org/repo, или wildcard: my-org/*)
 CODER_ALLOWED_REPOS = [
     r.strip()
     for r in os.getenv('CODER_ALLOWED_REPOS', '').split(',')
     if r.strip()
 ]
+
+# Обязательное создание PR при экспорте (§13 — политика «только через pull request»)
+CODER_REQUIRE_PR = os.getenv('CODER_REQUIRE_PR', 'True').lower() == 'true'
+
+# Асинхронный экспорт (NFR-08): Git Data API выполняется в фоновом воркере,
+# HTTP-запрос возвращает job_id со статусом queued
+CODER_ASYNC_EXPORT = os.getenv('CODER_ASYNC_EXPORT', 'True').lower() == 'true'
 
 # Время хранения аудита (в днях)
 CODER_AUDIT_RETENTION_DAYS = int(os.getenv('CODER_AUDIT_RETENTION_DAYS', '90'))
@@ -3316,6 +3338,13 @@ DEFAULT_CONFIG = {
     'ldap.server.attribute_for_groups': LDAP_ATTRIBUTE_FOR_GROUPS,
     # Coder settings (admin-layer configurable)
     'coder.max_files_per_changeset': CODER_MAX_FILES_PER_CHANGESET,
+    'coder.max_total_diff_size': CODER_MAX_TOTAL_DIFF_SIZE,
+    'coder.blocked_paths': CODER_BLOCKED_PATH_PATTERNS,
+    'coder.allowed_github_hosts': CODER_ALLOWED_GITHUB_HOSTS,
+    'coder.allowed_orgs': CODER_ALLOWED_ORGS,
+    'coder.allowed_repos': CODER_ALLOWED_REPOS,
+    'coder.require_pr': CODER_REQUIRE_PR,
+    'coder.async_export': CODER_ASYNC_EXPORT,
     'coder.retry_policy': CODER_GITHUB_RETRY_POLICY,
     'coder.retry_max': CODER_GITHUB_RETRY_MAX,
     'coder.retry_delay': CODER_GITHUB_RETRY_DELAY,

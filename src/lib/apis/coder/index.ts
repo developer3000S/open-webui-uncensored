@@ -103,10 +103,17 @@ export type CoderAuditEvent = {
 	created_at: number;
 };
 
+export type CoderAdminAuditEvent = CoderAuditEvent & {
+	user_id: string;
+	correlation_id?: string | null;
+	ip_address?: string | null;
+};
+
 export type Project = {
 	id: string;
 	owner: string;
 	repo: string;
+	name?: string | null;
 	default_branch: string | null;
 	created_at: number;
 	updated_at: number;
@@ -116,6 +123,7 @@ export type CreateProjectForm = {
 	owner: string;
 	repo: string;
 	default_branch: string | null;
+	name?: string | null;
 };
 
 const jsonHeaders = (token: string) => ({
@@ -146,8 +154,41 @@ export const getCoderConfig = async (token: string): Promise<CoderConfig> => {
 	return handle(res);
 };
 
-export const getGitHubAuthStartUrl = async (token: string): Promise<{ url: string }> => {
-	const res = await fetch(`${WEBUI_API_BASE_URL}/coder/github/auth/start`, { headers: jsonHeaders(token) });
+export const getGitHubAuthStartUrl = async (token: string, host?: string): Promise<{ url: string }> => {
+	const params = new URLSearchParams();
+	if (host && host !== 'github.com') params.append('host', host);
+	const qs = params.toString() ? `?${params.toString()}` : '';
+	const res = await fetch(`${WEBUI_API_BASE_URL}/coder/github/auth/start${qs}`, { headers: jsonHeaders(token) });
+	return handle(res);
+};
+
+export interface CoderConnectionInfo {
+	id: string;
+	github_login: string | null;
+	github_host: string;
+	scopes: string[] | null;
+	is_default: boolean;
+	updated_at: number;
+}
+
+export const listGitHubConnections = async (token: string): Promise<{ connections: CoderConnectionInfo[] }> => {
+	const res = await fetch(`${WEBUI_API_BASE_URL}/coder/github/connections`, { headers: jsonHeaders(token) });
+	return handle(res);
+};
+
+export const setDefaultGitHubConnection = async (token: string, connectionId: string): Promise<{ status: boolean }> => {
+	const res = await fetch(`${WEBUI_API_BASE_URL}/coder/github/connections/${connectionId}/default`, {
+		method: 'POST',
+		headers: jsonHeaders(token)
+	});
+	return handle(res);
+};
+
+export const deleteGitHubConnection = async (token: string, connectionId: string): Promise<{ status: boolean }> => {
+	const res = await fetch(`${WEBUI_API_BASE_URL}/coder/github/connections/${connectionId}`, {
+		method: 'DELETE',
+		headers: jsonHeaders(token)
+	});
 	return handle(res);
 };
 
@@ -296,6 +337,12 @@ export const getCoderAuditEvents = async (token: string): Promise<{ events: Code
 	return handle(res);
 };
 
+// Admin overview of audit events across all users (§14.1)
+export const getCoderAdminAuditEvents = async (token: string, limit = 200): Promise<{ events: CoderAdminAuditEvent[] }> => {
+	const res = await fetch(`${WEBUI_API_BASE_URL}/coder/admin/audit?limit=${limit}`, { headers: jsonHeaders(token) });
+	return handle(res);
+};
+
 // Project management API functions
 export const listProjects = async (token: string): Promise<Project[]> => {
 	const res = await fetch(`${WEBUI_API_BASE_URL}/coder/projects`, { headers: jsonHeaders(token) });
@@ -323,4 +370,122 @@ export const deleteProject = async (token: string, projectId: string): Promise<v
 		headers: jsonHeaders(token)
 	});
 	await handle(res);
+};
+
+
+
+
+
+
+// Semantic search (§22.2)
+export type CoderSemanticResult = {
+	path: string;
+	score: number;
+	snippet?: string;
+	mode?: string;
+};
+
+export const semanticSearchCoderRepo = async (
+	token: string,
+	owner: string,
+	repo: string,
+	branch: string,
+	q: string,
+	maxResults = 15
+): Promise<{ query: string; mode: string; results: CoderSemanticResult[]; errors: any[] }> => {
+	const params = new URLSearchParams({ owner, repo, branch, q, max_results: String(maxResults) });
+	const res = await fetch(`${WEBUI_API_BASE_URL}/coder/search/semantic?${params.toString()}`, {
+			headers: jsonHeaders(token)
+		});
+	return handle(res);
+};
+
+// Review comments in PR (§22.2)
+export type CoderReviewComment = {
+	id: number;
+	path: string | null;
+	line: number | null;
+	body: string;
+	user: string | null;
+	created_at: string | null;
+	html_url: string | null;
+};
+
+export const listPRReviewComments = async (
+	token: string,
+	owner: string,
+	repo: string,
+	prNumber: string
+): Promise<{ comments: CoderReviewComment[] }> => {
+	const res = await fetch(
+		`${WEBUI_API_BASE_URL}/coder/pr/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${encodeURIComponent(prNumber)}/comments`,
+		{ headers: jsonHeaders(token) }
+	);
+	return handle(res);
+};
+
+export const createPRReviewComment = async (
+	token: string,
+	owner: string,
+	repo: string,
+	prNumber: string,
+	form: { path: string; line: number; body: string; side?: string }
+): Promise<{ comment: { id: number; html_url: string } }> => {
+	const res = await fetch(
+		`${WEBUI_API_BASE_URL}/coder/pr/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${encodeURIComponent(prNumber)}/comments`,
+		{
+			method: 'POST',
+			headers: jsonHeaders(token),
+			body: JSON.stringify({ owner, repo, pr_number: prNumber, side: 'RIGHT', ...form })
+		}
+	);
+	return handle(res);
+};
+
+// CI statuses (§22.2)
+export type CoderCIStatus = {
+	state: string;
+	checks: { name: string; status: string; conclusion: string | null; url: string | null }[];
+	statuses: { context: string; state: string; url: string | null }[];
+	sha?: string;
+	branch?: string;
+};
+
+export const getCoderCIStatus = async (
+	token: string,
+	owner: string,
+	repo: string,
+	branch: string
+): Promise<CoderCIStatus> => {
+	const params = new URLSearchParams({ owner, repo, branch });
+	const res = await fetch(`${WEBUI_API_BASE_URL}/coder/ci/status?${params.toString()}`, {
+			headers: jsonHeaders(token)
+		});
+	return handle(res);
+};
+
+// Export to Gist (§22.2)
+export const exportCoderGist = async (
+	token: string,
+	form: { description?: string; public?: boolean; files: Record<string, string> }
+): Promise<{ gist: { id: string; html_url: string; files: string[] } }> => {
+	const res = await fetch(`${WEBUI_API_BASE_URL}/coder/export/gist`, {
+			method: 'POST',
+			headers: jsonHeaders(token),
+			body: JSON.stringify(form)
+		});
+	return handle(res);
+};
+
+// Auto-generated tests (§22.2)
+export const suggestCoderTests = async (
+	token: string,
+	form: { owner: string; repo: string; title: string; body?: string; labels?: string[] }
+): Promise<{ issue: { number: number; html_url: string }; test_template: string; generated_by_model: boolean }> => {
+	const res = await fetch(`${WEBUI_API_BASE_URL}/coder/tests/suggest`, {
+			method: 'POST',
+			headers: jsonHeaders(token),
+			body: JSON.stringify(form)
+		});
+	return handle(res);
 };

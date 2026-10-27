@@ -19,12 +19,16 @@ class CoderGithubConnection(Base):
     __tablename__ = 'coder_github_connection'
 
     id = Column(Text, primary_key=True)
-    user_id = Column(Text, nullable=False, unique=True)
+    # §22.2 «Несколько GitHub-подключений»: уникальность обеспечена частичным
+    # уникальным индексом по (user_id, github_host) — см. миграцию c0d3r4m1c7h1.
+    user_id = Column(Text, nullable=False)
     github_login = Column(Text, nullable=True)
     github_user_id = Column(Text, nullable=True)
+    github_host = Column(Text, nullable=False, default='github.com')  # github.com или домен GH Enterprise
     access_token_encrypted = Column(Text, nullable=False)  # AES-256-GCM, секрет никогда не покидает сервер
     token_type = Column(Text, nullable=False, default='oauth')
     scopes = Column(JSON, nullable=True)
+    is_default = Column(Boolean, nullable=False, default=True)  # подключение, используемое по умолчанию
     created_at = Column(BigInteger, nullable=False)
     updated_at = Column(BigInteger, nullable=False)
 
@@ -109,8 +113,10 @@ class CoderGithubConnectionModel(BaseModel):
     user_id: str
     github_login: str | None = None
     github_user_id: str | None = None
+    github_host: str = 'github.com'
     token_type: str
     scopes: list | None = None
+    is_default: bool = True
     created_at: int
     updated_at: int
 
@@ -193,6 +199,7 @@ class CoderExportForm(BaseModel):
     commit_message: str
     changeset: CoderChangeSet
     idempotency_key: str
+    connection_id: str | None = None  # §22.2 multi-GitHub: which account to export with
 
 
 ####################
@@ -202,8 +209,29 @@ class CoderExportForm(BaseModel):
 
 class CoderGithubConnections:
     async def get_by_user_id(self, user_id: str, db: AsyncSession) -> CoderGithubConnection | None:
-        result = await db.execute(select(CoderGithubConnection).where(CoderGithubConnection.user_id == user_id))
+        """Default connection for a user (multi-GitHub §22.2): prefer is_default, then newest."""
+        result = await db.execute(
+            select(CoderGithubConnection)
+            .where(CoderGithubConnection.user_id == user_id)
+            .order_by(CoderGithubConnection.is_default.desc(), CoderGithubConnection.updated_at.desc())
+        )
         return result.scalars().first()
+
+    async def get_by_id(self, connection_id: str, user_id: str, db: AsyncSession) -> CoderGithubConnection | None:
+        result = await db.execute(
+            select(CoderGithubConnection).where(
+                CoderGithubConnection.id == connection_id, CoderGithubConnection.user_id == user_id
+            )
+        )
+        return result.scalars().first()
+
+    async def list_by_user_id(self, user_id: str, db: AsyncSession) -> list[CoderGithubConnection]:
+        result = await db.execute(
+            select(CoderGithubConnection)
+            .where(CoderGithubConnection.user_id == user_id)
+            .order_by(CoderGithubConnection.is_default.desc(), CoderGithubConnection.updated_at.desc())
+        )
+        return list(result.scalars().all())
 
     async def upsert(
         self,
@@ -212,10 +240,17 @@ class CoderGithubConnections:
         github_user_id: str | None,
         access_token_encrypted: str,
         scopes: list | None = None,
+        github_host: str = 'github.com',
         db: AsyncSession = None,
     ) -> CoderGithubConnection:
         now = int(time.time())
-        connection = await self.get_by_user_id(user_id, db)
+        # one connection per (user, host) — re-authorizing replaces the token for that host
+        result = await db.execute(
+            select(CoderGithubConnection).where(
+                CoderGithubConnection.user_id == user_id, CoderGithubConnection.github_host == github_host
+            )
+        )
+        connection = result.scalars().first()
         if connection:
             connection.github_login = github_login
             connection.github_user_id = github_user_id
@@ -224,19 +259,49 @@ class CoderGithubConnections:
             connection.updated_at = now
             await db.flush()
             return connection
+        has_other = (await self.list_by_user_id(user_id, db)) != []
         connection = CoderGithubConnection(
             id=str(uuid4()),
             user_id=user_id,
             github_login=github_login,
             github_user_id=github_user_id,
+            github_host=github_host,
             access_token_encrypted=access_token_encrypted,
             scopes=scopes,
+            # first connection becomes default; subsequent ones are secondary
+            is_default=not has_other,
             created_at=now,
             updated_at=now,
         )
         db.add(connection)
         await db.flush()
         return connection
+
+    async def set_default(self, connection_id: str, user_id: str, db: AsyncSession) -> bool:
+        connection = await self.get_by_id(connection_id, user_id, db)
+        if not connection:
+            return False
+        others = await self.list_by_user_id(user_id, db)
+        for c in others:
+            c.is_default = c.id == connection.id
+        await db.flush()
+        return True
+
+    async def delete_by_id(self, connection_id: str, user_id: str, db: AsyncSession) -> bool:
+        """Delete a single connection; if it was the default, promote the newest remaining one."""
+        remaining = await self.list_by_user_id(user_id, db)
+        target = next((c for c in remaining if c.id == connection_id), None)
+        if not target:
+            return False
+        was_default = target.is_default
+        await db.delete(target)
+        await db.flush()
+        if was_default:
+            rest = [c for c in remaining if c.id != connection_id]
+            if rest:
+                rest[0].is_default = True
+                await db.flush()
+        return True
 
     async def delete_by_user_id(self, user_id: str, db: AsyncSession) -> bool:
         await db.execute(delete(CoderGithubConnection).where(CoderGithubConnection.user_id == user_id))
