@@ -33,20 +33,45 @@ from open_webui.internal.db import get_async_session
 from open_webui.models.coder import (
     CoderAudit,
     CoderExportForm,
+    CoderGitHubAppConnectionForm,
+    CoderGitHubAppInstallationForm,
+    CoderGitHubAppInstallations,
     CoderGithubConnections,
     CoderProjectForm,
     CoderProjects,
     CoderExportJobs,
+    CoderSandboxCreateForm,
+    CoderSandboxSession,
+    CoderSandboxSessionModel,
+    CoderSandboxSessions,
+    CoderTaskMetaForm,
+    CoderTaskMetaModel,
+    CoderTaskMetas,
 )
 from open_webui.models.config import Config
 from open_webui.utils.auth import get_verified_user, get_admin_user
 from open_webui.utils.coder import export_worker
 from open_webui.utils.coder.changeset import ChangeSetValidationError, generate_unified_diff, validate_changeset, validate_path
 from open_webui.utils.coder.crypto import decrypt_secret, encrypt_secret
-from open_webui.utils.coder.github_client import GitHubAPIError, GitHubClient, _request as github_request
-from open_webui.utils.coder.metrics import CODER_ACTIVE_CONNECTIONS, CODER_REQUESTS_TOTAL, observe_audit_event, render_metrics
+from open_webui.utils.coder.github_client import (
+    GitHubAPIError,
+    GitHubClient,
+    _api_base as _api_base_for,
+    _request as github_request,
+)
+from open_webui.utils.coder.metrics import (
+    CODER_ACTIVE_CONNECTIONS,
+    CODER_REQUESTS_TOTAL,
+    observe_audit_event,
+    observe_stream,
+    render_metrics,
+)
+from open_webui.utils.coder import modes as coder_modes
+from open_webui.utils.coder import sandbox as coder_sandbox
+from open_webui.utils.coder.sandbox import SandboxError
 from open_webui.utils.coder.policy import get_coder_policies, host_is_allowed, owner_is_allowed, repo_is_allowed
 from pydantic import BaseModel
+from sqlalchemy import select as sa_select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 log = logging.getLogger(__name__)
@@ -199,6 +224,17 @@ async def _get_connection(user_id: str, db: AsyncSession, connection_id: str | N
 
 async def _get_connection_token(user_id: str, db: AsyncSession, connection_id: str | None = None) -> str:
     connection = await _get_connection(user_id, db, connection_id)
+    # Priority D: GitHub App installation — mint/refresh short-lived token on demand.
+    if connection.token_type == 'app_installation' and connection.installation_id:
+        from open_webui.utils.coder.github_client import get_installation_token
+
+        try:
+            return await get_installation_token(connection.installation_id, connection.github_host)
+        except GitHubAPIError as exc:
+            raise HTTPException(
+                status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY,
+                detail={'code': exc.code, 'message': exc.message},
+            )
     try:
         token = decrypt_secret(connection.access_token_encrypted)
     except Exception:
@@ -287,11 +323,21 @@ async def github_auth_start(request: Request, host: str | None = None, user=Depe
     _oauth_states[state] = {'user_id': user.id, 'host': gh_host, 'expires': time.time() + OAUTH_STATE_TTL_SECONDS}
 
     redirect_uri = str(request.url_for('github_auth_callback'))
+    # Default consent settings:
+    # - scope `repo` grants Contents: Read & Write on all accessible repos,
+    #   which is what "Repository access → All repositories" + "Contents: Read"
+    #   requires; `public_repo` additionally keeps public repos readable if the
+    #   user narrows access to "Only select repositories".
+    # Note: GitHub's OAuth/OAuth-app consent screen does not accept URL
+    # parameters that preselect repository access — the defaults above are the
+    # closest achievable behaviour. The admin must also enable "All repositories"
+    # under Third-party App access in the GitHub App / OAuth App settings for
+    # org members (see docs/CODER.md §6).
     authorize_url = (
         f'https://{gh_host}/login/oauth/authorize'
         f'?client_id={CODER_GITHUB_CLIENT_ID}'
         f'&redirect_uri={redirect_uri}'
-        f'&scope=repo'
+        f'&scope={" ".join(["repo", "public_repo"])}'
         f'&state={state}'
     )
     return {'url': authorize_url}
@@ -347,13 +393,27 @@ async def github_auth_callback(
         log.exception('Coder GitHub OAuth callback failed')
         return RedirectResponse(url=_coder_redirect_url(request, 'github_error=api_failure'), status_code=302)
 
+    granted_scopes = [s.strip() for s in (token_data.get('scope') or '').split(',') if s.strip()]
+    if 'repo' not in granted_scopes:
+        # Token was issued without repository access — send the user through the
+        # consent screen again so GitHub prompts to approve the `repo` scope.
+        return RedirectResponse(url=_coder_redirect_url(request, 'github_retry_auth=1'), status_code=302)
+
+    # Verify the stored token can actually access repository data (/user/repos);
+    # otherwise surface a clear error instead of silently showing an empty list.
+    try:
+        await GitHubClient.list_repositories(token_data['access_token'], page=1, per_page=1, host=gh_host)
+    except GitHubAPIError as exc:
+        log.warning(f'Coder GitHub token validation failed for {gh_host}:{gh_user["login"]}: {exc.code} {exc.message}')
+        return RedirectResponse(url=_coder_redirect_url(request, 'github_error=insufficient_scopes'), status_code=302)
+
     encrypted = encrypt_secret(token_data['access_token'])
     await CoderGithubConnections.upsert(
         user_id=user_id,
         github_login=gh_user['login'],
         github_user_id=gh_user['id'],
         access_token_encrypted=encrypted,
-        scopes=token_data['scope'],
+        scopes=granted_scopes,
         github_host=gh_host,
         db=db,
     )
@@ -440,6 +500,195 @@ async def github_connection_delete(
     await db.commit()
     await _audit(request, user.id, action='github_connection_deleted', target=connection_id, db=db)
     return {'status': True}
+
+
+############################
+# GitHub App & connection validation (plan coder.qwen.ai, priority D)
+############################
+
+
+@router.get('/github-app/status')
+async def github_app_status(
+    request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)
+):
+    """Настроено ли GitHub App и какие установки видны пользователю."""
+    from open_webui.utils.coder.github_client import (
+        github_app_configured,
+        github_app_install_url,
+        list_user_installations,
+    )
+
+    await check_coder_permission(request, user)
+    configured = github_app_configured()
+    install_url = github_app_install_url() if configured else None
+    installations = await CoderGitHubAppInstallations.list_by_user_id(user.id, db)
+    # live sync with GitHub when an OAuth token exists and the app is configured
+    live: list[dict] = []
+    if configured:
+        try:
+            oauth_conn = await CoderGithubConnections.get_by_user_id(user.id, db)
+            if oauth_conn and oauth_conn.token_type != 'app_installation':
+                token = decrypt_secret(oauth_conn.access_token_encrypted)
+                live = await list_user_installations(token, oauth_conn.github_host)
+                for item in live:
+                    await CoderGitHubAppInstallations.upsert(
+                        user.id, CoderGitHubAppInstallationForm(**item), db
+                    )
+                await db.commit()
+                installations = await CoderGitHubAppInstallations.list_by_user_id(user.id, db)
+        except Exception as exc:  # non-fatal: cached rows remain usable
+            log.debug(f'github-app live sync failed: {exc}')
+    return {
+        'configured': configured,
+        'install_url': install_url,
+        'installations': [
+            {
+                'installation_id': i.installation_id,
+                'account_login': i.account_login,
+                'account_type': i.account_type,
+                'repository_selection': i.repository_selection,
+                'github_host': i.github_host,
+            }
+            for i in installations
+        ],
+    }
+
+
+@router.post('/github-app/connection')
+async def github_app_connect(
+    request: Request,
+    form: CoderGitHubAppConnectionForm,
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    """Сделать GitHub App installation активным подключением пользователя."""
+    from open_webui.utils.coder.github_client import get_installation_token
+
+    await check_coder_permission(request, user)
+    policies = await get_coder_policies()
+    host = form.github_host or 'github.com'
+    if policies['allowed_github_hosts'] and host not in policies['allowed_github_hosts']:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={'code': 'CODER_DISALLOWED_HOST', 'message': f'Host "{host}" is not allowed by server policy'},
+        )
+    row = await CoderGitHubAppInstallations.get_by_installation(user.id, form.installation_id, db)
+    if not row:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={'code': 'CODER_INSTALLATION_NOT_FOUND', 'message': 'Unknown installation; refresh /github-app/status first'},
+        )
+    # verify the installation actually works before switching the connection over
+    try:
+        token = await get_installation_token(form.installation_id, host)
+        me = await GitHubClient.get_user(token, host)
+    except GitHubAPIError as exc:
+        raise HTTPException(
+            status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY,
+            detail={'code': exc.code, 'message': exc.message},
+        )
+    encrypted = encrypt_secret(f'app:{token[:8]}')  # placeholder secret; real token minted on demand
+    connection = await CoderGithubConnections.upsert(
+        user.id,
+        github_login=row.account_login or me.get('login'),
+        github_user_id=me.get('id'),
+        access_token_encrypted=encrypted,
+        scopes=['contents:read', 'contents:write'],
+        github_host=host,
+        token_type='app_installation',
+        installation_id=form.installation_id,
+        db=db,
+    )
+    await db.commit()
+    await _audit(request, user.id, action='github_app_connected', target=f'{row.account_login}:{form.installation_id}', db=db)
+    return {
+        'connected': True,
+        'connection_id': connection.id,
+        'github_login': connection.github_login,
+        'token_type': 'app_installation',
+    }
+
+
+@router.get('/github/organizations')
+async def github_organizations(
+    request: Request,
+    connection_id: str | None = None,
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    """Организации пользователя (для фильтра списка репозиториев)."""
+    await check_coder_permission(request, user)
+    token = await _get_connection_token(user.id, db, connection_id)
+    host = await _get_connection_host(user.id, db, connection_id)
+    api_base = _api_base_for(host)
+    try:
+        response = await github_request('GET', f'{api_base}/user/orgs', token=token, params={'per_page': 100})
+        if response.status_code >= 400:
+            raise GitHubAPIError('CODER_GITHUB_ERROR', f'orgs lookup failed ({response.status_code})', response.status_code)
+        orgs = [{'login': o.get('login'), 'avatar_url': o.get('avatar_url')} for o in response.json()]
+    except GitHubAPIError as exc:
+        raise HTTPException(status_code=exc.status_code or 502, detail={'code': exc.code, 'message': exc.message})
+    await _audit(request, user.id, action='github_orgs_viewed', db=db)
+    return {'organizations': orgs}
+
+
+@router.get('/github/connection_status')
+async def github_connection_status(
+    request: Request,
+    connection_id: str | None = None,
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    """Статус подключения без обращения к GitHub (быстрый UI-чек)."""
+    await check_coder_permission(request, user)
+    connections = await CoderGithubConnections.list_by_user_id(user.id, db)
+    return {
+        'connected': bool(connections),
+        'connections': [
+            {
+                'id': c.id,
+                'login': c.github_login,
+                'host': c.github_host or 'github.com',
+                'token_type': c.token_type,
+                'is_default': bool(c.is_default),
+                'scopes_ok': bool(c.scopes) and any(s in ('repo', 'public_repo', 'contents:read', 'contents:write') for s in c.scopes)
+                if c.token_type == 'oauth'
+                else True,
+            }
+            for c in connections
+        ],
+    }
+
+
+@router.post('/github/validate')
+async def github_validate(
+    request: Request,
+    connection_id: str | None = None,
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    """Проверить валидность токена/scopes на GitHub (§D connection check)."""
+    await check_coder_permission(request, user)
+    token = await _get_connection_token(user.id, db, connection_id)
+    host = await _get_connection_host(user.id, db, connection_id)
+    conn = await _get_connection(user.id, db, connection_id)
+    try:
+        me = await GitHubClient.get_user(token, host)
+    except GitHubAPIError as exc:
+        await _audit(request, user.id, action='permission_denied', target='github_validate', db=db)
+        raise HTTPException(
+            status_code=exc.status_code or 502,
+            detail={'code': exc.code, 'message': exc.message},
+        )
+    scopes = conn.scopes or []
+    has_repo = conn.token_type == 'app_installation' or any(s in ('repo', 'public_repo') for s in scopes)
+    return {
+        'valid': True,
+        'login': me.get('login'),
+        'token_type': conn.token_type,
+        'has_repo_scope': has_repo,
+        'warning': None if has_repo else 'Token lacks the "repo" scope — private repositories will not be listed. Reconnect with updated scopes.',
+    }
 
 
 ############################
@@ -1402,4 +1651,336 @@ async def coder_delete_project(request: Request, project_id: str, user=Depends(g
         )
     await CoderProjects.delete(project_id, db)
     await _audit(request, user.id, action='project_deleted', target=f'{project.owner}/{project.repo}', payload={'project_id': project_id}, db=db)
+    return {'status': True}
+
+
+####################
+# Sandbox / Preview / Publish (план coder.qwen.ai §A)
+####################
+
+
+class CoderSandboxWriteForm(BaseModel):
+    path: str
+    content: str
+
+
+class CoderSandboxChangesetForm(BaseModel):
+    files: list[dict[str, Any]]
+
+
+def _sandbox_error(exc: SandboxError) -> HTTPException:
+    code = status.HTTP_400_BAD_REQUEST
+    if exc.code == 'not_found':
+        code = status.HTTP_404_NOT_FOUND
+    elif exc.code in ('quota_exceeded', 'too_large'):
+        code = status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
+    return HTTPException(status_code=code, detail={'code': f'SANDBOX_{exc.code.upper()}', 'message': str(exc)})
+
+
+async def _get_sandbox_session(request: Request, user, session_id: str, db: AsyncSession):
+    await check_coder_permission(request, user)
+    session = await CoderSandboxSessions.get_by_id(session_id, db)
+    if not session or session.user_id != user.id or session.status == 'destroyed':
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={'code': 'CODER_SANDBOX_NOT_FOUND', 'message': 'Sandbox session not found'},
+        )
+    return session
+
+
+@router.get('/modes')
+async def coder_modes_list(request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+    """§B1: список режимов генерации; §B2: галерея шаблонов."""
+    await check_coder_permission(request, user)
+    return {'modes': coder_modes.list_modes(), 'templates': coder_modes.list_templates()}
+
+
+@router.post('/sandbox/session')
+async def coder_sandbox_create(
+    request: Request,
+    form: CoderSandboxCreateForm,
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    """§A1: создать изолированный sandbox на задачу (create → active)."""
+    await check_coder_permission(request, user)
+    session = await CoderSandboxSessions.create(user.id, mode=form.mode, db=db)
+    skeleton = {}
+    template = coder_modes.get_template(form.template_id) if form.template_id else None
+    if template:
+        skeleton = coder_modes.skeleton_for(template['mode'])
+    elif form.mode:
+        skeleton = coder_modes.skeleton_for(form.mode)
+    try:
+        coder_sandbox.create_sandbox(session.id, skeleton)
+    except SandboxError as exc:
+        await CoderSandboxSessions.update(session.id, {'status': 'destroyed'}, db)
+        raise _sandbox_error(exc)
+    await _audit(
+        request, user.id, action='sandbox_created', target=session.id,
+        payload={'mode': form.mode, 'template_id': form.template_id}, db=db,
+    )
+    return CoderSandboxSessionModel.model_validate(session).model_dump()
+
+
+@router.get('/sandbox/sessions')
+async def coder_sandbox_list(request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+    await check_coder_permission(request, user)
+    sessions = await CoderSandboxSessions.list_by_user_id(user.id, db, statuses=['active', 'paused'])
+    return [CoderSandboxSessionModel.model_validate(s).model_dump() for s in sessions]
+
+
+@router.get('/sandbox/session/{session_id}')
+async def coder_sandbox_get(request: Request, session_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+    session = await _get_sandbox_session(request, user, session_id, db)
+    try:
+        files = coder_sandbox.list_files(session_id)
+    except SandboxError as exc:
+        raise _sandbox_error(exc)
+    payload = CoderSandboxSessionModel.model_validate(session).model_dump()
+    payload['files'] = files
+    return payload
+
+
+@router.post('/sandbox/session/{session_id}/pause')
+async def coder_sandbox_pause(request: Request, session_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+    """§A1 жизненный цикл pause/resume."""
+    session = await _get_sandbox_session(request, user, session_id, db)
+    session = await CoderSandboxSessions.update(session_id, {'status': 'paused'}, db)
+    return CoderSandboxSessionModel.model_validate(session).model_dump()
+
+
+@router.post('/sandbox/session/{session_id}/resume')
+async def coder_sandbox_resume(request: Request, session_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+    session = await _get_sandbox_session(request, user, session_id, db)
+    session = await CoderSandboxSessions.update(session_id, {'status': 'active'}, db)
+    await CoderSandboxSessions.touch(session_id, db)
+    return CoderSandboxSessionModel.model_validate(session).model_dump()
+
+
+@router.delete('/sandbox/session/{session_id}')
+async def coder_sandbox_destroy(request: Request, session_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+    """§A1 destroy: удаляет директорию песочницы и помечает сессию."""
+    await _get_sandbox_session(request, user, session_id, db)
+    removed = False
+    try:
+        removed = coder_sandbox.destroy_sandbox(session_id)
+    except SandboxError:
+        pass
+    await CoderSandboxSessions.update(session_id, {'status': 'destroyed'}, db)
+    await _audit(request, user.id, action='sandbox_destroyed', target=session_id, payload={'removed_dir': removed}, db=db)
+    return {'status': True}
+
+
+@router.get('/sandbox/session/{session_id}/file')
+async def coder_sandbox_read_file(
+    request: Request, session_id: str, path: str,
+    user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session),
+):
+    """§A3: чтение файла из sandbox для браузерного редактора."""
+    await _get_sandbox_session(request, user, session_id, db)
+    try:
+        content, mime = coder_sandbox.read_file(session_id, path)
+    except SandboxError as exc:
+        raise _sandbox_error(exc)
+    return {'path': path, 'content': content, 'mime': mime}
+
+
+@router.put('/sandbox/session/{session_id}/file')
+async def coder_sandbox_write_file(
+    request: Request, session_id: str, form: CoderSandboxWriteForm,
+    user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session),
+):
+    await _get_sandbox_session(request, user, session_id, db)
+    try:
+        info = coder_sandbox.write_file(session_id, form.path, form.content)
+    except SandboxError as exc:
+        raise _sandbox_error(exc)
+    await CoderSandboxSessions.touch(session_id, db)
+    return info
+
+
+@router.delete('/sandbox/session/{session_id}/file')
+async def coder_sandbox_delete_file(
+    request: Request, session_id: str, path: str,
+    user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session),
+):
+    await _get_sandbox_session(request, user, session_id, db)
+    try:
+        ok = coder_sandbox.delete_file(session_id, path)
+    except SandboxError as exc:
+        raise _sandbox_error(exc)
+    await CoderSandboxSessions.touch(session_id, db)
+    return {'status': ok}
+
+
+@router.post('/sandbox/session/{session_id}/changeset')
+async def coder_sandbox_apply_changeset(
+    request: Request, session_id: str, form: CoderSandboxChangesetForm,
+    user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session),
+):
+    """Применяет change set модели к sandbox (§A5: Stop откатывает только не применённые файлы)."""
+    await _get_sandbox_session(request, user, session_id, db)
+    try:
+        applied = coder_sandbox.apply_changeset(session_id, form.files)
+    except SandboxError as exc:
+        raise _sandbox_error(exc)
+    await CoderSandboxSessions.touch(session_id, db)
+    await _audit(request, user.id, action='sandbox_changeset_applied', target=session_id, payload={'files': len(applied)}, db=db)
+    return {'applied': applied}
+
+
+@router.get('/sandbox/session/{session_id}/preview', response_class=PlainTextResponse)
+async def coder_sandbox_preview(
+    request: Request, session_id: str, v: int | None = None,
+    user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session),
+):
+    """§A2: HTML живой превью-панели (iframe src). v — cache-buster для hot-reload."""
+    await _get_sandbox_session(request, user, session_id, db)
+    try:
+        html = coder_sandbox.get_preview_html(session_id)
+    except SandboxError as exc:
+        raise _sandbox_error(exc)
+    await CoderSandboxSessions.touch(session_id, db)
+    return PlainTextResponse(html, media_type='text/html; charset=utf-8')
+
+
+@router.post('/sandbox/session/{session_id}/publish')
+async def coder_sandbox_publish(request: Request, session_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+    """§A4: публикация одним кликом — копия проекта в published/<share_id>."""
+    session = await _get_sandbox_session(request, user, session_id, db)
+    share_id = session.published_share_id or session_id
+    try:
+        result = coder_sandbox.publish_sandbox(session_id, share_id)
+    except SandboxError as exc:
+        raise _sandbox_error(exc)
+    await CoderSandboxSessions.update(session_id, {'published_share_id': share_id}, db)
+    await _audit(request, user.id, action='sandbox_published', target=share_id, payload=result, db=db)
+    from open_webui.config import CODER_PUBLISH_URL_PREFIX
+
+    return {'share_id': share_id, 'url': f'{CODER_PUBLISH_URL_PREFIX}/s/{share_id}', **result}
+
+
+@router.get('/preview/s/{share_id}', response_class=PlainTextResponse)
+async def coder_published_page(request: Request, share_id: str):
+    """Публичная страница результата по share_id (аналог /c/<id> у Qwen, без авторизации)."""
+    config = await Config.get_many('coder.enable')
+    if not config.get('coder.enable', CODER_ENABLED):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=ERROR_MESSAGES.UNAUTHORIZED)
+    try:
+        html = coder_sandbox.read_published(share_id)
+    except SandboxError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={'code': 'CODER_PUBLISH_NOT_FOUND', 'message': 'Published page not found'},
+        )
+    return PlainTextResponse(html, media_type='text/html; charset=utf-8')
+
+
+@router.post('/sandbox/sweep')
+async def coder_sandbox_sweep(request: Request, admin_user=Depends(get_admin_user), db: AsyncSession = Depends(get_async_session)):
+    """§A1 TTL-чистка протухших sandbox-сессий (запускается админом/крон-задачей).
+
+    Удаляет строки БД старше TTL и осиротевшие директории внутри sandbox root.
+    """
+    from open_webui.config import CODER_SANDBOX_TTL_MINUTES
+
+    ttl = CODER_SANDBOX_TTL_MINUTES * 60
+    removed_rows = await CoderSandboxSessions.delete_expired(ttl, db)
+    removed_dirs = 0
+    try:
+        # список живых id из БД (все пользователи) — через прямой select
+        live_ids = {row[0] for row in await db.execute(sa_select(CoderSandboxSession.id))}
+        for d in coder_sandbox.sandbox_root().iterdir():
+            if not d.is_dir() or not coder_sandbox.SAFE_SESSION_ID.match(d.name):
+                continue
+            stale = (time.time() - d.stat().st_mtime) > ttl
+            if stale and d.name not in live_ids:
+                try:
+                    coder_sandbox.destroy_sandbox(d.name)
+                    removed_dirs += 1
+                except SandboxError:
+                    pass
+        await db.commit()
+    except Exception:
+        log.debug('coder sandbox dir sweep failed', exc_info=True)
+    await _audit(request, admin_user.id, action='sandbox_sweep', payload={'expired_rows': removed_rows, 'removed_dirs': removed_dirs}, db=db)
+    return {'expired_rows': removed_rows, 'removed_dirs': removed_dirs}
+
+
+####################
+# Task meta: pin/archive/search/title-tags/followups (план §B3/B4, §C)
+####################
+
+
+@router.get('/tasks')
+async def coder_tasks_list(
+    request: Request,
+    archived: bool = False,
+    q: str | None = None,
+    tag: str | None = None,
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    """§C1/C2: список задач с pin-сортировкой, фильтром архива и глобальным поиском."""
+    await check_coder_permission(request, user)
+    rows = await CoderTaskMetas.list_by_user_id(user.id, db, include_archived=archived, search=q, tag=tag)
+    return [CoderTaskMetaModel.model_validate(r).model_dump() for r in rows]
+
+
+@router.post('/tasks/{chat_id}')
+async def coder_tasks_upsert(
+    request: Request, chat_id: str, form: CoderTaskMetaForm,
+    user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session),
+):
+    """§C1 pin/unpin/archive/restore + ручные title/tags/mode/status."""
+    await check_coder_permission(request, user)
+    row = await CoderTaskMetas.upsert(user.id, chat_id, form, db)
+    await _audit(request, user.id, action='task_meta_updated', target=chat_id, payload=form.model_dump(exclude_none=True), db=db)
+    return CoderTaskMetaModel.model_validate(row).model_dump()
+
+
+@router.delete('/tasks/{chat_id}')
+async def coder_tasks_delete(request: Request, chat_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+    await check_coder_permission(request, user)
+    ok = await CoderTaskMetas.delete_by_chat(user.id, chat_id, db)
+    return {'status': ok}
+
+
+@router.post('/tasks/{chat_id}/title')
+async def coder_task_title(
+    request: Request, chat_id: str, prompt: str = '',
+    user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session),
+):
+    """§B3: автосохранение названия и тегов задачи (быстрая эвристика, аналог /api/task/title|tags)."""
+    await check_coder_permission(request, user)
+    title, tags = coder_modes.derive_title_and_tags(prompt or '')
+    row = await CoderTaskMetas.upsert(user.id, chat_id, CoderTaskMetaForm(title=title, tags=tags), db)
+    return {'title': row.title, 'tags': row.tags}
+
+
+@router.get('/tasks/{chat_id}/followups')
+async def coder_task_followups(request: Request, chat_id: str, mode: str | None = None, user=Depends(get_verified_user)):
+    """§B4: follow-up предложения «что сделать дальше»."""
+    await check_coder_permission(request, user)
+    return {'suggestions': coder_modes.followup_suggestions(mode)}
+
+
+@router.post('/stream/metrics')
+async def coder_stream_metrics(
+    request: Request,
+    first_chunk_ms: float | None = None,
+    chunks: int = 0,
+    mode: str = 'default',
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    """§E2: UI сообщает о времени первого чанка и количестве чанков стрима."""
+    await check_coder_permission(request, user)
+    first_chunk_s = (first_chunk_ms / 1000.0) if first_chunk_ms is not None else None
+    observe_stream(first_chunk_seconds=first_chunk_s, chunks=chunks, mode=mode)
+    await _audit(
+        request, user.id, action='generation_streamed', target=mode,
+        payload={'first_chunk_ms': first_chunk_ms, 'chunks': chunks}, db=db,
+    )
     return {'status': True}
