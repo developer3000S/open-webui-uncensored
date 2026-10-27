@@ -463,7 +463,7 @@ The system will execute it and return matching file snippets in your next turn. 
 
 	async function handleCreateProject() {
 		if (!newProjectName.trim()) return;
-		if (!(owner && onLoadRepo && branch)) {
+		if (!(owner && repo && branch)) {
 			toast.error($i18n.t('No repository selected'));
 			return;
 		}
