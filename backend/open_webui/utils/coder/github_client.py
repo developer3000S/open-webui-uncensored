@@ -181,6 +181,127 @@ def _web_base(host: str | None) -> str:
     return h
 
 
+####################
+# GitHub App authentication (plan coder.qwen.ai, priority D)
+####################
+
+_APP_TOKEN_CACHE: dict[str, tuple[str, float]] = {}  # installation_id -> (token, expires_at)
+
+
+def github_app_configured(host: str | None = None) -> bool:
+    from open_webui.config import CODER_GITHUB_APP_ID, CODER_GITHUB_APP_PRIVATE_KEY
+
+    if host and host != 'github.com':
+        return False  # GHES apps are configured via env overrides; MVP targets github.com
+    return bool(CODER_GITHUB_APP_ID and CODER_GITHUB_APP_PRIVATE_KEY)
+
+
+def github_app_install_url(host: str | None = None) -> str | None:
+    """Install URL for the configured GitHub App (settings → public link)."""
+    from open_webui.config import CODER_GITHUB_APP_SLUG
+
+    slug = CODER_GITHUB_APP_SLUG
+    if not slug:
+        return None
+    web = _web_base(host)
+    return f'{web}/apps/{slug}/installations/new'
+
+
+def _app_jwt(host: str | None = None) -> str:
+    """Signed JWT for GitHub App server-to-server auth (RS256, kid=App ID)."""
+    import time as _time
+
+    from open_webui.config import CODER_GITHUB_APP_ID, CODER_GITHUB_APP_PRIVATE_KEY
+
+    try:
+        import jwt  # PyJWT — optional dependency, required only when App is used
+    except ImportError as exc:  # pragma: no cover
+        raise GitHubAPIError('CODER_GITHUB_APP_UNSUPPORTED', f'PyJWT is not installed: {exc}')
+
+    now = int(_time.time())
+    payload = {'iat': now - 60, 'exp': now + 540, 'iss': str(CODER_GITHUB_APP_ID)}
+    return jwt.encode(payload, CODER_GITHUB_APP_PRIVATE_KEY, algorithm='RS256')
+
+
+async def get_installation_token(installation_id: str, host: str | None = None) -> str:
+    """Exchange the App JWT for a short-lived installation token (cached ~TTL)."""
+    cached = _APP_TOKEN_CACHE.get(installation_id)
+    if cached and cached[1] > time.time() + 60:
+        return cached[0]
+    api_base = _api_base(host)
+    jwt_token = _app_jwt(host)
+    response = await _request(
+        'POST',
+        f"{api_base}/app/installations/{installation_id}/access_tokens",
+        token=jwt_token,
+    )
+    _raise_for_status(response)
+    data = response.json()
+    token = data.get('token')
+    if not token:
+        raise GitHubAPIError('CODER_GITHUB_APP_ERROR', 'GitHub App returned no installation token')
+    expires_in = 3600.0
+    try:
+        exp_str = (data.get('expires_at') or '')[:19]
+        if exp_str:
+            expires_in = max(60.0, min(3600.0, __import__('datetime').datetime.fromisoformat(exp_str).timestamp() - time.time()))
+    except Exception:
+        pass
+    _APP_TOKEN_CACHE[installation_id] = (token, time.time() + expires_in)
+    return token
+
+
+async def list_user_installations(token: str, host: str | None = None) -> list[dict]:
+    """GitHub App installations visible to the authenticated user."""
+    api_base = _api_base(host)
+    response = await _request('GET', f'{api_base}/user/installations', token=token, params={'per_page': 100})
+    if response.status_code in (401, 403, 404):
+        # App not installed / not visible — not an error for the caller
+        return []
+    _raise_for_status(response)
+    items = response.json().get('installations') or []
+    return [
+        {
+            'installation_id': str(i.get('id')),
+            'account_login': (i.get('account') or {}).get('login'),
+            'account_type': (i.get('account') or {}).get('type'),
+            'repository_selection': i.get('repository_selection'),
+        }
+        for i in items
+    ]
+
+
+async def list_installation_repositories(installation_token: str, host: str | None = None) -> list[dict]:
+    api_base = _api_base(host)
+    repos: list[dict] = []
+    page = 1
+    while True:
+        response = await _request(
+            'GET',
+            f'{api_base}/installation/repositories',
+            token=installation_token,
+            params={'per_page': 100, 'page': page},
+        )
+        _raise_for_status(response)
+        data = response.json()
+        batch = data.get('repositories') or []
+        repos.extend(batch)
+        if len(batch) < 100 or page >= (data.get('total_count', 0) // 100 + 1):
+            break
+        page += 1
+    return [
+        {
+            'name': r.get('name'),
+            'full_name': r.get('full_name'),
+            'owner': (r.get('owner') or {}).get('login'),
+            'default_branch': r.get('default_branch'),
+            'private': r.get('private'),
+            'updated_at': r.get('updated_at'),
+        }
+        for r in repos
+    ]
+
+
 class GitHubClient:
     GITHUB_API_BASE = GITHUB_API
 

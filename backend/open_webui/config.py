@@ -2198,6 +2198,21 @@ CODER_GITHUB_RETRY_MAX = int(os.getenv('CODER_GITHUB_RETRY_MAX', '3'))
 CODER_GITHUB_RETRY_DELAY = int(os.getenv('CODER_GITHUB_RETRY_DELAY', '1'))
 CODER_GITHUB_TIMEOUT = int(os.getenv('CODER_GITHUB_TIMEOUT', '30'))
 
+# Coder sandbox / preview / публикация (план coder.qwen.ai, приоритет A)
+CODER_SANDBOX_ROOT = os.getenv('CODER_SANDBOX_ROOT', '')  # пусто = DATA_DIR/sandboxes
+CODER_SANDBOX_TTL_MINUTES = int(os.getenv('CODER_SANDBOX_TTL_MINUTES', '60'))
+CODER_SANDBOX_MAX_FILES = int(os.getenv('CODER_SANDBOX_MAX_FILES', '200'))
+CODER_SANDBOX_MAX_FILE_SIZE = int(os.getenv('CODER_SANDBOX_MAX_FILE_SIZE', str(512 * 1024)))
+CODER_SANDBOX_MAX_TOTAL_SIZE = int(os.getenv('CODER_SANDBOX_MAX_TOTAL_SIZE', str(20 * 1024 * 1024)))
+CODER_PUBLISH_ROOT = os.getenv('CODER_PUBLISH_ROOT', '')  # пусто = DATA_DIR/published
+CODER_PUBLISH_URL_PREFIX = os.getenv('CODER_PUBLISH_URL_PREFIX', '/api/v1/coder/preview')
+
+# Coder GitHub App (план coder.qwen.ai, приоритет D) — установка приложения вместо
+# personal OAuth-токена даёт доступ ко всем репозиториям организации.
+CODER_GITHUB_APP_SLUG = os.getenv('CODER_GITHUB_APP_SLUG', '')  # e.g. 'my-org-coder'
+CODER_GITHUB_APP_ID = os.getenv('CODER_GITHUB_APP_ID', '')
+CODER_GITHUB_APP_PRIVATE_KEY = os.getenv('CODER_GITHUB_APP_PRIVATE_KEY', '').replace('\\n', '\n')
+
 ENABLE_NOTES = os.getenv('ENABLE_NOTES', 'True').lower() == 'true'
 
 ENABLE_USER_STATUS = os.getenv('ENABLE_USER_STATUS', 'True').lower() == 'true'

@@ -70,6 +70,8 @@ Diagnose with `docker logs <container> --tail 40`; if the traceback ends in that
 
 **Ошибка при подключении после успешного OAuth (`CODER_AUTH_*`, соединение не устанавливается):** чаще всего это неверные/истёкшие креденшелы клиента или заблокированный доступ приложения к организации. Повторите подключение; если проблема повторяется, посмотрите код ошибки в ответе `/github/auth/callback` редиректа (`?github_error=`) и журнал аудита (`GET /api/v1/coder/audit`) — там фиксируются все значимые действия и сбои.
 
+**Список Connected repositories пуст после успешного подключения GitHub:** на экране согласия GitHub выбран режим «Public Repositories (read-only)» или «Only select repositories» вместо **«Repository access → All repositories»** — токен тогда не видит приватные репозитории. Переподключитесь (Disconnect → Подключить GitHub) и выберите «All repositories»; scope `repo` автоматически выдаёт Contents: Read & Write. Сервер сам проверяет выданные права (`/user/repos`) и при нехватке scope возвращает пользователя на повторный consent-экран (`?github_retry_auth=1`) либо редиректит с `?github_error=insufficient_scopes`. Если аккаунт состоит в организациях — администратор организации должен одобрить OAuth-приложение (Settings → Third-party App access) с доступом ко всем репозиториям.
+
 **Экспорт завершается ошибкой `CODER_CONFLICT` / «protected branch»:** целевая защищённая ветка не принимает прямые коммиты — так и задумано: экспорт всегда пишет в новую ветку и создаёт Pull Request. Если конфликтует сама новая ветка (уже существует с другим содержимым), измените имя ветки в диалоге экспорта. Идемпотентный повтор с теми же параметрами не создаёт дублей коммита/PR.
 
 **Change Set отклоняется валидатором (`CODER_INVALID_PATH`, превышены лимиты):** запрещены пути вне репозитория (`..`), абсолютные пути и всё под `.git/`; действуют лимиты на размер файла (по умолчанию 1 МиБ), суммарный diff (5 МиБ), число файлов (50) и строк diff (4000) — переменные `CODER_MAX_*` в `.env`. Дополнительно блок-лист путей задаётся переменной `CODER_BLOCKED_PATHS` (`.env,*.pem,secrets/*,.git/*`). Попросите модель разбить большую задачу на несколько меньших Change Set.
@@ -81,5 +83,13 @@ Diagnose with `docker logs <container> --tail 40`; if the traceback ends in that
 **«host not allowed» / `permission_denied` при подключении GHES:** домен GitHub Enterprise Server должен быть перечислен в `CODER_ALLOWED_GITHUB_HOSTS` (по умолчанию только `github.com,api.github.com`). Для организаций и репозиториев действуют allow-listы `CODER_ALLOWED_ORGS` / `CODER_ALLOWED_REPOS`; фактические политики видны админу в `GET /api/v1/coder/admin/policies`.
 
 **Экспорт долго «висит» или страница закрылась до завершения:** экспорт асинхронный (`CODER_ASYNC_EXPORT=true`) — job выполняется фоново; статус доступен во вкладке Workspace (список export jobs) и в `GET /api/v1/coder/export/jobs/{id}`. Повторный запуск с теми же параметрами идемпотентен.
+
+**Sandbox: ошибка лимита («too many files», размер превышен):** песочница ограничена `CODER_SANDBOX_MAX_FILES` (200), `CODER_SANDBOX_MAX_FILE_SIZE` (512 КиБ) и `CODER_SANDBOX_MAX_TOTAL_SIZE` (20 МиБ); удалите лишние файлы через редактор/`DELETE /sandbox/session/{id}/file` или поднимите лимиты в `.env`. Запись в пути из `CODER_BLOCKED_PATHS` (`.env`, `*.pem`, `secrets/*`) отклоняется намеренно.
+
+**Панель Preview пустая или показывает битую страницу:** в песочнице ещё нет `index.html` — создайте sandbox-сессию с режимом/шаблоном (скелет разворачивается автоматически) или примените Change Set кнопкой «Apply to sandbox», затем обновите превью (cache-buster `?v=`). Превью рендерит статику HTML/CSS/JS; фреймворковые проекты со сборкой (React/Vite) не поддерживаются — это ожидаемое ограничение файловой песочницы без выполнения кода.
+
+**Опубликованная страница `/preview/s/<share_id>` недоступна после рестарта:** публикация хранится в `CODER_PUBLISH_ROOT` (по умолчанию `DATA_DIR/published`) — убедитесь, что каталог лежит на persistent-томе `data/` и попал в бэкап (см. docs/CODER.md §8).
+
+**Песочницы накапливаются на диске:** TTL задаётся `CODER_SANDBOX_TTL_MINUTES` (60 мин), очистка — админский `POST /api/v1/coder/sandbox/sweep` (можно повесить на cron); удаляются протухшие строки БД и осиротевшие директории.
 
 Полный runbook типовых ошибок, описание API и схем — в [`docs/CODER.md`](./docs/CODER.md) (§2, §3, §7).

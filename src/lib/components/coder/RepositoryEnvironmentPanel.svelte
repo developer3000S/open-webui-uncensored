@@ -18,6 +18,7 @@
 	let query = '';
 	let loading = false;
 	let loadedOnce = false;
+	let errored = false;
 	let searchTimer: ReturnType<typeof setTimeout>;
 
 	const refresh = async () => {
@@ -25,8 +26,11 @@
 		try {
 			const res = await listCoderRepos(token, query || undefined);
 			repos = res.repos ?? [];
+			errored = false;
 		} catch (e: any) {
-			toast.error(e?.message ?? 'Failed to load repositories');
+			repos = [];
+			errored = true;
+			toast.error(e?.detail?.message ?? e?.message ?? 'Failed to load repositories');
 		} finally {
 			loading = false;
 			loadedOnce = true;
@@ -55,7 +59,16 @@
 	{#if loading}
 		<div class="px-2 py-3 text-xs text-gray-500">{$i18n.t('Loading repositories')}…</div>
 	{:else if repos.length === 0}
-		<div class="px-2 py-3 text-xs text-gray-500">{$i18n.t('No repositories found')}</div>
+		<div class="px-2 py-3 text-xs text-gray-500">
+			{#if errored}
+				{$i18n.t('Failed to load repositories.')}
+				<button type="button" class="underline text-blue-500" on:click={refresh}>{$i18n.t('Try again')}</button>
+			{:else if query}
+				{$i18n.t('No repositories found')}
+			{:else}
+				{$i18n.t('No repositories found')} — {$i18n.t('reconnect your GitHub account with the repo permission, then press Refresh')}
+			{/if}
+		</div>
 	{:else}
 		<div class="flex flex-col gap-1.5">
 			{#each repos as r (r.full_name)}

@@ -81,6 +81,19 @@ if _AVAILABLE:
         ['scope'],
         registry=CODER_REGISTRY,
     )
+    # §E2 (план coder.qwen.ai): метрики стрима генерации
+    CODER_STREAM_FIRST_CHUNK_SECONDS = Histogram(
+        'coder_stream_first_chunk_seconds',
+        'Time to first streamed chunk for coder generations',
+        buckets=(0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30),
+        registry=CODER_REGISTRY,
+    )
+    CODER_STREAM_CHUNKS_TOTAL = Counter(
+        'coder_stream_chunks_total',
+        'Streamed chunks observed by the coder UI',
+        ['mode'],
+        registry=CODER_REGISTRY,
+    )
 else:  # pragma: no cover
     CODER_REGISTRY = None
     CODER_REQUESTS_TOTAL = _NOOP
@@ -90,6 +103,19 @@ else:  # pragma: no cover
     CODER_AUDIT_EVENTS_TOTAL = _NOOP
     CODER_ACTIVE_CONNECTIONS = _NOOP
     CODER_RATE_LIMITED_TOTAL = _NOOP
+    CODER_STREAM_FIRST_CHUNK_SECONDS = _NOOP
+    CODER_STREAM_CHUNKS_TOTAL = _NOOP
+
+
+def observe_stream(first_chunk_seconds: float | None = None, chunks: int = 0, mode: str = 'default') -> None:
+    """§E2: регистрация метрик стрима (first packet time, число чанков)."""
+    try:
+        if first_chunk_seconds is not None:
+            CODER_STREAM_FIRST_CHUNK_SECONDS.observe(max(0.0, float(first_chunk_seconds)))
+        if chunks:
+            CODER_STREAM_CHUNKS_TOTAL.labels(mode).inc(chunks)
+    except Exception:
+        log.debug('coder stream metrics observe failed', exc_info=True)
 
 
 def observe_github_request(method: str, status: int, retried: bool = False, error: str | None = None) -> None:

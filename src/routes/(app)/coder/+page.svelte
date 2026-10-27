@@ -30,9 +30,21 @@
 		listGitHubConnections,
 		setDefaultGitHubConnection,
 		deleteGitHubConnection,
+		getCoderModes,
+		createSandboxSession,
+		getSandboxSession,
+		publishSandboxSession,
+		getSandboxPreviewUrl,
+		getPublishedPageUrl,
+		upsertCoderTask,
+		generateCoderTaskTitle,
+		getCoderFollowups,
+		reportCoderStreamMetrics,
 		type CoderConnection,
 		type CoderConnectionInfo,
 		type CoderSemanticResult,
+		type CoderMode,
+		type CoderTemplate,
 		type CoderChangeFile,
 		type CoderRepo,
 		type CoderTreeEntry,
@@ -171,6 +183,81 @@
 
 let showExport = false;
 
+// §C/§B3: stable id for this coder session — used for task meta (title/tags/pin/archive)
+const coderChatId = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+// Sandbox / Preview / Publish state (§A, план coder.qwen.ai)
+let sandboxSessionId = '';
+let sandboxVersion = 0;
+let sandboxPublishedUrl = '';
+let sandboxBusy = false;
+let previewVisible = false;
+let selectedMode: string | null = null;
+let coderModes: CoderMode[] = [];
+let coderTemplates: CoderTemplate[] = [];
+let followupSuggestions: string[] = [];
+let streamFirstChunkMs = 0;
+let streamController: AbortController | null = null;
+
+const refreshSandbox = async () => {
+	if (!sandboxSessionId) return;
+	try {
+		const s = await getSandboxSession(token, sandboxSessionId);
+		sandboxPublishedUrl = s.published_share_id ? getPublishedPageUrl(s.published_share_id) : '';
+	} catch (_) {
+		/* keep current state */
+	}
+};
+
+const startSandbox = async (mode: string | null, templateId: string | null, seedPrompt?: string) => {
+	sandboxBusy = true;
+	try {
+		const s = await createSandboxSession(token, { mode, template_id: templateId });
+		sandboxSessionId = s.id;
+		sandboxVersion = (sandboxVersion + 1) % 1000000;
+		previewVisible = true;
+		sandboxPublishedUrl = '';
+		toast.success($i18n.t('Sandbox session created'));
+		// §E1: mark the session as running in task meta
+		upsertCoderTask(token, coderChatId, { status: 'running', mode }).catch(() => {});
+		if (seedPrompt?.trim()) {
+			input = seedPrompt.trim();
+			await send();
+		}
+	} catch (e: any) {
+		toast.error(e?.detail?.message ?? e?.message ?? 'Failed to create sandbox session');
+	} finally {
+		sandboxBusy = false;
+	}
+};
+
+const publishSandbox = async () => {
+	if (!sandboxSessionId) return;
+	sandboxBusy = true;
+	try {
+		const res = await publishSandboxSession(token, sandboxSessionId);
+		sandboxPublishedUrl = getPublishedPageUrl(res.share_id);
+		toast.success($i18n.t('Project published'));
+	} catch (e: any) {
+		toast.error(e?.detail?.message ?? e?.message ?? 'Publish failed');
+	} finally {
+		sandboxBusy = false;
+	}
+};
+
+const stopGeneration = () => {
+	streamController?.abort();
+	streamController = null;
+	sending = false;
+	upsertCoderTask(token, coderChatId, { status: 'stopped' }).catch(() => {});
+	toast.info($i18n.t('Generation stopped'));
+};
+
+const applyFollowup = (s: string) => {
+	input = s;
+	send();
+};
+
 // Coder runs as a standalone application when opened via window.open('/coder?standalone=1')
 // from the sidebar. In that mode we set a dedicated document title for the window.
 const isStandaloneWindow = browser && new URLSearchParams(window.location.search).get('standalone') === '1';
@@ -274,7 +361,7 @@ The system will execute it and return matching file snippets in your next turn. 
 			const { url } = await getGitHubAuthStartUrl(token);
 			window.location.href = url;
 		} catch (e: any) {
-			toast.error(e?.message ?? 'Failed to start GitHub authorization');
+			toast.error(e?.detail?.message ?? e?.message ?? 'Failed to start GitHub authorization');
 		}
 	};
 
@@ -662,7 +749,17 @@ The system will execute it and return matching file snippets in your next turn. 
 			goto('/coder?tab=environment&standalone=1', { replaceState: true });
 		} else if (params.get('github_error')) {
 			const err = params.get('github_error');
-			toast.error(err === 'denied' ? $i18n.t('Authorization was cancelled') : $i18n.t('GitHub authorization failed'));
+			if (err === 'denied') {
+				toast.error($i18n.t('Authorization was cancelled'));
+			} else if (err === 'insufficient_scopes') {
+				toast.error(
+					$i18n.t(
+						'GitHub token lacks repository access. Reconnect and keep "Repository access: All repositories" with Contents: Read enabled.'
+					)
+				);
+			} else {
+				toast.error($i18n.t('GitHub authorization failed'));
+			}
 			goto('/coder', { replaceState: true });
 		}
 

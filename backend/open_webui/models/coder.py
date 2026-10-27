@@ -2,6 +2,8 @@ import logging
 import time
 from uuid import uuid4
 
+from open_webui.env import DATABASE_URL
+from sqlalchemy import create_engine, text as sa_text
 from open_webui.internal.db import Base, get_async_db_context
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import JSON, BigInteger, Boolean, Column, Index, String, Text, UniqueConstraint, delete, select
@@ -29,10 +31,32 @@ class CoderGithubConnection(Base):
     token_type = Column(Text, nullable=False, default='oauth')
     scopes = Column(JSON, nullable=True)
     is_default = Column(Boolean, nullable=False, default=True)  # подключение, используемое по умолчанию
+    installation_id = Column(Text, nullable=True)  # приоритет D: GitHub App installation, если токен app_installation
     created_at = Column(BigInteger, nullable=False)
     updated_at = Column(BigInteger, nullable=False)
 
     __table_args__ = (Index('ix_coder_github_connection_user_id', 'user_id'),)
+
+
+class CoderGitHubAppInstallation(Base):
+    """Приоритет D (план coder.qwen.ai): установки GitHub App пользователя."""
+
+    __tablename__ = 'coder_github_app_installation'
+
+    id = Column(Text, primary_key=True)
+    user_id = Column(Text, nullable=False)
+    github_host = Column(Text, nullable=False, default='github.com')
+    installation_id = Column(Text, nullable=False)
+    account_login = Column(Text, nullable=True)  # логин user/org, установившей приложение
+    account_type = Column(Text, nullable=True)  # User | Organization
+    repository_selection = Column(Text, nullable=True)  # all | selected
+    created_at = Column(BigInteger, nullable=False)
+    updated_at = Column(BigInteger, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint('user_id', 'installation_id', name='uq_coder_ghapp_user_installation'),
+        Index('ix_coder_ghapp_user_id', 'user_id'),
+    )
 
 
 class CoderProject(Base):
@@ -106,6 +130,111 @@ class CoderAuditEvent(Base):
 ####################
 
 
+class CoderSandboxSession(Base):
+    """§A (план coder.qwen.ai): изолированный sandbox на задачу.
+
+    MVP реализован как файловая песочница в DATA_DIR/sandboxes/<session_id>:
+    жизненный цикл create -> active -> paused -> destroyed, TTL-чистка
+    выполняется эндпоинтами sandbox и фоновой sweep-операцией.
+    """
+
+    __tablename__ = 'coder_sandbox_session'
+
+    id = Column(Text, primary_key=True)
+    user_id = Column(Text, nullable=False)
+    mode = Column(Text, nullable=True)  # web-dev | data-viz | visual-design | prototype
+    status = Column(Text, nullable=False, default='active')  # active | paused | destroyed
+    published_share_id = Column(Text, nullable=True)  # §A4 публикация одним кликом
+    meta = Column(JSON, nullable=True)
+    created_at = Column(BigInteger, nullable=False)
+    updated_at = Column(BigInteger, nullable=False)
+    last_active_at = Column(BigInteger, nullable=False)
+
+    __table_args__ = (Index('ix_coder_sandbox_session_user_id', 'user_id'),)
+
+
+class CoderTaskMeta(Base):
+    """§B/§C: метаданные задач — автосзвание, теги, pin/archive, follow-up."""
+
+    __tablename__ = 'coder_task_meta'
+
+    id = Column(Text, primary_key=True)
+    user_id = Column(Text, nullable=False)
+    chat_id = Column(Text, nullable=False)
+    title = Column(Text, nullable=True)
+    tags = Column(JSON, nullable=True)
+    mode = Column(Text, nullable=True)
+    is_pinned = Column(Boolean, nullable=False, default=False)
+    is_archived = Column(Boolean, nullable=False, default=False)
+    status = Column(Text, nullable=True)  # running | done | error | None
+    meta = Column(JSON, nullable=True)
+    created_at = Column(BigInteger, nullable=False)
+    updated_at = Column(BigInteger, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint('user_id', 'chat_id', name='uq_coder_task_meta_user_chat'),
+        Index('ix_coder_task_meta_user_id', 'user_id'),
+    )
+
+
+class CoderSandboxSessionModel(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    user_id: str
+    mode: str | None = None
+    status: str = 'active'
+    published_share_id: str | None = None
+    meta: dict | None = None
+    created_at: int
+    updated_at: int
+    last_active_at: int
+
+
+class CoderSandboxCreateForm(BaseModel):
+    mode: str | None = None
+    template_id: str | None = None
+
+
+class CoderTaskMetaForm(BaseModel):
+    title: str | None = None
+    tags: list[str] | None = None
+    mode: str | None = None
+    is_pinned: bool | None = None
+    is_archived: bool | None = None
+    status: str | None = None
+
+
+class CoderGitHubAppInstallationForm(BaseModel):
+    installation_id: str
+    account_login: str | None = None
+    account_type: str | None = None
+    repository_selection: str | None = None
+    github_host: str = 'github.com'
+
+
+class CoderGitHubAppConnectionForm(BaseModel):
+    installation_id: str
+    github_host: str = 'github.com'
+
+
+class CoderTaskMetaModel(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    user_id: str
+    chat_id: str
+    title: str | None = None
+    tags: list | None = None
+    mode: str | None = None
+    is_pinned: bool = False
+    is_archived: bool = False
+    status: str | None = None
+    meta: dict | None = None
+    created_at: int
+    updated_at: int
+
+
 class CoderGithubConnectionModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -117,6 +246,21 @@ class CoderGithubConnectionModel(BaseModel):
     token_type: str
     scopes: list | None = None
     is_default: bool = True
+    installation_id: str | None = None
+    created_at: int
+    updated_at: int
+
+
+class CoderGitHubAppInstallationModel(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    user_id: str
+    github_host: str = 'github.com'
+    installation_id: str
+    account_login: str | None = None
+    account_type: str | None = None
+    repository_selection: str | None = None
     created_at: int
     updated_at: int
 
@@ -241,9 +385,22 @@ class CoderGithubConnections:
         access_token_encrypted: str,
         scopes: list | None = None,
         github_host: str = 'github.com',
+        token_type: str = 'oauth',
+        installation_id: str | None = None,
         db: AsyncSession = None,
     ) -> CoderGithubConnection:
         now = int(time.time())
+        # GitHub App installation replaces the OAuth row for the same host;
+        # personal OAuth does not overwrite an app_installation connection.
+        existing = await self.get_by_user_id(user_id, db)
+        if (
+            existing is not None
+            and existing.github_host == github_host
+            and existing.token_type == 'app_installation'
+            and token_type == 'oauth'
+        ):
+            token_type = 'app_installation'
+            installation_id = installation_id or existing.installation_id
         # one connection per (user, host) — re-authorizing replaces the token for that host
         result = await db.execute(
             select(CoderGithubConnection).where(
@@ -256,6 +413,8 @@ class CoderGithubConnections:
             connection.github_user_id = github_user_id
             connection.access_token_encrypted = access_token_encrypted
             connection.scopes = scopes
+            connection.token_type = token_type
+            connection.installation_id = installation_id
             connection.updated_at = now
             await db.flush()
             return connection
@@ -268,6 +427,8 @@ class CoderGithubConnections:
             github_host=github_host,
             access_token_encrypted=access_token_encrypted,
             scopes=scopes,
+            token_type=token_type,
+            installation_id=installation_id,
             # first connection becomes default; subsequent ones are secondary
             is_default=not has_other,
             created_at=now,
@@ -469,6 +630,222 @@ class CoderAudit:
         return result.rowcount
 
 
+class CoderSandboxSessions:
+    async def get_by_id(self, session_id: str, db: AsyncSession) -> CoderSandboxSession | None:
+        result = await db.execute(select(CoderSandboxSession).where(CoderSandboxSession.id == session_id))
+        return result.scalars().first()
+
+    async def list_by_user_id(
+        self, user_id: str, db: AsyncSession, statuses: list[str] | None = None
+    ) -> list[CoderSandboxSession]:
+        stmt = (
+            select(CoderSandboxSession)
+            .where(CoderSandboxSession.user_id == user_id)
+            .order_by(CoderSandboxSession.updated_at.desc())
+        )
+        if statuses:
+            stmt = stmt.where(CoderSandboxSession.status.in_(statuses))
+        result = await db.execute(stmt)
+        return result.scalars().all()
+
+    async def create(
+        self, user_id: str, mode: str | None = None, meta: dict | None = None, db: AsyncSession = None
+    ) -> CoderSandboxSession:
+        now = int(time.time())
+        session = CoderSandboxSession(
+            id=str(uuid4()),
+            user_id=user_id,
+            mode=mode,
+            status='active',
+            meta=meta,
+            created_at=now,
+            updated_at=now,
+            last_active_at=now,
+        )
+        db.add(session)
+        await db.flush()
+        return session
+
+    async def update(self, session_id: str, data: dict, db: AsyncSession) -> CoderSandboxSession | None:
+        session = await self.get_by_id(session_id, db)
+        if not session:
+            return None
+        for key, value in data.items():
+            if hasattr(session, key):
+                setattr(session, key, value)
+        session.updated_at = int(time.time())
+        await db.flush()
+        return session
+
+    async def touch(self, session_id: str, db: AsyncSession) -> None:
+        session = await self.get_by_id(session_id, db)
+        if session:
+            now = int(time.time())
+            session.last_active_at = now
+            session.updated_at = now
+            await db.flush()
+
+    async def delete_expired(self, ttl_seconds: int, db: AsyncSession) -> int:
+        """TTL-чистка sandbox-сессий (§A1 жизненный цикл destroy)."""
+        cutoff = int(time.time()) - ttl_seconds
+        result = await db.execute(
+            delete(CoderSandboxSession).where(
+                CoderSandboxSession.last_active_at < cutoff,
+                CoderSandboxSession.status != 'destroyed',
+            )
+        )
+        return result.rowcount
+
+
+class CoderTaskMetas:
+    async def get_by_chat(self, user_id: str, chat_id: str, db: AsyncSession) -> CoderTaskMeta | None:
+        result = await db.execute(
+            select(CoderTaskMeta).where(CoderTaskMeta.user_id == user_id, CoderTaskMeta.chat_id == chat_id)
+        )
+        return result.scalars().first()
+
+    async def list_by_user_id(
+        self,
+        user_id: str,
+        db: AsyncSession,
+        include_archived: bool = False,
+        search: str | None = None,
+        tag: str | None = None,
+    ) -> list[CoderTaskMeta]:
+        stmt = (
+            select(CoderTaskMeta)
+            .where(CoderTaskMeta.user_id == user_id)
+            .order_by(CoderTaskMeta.is_pinned.desc(), CoderTaskMeta.updated_at.desc())
+        )
+        if not include_archived:
+            stmt = stmt.where(CoderTaskMeta.is_archived == False)  # noqa: E712
+        if search:
+            stmt = stmt.where(CoderTaskMeta.title.ilike(f'%{search}%'))
+        result = await db.execute(stmt)
+        rows = list(result.scalars().all())
+        if tag:
+            rows = [r for r in rows if tag in (r.tags or [])]
+        return rows
+
+    async def upsert(
+        self, user_id: str, chat_id: str, form: 'CoderTaskMetaForm', db: AsyncSession
+    ) -> CoderTaskMeta:
+        now = int(time.time())
+        row = await self.get_by_chat(user_id, chat_id, db)
+        if row:
+            for key in ('title', 'tags', 'mode', 'is_pinned', 'is_archived', 'status'):
+                value = getattr(form, key, None)
+                if value is not None:
+                    setattr(row, key, value)
+            row.updated_at = now
+            await db.flush()
+            return row
+        row = CoderTaskMeta(
+            id=str(uuid4()),
+            user_id=user_id,
+            chat_id=chat_id,
+            title=form.title,
+            tags=form.tags,
+            mode=form.mode,
+            is_pinned=bool(form.is_pinned),
+            is_archived=bool(form.is_archived),
+            status=form.status,
+            created_at=now,
+            updated_at=now,
+        )
+        db.add(row)
+        await db.flush()
+        return row
+
+    async def delete_by_chat(self, user_id: str, chat_id: str, db: AsyncSession) -> bool:
+        result = await db.execute(
+            delete(CoderTaskMeta).where(CoderTaskMeta.user_id == user_id, CoderTaskMeta.chat_id == chat_id)
+        )
+        return result.rowcount > 0
+
+
+class CoderGitHubAppInstallations:
+    """Приоритет D: учёт установок GitHub App (по одному ряду на installation)."""
+
+    async def list_by_user_id(self, user_id: str, db: AsyncSession) -> list[CoderGitHubAppInstallation]:
+        result = await db.execute(
+            select(CoderGitHubAppInstallation)
+            .where(CoderGitHubAppInstallation.user_id == user_id)
+            .order_by(CoderGitHubAppInstallation.created_at.desc())
+        )
+        return list(result.scalars().all())
+
+    async def get_by_installation(self, user_id: str, installation_id: str, db: AsyncSession):
+        result = await db.execute(
+            select(CoderGitHubAppInstallation).where(
+                CoderGitHubAppInstallation.user_id == user_id,
+                CoderGitHubAppInstallation.installation_id == installation_id,
+            )
+        )
+        return result.scalars().first()
+
+    async def upsert(self, user_id: str, form: CoderGitHubAppInstallationForm, db: AsyncSession):
+        now = int(time.time())
+        row = await self.get_by_installation(user_id, form.installation_id, db)
+        if row:
+            row.account_login = form.account_login or row.account_login
+            row.account_type = form.account_type or row.account_type
+            row.repository_selection = form.repository_selection or row.repository_selection
+            row.github_host = form.github_host
+            row.updated_at = now
+            await db.flush()
+            return row
+        row = CoderGitHubAppInstallation(
+            id=str(uuid4()),
+            user_id=user_id,
+            github_host=form.github_host,
+            installation_id=form.installation_id,
+            account_login=form.account_login,
+            account_type=form.account_type,
+            repository_selection=form.repository_selection,
+            created_at=now,
+            updated_at=now,
+        )
+        db.add(row)
+        await db.flush()
+        return row
+
+    async def delete_by_installation(self, user_id: str, installation_id: str, db: AsyncSession) -> bool:
+        result = await db.execute(
+            delete(CoderGitHubAppInstallation).where(
+                CoderGitHubAppInstallation.user_id == user_id,
+                CoderGitHubAppInstallation.installation_id == installation_id,
+            )
+        )
+        return result.rowcount > 0
+
+
+def ensure_coder_schema() -> None:
+    """Best-effort авто-создание coder-таблиц/колонок при старте.
+
+    Основная схема применяется через Alembic (`alembic upgrade head`); этот
+    хелпер страхует sqlite-деплои от запуска до применения миграций и вызывается
+    из lifespan приложения. Ошибки не фатальны — только логируются.
+    """
+    try:
+        from sqlalchemy import inspect as sa_inspect
+
+        engine = create_engine(DATABASE_URL.replace('+aiosqlite', ''))
+        with engine.begin() as conn:
+            inspector = sa_inspect(engine)
+            existing_tables = set(inspector.get_table_names())
+            if 'coder_github_app_installation' not in existing_tables:
+                CoderGitHubAppInstallation.__table__.create(conn, checkfirst=True)
+            if 'coder_github_connection' in existing_tables:
+                cols = {c['name'] for c in inspector.get_columns('coder_github_connection')}
+                if 'installation_id' not in cols:
+                    conn.exec_driver_sql('ALTER TABLE coder_github_connection ADD COLUMN installation_id TEXT')
+        engine.dispose()
+        log.debug('[coder] schema ensured')
+    except Exception as exc:  # pragma: no cover - best effort
+        log.warning(f'[coder] ensure_coder_schema failed (run alembic upgrade head): {exc}')
+
+
 ####################
 # Singleton instances
 ####################
@@ -477,3 +854,6 @@ CoderGithubConnections = CoderGithubConnections()
 CoderProjects = CoderProjects()
 CoderExportJobs = CoderExportJobs()
 CoderAudit = CoderAudit()
+CoderSandboxSessions = CoderSandboxSessions()
+CoderTaskMetas = CoderTaskMetas()
+CoderGitHubAppInstallations = CoderGitHubAppInstallations()

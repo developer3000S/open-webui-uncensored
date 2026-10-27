@@ -500,6 +500,18 @@ CODER_ENCRYPTION_KEY=<случайная строка не короче 32 си�
 | `CODER_GITHUB_RETRY_POLICY` / `_RETRY_MAX` / `_RETRY_DELAY` / `_TIMEOUT` | `exponential` / `3` / `1` / `30` | Retry-политика и таймауты GitHub API как настройки |
 | `CODER_AUDIT_RETENTION_DAYS` | `90` | Хранение журнала аудита; очистка — `POST /api/v1/coder/audit/cleanup` |
 
+Песочницы и публикация (план по мотивам coder.qwen.ai, подробнее — [`docs/CODER.md`](./docs/CODER.md) §4.1):
+
+| Переменная | По умолчанию | Назначение |
+|---|---|---|
+| `CODER_SANDBOX_ROOT` | пусто (`DATA_DIR/sandboxes`) | Корень изолированных песочниц задач |
+| `CODER_SANDBOX_TTL_MINUTES` | `60` | TTL песочницы; чистка — `POST /api/v1/coder/sandbox/sweep` (admin/cron) |
+| `CODER_SANDBOX_MAX_FILES` | `200` | Максимум файлов в песочнице |
+| `CODER_SANDBOX_MAX_FILE_SIZE` | `524288` (512 КиБ) | Максимальный размер файла песочницы |
+| `CODER_SANDBOX_MAX_TOTAL_SIZE` | `20971520` (20 МиБ) | Суммарный лимит песочницы |
+| `CODER_PUBLISH_ROOT` | пусто (`DATA_DIR/published`) | Корень опубликованных страниц |
+| `CODER_PUBLISH_URL_PREFIX` | `/api/v1/coder/preview` | Префикс публичного URL публикации |
+
 > [!WARNING]
 > Код читает **только** переменные из таблицы выше. В .env не должно быть
 > `CODER_GITHUB_PROVIDER`, `CODER_GITHUB_APP_ID`, `CODER_GITHUB_APP_PRIVATE_KEY_PATH`,
@@ -512,7 +524,7 @@ CODER_ENCRYPTION_KEY=<случайная строка не короче 32 си�
 > `CODER_MAX_TOTAL_DIFF_SIZE`, `CODER_MAX_FILES_PER_CHANGESET`; база API — только через
 > `CODER_GITHUB_API_BASE_URL` (для GHES хост берётся из конкретного подключения).
 
-После изменения переменных перезапустите контейнер. Схема БД обновляется автоматически при старте (миграции Alembic создают таблицы `coder_github_connection`, `coder_project`, `coder_export_job`, `coder_audit_event`, поля контекста аудита `correlation_id`/`ip_address`/`user_agent` и поддержку нескольких GitHub-подключений `github_host`/`is_default`; при проблемах выполните `alembic upgrade head`).
+После изменения переменных перезапустите контейнер. Схема БД обновляется автоматически при старте (миграции Alembic создают таблицы `coder_github_connection`, `coder_project`, `coder_export_job`, `coder_audit_event`, поля контекста аудита `correlation_id`/`ip_address`/`user_agent`, поддержку нескольких GitHub-подключений `github_host`/`is_default` и таблицы плана coder.qwen.ai `coder_sandbox_session`/`coder_task_meta`; при проблемах выполните `alembic upgrade head`).
 
 ### 2. GitHub OAuth-приложение
 
@@ -522,7 +534,7 @@ CODER_ENCRYPTION_KEY=<случайная строка не короче 32 си�
 http://<ваш-хост>/api/v1/coder/github/auth/callback
 ```
 
-(для локального запуска по умолчанию — `http://localhost:8083/api/v1/coder/github/auth/callback`). Скопируйте Client ID и Client Secret в `.env`. Никаких других способов подключения аккаунта (например, PAT-ввода) раздел не поддерживает — только OAuth. Требуемые scope приложения: `repo`, `gist`, `read:org`. Можно подключить несколько аккаунтов/хостов одновременно (GitHub Cloud + Enterprise Server) — управление подключениями во вкладке **Окружение** (панель «GitHub accounts», выбор default).
+(для локального запуска по умолчанию — `http://localhost:8083/api/v1/coder/github/auth/callback`). Скопируйте Client ID и Client Secret в `.env`. Никаких других способов подключения аккаунта (например, PAT-ввода) раздел не поддерживает — только OAuth. Требуемые scope приложения: `repo`, `gist`, `read:org`; сервер запрашивает `scope=repo public_repo` по умолчанию, что соответствует **«Repository access → All repositories»** с доступом к содержимому (**Contents: Read**). GitHub не умеет предвыбирать «Repository access» параметрами URL, поэтому при первом согласии нужно выбрать «All repositories» на экране OAuth — если права не выданы, сервер автоматически вернёт пользователя на повторный consent-экран или покажет подсказку переподключиться. Можно подключить несколько аккаунтов/хостов одновременно (GitHub Cloud + Enterprise Server) — управление подключениями во вкладке **Окружение** (панель «GitHub accounts», выбор default).
 
 ### 3. Основной рабочий процесс
 
@@ -535,6 +547,34 @@ http://<ваш-хост>/api/v1/coder/github/auth/callback
 4. Изменения проходят **серверную валидацию**: запрещены выход за пределы репозитория (`..`, абсолютные пути, `.git/`), превышение лимитов размера и числа файлов. Для каждого изменённого файла показывается unified diff.
 5. Нажмите **Экспорт**: изменения коммитятся в **новую ветку** через Git Data API, после чего **обязательно создаётся Pull Request** — прямые записи в основную ветку исключены конструкцией раздела. Экспорт выполняется **асинхронно** (фоновый job, прогресс виден в списке export jobs); диалог экспорта требует явного подтверждения пользователем; по завершении выводятся ссылки на коммит и PR. Повторный запуск с теми же параметрами идемпотентен (не создаёт дублей благодаря ключу идемпотентности). Альтернативно доступен быстрый экспорт изменений в **Gist** (public/secret), а для открытого PR — просмотр/добавление **review-комментариев**, проверка **CI-статуса** и автогенерация тестов с созданием issue.
 6. Все значимые действия (подключение, экспорт, ошибки) пишутся в журнал аудита `coder_audit_event`, доступный через API `/api/v1/coder/audit`.
+
+### 3.1. Sandbox, живой Preview и публикация (план coder.qwen.ai)
+
+Помимо работы с GitHub-репозиторием, Coder умеет строить проекты в изолированной
+**песочнице** — по образцу Qwen Coder:
+
+1. **Режимы генерации.** При создании задачи выбирается режим: Web Dev, Data
+   Visualization, Visual Design или Prototype — каждый со своим системным
+   промптом и стартовым скелетом файлов (`GET /api/v1/coder/modes`). Доступны
+   готовые шаблоны-старты («Build a Snake Game», «Create a Pomodoro Timer» и
+   т.п.).
+2. **Sandbox-сессия.** `POST /api/v1/coder/sandbox/session` создаёт изолированную
+   директорию `DATA_DIR/sandboxes/<id>` с развёрнутым скелетом; жизненный цикл —
+   pause/resume/destroy, TTL-чистка админским `POST /sandbox/sweep`.
+3. **Preview.** Панель Preview в Workspace рендерит проект в iframe
+   (`GET /sandbox/session/{id}/preview?v=`); кнопка refresh — hot-reload.
+   Change Set модели применяется в песочницу («Apply to sandbox»), файлы
+   редактируются прямо в браузере (read/write/delete эндпоинты).
+4. **Publish одним кликом.** `POST /sandbox/session/{id}/publish` копирует
+   проект в `DATA_DIR/published/<share_id>` и возвращает публичный адрес
+   `/api/v1/coder/preview/s/<share_id>` (отдаётся без авторизации — как
+   страница результата у Qwen; повторная публикация = redeploy).
+5. **Задачи.** Для каждой сессии хранятся метаданные (`coder_task_meta`):
+   автоназвание и теги, статус running/done/error, pin/unpin, archive/restore,
+   глобальный поиск и follow-up предложения («что сделать дальше»).
+6. **Метрики стрима.** Фронтенд сообщает время первого чанка и число чанков
+   генерации (`POST /stream/metrics`) → Prometheus-гистограммы и событие
+   аудита `generation_streamed`.
 
 ### 4. Работа с большими репозиториями (более 25 файлов)
 
