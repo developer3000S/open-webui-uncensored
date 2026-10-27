@@ -11,19 +11,43 @@ import asyncio
 import base64
 import logging
 import os
+import time
 from urllib.parse import quote
 
 import httpx
 
-from open_webui.config import CODER_GITHUB_API_BASE_URL
+from open_webui.config import CODER_GITHUB_API_BASE_URL, CODER_GITHUB_RETRY_DELAY, CODER_GITHUB_RETRY_MAX, CODER_GITHUB_RETRY_POLICY, CODER_GITHUB_TIMEOUT
+from open_webui.utils.coder.metrics import observe_github_request
 
 log = logging.getLogger(__name__)
 
 GITHUB_API = os.getenv('CODER_GITHUB_API_BASE_URL', CODER_GITHUB_API_BASE_URL) or 'https://api.github.com'
 GITHUB_WEB = 'https://github.com'
 
-MAX_RETRIES = 3
-REQUEST_TIMEOUT = 30.0
+# Defaults; overridable at runtime through admin settings (coder.retry_* / coder.timeout)
+MAX_RETRIES = CODER_GITHUB_RETRY_MAX
+REQUEST_TIMEOUT = float(CODER_GITHUB_TIMEOUT)
+RETRY_POLICY = CODER_GITHUB_RETRY_POLICY
+RETRY_BASE_DELAY = float(CODER_GITHUB_RETRY_DELAY)
+
+
+def get_retry_settings() -> dict:
+    """Current retry/timeout settings (env defaults; router may override per request)."""
+    return {
+        'max_retries': MAX_RETRIES,
+        'timeout': REQUEST_TIMEOUT,
+        'policy': RETRY_POLICY,
+        'base_delay': RETRY_BASE_DELAY,
+    }
+
+
+def _retry_wait(policy: str, base_delay: float, attempt: int) -> float:
+    if policy == 'linear':
+        return base_delay * (attempt + 1)
+    if policy == 'constant':
+        return base_delay
+    # default: exponential backoff
+    return max(base_delay, 2**attempt * base_delay)
 
 
 class GitHubAPIError(Exception):
@@ -51,23 +75,49 @@ async def _request(
     token: str | None = None,
     json_body: dict | None = None,
     params: dict | None = None,
+    retry_settings: dict | None = None,
+    accept: str | None = None,
 ) -> httpx.Response:
+    """Perform a GitHub API request with configurable retry policy (§15.1).
+
+    ``retry_settings`` may carry ``max_retries``, ``timeout``, ``policy``
+    (exponential|linear|constant) and ``base_delay`` — resolved by the router
+    from admin settings; env defaults otherwise.
+    """
+    settings = {**get_retry_settings(), **(retry_settings or {})}
+    max_retries = int(settings['max_retries'])
+    timeout = float(settings['timeout'])
+    policy = str(settings['policy'])
+    base_delay = float(settings['base_delay'])
+
     headers = _headers(token) if token else {'Accept': 'application/vnd.github+json', 'User-Agent': 'open-webui-coder'}
+    if accept:
+        headers['Accept'] = accept
     last_exc = None
-    for attempt in range(MAX_RETRIES):
+    started = time.perf_counter()
+    status_code = 0
+    for attempt in range(max(1, max_retries)):
         try:
-            async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
+            async with httpx.AsyncClient(timeout=timeout) as client:
                 response = await client.request(method, url, headers=headers, json=json_body, params=params)
+            status_code = response.status_code
             if response.status_code in (429, 500, 502, 503, 504):
+                observe_github_request(method, status_code, retried=True)
                 retry_after = response.headers.get('Retry-After')
-                wait = float(retry_after) if retry_after and retry_after.isdigit() else (2**attempt)
+                if retry_after and retry_after.isdigit():
+                    wait = float(retry_after)
+                else:
+                    wait = _retry_wait(policy, base_delay, attempt)
                 log.warning(f'GitHub API {method} {url} -> {response.status_code}, retrying in {wait}s')
                 await asyncio.sleep(min(wait, 15))
                 continue
+            observe_github_request(method, status_code)
             return response
         except httpx.HTTPError as exc:
             last_exc = exc
-            await asyncio.sleep(2**attempt)
+            observe_github_request(method, 0, error=type(exc).__name__)
+            await asyncio.sleep(min(_retry_wait(policy, base_delay, attempt), 15))
+    observe_github_request(method, status_code, error='retries_exhausted')
     raise GitHubAPIError('CODER_GITHUB_UNAVAILABLE', f'GitHub API is unreachable: {last_exc}')
 
 
@@ -102,6 +152,35 @@ def _raise_for_status(response: httpx.Response) -> None:
     raise GitHubAPIError('CODER_GITHUB_ERROR', message or f'GitHub API error ({status})', status)
 
 
+def _api_base(host: str | None) -> str:
+    """§22.2 multi-GitHub: resolve API base URL for a connection host.
+
+    github.com (and empty host) use the default API base; any other host is
+    treated as a GitHub Enterprise Server domain with its /api/v3 endpoint.
+    """
+    if not host or host == 'github.com':
+        return GITHUB_API
+    h = host.strip().rstrip('/')
+    if h.startswith('http://') or h.startswith('https://'):
+        scheme, _, rest = h.partition('://')
+    else:
+        scheme, rest = 'https', h
+    domain = rest.split('/')[0]
+    if domain.endswith('/api/v3') or domain.endswith('/api/v4'):
+        return f'{scheme}://{domain}'
+    return f'{scheme}://{domain}/api/v3'
+
+
+def _web_base(host: str | None) -> str:
+    """Web base URL for a GHES host (OAuth authorize/token endpoints)."""
+    h = (host or '').strip().rstrip('/')
+    if not h or h == 'github.com':
+        return GITHUB_WEB
+    if not (h.startswith('http://') or h.startswith('https://')):
+        h = f'https://{h}'
+    return h
+
+
 class GitHubClient:
     GITHUB_API_BASE = GITHUB_API
 
@@ -110,8 +189,9 @@ class GitHubClient:
     ####################
 
     @staticmethod
-    async def exchange_code(code: str, state: str | None = None) -> dict:
-        url = f'{GITHUB_WEB}/login/oauth/access_token'
+    async def exchange_code(code: str, state: str | None = None, host: str | None = None) -> dict:
+        web_base = GITHUB_WEB if (not host or host == 'github.com') else _web_base(host)
+        url = f'{web_base}/login/oauth/access_token'
         body = {
             'client_id': os.getenv('CODER_GITHUB_CLIENT_ID', CODER_GITHUB_CLIENT_ID_VALUE()),
             'client_secret': os.getenv('CODER_GITHUB_CLIENT_SECRET', CODER_GITHUB_CLIENT_SECRET_VALUE()),
@@ -145,8 +225,9 @@ class GitHubClient:
         return {'access_token': access_token, 'scope': scopes}
 
     @staticmethod
-    async def get_user(token: str) -> dict:
-        response = await _request('GET', f'{GITHUB_API}/user', token=token)
+    async def get_user(token: str, host: str | None = None) -> dict:
+        api_base = _api_base(host)
+        response = await _request('GET', f'{api_base}/user', token=token)
         _raise_for_status(response)
         data = response.json()
         return {'login': data.get('login'), 'id': str(data.get('id'))}
@@ -164,12 +245,13 @@ class GitHubClient:
     ####################
 
     @staticmethod
-    async def list_repositories(token: str, query: str | None = None, page: int = 1, per_page: int = 30) -> list[dict]:
+    async def list_repositories(token: str, query: str | None = None, page: int = 1, per_page: int = 30, host: str | None = None) -> list[dict]:
+        api_base = _api_base(host)
         if query:
-            url = f'{GITHUB_API}/search/repositories'
+            url = f'{api_base}/search/repositories'
             params = {'q': query, 'per_page': per_page, 'page': page}
         else:
-            url = f'{GITHUB_API}/user/repos'
+            url = f'{api_base}/user/repos'
             params = {'per_page': per_page, 'page': page, 'sort': 'updated'}
         response = await _request('GET', url, token=token, params=params)
         _raise_for_status(response)
@@ -188,18 +270,20 @@ class GitHubClient:
         ]
 
     @staticmethod
-    async def list_branches(token: str, owner: str, repo: str) -> list[dict]:
+    async def list_branches(token: str, owner: str, repo: str, host: str | None = None) -> list[dict]:
+        api_base = _api_base(host)
         response = await _request(
-            'GET', f'{GITHUB_API}/repos/{quote(owner)}/{quote(repo)}/branches', token=token, params={'per_page': 100}
+            'GET', f'{api_base}/repos/{quote(owner)}/{quote(repo)}/branches', token=token, params={'per_page': 100}
         )
         _raise_for_status(response)
         return [{'name': b['name'], 'sha': b['commit']['sha']} for b in response.json()]
 
     @staticmethod
-    async def get_tree(token: str, owner: str, repo: str, branch: str) -> list[dict]:
+    async def get_tree(token: str, owner: str, repo: str, branch: str, host: str | None = None) -> list[dict]:
+        api_base = _api_base(host)
         response = await _request(
             'GET',
-            f'{GITHUB_API}/repos/{quote(owner)}/{quote(repo)}/git/trees/{quote(branch)}?recursive=1',
+            f'{api_base}/repos/{quote(owner)}/{quote(repo)}/git/trees/{quote(branch)}?recursive=1',
             token=token,
         )
         _raise_for_status(response)
@@ -212,10 +296,11 @@ class GitHubClient:
         return entries
 
     @staticmethod
-    async def get_file(token: str, owner: str, repo: str, path: str, ref: str) -> dict:
+    async def get_file(token: str, owner: str, repo: str, path: str, ref: str, host: str | None = None) -> dict:
+        api_base = _api_base(host)
         response = await _request(
             'GET',
-            f'{GITHUB_API}/repos/{quote(owner)}/{quote(repo)}/contents/{quote(path, safe="/")}',
+            f'{api_base}/repos/{quote(owner)}/{quote(repo)}/contents/{quote(path, safe="/")}',
             token=token,
             params={'ref': ref},
         )
@@ -241,18 +326,20 @@ class GitHubClient:
     ####################
 
     @staticmethod
-    async def get_ref_commit_sha(token: str, owner: str, repo: str, branch: str) -> str:
+    async def get_ref_commit_sha(token: str, owner: str, repo: str, branch: str, host: str | None = None) -> str:
+        api_base = _api_base(host)
         response = await _request(
-            'GET', f'{GITHUB_API}/repos/{quote(owner)}/{quote(repo)}/git/ref/heads/{quote(branch)}', token=token
+            'GET', f'{api_base}/repos/{quote(owner)}/{quote(repo)}/git/ref/heads/{quote(branch)}', token=token
         )
         _raise_for_status(response)
         return response.json()['object']['sha']
 
     @staticmethod
-    async def create_ref(token: str, owner: str, repo: str, branch: str, sha: str) -> None:
+    async def create_ref(token: str, owner: str, repo: str, branch: str, sha: str, host: str | None = None) -> None:
+        api_base = _api_base(host)
         response = await _request(
             'POST',
-            f'{GITHUB_API}/repos/{quote(owner)}/{quote(repo)}/git/refs',
+            f'{api_base}/repos/{quote(owner)}/{quote(repo)}/git/refs',
             token=token,
             json_body={'ref': f'refs/heads/{branch}', 'sha': sha},
         )
@@ -266,20 +353,22 @@ class GitHubClient:
         _raise_for_status(response)
 
     @staticmethod
-    async def update_ref(token: str, owner: str, repo: str, branch: str, sha: str, force: bool = False) -> None:
+    async def update_ref(token: str, owner: str, repo: str, branch: str, sha: str, force: bool = False, host: str | None = None) -> None:
+        api_base = _api_base(host)
         response = await _request(
             'PATCH',
-            f'{GITHUB_API}/repos/{quote(owner)}/{quote(repo)}/git/refs/heads/{quote(branch)}',
+            f'{api_base}/repos/{quote(owner)}/{quote(repo)}/git/refs/heads/{quote(branch)}',
             token=token,
             json_body={'sha': sha, 'force': force},
         )
         _raise_for_status(response)
 
     @staticmethod
-    async def create_blob(token: str, owner: str, repo: str, content: str) -> str:
+    async def create_blob(token: str, owner: str, repo: str, content: str, host: str | None = None) -> str:
+        api_base = _api_base(host)
         response = await _request(
             'POST',
-            f'{GITHUB_API}/repos/{quote(owner)}/{quote(repo)}/git/blobs',
+            f'{api_base}/repos/{quote(owner)}/{quote(repo)}/git/blobs',
             token=token,
             json_body={'content': base64.b64encode(content.encode()).decode(), 'encoding': 'base64'},
         )
@@ -287,10 +376,11 @@ class GitHubClient:
         return response.json()['sha']
 
     @staticmethod
-    async def create_tree(token: str, owner: str, repo: str, base_sha: str, entries: list[dict]) -> str:
+    async def create_tree(token: str, owner: str, repo: str, base_sha: str, entries: list[dict], host: str | None = None) -> str:
+        api_base = _api_base(host)
         response = await _request(
             'POST',
-            f'{GITHUB_API}/repos/{quote(owner)}/{quote(repo)}/git/trees',
+            f'{api_base}/repos/{quote(owner)}/{quote(repo)}/git/trees',
             token=token,
             json_body={'base_tree': base_sha, 'tree': entries},
         )
@@ -298,10 +388,11 @@ class GitHubClient:
         return response.json()['sha']
 
     @staticmethod
-    async def create_commit(token: str, owner: str, repo: str, tree_sha: str, parent_sha: str, message: str) -> str:
+    async def create_commit(token: str, owner: str, repo: str, tree_sha: str, parent_sha: str, message: str, host: str | None = None) -> str:
+        api_base = _api_base(host)
         response = await _request(
             'POST',
-            f'{GITHUB_API}/repos/{quote(owner)}/{quote(repo)}/git/commits',
+            f'{api_base}/repos/{quote(owner)}/{quote(repo)}/git/commits',
             token=token,
             json_body={'tree': tree_sha, 'parents': [parent_sha], 'message': message},
         )
@@ -310,11 +401,12 @@ class GitHubClient:
 
     @staticmethod
     async def create_pull_request(
-        token: str, owner: str, repo: str, title: str, head: str, base: str, body: str | None = None
+        token: str, owner: str, repo: str, title: str, head: str, base: str, body: str | None = None, host: str | None = None
     ) -> dict:
+        api_base = _api_base(host)
         response = await _request(
             'POST',
-            f'{GITHUB_API}/repos/{quote(owner)}/{quote(repo)}/pulls',
+            f'{api_base}/repos/{quote(owner)}/{quote(repo)}/pulls',
             token=token,
             json_body={'title': title, 'head': head, 'base': base, 'body': body or ''},
         )
@@ -328,11 +420,12 @@ class GitHubClient:
         return {'html_url': data.get('html_url'), 'number': str(data.get('number'))}
 
     @staticmethod
-    async def find_open_pull_request(token: str, owner: str, repo: str, head: str, base: str) -> dict | None:
+    async def find_open_pull_request(token: str, owner: str, repo: str, head: str, base: str, host: str | None = None) -> dict | None:
+        api_base = _api_base(host)
         """Return {html_url, number} of an open PR for head->base, or None."""
         response = await _request(
             'GET',
-            f'{GITHUB_API}/repos/{quote(owner)}/{quote(repo)}/pulls',
+            f'{api_base}/repos/{quote(owner)}/{quote(repo)}/pulls',
             token=token,
             params={'state': 'open', 'head': f'{owner}:{head}', 'base': base, 'per_page': 5},
         )
@@ -343,6 +436,135 @@ class GitHubClient:
             return None
         pr = pulls[0]
         return {'html_url': pr.get('html_url'), 'number': str(pr.get('number'))}
+
+    # ---- Review comments (§22.2) ----
+
+    @staticmethod
+    async def get_pull_request_head_sha(token: str, owner: str, repo: str, pr_number: str, host: str | None = None) -> str | None:
+        api_base = _api_base(host)
+        response = await _request(
+            'GET', f'{api_base}/repos/{quote(owner)}/{quote(repo)}/pulls/{quote(str(pr_number))}', token=token
+        )
+        if response.status_code != 200:
+            return None
+        return (response.json().get('head') or {}).get('sha')
+
+    @staticmethod
+    async def create_pull_request_review_comment(
+        token: str, owner: str, repo: str, pr_number: str, commit_sha: str,
+        path: str, line: int, body: str, side: str = 'RIGHT', host: str | None = None
+    ) -> dict:
+        api_base = _api_base(host)
+        """Inline review comment on a PR diff line (REVIEW_COMMENTS event)."""
+        response = await _request(
+            'POST',
+            f'{api_base}/repos/{quote(owner)}/{quote(repo)}/pulls/{quote(str(pr_number))}/comments',
+            token=token,
+            json_body={'commit_id': commit_sha, 'path': path, 'line': line, 'side': side, 'body': body},
+        )
+        _raise_for_status(response)
+        data = response.json()
+        return {'id': data.get('id'), 'html_url': data.get('html_url')}
+
+    @staticmethod
+    async def list_pull_request_review_comments(token: str, owner: str, repo: str, pr_number: str, host: str | None = None) -> list[dict]:
+        api_base = _api_base(host)
+        response = await _request(
+            'GET',
+            f'{api_base}/repos/{quote(owner)}/{quote(repo)}/pulls/{quote(str(pr_number))}/comments',
+            token=token,
+            params={'per_page': 100},
+        )
+        _raise_for_status(response)
+        return [
+            {
+                'id': c.get('id'),
+                'path': c.get('path'),
+                'line': c.get('line'),
+                'body': c.get('body'),
+                'user': (c.get('user') or {}).get('login'),
+                'created_at': c.get('created_at'),
+                'html_url': c.get('html_url'),
+            }
+            for c in response.json()
+        ]
+
+    # ---- CI status (§22.2) ----
+
+    @staticmethod
+    async def get_commit_check_status(token: str, owner: str, repo: str, sha: str, host: str | None = None) -> dict:
+        api_base = _api_base(host)
+        """Combined check-runs + statuses for a commit (CI-статусы)."""
+        combined = {'state': 'unknown', 'checks': [], 'statuses': []}
+        run_resp = await _request(
+            'GET',
+            f'{api_base}/repos/{quote(owner)}/{quote(repo)}/commits/{quote(sha)}/check-runs',
+            token=token,
+            params={'per_page': 50},
+            accept='application/vnd.github+json',
+        )
+        if run_resp.status_code == 200:
+            for run in run_resp.json().get('check_runs', []):
+                combined['checks'].append(
+                    {
+                        'name': run.get('name'),
+                        'status': run.get('status'),
+                        'conclusion': run.get('conclusion'),
+                        'url': run.get('html_url') or run.get('details_url'),
+                    }
+                )
+        status_resp = await _request(
+            'GET', f'{api_base}/repos/{quote(owner)}/{quote(repo)}/commits/{quote(sha)}/status', token=token
+        )
+        if status_resp.status_code == 200:
+            payload = status_resp.json()
+            combined['state'] = payload.get('state') or combined['state']
+            for st in (payload.get('statuses') or [])[:20]:
+                combined['statuses'].append(
+                    {'context': st.get('context'), 'state': st.get('state'), 'url': st.get('target_url')}
+                )
+        if combined['checks'] and not combined['statuses']:
+            failing = [c for c in combined['checks'] if c['conclusion'] not in (None, 'success', 'skipped', 'neutral')]
+            pending = [c for c in combined['checks'] if c['status'] != 'completed']
+            combined['state'] = 'failure' if failing else ('pending' if pending else 'success')
+        return combined
+
+    # ---- Gist export (§22.2) ----
+
+    @staticmethod
+    async def create_gist(token: str, description: str, files: dict[str, str], public: bool = False, retry_settings: dict | None = None, host: str | None = None) -> dict:
+        api_base = _api_base(host)
+        response = await _request(
+            'POST',
+            f'{api_base}/gists',
+            token=token,
+            json_body={
+                'description': description,
+                'public': bool(public),
+                'files': {name: {'content': content} for name, content in files.items()},
+            },
+            retry_settings=retry_settings,
+        )
+        _raise_for_status(response)
+        data = response.json()
+        return {'id': data.get('id'), 'html_url': data.get('html_url'), 'files': list((data.get('files') or {}).keys())}
+
+    # ---- Auto-generated tests (§22.2) ----
+
+    @staticmethod
+    async def create_issue(token: str, owner: str, repo: str, title: str, body: str, labels: list[str] | None = None, retry_settings: dict | None = None, host: str | None = None) -> dict:
+        api_base = _api_base(host)
+        """Open an issue (used for auto-generated test backlog items)."""
+        response = await _request(
+            'POST',
+            f'{api_base}/repos/{quote(owner)}/{quote(repo)}/issues',
+            token=token,
+            json_body={'title': title[:256], 'body': body, 'labels': labels or []},
+            retry_settings=retry_settings,
+        )
+        _raise_for_status(response)
+        data = response.json()
+        return {'number': data.get('number'), 'html_url': data.get('html_url')}
 
 
 def CODER_GITHUB_CLIENT_ID_VALUE() -> str:

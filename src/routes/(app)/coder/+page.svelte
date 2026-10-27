@@ -6,10 +6,14 @@
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 
-	import { config, models } from '$lib/stores';
+	import { config, models, user } from '$lib/stores';
+
+	import { page } from '$app/stores';
 
 	import {
 		getCoderConfig,
+		getCoderAuditEvents,
+		getCoderAdminAuditEvents,
 		getGitHubAuthStartUrl,
 		getGitHubConnection,
 		disconnectGitHub,
@@ -21,7 +25,14 @@
 		createProject,
 		deleteProject,
 		getProject,
+		semanticSearchCoderRepo,
+		getCoderFile,
+		listGitHubConnections,
+		setDefaultGitHubConnection,
+		deleteGitHubConnection,
 		type CoderConnection,
+		type CoderConnectionInfo,
+		type CoderSemanticResult,
 		type CoderChangeFile,
 		type CoderRepo,
 		type CoderTreeEntry,
@@ -37,6 +48,7 @@
 	import RepoPanel from '$lib/components/coder/RepoPanel.svelte';
 	import RepositoryEnvironmentPanel from '$lib/components/coder/RepositoryEnvironmentPanel.svelte';
 	import ExportDialog from '$lib/components/coder/ExportDialog.svelte';
+	import AssistantToolbar from '$lib/components/coder/AssistantToolbar.svelte';
 
 	const i18n = getContext('i18n');
 
@@ -46,9 +58,78 @@
 	let oauthConfigured = false;
 	let connection: CoderConnection = { connected: false };
 
-	// sub-navigation: workspace (chat) | environment (connected repositories) | projects
+	// §22.2 multi-GitHub connections (Environment tab)
+	let ghConnections: CoderConnectionInfo[] = [];
+	let showAddConnection = false;
+	let newConnectionHost = 'github.com';
+
+	const refreshConnections = async () => {
+		try {
+			const res = await listGitHubConnections(token);
+			ghConnections = res.connections ?? [];
+		} catch (e) {
+			ghConnections = [];
+		}
+	};
+
+	const makeDefaultConnection = async (id: string) => {
+		try {
+			await setDefaultGitHubConnection(token, id);
+			await refreshConnections();
+			toast.success($i18n.t('Default GitHub account changed'));
+		} catch (e: any) {
+			toast.error(e?.message ?? 'Failed to change default account');
+		}
+	};
+
+	const removeConnection = async (id: string) => {
+		try {
+			await deleteGitHubConnection(token, id);
+			await refreshConnections();
+			toast.success($i18n.t('GitHub account disconnected'));
+		} catch (e: any) {
+			toast.error(e?.message ?? 'Failed to disconnect');
+		}
+	};
+
+	const connectAnotherGitHub = async () => {
+		try {
+			const { url } = await getGitHubAuthStartUrl(token, newConnectionHost || undefined);
+			window.location.href = url;
+		} catch (e: any) {
+			toast.error(e?.detail?.message ?? e?.message ?? 'Failed to start GitHub authorization');
+		}
+	};
+
 	type CoderTab = 'workspace' | 'environment' | 'projects';
 	let activeTab: CoderTab = 'workspace';
+
+	// Admin audit overview (§14.1) — visible to admins via ?audit=1 on the Environment tab
+	let auditEvents: any[] = [];
+	let auditLoading = false;
+	let auditError: string | null = null;
+	let showAuditSection = false;
+	$: showAuditSection = $page?.url?.searchParams?.get('audit') === '1' && $user?.role === 'admin';
+
+	const loadAuditEvents = async () => {
+		auditLoading = true;
+		auditError = null;
+		try {
+			const res = await getCoderAdminAuditEvents(token, 200);
+			auditEvents = res.events ?? [];
+		} catch (e: any) {
+			auditError = e?.message ?? 'Failed to load audit events';
+		} finally {
+			auditLoading = false;
+		}
+	};
+
+	const formatAuditTime = (ts: number | string | null | undefined): string => {
+		if (ts === null || ts === undefined) return '—';
+		const n = typeof ts === 'string' ? Number(ts) : ts;
+		const d = new Date(Number.isFinite(n) ? n * 1000 : ts);
+		return Number.isNaN(d.getTime()) ? String(ts) : d.toLocaleString();
+	};
 	let environmentPanel: RepositoryEnvironmentPanel | undefined = undefined;
 
 	// Project state
@@ -185,6 +266,7 @@ The system will execute it and return matching file snippets in your next turn. 
 		} catch (_) {
 			connection = { connected: false };
 		}
+		if (connection.connected) refreshConnections();
 	};
 
 	const connectGitHub = async () => {
@@ -326,6 +408,50 @@ The system will execute it and return matching file snippets in your next turn. 
 
 	const removeAttachment = (path: string) => {
 		attachments = attachments.filter((a) => a.path !== path);
+	};
+
+	// Semantic search over the repository (§22.2)
+	let semanticQuery = '';
+	let semanticResults: CoderSemanticResult[] = [];
+	let semanticMode = '';
+	let loadingSemantic = false;
+	let semanticError: string | null = null;
+	let semanticTimer: ReturnType<typeof setTimeout>;
+
+	const runSemanticSearch = async () => {
+		const q = semanticQuery.trim();
+		if (!q || !owner || !repo) {
+			semanticResults = [];
+			semanticError = null;
+			return;
+		}
+		loadingSemantic = true;
+		semanticError = null;
+		try {
+			const res = await semanticSearchCoderRepo(token, owner, repo, branch, q, 15);
+			semanticResults = res.results ?? [];
+			semanticMode = res.mode ?? '';
+		} catch (e: any) {
+			semanticError = e?.detail?.message ?? e?.message ?? 'Semantic search failed';
+			semanticResults = [];
+		} finally {
+			loadingSemantic = false;
+		}
+	};
+
+	const handleSemanticInput = () => {
+		clearTimeout(semanticTimer);
+		semanticTimer = setTimeout(runSemanticSearch, 500);
+	};
+
+	const attachSemanticFile = async (path: string) => {
+		if (attachments.some((a) => a.path === path)) return;
+		try {
+			const res = await getCoderFile(token, owner, repo, path, branch);
+			attachments = [...attachments, { path, content: res.content ?? '' }];
+		} catch (e: any) {
+			toast.error(e?.detail?.message ?? e?.message ?? 'Failed to attach file');
+		}
 	};
 
 	const sendInner = async (historyMessages: { role: string; content: string }[]) => {
@@ -470,7 +596,8 @@ The system will execute it and return matching file snippets in your next turn. 
 		const form: CreateProjectForm = {
 			owner,
 			repo,
-			default_branch: branch
+			default_branch: branch,
+			name: newProjectName.trim() || null
 		};
 		try {
 			await createProject(token, form);
@@ -554,6 +681,8 @@ The system will execute it and return matching file snippets in your next turn. 
 		}
 
 		loaded = true;
+
+		if (showAuditSection) loadAuditEvents();
 	});
 </script>
 
@@ -644,16 +773,80 @@ The system will execute it and return matching file snippets in your next turn. 
 						</div>
 					</div>
 
-					<!-- Connected GitHub account -->
-					<div class="rounded-2xl border border-gray-200 dark:border-gray-700 p-4 flex items-center gap-3">
-						<Github className="size-6 shrink-0" />
-						<div class="flex-1 min-w-0">
-							<div class="text-sm font-medium truncate">{connection.github_login}</div>
-							<div class="text-xs text-gray-500">{$i18n.t('GitHub account connected')}</div>
+					<!-- Connected GitHub accounts (§22.2 multi-GitHub) -->
+					<div class="rounded-2xl border border-gray-200 dark:border-gray-700 p-4 space-y-3">
+						<div class="flex items-center justify-between">
+							<div class="text-sm font-medium">{$i18n.t('GitHub accounts')}</div>
+							<button
+								type="button"
+								class="text-xs px-2.5 py-1 rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900 hover:opacity-90"
+								on:click={() => (showAddConnection = !showAddConnection)}>{$i18n.t('Connect another GitHub')}</button
+							>
 						</div>
-						<button type="button" class="text-xs text-gray-500 hover:text-red-500 shrink-0" on:click={disconnect}>
-							{$i18n.t('Disconnect')}
-						</button>
+
+						{#if showAddConnection}
+							<div class="flex items-center gap-2">
+								<input
+									type="text"
+									bind:value={newConnectionHost}
+									placeholder="github.com or ghe.company.com"
+									class="flex-1 px-2.5 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
+								/>
+								<button
+									type="button"
+									class="text-xs px-3 py-1.5 rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900"
+									on:click={connectAnotherGitHub}>{$i18n.t('Authorize')}</button
+								>
+							</div>
+						{/if}
+
+						{#if ghConnections.length > 0}
+							<div class="divide-y divide-gray-100 dark:divide-gray-800">
+								{#each ghConnections as gc (gc.id)}
+									<div class="flex items-center gap-3 py-2 first:pt-0 last:pb-0">
+										<Github className="size-5 shrink-0" />
+										<div class="flex-1 min-w-0">
+											<div class="text-sm font-medium truncate">
+												{gc.github_login ?? '—'}
+												{#if gc.is_default}
+													<span
+														class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">{$i18n.t('default')}</span
+													>
+												{/if}
+											</div>
+											<div class="text-xs text-gray-500">{gc.github_host}</div>
+										</div>
+										{#if !gc.is_default}
+											<button
+												type="button"
+												class="text-xs text-gray-500 hover:text-blue-500 shrink-0"
+												on:click={() => makeDefaultConnection(gc.id)}>{$i18n.t('Make default')}</button
+											>
+											<button
+												type="button"
+												class="text-xs text-gray-500 hover:text-red-500 shrink-0"
+												on:click={() => removeConnection(gc.id)}>{$i18n.t('Disconnect')}</button
+											>
+										{:else}
+											<button type="button" class="text-xs text-gray-500 hover:text-red-500 shrink-0" on:click={disconnect}>
+												{$i18n.t('Disconnect')}
+											</button>
+										{/if}
+									</div>
+								{/each}
+							</div>
+						{:else}
+							<div class="flex items-center gap-3">
+								<Github className="size-6 shrink-0" />
+								<div class="flex-1 min-w-0">
+									<div class="text-sm font-medium truncate">{connection.github_login}</div>
+									<div class="text-xs text-gray-500">{$i18n.t('GitHub account connected')}</div>
+								</div>
+								<button type="button" class="text-xs text-gray-500 hover:text-red-500 shrink-0" on:click={disconnect}>
+									{$i18n.t('Disconnect')}
+								</button>
+							</div>
+						{/if}
 					</div>
 
 					<!-- Repository list -->
@@ -675,6 +868,57 @@ The system will execute it and return matching file snippets in your next turn. 
 						/>
 
 					</div>
+
+					{#if showAuditSection}
+						<!-- Admin audit overview across all users (§14.1) -->
+						<div class="rounded-2xl border border-gray-200 dark:border-gray-700 p-4 space-y-3">
+							<div class="flex items-center justify-between">
+								<div class="text-sm font-medium">{$i18n.t('Audit log (all users)')}</div>
+								<button
+									type="button"
+									class="text-xs px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+									on:click={loadAuditEvents}>{$i18n.t('Refresh')}</button
+								>
+							</div>
+
+							{#if auditLoading}
+								<div class="flex items-center gap-2 text-xs text-gray-500 py-2">
+									<Spinner className="size-3.5" /> {$i18n.t('Loading…')}
+								</div>
+							{:else if auditError}
+								<div class="text-xs text-red-500 py-2">{auditError}</div>
+							{:else if auditEvents.length === 0}
+								<div class="text-xs text-gray-500 py-2">{$i18n.t('No audit events yet.')}</div>
+							{:else}
+								<div class="overflow-x-auto max-h-96 overflow-y-auto scrollbar-thin">
+									<table class="w-full text-left text-xs">
+										<thead class="text-gray-500 sticky top-0 bg-white dark:bg-gray-950">
+											<tr>
+												<th class="py-1.5 pr-3 font-medium">{$i18n.t('Time')}</th>
+												<th class="py-1.5 pr-3 font-medium">{$i18n.t('User')}</th>
+												<th class="py-1.5 pr-3 font-medium">{$i18n.t('Action')}</th>
+												<th class="py-1.5 pr-3 font-medium">{$i18n.t('Target')}</th>
+												<th class="py-1.5 pr-3 font-medium">{$i18n.t('Correlation ID')}</th>
+											</tr>
+										</thead>
+										<tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+											{#each auditEvents as ev (ev.id)}
+												<tr>
+													<td class="py-1.5 pr-3 whitespace-nowrap text-gray-500">{formatAuditTime(ev.created_at)}</td>
+													<td class="py-1.5 pr-3 truncate max-w-[140px]" title={ev.user_id}>{ev.user_id?.slice(0, 8) ?? '—'}</td>
+													<td class="py-1.5 pr-3 font-medium whitespace-nowrap">{ev.action}</td>
+													<td class="py-1.5 pr-3 truncate max-w-[220px] text-gray-500" title={ev.target ?? ''}>{ev.target ?? '—'}</td>
+													<td class="py-1.5 pr-3 text-gray-400 font-mono truncate max-w-[120px]" title={ev.correlation_id ?? ''}>
+														{ev.correlation_id ? String(ev.correlation_id).slice(0, 8) : '—'}
+													</td>
+												</tr>
+											{/each}
+										</tbody>
+									</table>
+								</div>
+							{/if}
+						</div>
+					{/if}
 				</div>
 			</div>
 		{:else if activeTab === 'projects'}
@@ -723,6 +967,9 @@ The system will execute it and return matching file snippets in your next turn. 
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 							{#each projects as project (project.id)}
 								<div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-400 dark:hover:border-gray-500">
+									{#if project.name}
+									<div class="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">{project.name}</div>
+									{/if}
 									<div class="font-semibold mb-1">{project.owner}/{project.repo}</div>
 									<div class="text-sm text-gray-500 mb-2">{project.default_branch}</div>
 									<div class="flex gap-2">
@@ -755,8 +1002,9 @@ The system will execute it and return matching file snippets in your next turn. 
 
 			<!-- Middle: chat -->
 			<div class="flex-1 flex flex-col min-w-0 min-h-0">
-				<!-- Chat toolbar: clear button -->
-				<div class="flex items-center justify-between px-4 py-1.5 border-b border-gray-100 dark:border-gray-800 shrink-0">
+				<!-- Chat toolbar: semantic search + CI/tests + clear button -->
+				<div class="flex flex-col gap-1.5 px-4 py-1.5 border-b border-gray-100 dark:border-gray-800 shrink-0">
+					<div class="flex items-center justify-between gap-2">
 					<div class="text-xs text-gray-500 truncate">
 						{#if loadingRepoContext}
 							{$i18n.t('Loading repository into workspace…')} — {owner}/{repo} @ {branch}
@@ -777,8 +1025,51 @@ The system will execute it and return matching file snippets in your next turn. 
 						</svg>
 						{$i18n.t('Clear chat')}
 					</button>
+					</div>
+					<AssistantToolbar {token} {owner} {repo} {branch} />
 				</div>
+
+				<!-- Messages scroll area -->
 				<div class="flex-1 overflow-y-auto scrollbar-thin px-4 py-3 space-y-3">
+					{#if owner && repo}
+						<div class="relative">
+							<input
+								type="text"
+								class="w-full text-xs rounded-lg bg-gray-50 dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-gray-700 px-2.5 py-1.5 outline-hidden focus:ring-gray-300 dark:focus:ring-gray-600"
+								placeholder={$i18n.t('Semantic search in repository…')}
+								bind:value={semanticQuery}
+								on:input={handleSemanticInput}
+								/>
+
+							{#if loadingSemantic}
+								<span class="absolute right-2 top-1/2 -translate-y-1/2"><Spinner className="size-3" /></span>
+							{/if}
+							{#if semanticResults.length > 0 || semanticError}
+								<div class="absolute z-30 mt-1 w-full max-h-64 overflow-y-auto scrollbar-thin rounded-xl bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-gray-700 shadow-lg">
+									{#if semanticError}
+										<div class="text-xs text-red-500 px-3 py-2">{semanticError}</div>
+									{:else}
+										<div class="text-[10px] text-gray-400 px-3 pt-2">{$i18n.t('mode')}: {semanticMode}</div>
+										{#each semanticResults as r (r.path)}
+											<button
+												type="button"
+												class="w-full text-left px-3 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-800"
+												on:click={() => attachSemanticFile(r.path)}
+											>
+												<div class="text-xs font-mono truncate flex items-center justify-between gap-2">
+													<span>{r.path}</span>
+													<span class="text-[10px] text-gray-400 shrink-0">{r.score.toFixed(2)}</span>
+												</div>
+												{#if r.snippet}
+													<div class="text-[10px] text-gray-500 truncate">{r.snippet}</div>
+												{/if}
+											</button>
+										{/each}
+									{/if}
+								</div>
+							{/if}
+						</div>
+					{/if}
 					{#if messages.length === 0}
 						<div class="h-full flex flex-col items-center justify-center text-center gap-2 text-gray-500 py-10">
 							<CodeBracket className="size-8" />

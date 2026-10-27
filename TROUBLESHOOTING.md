@@ -72,6 +72,14 @@ Diagnose with `docker logs <container> --tail 40`; if the traceback ends in that
 
 **Экспорт завершается ошибкой `CODER_CONFLICT` / «protected branch»:** целевая защищённая ветка не принимает прямые коммиты — так и задумано: экспорт всегда пишет в новую ветку и создаёт Pull Request. Если конфликтует сама новая ветка (уже существует с другим содержимым), измените имя ветки в диалоге экспорта. Идемпотентный повтор с теми же параметрами не создаёт дублей коммита/PR.
 
-**Change Set отклоняется валидатором (`CODER_INVALID_PATH`, превышены лимиты):** запрещены пути вне репозитория (`..`), абсолютные пути и всё под `.git/`; действуют лимиты на размер файла (по умолчанию 1 МиБ), суммарный diff (3 МиБ), число файлов (20) и строк diff (4000) — переменные `CODER_MAX_*` в `.env`. Попросите модель разбить большую задачу на несколько меньших Change Set.
+**Change Set отклоняется валидатором (`CODER_INVALID_PATH`, превышены лимиты):** запрещены пути вне репозитория (`..`), абсолютные пути и всё под `.git/`; действуют лимиты на размер файла (по умолчанию 1 МиБ), суммарный diff (5 МиБ), число файлов (50) и строк diff (4000) — переменные `CODER_MAX_*` в `.env`. Дополнительно блок-лист путей задаётся переменной `CODER_BLOCKED_PATHS` (`.env,*.pem,secrets/*,.git/*`). Попросите модель разбить большую задачу на несколько меньших Change Set.
 
 **Таблицы `coder_*` отсутствуют в БД (ошибки на первом запросе):** схема создаётся Alembic-миграцией при старте приложения. Если миграция не применилась автоматически, выполните `alembic upgrade head` в окружении бэкенда. После смены `CODER_ENCRYPTION_KEY` ранее сохранённые зашифрованные токены становятся нечитаемыми — требуется переподключить GitHub.
+
+**Ошибка браузера «Unexpected token '<', "<!doctype "... is not valid JSON» при открытии вкладок Coder:** фронтенд получил HTML вместо JSON — значит, API-роутер `/api/v1/coder/*` не смонтирован. Причина почти всегда — исключение при импорте `open_webui.routers.coder` (синтаксис/отступы/отсутствующая зависимость). Диагностика: `python -m py_compile backend/open_webui/routers/coder.py && python -c "import open_webui.routers.coder"` и поиск `ImportError/SyntaxError` в логе сервера; затем `alembic upgrade head` и проверка живого маршрута `curl -H "Authorization: Bearer <token>" http://localhost:8080/api/v1/coder/projects` (должен вернуть JSON или 401, но не HTML).
+
+**«host not allowed» / `permission_denied` при подключении GHES:** домен GitHub Enterprise Server должен быть перечислен в `CODER_ALLOWED_GITHUB_HOSTS` (по умолчанию только `github.com,api.github.com`). Для организаций и репозиториев действуют allow-listы `CODER_ALLOWED_ORGS` / `CODER_ALLOWED_REPOS`; фактические политики видны админу в `GET /api/v1/coder/admin/policies`.
+
+**Экспорт долго «висит» или страница закрылась до завершения:** экспорт асинхронный (`CODER_ASYNC_EXPORT=true`) — job выполняется фоново; статус доступен во вкладке Workspace (список export jobs) и в `GET /api/v1/coder/export/jobs/{id}`. Повторный запуск с теми же параметрами идемпотентен.
+
+Полный runbook типовых ошибок, описание API и схем — в [`docs/CODER.md`](./docs/CODER.md) (§2, §3, §7).
