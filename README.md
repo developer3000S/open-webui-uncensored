@@ -101,7 +101,7 @@
 - [Экосистема Open WebUI](#экосистема-open-webui-)
 - [Как установить](#как-установить-)
 - [Работа с GrafRAG / RAG](#работа-с-grafrag--rag)
-- [Работа с Coder](#работа-с-coder) — собственный раздел для агентной работы с кодом GitHub (включение, OAuth, большие репозитории, экспорт через PR)
+- [Работа с Coder](#работа-с-coder) — собственный раздел для агентной работы с кодом GitHub (включение, OAuth/GHES, политики, большие репозитории, экспорт через PR); полная документация раздела — [docs/CODER.md](./docs/CODER.md)
 - [Что дальше?](#что-дальше-)
 - [Лицензия](#лицензия-)
 
@@ -461,7 +461,7 @@ pip install pytesseract pdf2image
 
 **Coder** — собственный раздел форка для агентной работы с кодом GitHub-репозиториев (полное техническое задание: [`Coder.md`](./Coder.md)). Раздел **отключён по умолчанию** и не виден в интерфейсе, пока не включён переменными окружения.
 
-Пункт **Coder** в левом меню открывает раздел **в отдельном окне браузера** (`window.open`) как самостоятельное приложение: на маршруте `/coder` основное боковое меню полностью скрыто, интерфейс состоит из двух вкладок — **Workspace** (рабочее пространство: репозиторий, файлы, чат, экспорт) и **Окружение** (список подключённых репозиториев GitHub для выбора целевого проекта).
+Пункт **Coder** в левом меню открывает раздел **в отдельном окне браузера** (`window.open`) как самостоятельное приложение: на маршруте `/coder` основное боковое меню полностью скрыто, интерфейс состоит из трёх вкладок — **Workspace** (рабочее пространство: репозиторий, файлы, чат, экспорт), **Окружение** (GitHub-подключения, список репозиториев для выбора целевого проекта, журнал аудита) и **Проекты** (сохранённые проекты).
 
 > [!NOTE] **Исправление**
 > Исправлена ошибка, при которой после выбора репозитория рабочее пространство оставалось пустым: Добавлена реактивная загрузка дерева файлов в компонент `RepoPanel`. Теперь файлы корректно отображаются при переключении активности.
@@ -480,26 +480,39 @@ CODER_ENCRYPTION_KEY=<случайная строка не короче 32 си�
 | Переменная | По умолчанию | Назначение |
 |---|---|---|
 | `CODER_ENABLED` | `false` | Feature flag раздела: управляет видимостью пункта меню и доступом API |
-| `CODER_GITHUB_CLIENT_ID` / `CODER_GITHUB_CLIENT_SECRET` | пусто | Креденшелы GitHub OAuth App (только GitHub Cloud) |
+| `CODER_GITHUB_CLIENT_ID` / `CODER_GITHUB_CLIENT_SECRET` | пусто | Креденшелы GitHub OAuth App (для GHES — приложение ставится на самом хосте, домен добавляется в `CODER_ALLOWED_GITHUB_HOSTS`) |
 | `CODER_GITHUB_API_BASE_URL` | `https://api.github.com` | Базовый URL REST API GitHub |
 | `CODER_ENCRYPTION_KEY` | пусто | Ключ AES-256-GCM для шифрования OAuth-токенов в БД; при пустом значении используется производный от `WEBUI_SECRET_KEY` |
-| `CODER_MAX_FILES_PER_CHANGESET` | `20` | Максимум файлов в одном Change Set |
+| `CODER_MAX_FILES_PER_CHANGESET` | `50` | Максимум файлов в одном Change Set (§13.4) |
 | `CODER_MAX_FILE_SIZE` | `1048576` (1 МиБ) | Максимальный размер одного файла в изменениях |
-| `CODER_MAX_TOTAL_DIFF_SIZE` | `3145728` (3 МиБ) | Суммарный лимит размера diff |
+| `CODER_MAX_TOTAL_DIFF_SIZE` | `5242880` (5 МиБ) | Суммарный лимит размера diff (§13.4) |
 | `CODER_MAX_DIFF_LINES` | `4000` | Максимум строк diff на файл |
+
+Политики, надёжность и наблюдаемость (подробности — [`docs/CODER.md`](./docs/CODER.md) §4):
+
+| Переменная | По умолчанию | Назначение |
+|---|---|---|
+| `CODER_ALLOWED_GITHUB_HOSTS` | `github.com,api.github.com` | Разрешённые хосты GitHub (для GHES добавьте домен сервера) |
+| `CODER_ALLOWED_ORGS` / `CODER_ALLOWED_REPOS` | пусто (все) | Allow-list организаций и репозиториев |
+| `CODER_BLOCKED_PATHS` | `.env,*.pem,secrets/*,.git/*` | Блок-лист путей в Change Set |
+| `CODER_REQUIRE_PR` | `true` | Обязательный Pull Request при экспорте |
+| `CODER_ASYNC_EXPORT` | `true` | Асинхронный экспорт через фоновые jobs (`/export/jobs/{id}`) |
+| `CODER_GITHUB_RETRY_POLICY` / `_RETRY_MAX` / `_RETRY_DELAY` / `_TIMEOUT` | `exponential` / `3` / `1` / `30` | Retry-политика и таймауты GitHub API как настройки |
+| `CODER_AUDIT_RETENTION_DAYS` | `90` | Хранение журнала аудита; очистка — `POST /api/v1/coder/audit/cleanup` |
 
 > [!WARNING]
 > Код читает **только** переменные из таблицы выше. В .env не должно быть
 > `CODER_GITHUB_PROVIDER`, `CODER_GITHUB_APP_ID`, `CODER_GITHUB_APP_PRIVATE_KEY_PATH`,
 > `CODER_GITHUB_BASE_URL`, `CODER_GITHUB_ENTERPRISE_MODE`, `CODER_MAX_FILE_SIZE_BYTES`,
 > `CODER_MAX_TOTAL_CHANGES_BYTES`, `CODER_MAX_FILES_PER_EXPORT`, `CODER_REQUIRE_PULL_REQUEST`,
-> `CODER_SECRET_SCANNING_MODE`, `CODER_AUDIT_RETENTION_DAYS`, `CODER_DEFAULT_MODEL` — их
+> `CODER_SECRET_SCANNING_MODE`, `CODER_DEFAULT_MODEL` — их
 > бэкенд (`config.py` / `utils/coder/`) не читает, они не влияют на поведение. Это пережиток
-> ТЗ из `Coder.md`. Лимиты задаются именно как `CODER_MAX_FILE_SIZE`,
+> ТЗ из `Coder.md`. Secret scanning управляется общей переменной `RAG_SECRET_SCANNING_MODE`
+> (`warn`/`block`/`off`). Лимиты задаются именно как `CODER_MAX_FILE_SIZE`,
 > `CODER_MAX_TOTAL_DIFF_SIZE`, `CODER_MAX_FILES_PER_CHANGESET`; база API — только через
-> `CODER_GITHUB_API_BASE_URL`.
+> `CODER_GITHUB_API_BASE_URL` (для GHES хост берётся из конкретного подключения).
 
-После изменения переменных перезапустите контейнер. Схема БД обновляется автоматически при старте (миграция Alembic создаёт таблицы `coder_github_connection`, `coder_project`, `coder_export_job`, `coder_audit_event`).
+После изменения переменных перезапустите контейнер. Схема БД обновляется автоматически при старте (миграции Alembic создают таблицы `coder_github_connection`, `coder_project`, `coder_export_job`, `coder_audit_event`, поля контекста аудита `correlation_id`/`ip_address`/`user_agent` и поддержку нескольких GitHub-подключений `github_host`/`is_default`; при проблемах выполните `alembic upgrade head`).
 
 ### 2. GitHub OAuth-приложение
 
@@ -509,7 +522,7 @@ CODER_ENCRYPTION_KEY=<случайная строка не короче 32 си�
 http://<ваш-хост>/api/v1/coder/github/auth/callback
 ```
 
-(для локального запуска по умолчанию — `http://localhost:8083/api/v1/coder/github/auth/callback`). Скопируйте Client ID и Client Secret в `.env`. Никаких других способов подключения аккаунта (например, PAT-ввода) раздел не поддерживает — только OAuth.
+(для локального запуска по умолчанию — `http://localhost:8083/api/v1/coder/github/auth/callback`). Скопируйте Client ID и Client Secret в `.env`. Никаких других способов подключения аккаунта (например, PAT-ввода) раздел не поддерживает — только OAuth. Требуемые scope приложения: `repo`, `gist`, `read:org`. Можно подключить несколько аккаунтов/хостов одновременно (GitHub Cloud + Enterprise Server) — управление подключениями во вкладке **Окружение** (панель «GitHub accounts», выбор default).
 
 ### 3. Основной рабочий процесс
 
@@ -520,7 +533,7 @@ http://<ваш-хост>/api/v1/coder/github/auth/callback
 🔹 **Rename-action**: При переименовании файла добавляется дополнительное поле `old_path`, указывающее предыдущий путь.
 .
 4. Изменения проходят **серверную валидацию**: запрещены выход за пределы репозитория (`..`, абсолютные пути, `.git/`), превышение лимитов размера и числа файлов. Для каждого изменённого файла показывается unified diff.
-5. Нажмите **Экспорт**: изменения коммитятся в **новую ветку** через Git Data API, после чего **обязательно создаётся Pull Request** — прямые записи в основную ветку исключены конструкцией раздела. Диалог экспорта требует явного подтверждения пользователем; по завершении выводятся ссылки на коммит и PR. Повторный запуск с теми же параметрами идемпотентен (не создаёт дублей благодаря ключу идемпотентности).
+5. Нажмите **Экспорт**: изменения коммитятся в **новую ветку** через Git Data API, после чего **обязательно создаётся Pull Request** — прямые записи в основную ветку исключены конструкцией раздела. Экспорт выполняется **асинхронно** (фоновый job, прогресс виден в списке export jobs); диалог экспорта требует явного подтверждения пользователем; по завершении выводятся ссылки на коммит и PR. Повторный запуск с теми же параметрами идемпотентен (не создаёт дублей благодаря ключу идемпотентности). Альтернативно доступен быстрый экспорт изменений в **Gist** (public/secret), а для открытого PR — просмотр/добавление **review-комментариев**, проверка **CI-статуса** и автогенерация тестов с созданием issue.
 6. Все значимые действия (подключение, экспорт, ошибки) пишутся в журнал аудита `coder_audit_event`, доступный через API `/api/v1/coder/audit`.
 
 ### 4. Работа с большими репозиториями (более 25 файлов)
@@ -537,7 +550,7 @@ http://<ваш-хост>/api/v1/coder/github/auth/callback
 
 ### 5. Ограничения и безопасность
 
-- Поддерживается только GitHub Cloud; self-hosted GitHub Enterprise — вне объёма MVP.
+- Поддерживаются GitHub Cloud и GitHub Enterprise Server (OAuth-приложение на GHES-хосте, домен добавляется в `CODER_ALLOWED_GITHUB_HOSTS`; API-base строится как `https://<host>/api/v3`).
 - Контекст файлов, вставляемый в промпт, помечается как недоверенный (защита от prompt-injection из содержимого репозитория).
 - Секреты клиента OAuth и пользовательские токены никогда не отдаются фронтенду; все вызовы GitHub API выполняются бэкендом.
 - Экспорт возможен только при наличии валидного Change Set и подтверждении пользователя; PR обязателен даже для репозиториев без защиты веток.
@@ -549,6 +562,18 @@ http://<ваш-хост>/api/v1/coder/github/auth/callback
 - **Integration-тесты** (`test_coder_integration.py`): mock GitHub клиент, OAuth, repo/file/commit/PR операции (8 тестов).
 - **Security-тесты** (`test_coder_security.py`): защита от path traversal, XSS, resource consumption, политики allowlist (14 тестов).
 - **E2E-тесты** (`test_coder_e2e.py`): headless-Firefox на запущенном приложении — загрузка страницы `/coder`, клик по кнопке "Connect GitHub" с проверкой перехода на github.com OAuth, проверка `/api/v1/coder/config`. Требуют запущенного контейнера `open-webui` с `CODER_ENABLED=true` и заведённого тестового пользователя `e2e@test.local`.
+
+
+### 7. Полный комплект документации
+
+Архитектура, описание всех эндпоинтов API, схема данных и миграции, руководство
+администратора и пользователя, настройка OAuth/GHES, runbook типовых ошибок,
+backup/recovery, отчёт о тестировании и известные ограничения — в
+[`docs/CODER.md`](./docs/CODER.md) (закрывает требования ТЗ §20). Обзорные
+разделы администрирования доступны прямо в UI: Environment → политики
+(`GET /api/v1/coder/admin/policies`), метрики Prometheus
+(`GET /api/v1/coder/metrics`), аудит по всем пользователям
+(`GET /api/v1/coder/admin/audit`).
 
 ### Другие способы установки
 

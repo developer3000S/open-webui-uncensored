@@ -23,24 +23,32 @@
 
 ### Приоритет 2 — админ-политики (Этап 9, §15.1)
 
-- [ ] Разрешённые GitHub hosts / orgs / repos.
-- [ ] Запрещённые пути / блок-лист (`.env`, `*.pem`, `secrets/*`, `.git/*`).
-- [ ] Настройки обязательного PR и лимитов через административный слой.
-- [ ] Retry-политика и таймауты GitHub API как настройки (сейчас зашиты в
-      `github_client.py`).
-- [ ] Retention аудит-лога.
+- [x] Разрешённые GitHub hosts / orgs / repos (`CODER_ALLOWED_GITHUB_HOSTS`,
+      `CODER_ALLOWED_ORGS`, `CODER_ALLOWED_REPOS`; проверка в `utils/coder/policy.py`,
+      обзор — `GET /api/v1/coder/admin/policies`).
+- [x] Запрещённые пути / блок-лист (`.env`, `*.pem`, `secrets/*`, `.git/*`) —
+      `CODER_BLOCKED_PATHS`.
+- [x] Настройки обязательного PR и лимитов через административный слой
+      (`CODER_REQUIRE_PR`, `CODER_MAX_*`).
+- [x] Retry-политика и таймауты GitHub API как настройки
+      (`CODER_GITHUB_RETRY_POLICY`/`_MAX`/`_DELAY`, `CODER_GITHUB_TIMEOUT`).
+- [x] Retention аудит-лога (`CODER_AUDIT_RETENTION_DAYS` + `POST /audit/cleanup`).
 
 ### Приоритет 3 — надёжность и наблюдаемость
 
-- [ ] Асинхронный экспорт (NFR-08): вынести Git Data API из HTTP-запроса
-      (`/export/start` сейчас синхронный) в фоновый воркер/очередь.
-- [ ] Correlation ID (14.3) + поля аудита `correlation_id`/`ip_address`/
-      `user_agent` в `CoderAuditEvent` (§11.4).
-- [ ] Расширить события аудита (§14.1): section_accessed, repo_selected,
-      file_viewed, diff_generated, permission_denied, rate_limited и др.
-- [ ] Metrics (14.2): prometheus-счётчики coder_*.
-- [ ] Админский обзор аудита по всем пользователям (сейчас `/audit` — только
-      события текущего пользователя).
+- [x] Асинхронный экспорт (NFR-08): `/export/start` регистрирует job и исполняет
+      его фоново (`utils/coder/export_worker.py`, `CODER_ASYNC_EXPORT`); статус —
+      `GET /export/jobs/{id}`.
+- [x] Correlation ID (14.3) + поля аудита `correlation_id`/`ip_address`/
+      `user_agent` в `CoderAuditEvent` (§11.4, миграция `c0d3r4ud1t01`).
+- [x] Расширены события аудита (§14.1): section_accessed, repo_selected,
+      file_viewed, permission_denied, rate_limited, semantic_search,
+      review_comment_created, ci_status_viewed, gist_exported, test_issue_created,
+      project_created/deleted, github_connection_* и др.
+- [x] Metrics (14.2): prometheus-счётчики coder_* (`utils/coder/metrics.py`,
+      `GET /api/v1/coder/metrics`).
+- [x] Админский обзор аудита по всем пользователям: `GET /api/v1/coder/admin/audit`
+      + секция Audit во вкладке Environment.
 
 ### Вторая очередь (§22.2) / мелочи
 
@@ -48,16 +56,22 @@
       токенов, JWT, паролей, entropy; режимы warn/block/off.
 - [x] Сохраняемые проекты и шаблоны (сейчас `coder_project` создаётся только
       при открытии дерева, UI списка проектов нет).
-- [ ] Semantic search по репозиторию.
-- [ ] Автогенерация тестов / CI-статусы.
-- [ ] Review comments в PR.
-- [ ] Несколько GitHub-подключений.
-- [ ] Экспорт в Gist.
-- [ ] Документация §20: описание API, схема данных, руководство администратора,
-      руководство пользователя, backup/recovery, отчёт о тестировании, список
-      известных ограничений.
+- [x] Semantic search по репозиторию (`utils/coder/semantic.py`,
+      `GET /search/semantic`; эмбеддинги с lexical fallback и кэшем).
+- [x] Автогенерация тестов (`POST /tests/suggest` + issue в репозитории) /
+      CI-статусы (`GET /ci/status`).
+- [x] Review comments в PR (`GET|POST /pr/{owner}/{repo}/{n}/comments`).
+- [x] Несколько GitHub-подключений (+GHES): модель `github_host`/`is_default`,
+      миграция `c0d3r4m1c7h1`, эндпоинты `/github/connections*`, UI-панель
+      «GitHub accounts» во вкладке Environment.
+- [x] Экспорт в Gist (`POST /export/gist`, кнопка в ExportDialog).
+- [x] Документация §20: полный комплект — `docs/CODER.md` (архитектура, API,
+      схема данных и миграции, руководство администратора, руководство
+      пользователя, настройка OAuth/GHES, runbook, backup/recovery, отчёт о
+      тестировании, известные ограничения); README/TROUBLESHOOTING обновлены.
 - [x] Поддержка `rename` в Change Set (§8.3).
-- [ ] Сверка лимитов с §13.4: код даёт 20 файлов / 3 МиБ, ТЗ — 50 / 5 МиБ.
+- [x] Сверка лимитов с §13.4: подняты до 50 файлов / 5 МиБ суммарно
+      (`CODER_MAX_FILES_PER_CHANGESET=50`, `CODER_MAX_TOTAL_DIFF_SIZE=5MiB`).
 
 ## Coder-секция — запуск в работу
 
@@ -69,7 +83,8 @@
       подхватило переменные и применило Alembic-миграцию (`coder_*` таблицы).
 - [ ] **Проверить подключение GitHub** в разделе Coder (кнопка
       «Подключить GitHub» → редирект на OAuth → возврат с установленным
-      соединением).
+      соединением). Требует реальных аккредитов OAuth-приложения; автоматизированная
+      часть проверена E2E (редирект на github.com) — см. docs/CODER.md §9.
 
 Сделано ранее:
 - [x] `CODER_ENCRYPTION_KEY` сгенерирован и вписан в `.env`.
@@ -160,5 +175,5 @@
 
 ---
 
-Дата обновления: 2026-10-25
-Комментарии: Список расширен анализами кода и новых возможностей. Обновлено: реализованы авто-улучшение запросов, мульти-стратегия поиска, контекстное переупорядочивание, кеширование RAG, интерактивная оценка качества RAG, XLSX со всеми листами, поддержка xls/rtf/doc, дедупликация по пути и metadata. ЗавершеноComprehensive тестирование Coder: unit, integration, security-тесты (59+8+14=81 тестов) и написано E2E.
+Дата обновления: 2026-10-27
+Комментарии: Все пункты плана Coder (приоритеты 1–3 и вторая очередь, включая документацию §20) реализованы; документация — в `docs/CODER.md`. Отмечены также исправления компиляции `+page.svelte` и импорта роутера `routers/coder.py` (ошибка «Unexpected token '<'»). Список расширен анализами кода и новых возможностей. Обновлено: реализованы авто-улучшение запросов, мульти-стратегия поиска, контекстное переупорядочивание, кеширование RAG, интерактивная оценка качества RAG, XLSX со всеми листами, поддержка xls/rtf/doc, дедупликация по пути и metadata. ЗавершеноComprehensive тестирование Coder: unit, integration, security-тесты (59+8+14=81 тестов) и написано E2E.
