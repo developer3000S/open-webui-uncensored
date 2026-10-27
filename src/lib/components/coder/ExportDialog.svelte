@@ -11,6 +11,7 @@
 	import {
 		previewCoderExport,
 		startCoderExport,
+		exportCoderGist,
 		type CoderChangeSet,
 		type CoderDiffEntry,
 		type CoderExportPreview
@@ -32,6 +33,11 @@
 	let exporting = false;
 	let exportError: string | null = null;
 
+	// Gist export (§22.2)
+	let gistBusy = false;
+	let gistPublic = false;
+	let gistUrl: string | null = null;
+
 	let result: { commit_sha?: string; pr_url?: string; pr_number?: string } | null = null;
 
 	// regenerate idempotency key whenever the dialog opens with a new changeset
@@ -45,6 +51,8 @@
 		preview = null;
 		result = null;
 		exportError = null;
+		gistUrl = null;
+		gistBusy = false;
 		branch = `coder/${new Date().toISOString().slice(0, 10)}-${generateUUID().slice(0, 8)}`;
 	}
 
@@ -130,6 +138,38 @@
 			toast.error(msg);
 		} finally {
 			exporting = false;
+		}
+	};
+
+	// Export the change set to a GitHub Gist instead of committing (§22.2).
+	// create/delete actions have no local content — they are skipped.
+	const exportAsGist = async () => {
+		const files: Record<string, string> = {};
+		for (const f of changeset.files) {
+			if (f.action === 'delete') continue;
+			if (typeof f.content === 'string') files[f.path] = f.content;
+		}
+		if (Object.keys(files).length === 0) {
+			toast.error($i18n.t('No file contents to export as a gist'));
+			return;
+		}
+		gistBusy = true;
+		gistUrl = null;
+		exportError = null;
+		try {
+			const res = await exportCoderGist(token, {
+				description: commitMessage.trim() || `Coder export ${owner}/${repo}`,
+				public: gistPublic,
+				files
+			});
+			gistUrl = res.gist?.html_url ?? null;
+			if (gistUrl) toast.success($i18n.t('Gist created'));
+		} catch (e: any) {
+			const msg = describeError(e?.detail ?? e?.message ?? e);
+			exportError = msg;
+			toast.error(msg);
+		} finally {
+			gistBusy = false;
 		}
 	};
 
@@ -242,6 +282,31 @@
 					{exportError}
 				</div>
 			{/if}
+
+			<!-- Gist export (§22.2): share the change set without touching the repository -->
+			<div class="flex flex-col gap-2 rounded-xl border border-gray-200 dark:border-gray-700 p-3">
+				<div class="text-xs font-medium text-gray-600 dark:text-gray-400">{$i18n.t('Export as Gist')}</div>
+				<label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+					<input type="checkbox" bind:checked={gistPublic} class="rounded" />
+					{$i18n.t('Public gist')}
+				</label>
+				{#if gistUrl}
+					<a href={gistUrl} target="_blank" rel="noopener noreferrer" class="text-sm text-blue-500 hover:underline truncate">
+						{gistUrl}
+					</a>
+				{:else}
+					<button
+						type="button"
+						class="self-start px-3 py-1.5 rounded-xl text-xs bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 flex items-center gap-2"
+						disabled={gistBusy || changeset.files.length === 0}
+						on:click={exportAsGist}>
+						{#if gistBusy}
+							<Spinner className="size-3.5" />
+						{/if}
+						{$i18n.t('Create gist from changes')}
+					</button>
+				{/if}
+			</div>
 
 			<div class="flex justify-end gap-2 pt-1">
 				<button
