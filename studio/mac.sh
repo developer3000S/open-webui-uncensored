@@ -1,0 +1,325 @@
+#!/usr/bin/env bash
+#
+# Неприметная AI Studio — лаунчер для macOS
+# Двойной клик или запуск: ./mac.sh
+#
+
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+APP_DIR="$SCRIPT_DIR/app"
+PLATFORM="$(uname -s)"
+
+if [[ "$PLATFORM" != "Darwin" ]]; then
+echo "  [ОШИБКА] Этот скрипт предназначен только для macOS. На Linux запустите ./linux.sh." >&2
+  exit 1
+
+fi
+
+NODE_DIR="$APP_DIR/tools/node-mac"
+NODE_BIN="$NODE_DIR/bin/node"
+BACKEND_PATH="$APP_DIR/backend/mac/sd"
+if [[ "$(uname -m)" == "arm64" ]]; then
+  LLM_BACKEND_PATH="$APP_DIR/llm-backend/mac/arm64/llama-server"
+else
+  LLM_BACKEND_PATH="$APP_DIR/llm-backend/mac/x64/llama-server"
+fi
+TTS_RUNTIME_PATH="$APP_DIR/tts-runtime/node_modules/kokoro-js"
+SPEECH_BACKEND_PATH="$APP_DIR/speech-backend/mac/cpu/whisper-cli"
+PLATFORM_LABEL="macOS"
+
+DIST_INDEX="$APP_DIR/dist/index.html"
+SETUP_SCRIPT="$SCRIPT_DIR/scripts/setup/setup.sh"
+SERVE_SCRIPT="$SCRIPT_DIR/scripts/server/serve.cjs"
+
+# Load .env if it exists
+if [[ -f "$SCRIPT_DIR/.env" ]]; then
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    if [[ "$line" =~ ^[[:space:]]*# ]] || [[ -z "$line" ]]; then
+      continue
+    fi
+    if [[ "$line" == *"="* ]]; then
+      key="${line%%=*}"
+      value="${line#*=}"
+      value="${value#\"}"
+      value="${value%\"}"
+      value="${value#\'}"
+      value="${value%\'}"
+      export "$key=$value"
+    fi
+  done < "$SCRIPT_DIR/.env"
+fi
+
+if [[ -n "${FRONTED_PORT:-}" ]]; then
+  FRONTEND_PORT="$FRONTED_PORT"
+fi
+if [[ -n "${API_GPU:-}" ]]; then
+  BACKEND_PORT="$API_GPU"
+fi
+if [[ -n "${TEXT_API:-}" ]]; then
+  LLM_PORT="$TEXT_API"
+fi
+
+FRONTEND_PORT="${FRONTEND_PORT:-14200}"
+LLM_PORT="${LLM_PORT:-10086}"
+BACKEND_PORT="${BACKEND_PORT:-8080}"
+SETUP_REASON=""
+SETUP_MODE="Repair"
+
+is_port_in_use() {
+  local port="$1"
+  if command -v lsof >/dev/null 2>&1; then
+    lsof -nP -iTCP:"$port" -sTCP:LISTEN >/dev/null 2>&1
+    return
+  fi
+  if command -v nc >/dev/null 2>&1; then
+    nc -z 127.0.0.1 "$port" >/dev/null 2>&1
+    return
+  fi
+  (echo >"/dev/tcp/127.0.0.1/$port") >/dev/null 2>&1
+}
+
+kill_port_if_in_use() {
+  local port="$1"
+  if is_port_in_use "$port"; then
+    echo "  [ИНФО] Порт $port занят. Освобождаю его..."
+    if command -v lsof >/dev/null 2>&1; then
+      lsof -t -i:"$port" | xargs kill -9 >/dev/null 2>&1 || true
+    elif command -v fuser >/dev/null 2>&1; then
+      fuser -k "$port/tcp" >/dev/null 2>&1 || true
+    fi
+    sleep 1
+  fi
+}
+
+kill_port_if_in_use "$FRONTEND_PORT"
+kill_port_if_in_use "$BACKEND_PORT"
+kill_port_if_in_use "$LLM_PORT"
+
+resolve_frontend_port() {
+  local preferred="$1"
+  local port
+
+  if ! is_port_in_use "$preferred"; then
+    echo "$preferred"
+    return 0
+  fi
+
+  for ((port = 14201; port <= 14999; port += 1)); do
+    if [[ "$port" == "$preferred" ]]; then
+      continue
+    fi
+    if ! is_port_in_use "$port"; then
+      echo "$port"
+      return 0
+    fi
+  done
+
+  echo "[ОШИБКА] Не найден свободный порт для фронтенда. Пробовал $preferred и диапазон 14201-14999." >&2
+
+  return 1
+}
+
+# Настраиваю node_modules, чтобы избежать конфликтов платформ.
+
+FRONTEND_NODE_MODULES="$APP_DIR/frontend/node_modules"
+MAC_NODE_MODULES="$APP_DIR/frontend/node_modules_mac"
+ACTIVE_OS_FILE="$APP_DIR/frontend/.active_modules_os"
+
+# Attempt to create a test symlink to check if filesystem supports symlinks
+USE_SYMLINKS=true
+TEST_LINK="$APP_DIR/frontend/.test_symlink"
+rm -f "$TEST_LINK"
+if ln -s "node_modules_mac" "$TEST_LINK" 2>/dev/null; then
+  rm -f "$TEST_LINK"
+else
+  USE_SYMLINKS=false
+fi
+
+if [ "$USE_SYMLINKS" = true ]; then
+  if [[ -d "$FRONTEND_NODE_MODULES" && ! -L "$FRONTEND_NODE_MODULES" ]]; then
+    echo "  >> Migrating existing node_modules to node_modules_mac..."
+    rm -rf "$MAC_NODE_MODULES"
+    mv "$FRONTEND_NODE_MODULES" "$MAC_NODE_MODULES"
+  fi
+  rm -f "$FRONTEND_NODE_MODULES"
+  mkdir -p "$MAC_NODE_MODULES"
+  ln -sf "node_modules_mac" "$FRONTEND_NODE_MODULES"
+else
+  # Fallback: Filesystem does not support symlinks (e.g. FAT32/exFAT)
+  echo "  >> Filesystem does not support symlinks. Using directory swapping fallback..."
+  
+  if [[ -L "$FRONTEND_NODE_MODULES" || -f "$FRONTEND_NODE_MODULES" ]]; then
+    rm -f "$FRONTEND_NODE_MODULES"
+  fi
+  
+  PREV_OS=""
+  if [[ -f "$ACTIVE_OS_FILE" ]]; then
+    PREV_OS=$(cat "$ACTIVE_OS_FILE")
+  fi
+  
+  if [[ -d "$FRONTEND_NODE_MODULES" && "$PREV_OS" != "mac" ]]; then
+    if [[ -n "$PREV_OS" ]]; then
+      echo "  >> Swapping out node_modules to node_modules_$PREV_OS..."
+      rm -rf "$APP_DIR/frontend/node_modules_$PREV_OS"
+      mv "$FRONTEND_NODE_MODULES" "$APP_DIR/frontend/node_modules_$PREV_OS"
+    else
+      echo "  >> Saving node_modules as node_modules_windows..."
+      rm -rf "$APP_DIR/frontend/node_modules_windows"
+      mv "$FRONTEND_NODE_MODULES" "$APP_DIR/frontend/node_modules_windows"
+    fi
+  fi
+  
+  if [[ -d "$MAC_NODE_MODULES" && ! -d "$FRONTEND_NODE_MODULES" ]]; then
+    echo "  >> Swapping in node_modules_mac..."
+    mv "$MAC_NODE_MODULES" "$FRONTEND_NODE_MODULES"
+  elif [[ ! -d "$FRONTEND_NODE_MODULES" ]]; then
+    mkdir -p "$FRONTEND_NODE_MODULES"
+  fi
+  
+  echo "mac" > "$ACTIVE_OS_FILE"
+fi
+
+# Проверка первого запуска ────────────────────────────────────────────────
+
+if [[ ! -d "$NODE_DIR" ]]; then
+  SETUP_MODE="First-Time Setup"
+fi
+
+if [[ ! -x "$NODE_BIN" ]]; then
+  SETUP_REASON="Portable Node.js for macOS is missing."
+fi
+
+if [[ ! -f "$DIST_INDEX" ]]; then
+  SETUP_REASON="Frontend build is missing."
+fi
+
+if [[ ! -x "$BACKEND_PATH" ]]; then
+  SETUP_REASON="No macOS Metal backend binary is installed."
+fi
+if [[ ! -x "$LLM_BACKEND_PATH" ]]; then
+  SETUP_REASON="No macOS llama.cpp text backend is installed."
+fi
+if [[ ! -d "$TTS_RUNTIME_PATH" ]]; then
+  SETUP_REASON="Kokoro text-to-speech runtime is missing."
+fi
+if [[ ! -x "$SPEECH_BACKEND_PATH" ]]; then
+  SETUP_REASON="macOS whisper.cpp speech backend is missing."
+fi
+
+if [[ -n "$SETUP_REASON" ]]; then
+  echo ""
+  echo "  ============================================================"
+  echo "   UNCENSORED AI STUDIO      |  $PLATFORM_LABEL $SETUP_MODE"
+
+  echo "  ============================================================"
+  echo ""
+  if [[ "$SETUP_MODE" == "First-Time Setup" ]]; then
+    echo "  Похоже, это первый запуск на macOS. Выполняю настройку автоматически..."
+  else
+    echo "  Нужна быстрая проверка и восстановление перед запуском."
+  fi
+
+  echo "  Причина: $SETUP_REASON"
+  echo "  Во время настройки модели не загружаются. Загрузите их или импортируйте в приложении."
+  echo ""
+  read -rp "  Нажмите Enter, чтобы продолжить, или Ctrl+C чтобы отменить."
+
+  # Очищаю порты управляемого бэкенда перед настройкой.
+  # Порт фронтенда трогать не нужно — лаунчер сам выберет свободный порт.
+  if command -v lsof >/dev/null 2>&1; then
+
+    lsof -t -i:"${BACKEND_PORT}" -i:"${LLM_PORT}" | xargs kill -9 >/dev/null 2>&1 || true
+  elif command -v fuser >/dev/null 2>&1; then
+    fuser -k "${BACKEND_PORT}/tcp" >/dev/null 2>&1 || true
+    fuser -k "${LLM_PORT}/tcp" >/dev/null 2>&1 || true
+  fi
+
+  if ! bash "$SETUP_SCRIPT"; then
+    echo ""
+    echo "  [ОШИБКА] Не удалось выполнить настройку. Проверьте вывод выше."
+    read -rp "  Нажмите Enter, чтобы закрыть..."
+    exit 1
+  fi
+fi
+
+# ── Запуск ────────────────────────────────────────────────────────────────
+clear 2>/dev/null || true
+
+
+echo ""
+echo "  ============================================================"
+echo "   UNCENSORED AI STUDIO      |  Запуск..."
+echo "  ============================================================"
+echo ""
+
+REQUESTED_FRONTEND_PORT="$FRONTEND_PORT"
+FRONTEND_PORT="$(resolve_frontend_port "$REQUESTED_FRONTEND_PORT")"
+if [[ "$FRONTEND_PORT" != "$REQUESTED_FRONTEND_PORT" ]]; then
+    echo "  Порт фронтенда ${REQUESTED_FRONTEND_PORT} занят; используется ${FRONTEND_PORT}."
+fi
+
+  # Очищаю порты управляемого бэкенда
+  if command -v lsof >/dev/null 2>&1; then
+    lsof -t -i:"${BACKEND_PORT}" -i:"${LLM_PORT}" | xargs kill -9 >/dev/null 2>&1 || true
+
+elif command -v fuser >/dev/null 2>&1; then
+  fuser -k "${BACKEND_PORT}/tcp" >/dev/null 2>&1 || true
+  fuser -k "${LLM_PORT}/tcp" >/dev/null 2>&1 || true
+fi
+
+# Start the server
+echo "  Запуск Uncensored AI Studio..."
+export PATH="$NODE_DIR/bin:$PATH"
+export FRONTEND_PORT="$FRONTEND_PORT"
+
+# Run server in background and capture PID
+"$NODE_BIN" "$SERVE_SCRIPT" &
+SERVER_PID=$!
+
+# Wait for server to be ready
+sleep 2
+
+# Open browser
+if command -v open >/dev/null 2>&1; then
+  echo "  Открываю браузер: http://localhost:${FRONTEND_PORT}"
+  open "http://localhost:${FRONTEND_PORT}" >/dev/null 2>&1 &
+else
+  echo "  Откройте браузер по адресу: http://localhost:${FRONTEND_PORT}"
+fi
+
+echo ""
+echo "  ============================================================"
+echo "   Запущено!"
+echo "   Web UI:     http://localhost:${FRONTEND_PORT}"
+echo "   API GPU:    Автовыбор приложением (стартует с ${BACKEND_PORT})"
+echo "   Text API:   Запускается при загрузке модели GGUF (порт ${LLM_PORT})"
+echo "   Speech:     Управляется локально приложением"
+echo "   TTS:        Управляется локально приложением"
+echo ""
+echo "   Нажмите Ctrl+C в этом окне, чтобы остановить все службы."
+echo "  ============================================================"
+echo ""
+
+# Cleanup on exit
+cleanup() {
+  echo ""
+  echo "  Завершаю работу..."
+
+
+  if kill -0 "$SERVER_PID" >/dev/null 2>&1; then
+    kill -TERM "$SERVER_PID" >/dev/null 2>&1 || true
+    sleep 1
+    kill -KILL "$SERVER_PID" >/dev/null 2>&1 || true
+  fi
+  echo "  Готово. До свидания!"
+
+
+  exit 0
+}
+trap cleanup SIGINT SIGTERM
+
+# Keep script alive
+wait "$SERVER_PID" || true
+cleanup
