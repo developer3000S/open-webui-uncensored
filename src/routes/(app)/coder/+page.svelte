@@ -745,7 +745,8 @@ The system will execute it and return matching file snippets in your next turn. 
 					{/if}
 				</div>
 			</div>
-			:else
+		{:else}
+			<!-- Workspace tab: repository panel + chat + changes -->
 			<div class="flex flex-1 min-h-0">
 			<!-- Left: repository panel -->
 			<div class="w-[300px] shrink-0 border-r border-gray-100 dark:border-gray-800 hidden md:flex flex-col min-h-0">
