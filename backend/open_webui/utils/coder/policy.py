@@ -44,10 +44,13 @@ def _as_list(value) -> list[str]:
     if value is None:
         return []
     if isinstance(value, str):
-        return [v.strip() for v in value.split(',') if v.strip()]
-    if isinstance(value, list):
-        return [str(v).strip() for v in value if str(v).strip()]
-    return []
+        items = value.split(',')
+    elif isinstance(value, list):
+        items = [str(v) for v in value]
+    else:
+        return []
+    # strip surrounding quotes so a setting saved as "'org/*, my/repo'" still works
+    return [v.strip().strip("'\"") for v in items if v.strip().strip("'\"")]
 
 
 async def get_coder_policies() -> dict:
