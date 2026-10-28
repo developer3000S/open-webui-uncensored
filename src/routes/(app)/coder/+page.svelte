@@ -36,6 +36,8 @@
 		publishSandboxSession,
 		getSandboxPreviewUrl,
 		getPublishedPageUrl,
+		setCoderTaskShare,
+		forkCoderTask,
 		upsertCoderTask,
 		generateCoderTaskTitle,
 		getCoderFollowups,
@@ -183,8 +185,15 @@
 
 let showExport = false;
 
-// §C/§B3: stable id for this coder session — used for task meta (title/tags/pin/archive)
-const coderChatId = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+// §C/§B3: stable id for this coder session — used for task meta (title/tags/pin/archive).
+// Persisted in sessionStorage so reloads keep the same task (share/fork stay valid).
+const newCoderChatId = () =>
+	crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+let coderChatId =
+	browser && sessionStorage.getItem('coder.chatId')
+		? sessionStorage.getItem('coder.chatId')!
+		: newCoderChatId();
+if (browser) sessionStorage.setItem('coder.chatId', coderChatId);
 
 // Sandbox / Preview / Publish state (§A, план coder.qwen.ai)
 let sandboxSessionId = '';
@@ -212,7 +221,7 @@ const refreshSandbox = async () => {
 const startSandbox = async (mode: string | null, templateId: string | null, seedPrompt?: string) => {
 	sandboxBusy = true;
 	try {
-		const s = await createSandboxSession(token, { mode, template_id: templateId });
+		const s = await createSandboxSession(token, { mode, template_id: templateId, chat_id: coderChatId });
 		sandboxSessionId = s.id;
 		sandboxVersion = (sandboxVersion + 1) % 1000000;
 		previewVisible = true;
@@ -251,6 +260,67 @@ const stopGeneration = () => {
 	sending = false;
 	upsertCoderTask(token, coderChatId, { status: 'stopped' }).catch(() => {});
 	toast.info($i18n.t('Generation stopped'));
+};
+
+// §C4: public sharing of the current task (title/tags meta + sandbox files)
+let taskShareEnabled = false;
+let taskShareUrl = '';
+let shareBusy = false;
+
+const toggleTaskShare = async () => {
+	if (!token || !coderChatId) return;
+	shareBusy = true;
+	try {
+		const enable = !taskShareEnabled;
+		const res = await setCoderTaskShare(token, coderChatId, enable);
+		if (res) {
+			taskShareEnabled = enable;
+			// §C4: сервер сам строит корректный абсолютный URL публичной страницы
+			// (/api/v1/coder/tasks/shared/<token>) — не собираем путь на клиенте.
+			taskShareUrl = enable ? (res.url ?? '') : '';
+			if (enable) {
+				toast.success($i18n.t('Task shared publicly'));
+				navigator.clipboard?.writeText(taskShareUrl).catch(() => {});
+			} else {
+				toast.info($i18n.t('Public link revoked'));
+			}
+		} else {
+			toast.error($i18n.t('Sharing failed'));
+		}
+	} catch (e: any) {
+		toast.error(e?.detail?.message ?? e?.message ?? 'Sharing failed');
+	} finally {
+		shareBusy = false;
+	}
+};
+
+// §C4: fork a publicly shared task via /coder?fork=<token>
+const handleForkParam = async () => {
+	const params = new URLSearchParams(window.location.search);
+	const shareToken = params.get('fork');
+	if (!shareToken) return;
+	// Clean the URL first so the flow runs once per link.
+	goto('/coder', { replaceState: true });
+	try {
+		const res = await forkCoderTask(token, shareToken);
+		if (res) {
+			// Adopt the new task id — meta and sandbox session now belong to us.
+			coderChatId = res.chat_id;
+			sessionStorage.setItem('coder.chatId', res.chat_id);
+			if (res.sandbox_session_id) {
+				sandboxSessionId = res.sandbox_session_id;
+				sandboxVersion = (sandboxVersion + 1) % 1000000;
+				previewVisible = true;
+			}
+			taskShareEnabled = false;
+			taskShareUrl = '';
+			toast.success($i18n.t('Project forked — you can keep building on it'));
+		} else {
+			toast.error($i18n.t('Fork failed: shared task not found'));
+		}
+	} catch (e: any) {
+		toast.error(e?.detail?.message ?? e?.message ?? 'Fork failed');
+	}
 };
 
 const applyFollowup = (s: string) => {
@@ -735,6 +805,9 @@ The system will execute it and return matching file snippets in your next turn. 
 	onMount(async () => {
 		if (!browser) return;
 		token = localStorage.token ?? '';
+
+		// §C4: handle /coder?fork=<share_token> before anything else
+		await handleForkParam();
 
 		// handle OAuth redirect params
 		const params = new URLSearchParams(window.location.search);
@@ -1240,10 +1313,33 @@ The system will execute it and return matching file snippets in your next turn. 
 						>
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
-							</svg>
-						</button>
-					</div>
-					{#if recommendedModels.length > 0 && !CODER_MODEL_PATTERN.test(modelId)}
+						</svg>
+					</button>
+				</div>
+				<!-- §C4: public share controls for the current task -->
+				<div class="flex items-center gap-2 mt-1.5 px-1">
+					<button
+						type="button"
+						class="text-[11px] px-2 py-0.5 rounded-lg ring-1 transition {taskShareEnabled
+							? 'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:ring-blue-900'
+							: 'text-gray-600 ring-gray-200 hover:bg-gray-50 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-gray-900'} disabled:opacity-40"
+						disabled={shareBusy}
+						on:click={toggleTaskShare}
+						title={taskShareEnabled
+							? $i18n.t('Revoke the public link and fork support for this task')
+							: $i18n.t('Publish this task publicly so others can view and fork it')}
+					>
+						{taskShareEnabled ? $i18n.t('Shared ✓ — revoke') : $i18n.t('Share publicly')}
+					</button>
+					{#if taskShareEnabled && taskShareUrl}
+						<button
+							type="button"
+							class="text-[11px] underline text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+							on:click={() => navigator.clipboard?.writeText(taskShareUrl).catch(() => {})}>{$i18n.t('Copy link')}</button
+						>
+					{/if}
+				</div>
+				{#if recommendedModels.length > 0 && !CODER_MODEL_PATTERN.test(modelId)}
 						<div class="text-[11px] text-gray-500 mt-1.5 px-1">
 							{$i18n.t('Recommended coding models')}:
 							{#each recommendedModels.slice(0, 3) as m, idx (m.id)}

@@ -259,3 +259,27 @@ def read_published(share_id: str) -> str:
     if not str(p).startswith(str(root_r) + os.sep) or not p.is_file():
         raise SandboxError('not_found', 'published page not found')
     return p.read_text(encoding='utf-8', errors='replace')
+
+
+def copy_sandbox(src_session_id: str, dst_session_id: str) -> dict:
+    """§C4 fork: копия файлов песочницы одной сессии в другую (для fork-задач).
+
+    Копируются только текстовые файлы в пределах лимитов получателя; исходник
+    не изменяется. Возвращает {'copied': [...], 'skipped': [...]}.
+    """
+    src = sandbox_dir(src_session_id)
+    if not src.is_dir():
+        raise SandboxError('not_found', 'source sandbox session directory missing')
+    dst = sandbox_dir(dst_session_id)
+    if not dst.is_dir():
+        raise SandboxError('not_found', 'destination sandbox session directory missing')
+    copied, skipped = [], []
+    for f in list_files(src_session_id):
+        rel = f['path']
+        try:
+            content, _mime = read_file(src_session_id, rel)
+            info = write_file(dst_session_id, rel, content)
+            copied.append({'path': rel, 'size': info['size']})
+        except SandboxError as exc:
+            skipped.append({'path': rel, 'reason': exc.code})
+    return {'copied': copied, 'skipped': skipped}

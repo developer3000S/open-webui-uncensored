@@ -243,7 +243,17 @@
 | POST | `/tasks/{chat_id}/title?prompt=` | Автоназвание + автотеги задачи из первого промпта (§B3) |
 | GET | `/tasks/{chat_id}/followups?mode=` | Follow-up предложения «что сделать дальше» под ответом модели (§B4) |
 
-### 2.10. Метрики стрима генерации (план §E)
+### 2.10. Публичный шеринг и fork задач (план §C4)
+
+| Метод | Путь | Описание |
+|---|---|---|
+| POST | `/tasks/{chat_id}/share` | `{enabled: bool}` — включить/выключить публичную страницу задачи; идемпотентный UUID-токен в `coder_task_meta.share_token`; ответ: `{share_enabled, share_token, url}` (url — абсолютная ссылка на публичную страницу, строится сервером из `WEBUI_URL`) |
+| GET | `/tasks/shared/{token}` | **Без авторизации** — публичная HTML-страница задачи (title/tags/статус + сводка песочницы; весь вывод через `html.escape`, защита от XSS). Отозванный шаринг → мгновенный 404 (фильтр `share_enabled` в SQL) |
+| POST | `/tasks/shared/{token}/fork` | Создать копию расшаренной задачи у форкера: новая запись `coder_task_meta` + копирование sandbox-сессии именно расшаренной задачи (`coder_sandbox_session.chat_id`, fallback для старых строк) через `copy_sandbox()` с сохранением лимитов квоты; ответ: `{chat_id, sandbox_session_id}` |
+
+UI: кнопка «Share publicly» (копирование ссылки/отзыв), обработка `/coder?fork=<token>` с автопереключением на новый `chat_id`. Тесты: `backend/tests/test_coder_share_fork.py` (16 passed: токены/отзыв/идемпотентность, IDOR, XSS, копирование файлов, интеграционный fork-flow).
+
+### 2.11. Метрики стрима генерации (план §E)
 
 | Метод | Путь | Описание |
 |---|---|---|
@@ -259,8 +269,8 @@
 | `coder_project` | Сохраняемые проекты (owner/repo/default_branch/meta) | PK `id`; `uq_coder_project_user_repo` |
 | `coder_export_job` | Задачи экспорта со снапшотом Change Set и статусом | PK `id`; `idempotency_key` unique; индексы user/status |
 | `coder_audit_event` | Журнал аудита (action/target/payload без секретов, correlation_id, ip_address, user_agent) | PK `id`; индексы user/created_at |
-| `coder_sandbox_session` | Песочницы задач (план §A): статус `active/paused/destroyed`, режим, `published_share_id` | PK `id`; индекс `user_id` |
-| `coder_task_meta` | Метаданные задач Coder (план §C/B3): title/tags/mode/status, `is_pinned`, `is_archived` | PK `id`; уникальность `(user_id, chat_id)`; индекс `user_id` |
+| `coder_sandbox_session` | Песочницы задач (план §A): статус `active/paused/destroyed`, режим, `published_share_id`, `chat_id` (привязка к задаче для fork, §C4) | PK `id`; индексы `user_id`, `(user_id, chat_id)` |
+| `coder_task_meta` | Метаданные задач Coder (план §C/B3): title/tags/mode/status, `is_pinned`, `is_archived`; публичный шаринг (план §C4): `share_token`, `share_enabled`, `shared_at` | PK `id`; уникальность `(user_id, chat_id)`; индекс `user_id`; уникальный индекс `share_token` |
 
 Ревизии:
 
@@ -273,6 +283,10 @@
 4. `c0d3r45ndb0x` — план coder.qwen.ai: таблицы `coder_sandbox_session`
    (жизненный цикл песочниц, публикация) и `coder_task_meta`
    (pin/archive/поиск/статусы задач). Также совместима с SQLite/PostgreSQL.
+5. `c0d3r45h4r1ng` — план §C4: публичный шеринг/fork задач — колонки
+   `share_token` (уникальный индекс), `share_enabled`, `shared_at` в
+   `coder_task_meta` и `chat_id` (+ индекс `(user_id, chat_id)`) в
+   `coder_sandbox_session`. Совместима с SQLite/PostgreSQL.
 
 Downgrade миграции 3 схлопывает несколько подключений в одно перед
 восстановлением старой уникальности (см. файл миграции); downgrade миграции 4

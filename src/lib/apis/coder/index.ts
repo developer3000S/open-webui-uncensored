@@ -674,6 +674,7 @@ export type CoderSandboxSession = {
   user_id: string;
   mode: string | null;
   status: string;
+  chat_id?: string | null;
   published_share_id: string | null;
   meta: Record<string, any> | null;
   created_at: number;
@@ -692,6 +693,9 @@ export type CoderTaskMeta = {
   is_pinned: boolean;
   is_archived: boolean;
   status: string | null;
+  share_enabled?: boolean;
+  share_token?: string | null;
+  forked_from?: string | null;
   meta: Record<string, any> | null;
   created_at: number;
   updated_at: number;
@@ -719,7 +723,7 @@ export const getCoderModes = async (
 // §A1: жизненный цикл sandbox-сессий
 export const createSandboxSession = async (
   token: string,
-  form: { mode?: string | null; template_id?: string | null },
+  form: { mode?: string | null; template_id?: string | null; chat_id?: string | null },
 ): Promise<CoderSandboxSession> => {
   const res = await fetch(`${WEBUI_API_BASE_URL}/coder/sandbox/session`, {
     method: "POST",
@@ -945,6 +949,52 @@ export const getCoderFollowups = async (
   const res = await fetch(
     `${WEBUI_API_BASE_URL}/coder/tasks/${chatId}/followups${mode ? `?mode=${encodeURIComponent(mode)}` : ""}`,
     { headers: jsonHeaders(token) },
+  );
+  return handle(res);
+};
+
+// §C4: публичный шеринг задачи и форк чужих проектов
+export const setCoderTaskShare = async (
+  token: string,
+  chatId: string,
+  enabled: boolean,
+): Promise<{ share_enabled: boolean; share_token: string | null; url: string | null }> => {
+  const res = await fetch(
+    `${WEBUI_API_BASE_URL}/coder/tasks/${chatId}/share`,
+    {
+      method: "POST",
+      headers: jsonHeaders(token),
+      body: JSON.stringify({ enabled }),
+    },
+  );
+  return handle(res);
+};
+
+export const getCoderSharedTaskUrl = (shareToken: string): string =>
+  `${WEBUI_API_BASE_URL}/coder/tasks/shared/${shareToken}`;
+
+export type CoderForkResult = {
+  chat_id: string;
+  title: string;
+  forked_from: string;
+  mode: string | null;
+  sandbox_session_id: string | null;
+  files_copied: number;
+  files_skipped: number;
+};
+
+export const forkCoderTask = async (
+  token: string,
+  shareToken: string,
+  title?: string | null,
+): Promise<CoderForkResult> => {
+  const res = await fetch(
+    `${WEBUI_API_BASE_URL}/coder/tasks/shared/${shareToken}/fork`,
+    {
+      method: "POST",
+      headers: jsonHeaders(token),
+      body: JSON.stringify(title ? { title } : {}),
+    },
   );
   return handle(res);
 };
