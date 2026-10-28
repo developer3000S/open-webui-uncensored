@@ -203,6 +203,13 @@ async def _check_repo_access(
         )
 
 
+def _connection_is_usable(c) -> bool:
+    """A connection can serve API calls only if its credential is actually resolvable."""
+    if c.token_type == 'app_installation':
+        return bool(c.installation_id)
+    return bool(c.access_token_encrypted)
+
+
 async def _get_connection(user_id: str, db: AsyncSession, connection_id: str | None = None):
     """Resolve a GitHub connection (§22.2 multi-GitHub).
 
@@ -220,12 +227,16 @@ async def _get_connection(user_id: str, db: AsyncSession, connection_id: str | N
                 detail={'code': 'CODER_CONNECTION_NOT_FOUND', 'message': 'GitHub connection not found'},
             )
     else:
-        connection = await CoderGithubConnections.get_by_user_id(user_id, db)
+        # ordered by is_default desc, updated_at desc — pick the first *usable* row so a
+        # stale/broken connection (legacy row without token, app row without installation_id)
+        # does not leave the repository list empty after GitHub authorization.
+        candidates = [c for c in await CoderGithubConnections.list_by_user_id(user_id, db) if _connection_is_usable(c)]
+        connection = candidates[0] if candidates else None
         if not connection:
-            log.error(f"No connection found for user_id: {user_id}")
+            log.error(f"No usable connection found for user_id: {user_id}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail={'code': 'CODER_NOT_CONNECTED', 'message': 'GitHub account is not connected'},
+                detail={'code': 'CODER_NOT_CONNECTED', 'message': 'GitHub account is not connected. Please reconnect your GitHub account.'},
             )
     
     log.info(f"Connection found for user_id: {user_id}, connection_id: {connection.id if connection else 'None'}")
@@ -261,7 +272,18 @@ async def _get_connection_token(user_id: str, db: AsyncSession, connection_id: s
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={'code': 'CODER_DECRYPTION_FAILED', 'message': 'Failed to decrypt stored GitHub token'},
         )
-    
+
+    if not token:
+        # Legacy/corrupted row that resolved but carries no real OAuth token — ask for
+        # reconnection instead of sending an empty Bearer to GitHub (opaque 401 -> empty list).
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                'code': 'CODER_NOT_CONNECTED',
+                'message': 'Stored GitHub token is missing or invalid. Please reconnect your GitHub account.',
+            },
+        )
+
     return token
 
 
@@ -319,47 +341,6 @@ async def coder_metrics(user=Depends(get_admin_user)):
 ############################
 # GitHub OAuth
 ############################
-
-############################
-# Repositories
-############################
-
-@router.get('/repos')
-async def get_repositories(
-    request: Request,
-    user=Depends(get_verified_user),
-    db: AsyncSession = Depends(get_async_session),
-):
-    """Return a list of repositories accessible by the user's GitHub connection."""
-    log.info(f"get_repositories called for user_id: {user.id}")
-    await check_coder_permission(request, user)
-    
-    try:
-        log.info(f"Attempting to get connection token for user_id: {user.id}")
-        token = await _get_connection_token(user.id, db)
-        log.info(f"Successfully got connection token for user_id: {user.id}")
-        
-        host = await _get_connection_host(user.id, db)
-        log.info(f"Host for user_id: {user.id} is {host}")
-        
-        # Получаем список репозиториев через GitHub API
-        repos = await GitHubClient.list_repositories(token, host=host)
-        log.info(f"User {user.id} has {len(repos)} repositories")
-        
-        return repos
-    except GitHubAPIError as exc:
-        log.error(f"GitHub API error fetching repositories for user_id: {user.id}, error: {exc.code} {exc.message}")
-        raise HTTPException(
-            status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY,
-            detail={'code': exc.code, 'message': exc.message},
-        )
-    except Exception as exc:
-        log.error(f"Unexpected error fetching repositories for user_id: {user.id}, error: {exc}", exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={'code': 'CODER_REPOS_ERROR', 'message': 'Failed to fetch repositories'},
-        )
-
 
 @router.get('/github/auth/start')
 async def github_auth_start(request: Request, host: str | None = None, user=Depends(get_verified_user)):
