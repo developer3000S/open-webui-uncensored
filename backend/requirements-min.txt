@@ -13,7 +13,7 @@ cryptography
 bcrypt==5.0.0
 argon2-cffi==25.1.0
 PyJWT[crypto]==2.13.0
-authlib==1.7.2
+authlib==1.9.1
 
 requests==2.34.2
 aiohttp==3.14.1 # do not update to 3.13.3 - broken
@@ -21,8 +21,8 @@ async-timeout
 aiocache
 aiofiles
 starlette-compress==1.7.1
-Brotli==1.2.0
-brotlicffi==1.2.0.1
+Brotli==1.2.1
+brotlicffi==1.2.1.0
 httpx[socks,http2,zstd,cli,brotli]==0.28.1
 starsessions[redis]==2.2.1
 
@@ -51,7 +51,7 @@ langchain-text-splitters==1.1.2
 fake-useragent==2.2.0
 
 chromadb==1.5.9
-black==26.5.1
+black==26.10.1
 pydub
 chardet==7.4.3
 beautifulsoup4
