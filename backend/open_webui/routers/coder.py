@@ -388,12 +388,24 @@ async def github_auth_callback(
 
     try:
         token_data = await GitHubClient.exchange_code(code, host=gh_host)
-        gh_user = await GitHubClient.get_user(token_data['access_token'], host=gh_host)
+        access_token = token_data.get('access_token')
+        if not access_token:
+            log.error('OAuth token exchange did not return access_token')
+            return RedirectResponse(url=_coder_redirect_url(request, 'github_error=token_missing'), status_code=302)
+        gh_user = await GitHubClient.get_user(access_token, host=gh_host)
     except GitHubAPIError as exc:
         log.exception('Coder GitHub OAuth callback failed')
         return RedirectResponse(url=_coder_redirect_url(request, 'github_error=api_failure'), status_code=302)
 
-    granted_scopes = [s.strip() for s in (token_data.get('scope') or '').split(',') if s.strip()]
+    # Обрабатываем scope, который может быть строкой, списком или None
+    scope_value = token_data.get('scope')
+    if isinstance(scope_value, list):
+        granted_scopes = [s.strip() for s in scope_value if s.strip()]
+    elif isinstance(scope_value, str):
+        granted_scopes = [s.strip() for s in scope_value.split(',') if s.strip()]
+    else:
+        granted_scopes = []
+
     if 'repo' not in granted_scopes:
         # Token was issued without repository access — send the user through the
         # consent screen again so GitHub prompts to approve the `repo` scope.
@@ -402,12 +414,12 @@ async def github_auth_callback(
     # Verify the stored token can actually access repository data (/user/repos);
     # otherwise surface a clear error instead of silently showing an empty list.
     try:
-        await GitHubClient.list_repositories(token_data['access_token'], page=1, per_page=1, host=gh_host)
+        await GitHubClient.list_repositories(access_token, page=1, per_page=1, host=gh_host)
     except GitHubAPIError as exc:
         log.warning(f'Coder GitHub token validation failed for {gh_host}:{gh_user["login"]}: {exc.code} {exc.message}')
         return RedirectResponse(url=_coder_redirect_url(request, 'github_error=insufficient_scopes'), status_code=302)
 
-    encrypted = encrypt_secret(token_data['access_token'])
+    encrypted = encrypt_secret(access_token)
     await CoderGithubConnections.upsert(
         user_id=user_id,
         github_login=gh_user['login'],

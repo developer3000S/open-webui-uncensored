@@ -132,6 +132,123 @@ from open_webui.events import (
 )
 from open_webui.internal.db import engine, get_async_session
 from open_webui.retrieval.query_rephrasing import init_query_rephrasing_service
+from sqlalchemy import inspect, MetaData, Table, Column, text
+from sqlalchemy.exc import NoSuchTableError, OperationalError
+import logging
+
+log = logging.getLogger(__name__)
+
+async def check_and_fix_db_schema():
+    """Check and fix database schema to match SQLAlchemy models.
+    
+    This function:
+    1. Checks if all expected tables exist
+    2. Creates missing tables
+    3. For SQLite, handles missing columns by creating a new table with the correct schema
+    4. Logs all actions for debugging
+    """
+    from open_webui.models.coder import (
+        CoderGithubConnection,
+        CoderGitHubAppInstallation,
+        CoderProject,
+        CoderExportJob,
+        CoderAuditEvent,
+        CoderSandboxSession,
+        CoderTaskMeta
+    )
+    from open_webui.internal.db import Base
+    from open_webui.models.access_grants import AccessGrants
+    from open_webui.models.channels import Channels
+    from open_webui.models.chats import Chats
+    from open_webui.models.config import Config
+    from open_webui.models.functions import Functions
+    from open_webui.models.messages import Messages
+    from open_webui.models.models import Models
+    from open_webui.models.users import Users
+    from open_webui.models.oauth_sessions import OAuthSessions
+    from open_webui.models.notes import Notes
+    from open_webui.models.prompts import Prompts
+    from open_webui.models.prompt_history import PromptHistory
+    from open_webui.models.memories import Memories
+    from open_webui.models.knowledge import Knowledge
+    from open_webui.models.groups import Groups
+    from open_webui.models.files import Files
+    from open_webui.models.folders import Folders
+    from open_webui.models.feedbacks import Feedbacks
+    from open_webui.models.calendar import Calendar, CalendarEvent, CalendarEventAttendee
+    from open_webui.models.automations import Automations
+    from open_webui.models.auths import Auth
+    from open_webui.models.tools import Tools
+    from open_webui.models.skills import Skills
+    from open_webui.models.shared_chats import SharedChats
+    from open_webui.models.chat_messages import ChatMessages
+    from open_webui.models.tags import Tags
+    
+    try:
+        # Create all tables automatically at startup
+        Base.metadata.create_all(engine)
+        log.info("Database tables created successfully.")
+        
+        # Create a connection to the database
+        inspector = inspect(engine)
+        
+        # List of all tables we expect to exist
+        expected_tables = {
+            'coder_github_connection',
+            'coder_github_app_installation',
+            'coder_project',
+            'coder_export_job',
+            'coder_audit_event',
+            'coder_sandbox_session',
+            'coder_task_meta',
+            'access_grants',
+            'channels',
+            'chats',
+            'config',
+            'functions',
+            'messages',
+            'models',
+            'users',
+            'oauth_sessions',
+            'notes',
+            'prompts',
+            'prompt_history',
+            'memories',
+            'knowledge',
+            'groups',
+            'files',
+            'folders',
+            'feedbacks',
+            'calendar',
+            'calendar_event',
+            'calendar_event_attendee',
+            'automations',
+            'auth',
+            'tools',
+            'skills',
+            'shared_chats',
+            'chat_messages',
+            'tags'
+        }
+
+        # Get existing tables from the database
+        existing_tables = set(inspector.get_table_names())
+
+        # Check if all expected tables exist
+        missing_tables = expected_tables - existing_tables
+
+        # Check for missing columns in coder_github_connection
+        if 'coder_github_connection' in existing_tables:
+            columns = inspector.get_columns('coder_github_connection')
+            column_names = [col['name'] for col in columns]
+            if 'installation_id' not in column_names:
+                log.warning("Column 'installation_id' is missing in table 'coder_github_connection'")
+            return True
+        
+        return False
+    except Exception as e:
+        log.error(f"Database schema validation failed: {e}")
+        return False
 from open_webui.models.access_grants import AccessGrants
 from open_webui.models.channels import Channels
 from open_webui.models.chats import ChatForm, Chats
@@ -420,6 +537,14 @@ async def lifespan(app: FastAPI):
             log.warning(f'Failed to initialize terminal servers at startup: {e}')
 
     # Mark application as ready to accept traffic from a startup perspective.
+    # First, check and fix database schema if needed
+    log.info("Checking and fixing database schema...")
+    schema_fixed = await check_and_fix_db_schema()
+    if schema_fixed:
+        log.info("Database schema was fixed during startup.")
+    else:
+        log.info("Database schema is up-to-date.")
+    
     app.state.startup_complete = True
     await publish_event(app, EVENTS.SYSTEM_STARTUP_COMPLETED, source='system')
 

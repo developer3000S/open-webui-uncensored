@@ -9,6 +9,7 @@ import logging.config
 import alembic.context
 from open_webui.env import DATABASE_PASSWORD, DATABASE_URL, LOG_FORMAT
 from open_webui.internal.db import enable_iam_token_auth, extract_ssl_params_from_url, reattach_ssl_params_to_url
+from open_webui.internal.db import Base
 from open_webui.models.auths import Auth
 from open_webui.models.calendar import Calendar, CalendarEvent, CalendarEventAttendee  # noqa: F401
 from sqlalchemy import create_engine, engine_from_config, pool
@@ -21,7 +22,7 @@ if LOG_FORMAT == 'json':
 
     for log_handler in logging.root.handlers:
         log_handler.setFormatter(JSONFormatter())
-migration_metadata = Auth.metadata
+migration_metadata = Base.metadata
 target_db_url = DATABASE_URL
 base_url, ssl_query_params = extract_ssl_params_from_url(target_db_url)
 if ssl_query_params:
