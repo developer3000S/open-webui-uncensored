@@ -57,10 +57,13 @@ for _port in 8083 7687 7474; do
 done
 
 echo "🔨 Сборка образов из локальных исходников..."
-# --build всегда пересобирает образы из локальных исходников: pull из реестра
-# не используется, а изменения в backend/ и studio/ должны попадать в образ.
-# --pull подтягивает только базовые образы (node, neo4j) ради свежих пакетов.
-docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d --build --pull always
+# Сначала очищаем кэш сборки, чтобы избежать использования устаревших слоев
+# --no-cache гарантирует пересборку всех слоев с нуля
+# --pull всегда подтягивает базовые образы (node, neo4j) для актуальных пакетов
+docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" build --no-cache --pull
+
+# Затем запускаем контейнеры с пересобранными образами
+docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d
 
 OPEN_WEBUI_PORT="$(grep -E '^[[:space:]]*OPEN_WEBUI_PORT=' "$ENV_FILE" | tail -1 | cut -d= -f2- | tr -d "\"' " || true)"
 OPEN_WEBUI_PORT="${OPEN_WEBUI_PORT:-8083}"
