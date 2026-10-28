@@ -12,7 +12,7 @@ python-jose==3.5.0
 cryptography
 bcrypt==5.0.0
 argon2-cffi==25.1.0
-PyJWT[crypto]==2.13.0
+PyJWT[crypto]==2.15.0
 authlib==1.9.1
 
 requests==2.34.2
@@ -40,7 +40,7 @@ RestrictedPython==8.3
 loguru==0.7.3
 asgiref==3.11.1
 
-mcp==1.30.0
+mcp==2.3.0
 openai
 
 langchain==1.2.10

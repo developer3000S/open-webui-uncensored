@@ -9,7 +9,7 @@ python-jose==3.5.0
 cryptography==48.0.0
 bcrypt==5.0.0
 argon2-cffi==25.1.0
-PyJWT[crypto]==2.13.0
+PyJWT[crypto]==2.15.0
 authlib==1.9.1
 
 requests==2.34.2
@@ -41,7 +41,7 @@ asgiref==3.11.1
 
 # AI libraries
 tiktoken==0.13.0
-mcp==1.30.0
+mcp==2.3.0
 
 openai==2.29.0
 anthropic==0.86.0
@@ -65,8 +65,8 @@ einops==0.8.2
 
 ftfy==6.3.1
 chardet==7.4.3
-pypdf==6.21.3
-fpdf2==2.8.9
+pypdf==6.21.2
+fpdf2==2.8.8
 pymdown-extensions==10.21.3
 docx2txt==0.9
 python-pptx==1.0.2
@@ -117,7 +117,7 @@ googleapis-common-protos==1.75.0
 google-cloud-storage==3.9.0
 
 ## Databases
-pymongo==4.19.0
+pymongo==4.18.3
 psycopg2-binary==2.9.12
 pgvector==0.4.2
 
