@@ -19,11 +19,13 @@ Endpoints (per technical specification Coder.md):
 """
 
 import logging
+import html
 import re
 from urllib.parse import quote
 import secrets
 import time
 from typing import Any
+from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import PlainTextResponse, RedirectResponse
@@ -44,9 +46,11 @@ from open_webui.models.coder import (
     CoderSandboxSession,
     CoderSandboxSessionModel,
     CoderSandboxSessions,
+    CoderTaskForkForm,
     CoderTaskMetaForm,
     CoderTaskMetaModel,
     CoderTaskMetas,
+    CoderTaskShareForm,
 )
 from open_webui.models.config import Config
 from open_webui.utils.auth import get_verified_user, get_admin_user
@@ -1772,7 +1776,7 @@ async def coder_sandbox_create(
 ):
     """§A1: создать изолированный sandbox на задачу (create → active)."""
     await check_coder_permission(request, user)
-    session = await CoderSandboxSessions.create(user.id, mode=form.mode, db=db)
+    session = await CoderSandboxSessions.create(user.id, mode=form.mode, chat_id=form.chat_id, db=db)
     skeleton = {}
     template = coder_modes.get_template(form.template_id) if form.template_id else None
     if template:
@@ -2052,3 +2056,161 @@ async def coder_stream_metrics(
         payload={'first_chunk_ms': first_chunk_ms, 'chunks': chunks}, db=db,
     )
     return {'status': True}
+
+
+####################
+# Task sharing & fork (план coder.qwen.ai §C4)
+####################
+
+
+def _share_base_url(request: Request) -> str:
+    """Базовый URL для публичной ссылки шаринга (WEBUI_URL или заголовок запроса)."""
+    base = (WEBUI_URL or '').rstrip('/')
+    if base:
+        return base
+    return str(request.base_url).rstrip('/')
+
+
+@router.post('/tasks/{chat_id}/share')
+async def coder_task_share(
+    request: Request,
+    chat_id: str,
+    form: CoderTaskShareForm,
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    """§C4: включить/выключить публичную страницу задачи; вернуть ссылку."""
+    await check_coder_permission(request, user)
+    row = await CoderTaskMetas.set_share(user.id, chat_id, form.enabled, db)
+    await _audit(
+        request, user.id, action='task_shared' if form.enabled else 'task_unshared',
+        target=chat_id, payload={'enabled': form.enabled}, db=db,
+    )
+    share_url = None
+    if form.enabled and row.share_token:
+        share_url = f'{_share_base_url(request)}/api/v1/coder/tasks/shared/{row.share_token}'
+    return {
+        'share_enabled': bool(row.share_enabled),
+        'share_token': row.share_token,
+        'url': share_url,
+    }
+
+
+@router.get('/tasks/shared/{token}')
+async def coder_task_shared_page(request: Request, token: str, db: AsyncSession = Depends(get_async_session)):
+    """Публичная страница расшаренной задачи (без авторизации, аналог /c/<uuid> у Qwen).
+
+    Показывает title/tags и сводку sandbox; текст сообщений не отдаётся —
+    в coder chat_id это id задачи из coder_task_meta, а не PK таблицы chat.
+    Файлы песочницы публикуются отдельно через /sandbox/session/{id}/publish.
+    """
+    config = await Config.get_many('coder.enable')
+    if not config.get('coder.enable', CODER_ENABLED):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=ERROR_MESSAGES.UNAUTHORIZED)
+    row = await CoderTaskMetas.get_by_share_token(token, db)
+    if not row:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={'code': 'CODER_TASK_NOT_SHARED', 'message': 'Shared task not found'},
+        )
+    # Сводка по sandbox-сессии задачи: сколько файлов, без раскрытия содержимого
+    files_count = None
+    src_session = await CoderSandboxSessions.get_by_chat(row.user_id, row.chat_id, db)
+    if src_session:
+        try:
+            files_count = len(coder_sandbox.list_files(src_session.id))
+        except SandboxError:
+            files_count = None
+    age_days = max(0, int((time.time() - (row.shared_at or row.updated_at)) // 86400))
+    esc = html.escape
+    items_html = (
+        f'<div class="m"><span class="r">sandbox</span><div>Файлов в песочнице: {files_count}</div></div>'
+        if files_count is not None
+        else '<p><em>Песочница недоступна — доступен только обзор задачи.</em></p>'
+    )
+    tags_html = ''.join(f'<span class="tag">#{esc(str(t))}</span>' for t in (row.tags or []))
+    page = f"""<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{esc(row.title or 'Coder task')}</title>
+<style>
+body{{font-family:system-ui,sans-serif;max-width:860px;margin:2rem auto;padding:0 1rem;color:#1a1a1a}}
+h1{{font-size:1.5rem}} .meta{{color:#666;font-size:.9rem;margin-bottom:1rem}}
+.tag{{display:inline-block;background:#eef;border-radius:999px;padding:.1rem .6rem;margin-right:.3rem;font-size:.8rem}}
+.m{{border-left:3px solid #ddd;padding:.5rem .8rem;margin:.6rem 0}}
+.r{{text-transform:uppercase;font-size:.7rem;color:#888;letter-spacing:.05em}}
+pre,code{{background:#f6f6f6;border-radius:6px}} pre{{padding:.6rem;overflow-x:auto}}
+.fork{{margin-top:2rem}} .btn{{display:inline-block;padding:.5rem 1rem;background:#118;
+color:#fff;border-radius:8px;text-decoration:none}}
+</style></head><body>
+<h1>{esc(row.title or 'Задача Coder')}</h1>
+<div class="meta">Опубликовано {age_days} дн. назад · режим: {esc(row.mode or '—')}</div>
+<div>{tags_html}</div>
+{items_html}
+<div class="fork"><a class="btn" href="/coder?fork={esc(token)}">Fork к себе</a></div>
+<p class="meta">Сделано в Coder · <a href="/">Open WebUI</a></p>
+</body></html>"""
+    return PlainTextResponse(page, media_type='text/html; charset=utf-8')
+
+
+@router.post('/tasks/shared/{token}/fork')
+async def coder_task_fork(
+    request: Request,
+    token: str,
+    form: CoderTaskForkForm | None = None,
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    """§C4: форк расшаренной задачи к себе (копия метаданных + файлов sandbox)."""
+    await check_coder_permission(request, user)
+    src = await CoderTaskMetas.get_by_share_token(token, db)
+    if not src:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={'code': 'CODER_TASK_NOT_SHARED', 'message': 'Shared task not found'},
+        )
+    title = (form.title if form and form.title else None) or f'{src.title or "Задача"} (fork)'
+    new_chat_id = str(uuid4())
+    meta_form = CoderTaskMetaForm(title=title, tags=list(src.tags or []) or None, mode=src.mode)
+    row = await CoderTaskMetas.upsert(user.id, new_chat_id, meta_form, db)
+    row.forked_from = src.chat_id
+    row.updated_at = int(time.time())
+    await db.flush()
+
+    # Копия sandbox-файлов именно этой задачи (последняя живая сессия автора);
+    # fallback на последнюю активную сессию автора — для задач, созданных до chat_id-миграции
+    copied = skipped = 0
+    new_session_id: str | None = None
+    src_session = await CoderSandboxSessions.get_by_chat(src.user_id, src.chat_id, db)
+    if not src_session:
+        author_sessions = await CoderSandboxSessions.list_by_user_id(
+            src.user_id, db, statuses=['active', 'paused']
+        )
+        src_session = author_sessions[0] if author_sessions else None
+    if src_session:
+        session = await CoderSandboxSessions.create(user.id, mode=src.mode, chat_id=new_chat_id, db=db)
+        try:
+            coder_sandbox.create_sandbox(session.id, coder_modes.skeleton_for(src.mode) if src.mode else None)
+            result = coder_sandbox.copy_sandbox(src_session.id, session.id)
+            copied = len(result['copied'])
+            skipped = len(result['skipped'])
+            new_session_id = session.id
+            await CoderSandboxSessions.update(
+                session.id, {'meta': {'forked_from_session': src_session.id}}, db
+            )
+        except SandboxError as exc:
+            await CoderSandboxSessions.update(session.id, {'status': 'destroyed'}, db)
+            log.debug('coder fork sandbox copy failed: %s', exc.code)
+    await _audit(
+        request, user.id, action='task_forked', target=new_chat_id,
+        payload={'source_chat_id': src.chat_id, 'files_copied': copied, 'files_skipped': skipped}, db=db,
+    )
+    return {
+        'chat_id': new_chat_id,
+        'title': title,
+        'forked_from': src.chat_id,
+        'mode': src.mode,
+        'sandbox_session_id': new_session_id,
+        'files_copied': copied,
+        'files_skipped': skipped,
+    }

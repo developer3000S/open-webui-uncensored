@@ -1,4 +1,5 @@
 import logging
+import secrets
 import time
 from uuid import uuid4
 
@@ -144,6 +145,7 @@ class CoderSandboxSession(Base):
     user_id = Column(Text, nullable=False)
     mode = Column(Text, nullable=True)  # web-dev | data-viz | visual-design | prototype
     status = Column(Text, nullable=False, default='active')  # active | paused | destroyed
+    chat_id = Column(Text, nullable=True)  # §C4: привязка sandbox к задаче (id задачи из coder_task_meta) для fork
     published_share_id = Column(Text, nullable=True)  # §A4 публикация одним кликом
     meta = Column(JSON, nullable=True)
     created_at = Column(BigInteger, nullable=False)
@@ -167,6 +169,10 @@ class CoderTaskMeta(Base):
     is_pinned = Column(Boolean, nullable=False, default=False)
     is_archived = Column(Boolean, nullable=False, default=False)
     status = Column(Text, nullable=True)  # running | done | error | None
+    share_enabled = Column(Boolean, nullable=False, default=False)  # §C4 публичный шеринг
+    share_token = Column(Text, nullable=True)  # opaque-токен ссылки /shared/{token}
+    shared_at = Column(BigInteger, nullable=True)  # время включения шаринга (для счётчика лет)
+    forked_from = Column(Text, nullable=True)  # chat_id задачи-источника (если это fork)
     meta = Column(JSON, nullable=True)
     created_at = Column(BigInteger, nullable=False)
     updated_at = Column(BigInteger, nullable=False)
@@ -174,6 +180,7 @@ class CoderTaskMeta(Base):
     __table_args__ = (
         UniqueConstraint('user_id', 'chat_id', name='uq_coder_task_meta_user_chat'),
         Index('ix_coder_task_meta_user_id', 'user_id'),
+        Index('ix_coder_task_meta_share_token', 'share_token'),
     )
 
 
@@ -184,6 +191,7 @@ class CoderSandboxSessionModel(BaseModel):
     user_id: str
     mode: str | None = None
     status: str = 'active'
+    chat_id: str | None = None
     published_share_id: str | None = None
     meta: dict | None = None
     created_at: int
@@ -194,6 +202,7 @@ class CoderSandboxSessionModel(BaseModel):
 class CoderSandboxCreateForm(BaseModel):
     mode: str | None = None
     template_id: str | None = None
+    chat_id: str | None = None  # §C4: id задачи (coder_task_meta) для привязки sandbox и fork
 
 
 class CoderTaskMetaForm(BaseModel):
@@ -203,6 +212,18 @@ class CoderTaskMetaForm(BaseModel):
     is_pinned: bool | None = None
     is_archived: bool | None = None
     status: str | None = None
+
+
+class CoderTaskShareForm(BaseModel):
+    """§C4: включение/выключение публичного шаринга задачи."""
+
+    enabled: bool = True
+
+
+class CoderTaskForkForm(BaseModel):
+    """§C4: копирование чужой опубликованной задачи к себе."""
+
+    title: str | None = None
 
 
 class CoderGitHubAppInstallationForm(BaseModel):
@@ -230,6 +251,9 @@ class CoderTaskMetaModel(BaseModel):
     is_pinned: bool = False
     is_archived: bool = False
     status: str | None = None
+    share_enabled: bool = False
+    share_token: str | None = None
+    forked_from: str | None = None
     meta: dict | None = None
     created_at: int
     updated_at: int
@@ -635,6 +659,23 @@ class CoderSandboxSessions:
         result = await db.execute(select(CoderSandboxSession).where(CoderSandboxSession.id == session_id))
         return result.scalars().first()
 
+    async def get_by_chat(
+        self, user_id: str, chat_id: str, db: AsyncSession
+    ) -> CoderSandboxSession | None:
+        """§C4: последняя живая sandbox-сессия задачи (для корректного fork)."""
+        if not chat_id:
+            return None
+        result = await db.execute(
+            select(CoderSandboxSession)
+            .where(
+                CoderSandboxSession.user_id == user_id,
+                CoderSandboxSession.chat_id == chat_id,
+                CoderSandboxSession.status.in_(['active', 'paused']),
+            )
+            .order_by(CoderSandboxSession.updated_at.desc())
+        )
+        return result.scalars().first()
+
     async def list_by_user_id(
         self, user_id: str, db: AsyncSession, statuses: list[str] | None = None
     ) -> list[CoderSandboxSession]:
@@ -649,7 +690,8 @@ class CoderSandboxSessions:
         return result.scalars().all()
 
     async def create(
-        self, user_id: str, mode: str | None = None, meta: dict | None = None, db: AsyncSession = None
+        self, user_id: str, mode: str | None = None, meta: dict | None = None,
+        chat_id: str | None = None, db: AsyncSession = None
     ) -> CoderSandboxSession:
         now = int(time.time())
         session = CoderSandboxSession(
@@ -657,6 +699,7 @@ class CoderSandboxSessions:
             user_id=user_id,
             mode=mode,
             status='active',
+            chat_id=chat_id,
             meta=meta,
             created_at=now,
             updated_at=now,
@@ -763,6 +806,44 @@ class CoderTaskMetas:
         )
         return result.rowcount > 0
 
+    async def set_share(self, user_id: str, chat_id: str, enabled: bool, db: AsyncSession) -> CoderTaskMeta | None:
+        """§C4: включить/выключить публичный шеринг задачи (токен генерируется при включении)."""
+        row = await self.get_by_chat(user_id, chat_id, db)
+        if not row:
+            now = int(time.time())
+            row = CoderTaskMeta(
+                id=str(uuid4()),
+                user_id=user_id,
+                chat_id=chat_id,
+                created_at=now,
+                updated_at=now,
+            )
+            db.add(row)
+            await db.flush()
+        if enabled:
+            if not row.share_enabled or not row.share_token:
+                row.share_token = secrets.token_urlsafe(24)
+            row.share_enabled = True
+            row.shared_at = int(time.time())
+        else:
+            row.share_enabled = False
+            row.share_token = None
+            row.shared_at = None
+        row.updated_at = int(time.time())
+        await db.flush()
+        return row
+
+    async def get_by_share_token(self, token: str, db: AsyncSession) -> CoderTaskMeta | None:
+        """Публичная страница по токenu — только явно расшаренные задачи."""
+        if not token:
+            return None
+        result = await db.execute(
+            select(CoderTaskMeta).where(
+                CoderTaskMeta.share_token == token, CoderTaskMeta.share_enabled == True  # noqa: E712
+            )
+        )
+        return result.scalars().first()
+
 
 class CoderGitHubAppInstallations:
     """Приоритет D: учёт установок GitHub App (по одному ряду на installation)."""
@@ -840,6 +921,22 @@ def ensure_coder_schema() -> None:
                 cols = {c['name'] for c in inspector.get_columns('coder_github_connection')}
                 if 'installation_id' not in cols:
                     conn.exec_driver_sql('ALTER TABLE coder_github_connection ADD COLUMN installation_id TEXT')
+            if 'coder_task_meta' in existing_tables:
+                cols = {c['name'] for c in inspector.get_columns('coder_task_meta')}
+                if 'share_enabled' not in cols:
+                    conn.exec_driver_sql(
+                        'ALTER TABLE coder_task_meta ADD COLUMN share_enabled BOOLEAN NOT NULL DEFAULT 0'
+                    )
+                if 'share_token' not in cols:
+                    conn.exec_driver_sql('ALTER TABLE coder_task_meta ADD COLUMN share_token TEXT')
+                if 'shared_at' not in cols:
+                    conn.exec_driver_sql('ALTER TABLE coder_task_meta ADD COLUMN shared_at BIGINT')
+                if 'forked_from' not in cols:
+                    conn.exec_driver_sql('ALTER TABLE coder_task_meta ADD COLUMN forked_from TEXT')
+            if 'coder_sandbox_session' in existing_tables:
+                sb_cols = {c['name'] for c in inspector.get_columns('coder_sandbox_session')}
+                if 'chat_id' not in sb_cols:
+                    conn.exec_driver_sql('ALTER TABLE coder_sandbox_session ADD COLUMN chat_id TEXT')
         engine.dispose()
         log.debug('[coder] schema ensured')
     except Exception as exc:  # pragma: no cover - best effort
