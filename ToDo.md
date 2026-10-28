@@ -276,3 +276,40 @@ stream-metrics — документация синхронизирована (do
 
 Дата обновления: 2026-10-27
 Комментарии: Все пункты плана Coder (приоритеты 1–3 и вторая очередь, включая документацию §20) реализованы; ручная проверка OAuth-подключения GitHub — успешно. Добавлен новый план развития Coder по мотивам анализа coder.qwen.ai (раздел «Coder — план развития по мотивам coder.qwen.ai»: sandbox+preview, режимы/шаблоны генерации, управление задачами, GitHub App, наблюдаемость генерации). Список расширен анализами кода и новых возможностей. Обновлено: реализованы авто-улучшение запросов, мульти-стратегия поиска, контекстное переупорядочивание, кеширование RAG, интерактивная оценка качества RAG, XLSX со всеми листами, поддержка xls/rtf/doc, дедупликация по пути и metadata. Завершено Comprehensive тестирование Coder: unit, integration, security-тесты (59+8+14=81 тестов) и написано E2E. Реализованы приоритеты A/B/C/E плана coder.qwen.ai: sandbox+живой preview+публикация (`utils/coder/sandbox.py`, миграция `c0d3r45ndb0x`), режимы и шаблоны генерации (`utils/coder/modes.py`), управление задачами (pin/archive/поиск/title/followups, `coder_task_meta`), метрики стрима (`POST /stream/metrics`). Документация синхронизирована: docs/CODER.md v2.1 (API §2.7–§2.10, схема данных, переменные CODER_SANDBOX_*/CODER_PUBLISH_*, runbook, ограничения 9–13), README («Работа с Coder» §3.1 + таблицы env), TROUBLESHOOTING (sandbox/preview/publish), CHANGELOG. Дата: 2026-10-27.
+## Enhancements from open-webui/computer
+
+### AI & Agent Improvements
+- [ ] **Advanced AI Agent Frameworks**: Integration of state-of-the-art AI agent adaptors (OpenCode V2, ACP-compatible).
+- [ ] **Anthropic Capabilities**: Fix silent caps on `max_tokens`, improve handling of refusals.
+- [ ] **LaTeX Math Rendering**: Full Markdown-LaTeX math rendering in chat interface.
+- [ ] **Agent Image Visibility**: Agents can see images; `display_file` provides full path and base64.
+- [ ] **Auto-Compaction**: Run compaction even when all input tokens are shown; mid-agent-run compaction.
+
+### System & Configuration
+- [ ] **Configurable Search Providers**: API URL configuration for search providers.
+- [ ] **Model Prefix Setting**: UI to set model prefixes for discovery.
+- [ ] **save_config() Improvements**: Proper newline escape to prevent invalid config.toml loss.
+- [ ] **Strict Jinja Template Handling**: Graceful handling of missing user-role messages.
+
+### Git & Repositories
+- [ ] **Multiple Git Repositories**: Support for managing multiple Git repos in one workspace.
+- [ ] **Workspace Command Permissions**: Better control of CLI commands from agents.
+- [ ] **Git Identity Validation**: Smarter handling of author identity (email, username).
+
+### UI/UX
+- [ ] **Formatted Responses Copying**: Community userscript for improved copying.
+- [ ] **Shift-to-Delete Old Chats**: Quick deletion of old chats by holding shift.
+- [ ] **Git Bar Commit Indicators**: Visual feedback for commit errors.
+- [ ] **Cost Monitoring Dashboard**: Track usage costs per agent/chat/model.
+- [ ] **Background Commands Management**: UI to view/kill running background commands.
+
+### Utilities & Resilience
+- [ ] **Utility Tasks Timeout Resilience**: Adjustable timeout for utility tasks on slow hardware.
+- [ ] **Partial Prompt Caching**: Keep context across calls, compaction tuning.
+- [ ] **API Expiry and Saturation**: Optimize prompts, reduce token waste.
+- [ ] **Websocket Enhancements**: Better connectivity for real-time tasks.
+
+> **Why**: open-webui/computer contains cutting-edge features and fixes that improve agent performance, UI/UX, configuration robustness, and monitoring.
+> **How to apply**: Review each feature, prioritize, implement and test in this Open WebUI instance, update documentation.
+
+**Дата анализа и интеграции в план: 2026-10-28**

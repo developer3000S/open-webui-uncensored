@@ -205,43 +205,59 @@ async def _get_connection(user_id: str, db: AsyncSession, connection_id: str | N
     When connection_id is given it must belong to the user; otherwise the
     user's default connection is used (back-compatible with single-account UI).
     """
+    log.info(f"_get_connection called for user_id: {user_id}, connection_id: {connection_id}")
+    
     if connection_id:
         connection = await CoderGithubConnections.get_by_id(connection_id, user_id, db)
         if not connection:
+            log.error(f"Connection not found for user_id: {user_id}, connection_id: {connection_id}")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={'code': 'CODER_CONNECTION_NOT_FOUND', 'message': 'GitHub connection not found'},
             )
     else:
         connection = await CoderGithubConnections.get_by_user_id(user_id, db)
-    if not connection:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={'code': 'CODER_NOT_CONNECTED', 'message': 'GitHub account is not connected'},
-        )
+        if not connection:
+            log.error(f"No connection found for user_id: {user_id}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={'code': 'CODER_NOT_CONNECTED', 'message': 'GitHub account is not connected'},
+            )
+    
+    log.info(f"Connection found for user_id: {user_id}, connection_id: {connection.id if connection else 'None'}")
     return connection
 
 
 async def _get_connection_token(user_id: str, db: AsyncSession, connection_id: str | None = None) -> str:
+    log.info(f"_get_connection_token called for user_id: {user_id}")
     connection = await _get_connection(user_id, db, connection_id)
+    log.info(f"Connection found for user_id: {user_id}, token_type: {connection.token_type}")
+    
     # Priority D: GitHub App installation — mint/refresh short-lived token on demand.
     if connection.token_type == 'app_installation' and connection.installation_id:
         from open_webui.utils.coder.github_client import get_installation_token
 
         try:
-            return await get_installation_token(connection.installation_id, connection.github_host)
+            token = await get_installation_token(connection.installation_id, connection.github_host)
+            log.info(f"Successfully got installation token for user_id: {user_id}")
+            return token
         except GitHubAPIError as exc:
+            log.error(f"Failed to get installation token for user_id: {user_id}, error: {exc.code} {exc.message}")
             raise HTTPException(
                 status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY,
                 detail={'code': exc.code, 'message': exc.message},
             )
+    
     try:
         token = decrypt_secret(connection.access_token_encrypted)
-    except Exception:
+        log.info(f"Successfully decrypted token for user_id: {user_id}")
+    except Exception as e:
+        log.error(f"Failed to decrypt token for user_id: {user_id}, error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={'code': 'CODER_DECRYPTION_FAILED', 'message': 'Failed to decrypt stored GitHub token'},
         )
+    
     return token
 
 
@@ -299,6 +315,46 @@ async def coder_metrics(user=Depends(get_admin_user)):
 ############################
 # GitHub OAuth
 ############################
+
+############################
+# Repositories
+############################
+
+@router.get('/repos')
+async def get_repositories(
+    request: Request,
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    """Return a list of repositories accessible by the user's GitHub connection."""
+    log.info(f"get_repositories called for user_id: {user.id}")
+    await check_coder_permission(request, user)
+    
+    try:
+        log.info(f"Attempting to get connection token for user_id: {user.id}")
+        token = await _get_connection_token(user.id, db)
+        log.info(f"Successfully got connection token for user_id: {user.id}")
+        
+        host = await _get_connection_host(user.id, db)
+        log.info(f"Host for user_id: {user.id} is {host}")
+        
+        # Получаем список репозиториев через GitHub API
+        repos = await GitHubClient.list_repositories(token, host=host)
+        log.info(f"User {user.id} has {len(repos)} repositories")
+        
+        return repos
+    except GitHubAPIError as exc:
+        log.error(f"GitHub API error fetching repositories for user_id: {user.id}, error: {exc.code} {exc.message}")
+        raise HTTPException(
+            status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY,
+            detail={'code': exc.code, 'message': exc.message},
+        )
+    except Exception as exc:
+        log.error(f"Unexpected error fetching repositories for user_id: {user.id}, error: {exc}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={'code': 'CODER_REPOS_ERROR', 'message': 'Failed to fetch repositories'},
+        )
 
 
 @router.get('/github/auth/start')

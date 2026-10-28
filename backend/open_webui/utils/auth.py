@@ -321,13 +321,16 @@ async def get_current_user(
     # This ensures connections are released immediately after auth queries,
     # not held for the entire request duration (e.g., during 30+ second LLM calls).
 ):
+    log.info(f"get_current_user called for request from {request.client.host}")
     token = None
 
     if auth_token is not None:
         token = auth_token.credentials
+        log.info(f"Token from Authorization header: {token[:10]}...")
 
     if token is None and 'token' in request.cookies:
         token = request.cookies.get('token')
+        log.info(f"Token from cookies: {token[:10]}...")
 
     # Fallback to request.state.token (set by middleware, e.g. for x-api-key)
     if token is None and hasattr(request.state, 'token') and request.state.token:
