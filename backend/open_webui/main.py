@@ -237,6 +237,17 @@ async def check_and_fix_db_schema():
         # Check if all expected tables exist
         missing_tables = expected_tables - existing_tables
 
+        if missing_tables:
+            log.warning(f"The following tables are missing: {missing_tables}")
+            # Create missing tables
+            for table_name in missing_tables:
+                try:
+                    table = Table(table_name, MetaData(), autoload_with=engine)
+                    table.create(engine)
+                    log.info(f"Table {table_name} created successfully.")
+                except Exception as e:
+                    log.error(f"Failed to create table {table_name}: {e}")
+
         # Check for missing columns in coder_github_connection
         if 'coder_github_connection' in existing_tables:
             columns = inspector.get_columns('coder_github_connection')
