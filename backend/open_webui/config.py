@@ -2177,9 +2177,12 @@ CODER_ALLOWED_ORGS = [
 
 # Разрешенные репозитории (владельца/репозиторий, например: my-org/repo, или wildcard: my-org/*)
 CODER_ALLOWED_REPOS = [
-    r.strip()
+    # strip quotes too: some deployers write KEY="'a/*,b/*'" and the shell (unlike
+    # python-dotenv) keeps the single quotes inside the value, which silently
+    # breaks fnmatch and filters every repo out of GET /coder/repos.
+    r.strip().strip("'\"")
     for r in os.getenv('CODER_ALLOWED_REPOS', '').split(',')
-    if r.strip()
+    if r.strip().strip("'\"")
 ]
 
 # Обязательное создание PR при экспорте (§13 — политика «только через pull request»)
