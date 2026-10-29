@@ -21,11 +21,9 @@ from pathlib import Path
 from open_webui.config import (
     CODER_BLOCKED_PATH_PATTERNS,
     CODER_MAX_TOTAL_DIFF_SIZE,
-    CODER_PUBLISH_ROOT,
     CODER_SANDBOX_MAX_FILE_SIZE,
     CODER_SANDBOX_MAX_FILES,
     CODER_SANDBOX_MAX_TOTAL_SIZE,
-    CODER_SANDBOX_ROOT,
     DATA_DIR,
 )
 
@@ -37,13 +35,16 @@ class SandboxError(Exception):
 
 
 def sandbox_root() -> Path:
-    root = Path(CODER_SANDBOX_ROOT) if CODER_SANDBOX_ROOT else Path(DATA_DIR) / 'sandboxes'
+    # env читается динамически: тесты могут переключать корни песочниц до/после импорта config
+    root_env = os.getenv('CODER_SANDBOX_ROOT', '')
+    root = Path(root_env) if root_env else Path(DATA_DIR) / 'sandboxes'
     root.mkdir(parents=True, exist_ok=True)
     return root
 
 
 def publish_root() -> Path:
-    root = Path(CODER_PUBLISH_ROOT) if CODER_PUBLISH_ROOT else Path(DATA_DIR) / 'published'
+    root_env = os.getenv('CODER_PUBLISH_ROOT', '')
+    root = Path(root_env) if root_env else Path(DATA_DIR) / 'published'
     root.mkdir(parents=True, exist_ok=True)
     return root
 
@@ -259,6 +260,98 @@ def read_published(share_id: str) -> str:
     if not str(p).startswith(str(root_r) + os.sep) or not p.is_file():
         raise SandboxError('not_found', 'published page not found')
     return p.read_text(encoding='utf-8', errors='replace')
+
+
+def export_zip(session_id: str) -> bytes:
+    """§C-im/export: собрать песочницу в zip-архив (без GitHub).
+
+    В архив кладутся все текстовые файлы сессии (как в copy_sandbox) и
+    манифест coder-sandbox.json с метаданными для последующего импорта.
+    """
+    import io
+    import json
+    import zipfile
+
+    _validate_session_id(session_id)
+    src = sandbox_dir(session_id)
+    if not src.is_dir():
+        raise SandboxError('not_found', 'sandbox session directory missing')
+
+    manifest = {
+        'coder_sandbox': 1,
+        'session_id': session_id,
+        'exported_at': int(__import__('time').time()),
+        'files': [],
+    }
+    buf = io.BytesIO()
+    total = 0
+    with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for f in list_files(session_id):
+            rel = f['path']
+            try:
+                content, _mime = read_file(session_id, rel)
+            except SandboxError:
+                continue
+            data = content.encode('utf-8')
+            total += len(data)
+            if total > CODER_SANDBOX_MAX_TOTAL_SIZE:
+                raise SandboxError('too_large', 'sandbox exceeds export size limit')
+            zf.writestr(f'files/{rel}', data)
+            manifest['files'].append({'path': rel, 'size': len(data)})
+        zf.writestr('coder-sandbox.json', json.dumps(manifest, ensure_ascii=False, indent=2))
+    return buf.getvalue()
+
+
+def import_zip_bytes(archive: bytes) -> dict:
+    """§C-im/export: разобрать zip из export_zip().
+
+    Возвращает {'manifest': ..., 'files': {rel_path: content}}; валидирует
+    пути через _validate_rel_path (path traversal), объём — через лимиты
+    песочницы. Бросает SandboxError при недопустимом архиве.
+    """
+    import io
+    import json
+    import zipfile
+
+    try:
+        zf = zipfile.ZipFile(io.BytesIO(archive))
+    except zipfile.BadZipFile:
+        raise SandboxError('bad_zip', 'uploaded file is not a valid zip archive')
+    try:
+        manifest_raw = zf.read('coder-sandbox.json')
+    except KeyError:
+        raise SandboxError('no_manifest', 'zip is not a Coder sandbox export (coder-sandbox.json missing)')
+    try:
+        manifest = json.loads(manifest_raw.decode('utf-8'))
+    except (ValueError, UnicodeDecodeError):
+        raise SandboxError('bad_manifest', 'coder-sandbox.json is corrupt')
+    if not isinstance(manifest, dict) or manifest.get('coder_sandbox') != 1:
+        raise SandboxError('bad_manifest', 'unexpected coder-sandbox.json structure')
+
+    files: dict[str, str] = {}
+    total = 0
+    prefix = 'files/'
+    for name in zf.namelist():
+        if not name.startswith(prefix) or name.endswith('/'):
+            continue
+        rel = name[len(prefix):]
+        try:
+            rel = _validate_rel_path(rel)
+        except SandboxError:
+            continue  # пропускаем опасные/битые пути вместо отказа всего импорта
+        data = zf.read(name)
+        if len(data) > CODER_SANDBOX_MAX_FILE_SIZE:
+            continue  # слишком большие файлы пропускаем (квота на файл)
+        total += len(data)
+        if total > CODER_SANDBOX_MAX_TOTAL_SIZE:
+            raise SandboxError('too_large', 'import exceeds sandbox size limit')
+        try:
+            files[rel] = data.decode('utf-8')
+        except UnicodeDecodeError:
+            continue  # бинарные файлы не поддерживаются форматом экспорта
+    if not files and manifest.get('files'):
+        raise SandboxError('empty_archive', 'manifest lists files but the archive contains none')
+    return {'manifest': manifest, 'files': files}
 
 
 def copy_sandbox(src_session_id: str, dst_session_id: str) -> dict:

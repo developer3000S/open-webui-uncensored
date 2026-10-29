@@ -3,7 +3,15 @@
 
 	import { toast } from 'svelte-sonner';
 
-	import { listCoderRepos, type CoderRepo } from '$lib/apis/coder';
+	import {
+		listCoderRepos,
+		listCoderOrganizations,
+		validateCoderGitHubConnection,
+		getCoderGitHubAppStatus,
+		connectCoderGitHubAppInstallation,
+		type CoderRepo,
+		type CoderGitHubAppInstallation
+	} from '$lib/apis/coder';
 
 	import Github from '$lib/components/icons/Github.svelte';
 
@@ -16,15 +24,26 @@
 
 	let repos: CoderRepo[] = [];
 	let query = '';
+	let org = '';
+	let organizations: { login: string; avatar_url?: string }[] = [];
 	let loading = false;
 	let loadedOnce = false;
 	let errored = false;
 	let searchTimer: ReturnType<typeof setTimeout>;
 
+	// §D: connection validation state
+	let validating = false;
+	let validation: { valid: boolean; login?: string; warning?: string | null } | null = null;
+
+	// §D: GitHub App installations state
+	let appStatus: { configured: boolean; install_url: string | null; installations: CoderGitHubAppInstallation[] } | null = null;
+	let appLoading = false;
+	let connectingInstallation = '';
+
 	const refresh = async () => {
 		loading = true;
 		try {
-			const res = await listCoderRepos(token, query || undefined);
+			const res = await listCoderRepos(token, query || undefined, org || undefined);
 			repos = res.repos ?? [];
 			errored = false;
 		} catch (e: any) {
@@ -37,24 +56,142 @@
 		}
 	};
 
+	const loadOrganizations = async () => {
+		try {
+			const res = await listCoderOrganizations(token);
+			organizations = res.organizations ?? [];
+		} catch (e) {
+			organizations = [];
+		}
+	};
+
 	const handleQueryInput = () => {
 		clearTimeout(searchTimer);
 		searchTimer = setTimeout(refresh, 400);
 	};
 
+	const handleOrgChange = () => {
+		refresh();
+	};
+
+	const handleValidate = async () => {
+		validating = true;
+		validation = null;
+		try {
+			const res = await validateCoderGitHubConnection(token);
+			validation = res;
+			if (res.valid) {
+				toast.success(`${i18n.t('Connection is valid')} (${res.login ?? ''})`);
+			} else {
+				toast.error(res.warning ?? i18n.t('Connection is invalid'));
+			}
+			// a valid OAuth connection may grant org access — refresh the filter list
+			loadOrganizations();
+		} catch (e: any) {
+			validation = { valid: false, warning: e?.detail?.message ?? e?.message ?? 'Validation failed' };
+			toast.error(validation.warning);
+		} finally {
+			validating = false;
+		}
+	};
+
+	const loadAppStatus = async () => {
+		appLoading = true;
+		try {
+			appStatus = await getCoderGitHubAppStatus(token);
+		} catch (e) {
+			appStatus = null;
+		} finally {
+			appLoading = false;
+		}
+	};
+
+	const connectInstallation = async (installationId: string) => {
+		connectingInstallation = installationId;
+		try {
+			const res = await connectCoderGitHubAppInstallation(token, installationId);
+			toast.success(`${i18n.t('GitHub App connected')}: ${res.github_login ?? installationId}`);
+			await Promise.all([refresh(), loadOrganizations()]);
+		} catch (e: any) {
+			toast.error(e?.detail?.message ?? e?.message ?? 'Failed to connect installation');
+		} finally {
+			connectingInstallation = '';
+		}
+	};
+
 	// expose refresh to the parent via bind:this
 	export { refresh };
 
-	$: if (token && !loadedOnce) refresh();
+	$: if (token && !loadedOnce) {
+		refresh();
+		loadOrganizations();
+		loadAppStatus();
+	}
 </script>
 
 <div class="flex flex-col gap-2">
-	<input
-		bind:value={query}
-		on:input={handleQueryInput}
-		placeholder={$i18n.t('Search a repository')}
-		class="w-full rounded-xl bg-gray-50 dark:bg-gray-850 px-3 py-2 text-xs outline-hidden ring-1 ring-transparent focus:ring-gray-300 dark:focus:ring-gray-700"
-	/>
+	<div class="flex items-center gap-1.5">
+		<input
+			bind:value={query}
+			on:input={handleQueryInput}
+			placeholder={$i18n.t('Search a repository')}
+			class="flex-1 min-w-0 rounded-xl bg-gray-50 dark:bg-gray-850 px-3 py-2 text-xs outline-hidden ring-1 ring-transparent focus:ring-gray-300 dark:focus:ring-gray-700"
+		/>
+		<button
+			type="button"
+			class="shrink-0 rounded-xl border border-gray-200 dark:border-gray-700 px-2.5 py-2 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+			on:click={handleValidate}
+			disabled={validating}
+			title={$i18n.t('Check GitHub connection validity')}
+		>
+			{#if validating}…{:else}{$i18n.t('Check')}{/if}
+		</button>
+	</div>
+
+	{#if validation}
+		<div class="px-2 py-1 text-[11px] {validation.valid ? 'text-green-600 dark:text-green-400' : 'text-red-500'}">
+			{validation.valid ? $i18n.t('Connection is valid') : (validation.warning ?? $i18n.t('Connection is invalid'))}
+		</div>
+	{/if}
+
+	{#if organizations.length > 0}
+		<select
+			bind:value={org}
+			on:change={handleOrgChange}
+			class="w-full rounded-xl bg-gray-50 dark:bg-gray-850 px-3 py-2 text-xs outline-hidden ring-1 ring-transparent focus:ring-gray-300 dark:focus:ring-gray-700"
+		>
+			<option value="">{$i18n.t('All organizations & personal')}</option>
+			{#each organizations as o (o.login)}
+				<option value={o.login}>{o.login}</option>
+			{/each}
+		</select>
+	{/if}
+
+	{#if appStatus && appStatus.configured && appStatus.installations.length > 0}
+		<div class="flex flex-col gap-1 rounded-xl border border-gray-200 dark:border-gray-700 px-2.5 py-2">
+			<div class="text-[10px] uppercase tracking-wide text-gray-400">{$i18n.t('GitHub App installations')}</div>
+			{#each appStatus.installations as inst (inst.installation_id)}
+				<button
+					type="button"
+					class="flex items-center justify-between gap-2 text-xs text-left text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white disabled:opacity-50"
+					on:click={() => connectInstallation(inst.installation_id)}
+					disabled={connectingInstallation === inst.installation_id}
+				>
+					<span class="truncate">{inst.account_login ?? inst.installation_id}</span>
+					<span class="shrink-0 text-[10px] text-gray-400">{connectingInstallation === inst.installation_id ? '…' : $i18n.t('Use')}</span>
+				</button>
+			{/each}
+		</div>
+	{:else if appStatus && appStatus.configured && appStatus.install_url}
+		<a
+			href={appStatus.install_url}
+			target="_blank"
+			rel="noopener noreferrer"
+			class="rounded-xl border border-dashed border-gray-300 dark:border-gray-600 px-3 py-2 text-xs text-blue-500 hover:bg-gray-50 dark:hover:bg-gray-800/60"
+		>
+			{$i18n.t('Install the GitHub App on your repositories')} →
+		</a>
+	{/if}
 
 	{#if loading}
 		<div class="px-2 py-3 text-xs text-gray-500">{$i18n.t('Loading repositories')}…</div>
