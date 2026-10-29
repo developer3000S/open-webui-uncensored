@@ -174,13 +174,28 @@ API-маршруты, названия состояний, тексты кноп
 
 ### D. Подключение репозиториев и аккаунтов
 
-- [ ] **Установка GitHub App вместо OAuth-токена пользователя** (`/github/install/url`):
-      доступ сразу ко всем репозиториям организации с гранular-правами; хранить
-      installation-токены, refresh по TTL.
-- [ ] **Выбор организаций при подключении** (`/github/organizations`) — фильтр
-      списка репозиториев по org.
-- [ ] **Проверка валидности соединения** (`/github/connection_status` + `/github/validate`):
-      фоновая проверка срока жизни токена/scopes с предупреждением в UI Environment.
+- [x] **Установка GitHub App вместо OAuth-токена пользователя** (2026-10-29):
+      `GET /github-app/status` (настроен ли App, `install_url`, live-sync установок)
+      и `POST /github-app/connection` — активное подключение типа `app_installation`
+      с короткоживущими installation-токенами (`get_installation_token`, кеш + refresh
+      по TTL в `utils/coder/github_client.py`). Область действия — github.com
+      (для GHES App не эмулируется: `github_app_configured()` возвращает `False`
+      для посторонних хостов). Таблица `coder_github_app_installation`.
+- [x] **Выбор организаций при подключении** (2026-10-29): `GET /github/organizations`
+      (список организаций пользователя) + фильтр `org` в `GET /repos`
+      (`GitHubClient.list_repositories(org=...)` → `/orgs/{org}/repos`) с серверной
+      проверкой членства в организации; селектор организации в UI Environment.
+- [x] **Проверка валидности соединения** (2026-10-29): `GET /github/connection_status`
+      (быстрый чек без сети: список подключений, token_type, scopes_ok) и
+      `POST /github/validate` (живая проверка токена/scopes через `/user`, предупреждение
+      при отсутствии scope `repo`); фоновая проверка + вывод в панели Environment.
+      Тесты: `backend/tests/test_coder_github_d.py` — 7 passed (org-фильтр и denial,
+      organizations, validate ok/warning/error-mapping, connection_status без сети).
+      **Совместный прогон coder-тестов (диагностика, 2026-10-29):**
+      `WEBUI_SECRET_KEY=test pytest tests/test_coder_github_d.py
+      tests/test_coder_import_export.py tests/test_coder_share_fork.py -q` →
+      **41 passed за ~3 с**, конфликтов фикстур/общих таблиц нет; смежные наборы
+      (changeset+crypto 35, integration+security 22) — без регрессий.
 - [ ] **Вход через Google и email OTP** (`/auths/google_oauth`, `/auths/otp/email/*`) —
       для внешнего multi-user деплоя Coder.
 
@@ -204,9 +219,11 @@ API-маршруты, названия состояний, тексты кноп
 2026-10-29): sandbox+preview+publish, режимы/шаблоны,
 управление задачами, публичный share+fork, zip export/import песочниц и чатов,
 stream-metrics — документация синхронизирована (docs/CODER.md §1–§10, README
-«Работа с Coder» §3.1, TROUBLESHOOTING, CHANGELOG). Остались: D (GitHub App,
-валидация соединения, Google/OTP), E-стрим стадий
-агента. Дата обновления: 2026-10-29.
+«Работа с Coder» §3.1, TROUBLESHOOTING, CHANGELOG). **Приоритет D закрыт 2026-10-29**
+(GitHub App-подключения, фильтр по организациям, валидация соединения; совместный
+диагностический прогон `test_coder_github_d + test_coder_import_export +
+test_coder_share_fork` — 41 passed без конфликтов). Остались: Google/OTP-вход (D),
+E-стрим стадий агента. Дата обновления: 2026-10-29.
 
 ## RAG и обработка знаний
 
