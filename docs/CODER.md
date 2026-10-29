@@ -112,6 +112,12 @@
 | POST | `/github/connections/{id}/default` | Сделать подключение default |
 | DELETE | `/github/connections/{id}` | Отключить аккаунт (при удалении default следующий становится default) |
 | DELETE | `/github/connection` | Удалить default-подключение |
+| GET | `/github/organizations` | Организации пользователя — селектор фильтра репозиториев (§D) |
+| GET | `/repos?org=` | Список репозиториев с фильтром по организации (сервер проверяет членство) |
+| GET | `/github/connection_status` | Быстрый статус подключений без обращения к GitHub (§D) |
+| POST | `/github/validate` | Живая проверка токена/scopes (`/user`), предупреждение при нехватке `repo` (§D) |
+| GET | `/github-app/status` | Настроен ли GitHub App, `install_url`, список/синхронизация установок (§D) |
+| POST | `/github-app/connection` | Сделать installation активным подключением (`token_type=app_installation`, только github.com) |
 
 ### 2.3. Репозиторий и файлы
 
@@ -539,10 +545,19 @@ curl -s -o /dev/null -w '%{http_code} %{content_type}\n' \
 
 | Suite | Файл | Объём | Результат |
 |---|---|---|---|
-| Unit | `test_coder_changeset.py`, `test_coder_crypto.py` | валидация путей/Change Set, rename, лимиты 50/1MiB/5MiB, AES-GCM round-trip, детерминированный diff, secret scanning | ✅ пройдено (59) |
+| Unit | `test_coder_changeset.py`, `test_coder_crypto.py` | валидация путей/Change Set, rename, лимиты 50/1MiB/5MiB, AES-GCM round-trip, детерминированный diff, secret scanning | ✅ пройдено (35) |
 | Integration (mock GitHub) | `test_coder_integration.py` | OAuth callback, repo/tree/file, blob→tree→commit→ref, PR, отзыв токена, protected branch, rate limit | ✅ пройдено (8) |
 | Security | `test_coder_security.py` | path traversal, IDOR, CSRF/XSS, token leakage, unauthorized export, replay, resource consumption, allow/block-листы политик | ✅ пройдено (14) |
+| Share/Fork (план §C4) | `test_coder_share_fork.py` | токены шеринга/отзыв/идемпотентность, IDOR, XSS-экранирование, копирование файлов sandbox, интеграционный fork-flow | ✅ пройдено (16) |
+| Импорт/экспорт (план §C) | `test_coder_import_export.py` | zip round-trip песочниц, path traversal внутри zip, битый архив, лимиты, IDOR | ✅ пройдено (18) |
+| GitHub §D | `test_coder_github_d.py` | фильтр `/repos?org=` + проверка членства, `/github/organizations`, `/github/validate` (ok/warning/error-mapping), `/github/connection_status` без сети | ✅ пройдено (7) |
 | E2E (headless Firefox) | `test_coder_e2e.py` | загрузка `/coder`, «Connect GitHub» → github.com OAuth, `GET /api/v1/coder/config` | ✅ при запущенном контейнере с `CODER_ENABLED=true` и пользователем `e2e@test.local` |
+
+Совместная диагностика (2026-10-29): прогон `test_coder_github_d.py +
+test_coder_import_export.py + test_coder_share_fork.py` одним запуском
+(`WEBUI_SECRET_KEY=test pytest … -q`) — **41 passed**, конфликтов фикстур и
+общих таблиц не выявлено; смежные наборы (unit 35, integration+security 22)
+проходят без регрессий.
 
 Дополнительно (план coder.qwen.ai §A–§C): smoke-проверка композиции роутера —
 47 маршрутов `/api/v1/coder/*` монтируются без ошибок импорта; sandbox-флоу
@@ -558,10 +573,10 @@ OAuth-подключения выполнена успешно 2026-10-27.
 
 ## 10. Известные ограничения
 
-1. Авторизация — только GitHub OAuth (GitHub App не поддерживается); PAT-ввод не предусмотрен.
+1. Авторизация — GitHub OAuth и GitHub App (installation-токены, план §D); PAT-ввод не предусмотрен. GitHub App поддерживается только для github.com — для GHES остаются OAuth-подключения с REST v3 (см. п.4).
 2. Асинхронный экспорт выполнен на asyncio-задачах внутри процесса: при жёстком рестарте сервера незавершённый job останется в статусе `running` и требует повторного запуска (идемпотентность защищает от дублей).
 3. Семантический поиск деградирует до lexical-ранжирования, если эмбеддинг-эндпоинт недоступен; кэш эмбеддингов — in-process (не разделяется между репликами).
-4. Поддержка GHES ограничена REST API v3 (`https://<host>/api/v3`); webhooks/GitHub App flows вне объёма.
+4. Поддержка GHES ограничена REST API v3 (`https://<host>/api/v3`); webhooks вне объёма; GitHub App для GHES не настраивается (единственный набор аккредитов App привязан к github.com — `github_app_configured()` возвращает `False` для других хостов).
 5. Rate limiting файлов — мягкий (счётчик на пользователя/сессию), без распределённого state.
 6. Retention-очистка аудита выполняется по запросу (админ/UI или cron), не фоновым планировщиком.
 7. Экспорт в Gist не участвует в политиках allow-list репозиториев (Gist вне репозиторной модели).
@@ -570,4 +585,4 @@ OAuth-подключения выполнена успешно 2026-10-27.
 10. Публичная страница публикации `/preview/s/{share_id}` отдаётся **без авторизации** (как у Qwen Coder); чувствительные проекты не следует публиковать. Блок-лист путей и лимиты применяются при записи, но сам факт публикации известен по share_id.
 11. TTL-чистка песочниц (`POST /sandbox/sweep`) — по запросу админа/cron, фоновый планировщик не встроен.
 12. Follow-up предложения и автоназвания задач генерируются эвристически (без вызова LLM); качество названий можно переопределить вручную через `POST /tasks/{chat_id}`.
-13. GitHub App (installation-токены вместо OAuth пользователя) и вход через Google/OTP — вне текущего объёма (план §D).
+13. Вход через Google/OTP — вне текущего объёма (план §D). GitHub App (installation-токены) реализован 2026-10-29: `/github-app/status`, `/github-app/connection`, refresh короткоживущих токенов по TTL (`CODER_GITHUB_APP_ID`/`CODER_GITHUB_APP_PRIVATE_KEY`).

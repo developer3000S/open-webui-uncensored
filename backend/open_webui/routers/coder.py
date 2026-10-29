@@ -1391,6 +1391,26 @@ async def coder_export_start(
         db=db,
     )
 
+    # Async path (NFR-08): hand off to the background worker; client polls /export/jobs/{id}
+    if policies['async_export']:
+        from open_webui.internal.db import AsyncSessionLocal
+
+        async with AsyncSessionLocal() as commit_db:
+            await CoderExportJobs.update(job.id, {'status': 'queued'}, commit_db)
+            await commit_db.commit()
+
+        form_dict = {
+            'owner': form.owner,
+            'repo': form.repo,
+            'base_branch': form.base_branch,
+            'branch': form.branch,
+            'commit_message': form.commit_message,
+            'files': normalized['files'],
+            'host': host,
+        }
+        export_worker.schedule_export(job.id, user.id, token, form_dict, _correlation_id(request))
+        return {'job_id': job.id, 'status': 'queued'}
+
     try:
         await _run_export_job(job.id, token, form, normalized, user.id, db, host=host)
     except HTTPException as http_exc:
@@ -1447,48 +1467,67 @@ async def coder_export_start(
     }
 
 
-async def _run_export_job(job_id: str, token: str, form: CoderExportForm, normalized: dict, user_id: str, db: AsyncSession, host: str | None = None):
-    await CoderExportJobs.update(job_id, {'status': 'running'}, db)
+async def _execute_export_job(job_id: str, token: str, form_dict: dict) -> tuple[str, str, int]:
+    """Session-free Git Data API sequence (branch → tree → commit → ref → PR).
 
-    owner, repo = form.owner, form.repo
+    Shared by the synchronous request path and the background export worker.
+    ``form_dict`` keys: owner, repo, base_branch, branch, commit_message, files
+    (normalized changeset file list), host (optional GHES API base host).
+    Returns ``(commit_sha, pr_url, pr_number)``.
+    """
+    owner = form_dict['owner']
+    repo = form_dict['repo']
+    base_branch = form_dict['base_branch']
+    branch = form_dict['branch']
+    commit_message = form_dict['commit_message']
+    files = form_dict['files']
+    host = form_dict.get('host')
 
     # Fail fast with a clear message if the OAuth token lacks write access to this repo
     # (otherwise GitHub returns an opaque 404/403 during ref creation).
-    try:
-        from open_webui.utils.coder.github_client import _api_base
+    # Call through the module attribute (not the imported alias) so tests can patch it.
+    from open_webui.utils.coder import github_client as gh_client
+    from open_webui.utils.coder.github_client import _api_base
 
-        perms_response = await github_request(
-            'GET', f'{_api_base(host)}/repos/{quote(owner)}/{quote(repo)}', token=token
-        )
-        if perms_response.status_code == 200:
-            pdata = perms_response.json()
-            push_allowed = bool((pdata.get('permissions') or {}).get('push'))
-            if not push_allowed:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail={
-                        'code': 'CODER_FORBIDDEN',
-                        'message': f'Your GitHub token does not have write access to {owner}/{repo}. '
-                        'Check repository roles/app installation permissions and reconnect GitHub in the Environment tab.',
-                    },
-                )
-    except GitHubAPIError as exc:
-        if exc.code == 'CODER_NOT_FOUND':
+    perms_response = await gh_client._request(
+        'GET', f'{_api_base(host)}/repos/{quote(owner)}/{quote(repo)}', token=token
+    )
+    if perms_response.status_code == 200:
+        pdata = perms_response.json()
+        push_allowed = bool((pdata.get('permissions') or {}).get('push'))
+        if not push_allowed:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
+                status_code=status.HTTP_403_FORBIDDEN,
                 detail={
-                    'code': 'CODER_NOT_FOUND',
-                    'message': f'Repository {owner}/{repo} is not accessible with your GitHub token '
-                    '(deleted, renamed, or outside the granted scopes). Reconnect GitHub in the Environment tab.',
+                    'code': 'CODER_FORBIDDEN',
+                    'message': f'Your GitHub token does not have write access to {owner}/{repo}. '
+                    'Check repository roles/app installation permissions and reconnect GitHub in the Environment tab.',
                 },
             )
-        raise
+    elif perms_response.status_code in (401, 403):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                'code': 'CODER_FORBIDDEN',
+                'message': f'Your GitHub token is not authorized to access {owner}/{repo}. '
+                'Reconnect GitHub in the Environment tab.',
+            },
+        )
+    elif perms_response.status_code == 404:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                'code': 'CODER_NOT_FOUND',
+                'message': f'Repository {owner}/{repo} is not accessible with your GitHub token '
+                '(deleted, renamed, or outside the granted scopes). Reconnect GitHub in the Environment tab.',
+            },
+        )
 
-    base_sha = await GitHubClient.get_ref_commit_sha(token, owner, repo, form.base_branch, host=host)
+    base_sha = await GitHubClient.get_ref_commit_sha(token, owner, repo, base_branch, host=host)
 
     # create or reset working branch from base
     try:
-        await GitHubClient.get_ref_commit_sha(token, owner, repo, form.branch, host=host)
+        await GitHubClient.get_ref_commit_sha(token, owner, repo, branch, host=host)
         branch_exists = True
     except GitHubAPIError as exc:
         if exc.code == 'CODER_NOT_FOUND':
@@ -1497,7 +1536,7 @@ async def _run_export_job(job_id: str, token: str, form: CoderExportForm, normal
             raise
 
     entries = []
-    for entry in normalized['files']:
+    for entry in files:
         if entry['action'] == 'delete':
             entries.append({'path': entry['path'], 'mode': '100644', 'type': 'blob', 'sha': None})
         else:
@@ -1505,27 +1544,44 @@ async def _run_export_job(job_id: str, token: str, form: CoderExportForm, normal
             entries.append({'path': entry['path'], 'mode': '100644', 'type': 'blob', 'sha': blob_sha})
 
     tree_sha = await GitHubClient.create_tree(token, owner, repo, base_sha, entries, host=host)
-    commit_sha = await GitHubClient.create_commit(token, owner, repo, tree_sha, base_sha, form.commit_message, host=host)
+    commit_sha = await GitHubClient.create_commit(token, owner, repo, tree_sha, base_sha, commit_message, host=host)
 
     if branch_exists:
-        await GitHubClient.update_ref(token, owner, repo, form.branch, commit_sha, force=False, host=host)
+        await GitHubClient.update_ref(token, owner, repo, branch, commit_sha, force=False, host=host)
     else:
-        await GitHubClient.create_ref(token, owner, repo, form.branch, commit_sha, host=host)
+        await GitHubClient.create_ref(token, owner, repo, branch, commit_sha, host=host)
 
     pr = await GitHubClient.create_pull_request(
         token,
         owner,
         repo,
         host=host,
-        title=form.commit_message[:200],
-        head=form.branch,
-        base=form.base_branch,
+        title=commit_message[:200],
+        head=branch,
+        base=base_branch,
         body='Created by Open WebUI Coder.',
     )
 
+    return commit_sha, pr['html_url'], pr['number']
+
+
+async def _run_export_job(job_id: str, token: str, form: CoderExportForm, normalized: dict, user_id: str, db: AsyncSession, host: str | None = None):
+    await CoderExportJobs.update(job_id, {'status': 'running'}, db)
+
+    form_dict = {
+        'owner': form.owner,
+        'repo': form.repo,
+        'base_branch': form.base_branch,
+        'branch': form.branch,
+        'commit_message': form.commit_message,
+        'files': normalized['files'],
+        'host': host,
+    }
+    commit_sha, pr_url, pr_number = await _execute_export_job(job_id, token, form_dict)
+
     await CoderExportJobs.update(
         job_id,
-        {'status': 'completed', 'commit_sha': commit_sha, 'pr_url': pr['html_url'], 'pr_number': pr['number']},
+        {'status': 'completed', 'commit_sha': commit_sha, 'pr_url': pr_url, 'pr_number': pr_number},
         db,
     )
 

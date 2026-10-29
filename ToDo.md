@@ -174,13 +174,28 @@ API-маршруты, названия состояний, тексты кноп
 
 ### D. Подключение репозиториев и аккаунтов
 
-- [ ] **Установка GitHub App вместо OAuth-токена пользователя** (`/github/install/url`):
-      доступ сразу ко всем репозиториям организации с гранular-правами; хранить
-      installation-токены, refresh по TTL.
-- [ ] **Выбор организаций при подключении** (`/github/organizations`) — фильтр
-      списка репозиториев по org.
-- [ ] **Проверка валидности соединения** (`/github/connection_status` + `/github/validate`):
-      фоновая проверка срока жизни токена/scopes с предупреждением в UI Environment.
+- [x] **Установка GitHub App вместо OAuth-токена пользователя** (2026-10-29):
+      `GET /github-app/status` (настроен ли App, `install_url`, live-sync установок)
+      и `POST /github-app/connection` — активное подключение типа `app_installation`
+      с короткоживущими installation-токенами (`get_installation_token`, кеш + refresh
+      по TTL в `utils/coder/github_client.py`). Область действия — github.com
+      (для GHES App не эмулируется: `github_app_configured()` возвращает `False`
+      для посторонних хостов). Таблица `coder_github_app_installation`.
+- [x] **Выбор организаций при подключении** (2026-10-29): `GET /github/organizations`
+      (список организаций пользователя) + фильтр `org` в `GET /repos`
+      (`GitHubClient.list_repositories(org=...)` → `/orgs/{org}/repos`) с серверной
+      проверкой членства в организации; селектор организации в UI Environment.
+- [x] **Проверка валидности соединения** (2026-10-29): `GET /github/connection_status`
+      (быстрый чек без сети: список подключений, token_type, scopes_ok) и
+      `POST /github/validate` (живая проверка токена/scopes через `/user`, предупреждение
+      при отсутствии scope `repo`); фоновая проверка + вывод в панели Environment.
+      Тесты: `backend/tests/test_coder_github_d.py` — 7 passed (org-фильтр и denial,
+      organizations, validate ok/warning/error-mapping, connection_status без сети).
+      **Совместный прогон coder-тестов (диагностика, 2026-10-29):**
+      `WEBUI_SECRET_KEY=test pytest tests/test_coder_github_d.py
+      tests/test_coder_import_export.py tests/test_coder_share_fork.py -q` →
+      **41 passed за ~3 с**, конфликтов фикстур/общих таблиц нет; смежные наборы
+      (changeset+crypto 35, integration+security 22) — без регрессий.
 - [ ] **Вход через Google и email OTP** (`/auths/google_oauth`, `/auths/otp/email/*`) —
       для внешнего multi-user деплоя Coder.
 
@@ -204,9 +219,11 @@ API-маршруты, названия состояний, тексты кноп
 2026-10-29): sandbox+preview+publish, режимы/шаблоны,
 управление задачами, публичный share+fork, zip export/import песочниц и чатов,
 stream-metrics — документация синхронизирована (docs/CODER.md §1–§10, README
-«Работа с Coder» §3.1, TROUBLESHOOTING, CHANGELOG). Остались: D (GitHub App,
-валидация соединения, Google/OTP), E-стрим стадий
-агента. Дата обновления: 2026-10-29.
+«Работа с Coder» §3.1, TROUBLESHOOTING, CHANGELOG). **Приоритет D закрыт 2026-10-29**
+(GitHub App-подключения, фильтр по организациям, валидация соединения; совместный
+диагностический прогон `test_coder_github_d + test_coder_import_export +
+test_coder_share_fork` — 41 passed без конфликтов). Остались: Google/OTP-вход (D),
+E-стрим стадий агента. Дата обновления: 2026-10-29.
 
 ## RAG и обработка знаний
 
@@ -292,8 +309,8 @@ stream-metrics — документация синхронизирована (do
 
 ---
 
-Дата обновления: 2026-10-27
-Комментарии: Все пункты плана Coder (приоритеты 1–3 и вторая очередь, включая документацию §20) реализованы; ручная проверка OAuth-подключения GitHub — успешно. Добавлен новый план развития Coder по мотивам анализа coder.qwen.ai (раздел «Coder — план развития по мотивам coder.qwen.ai»: sandbox+preview, режимы/шаблоны генерации, управление задачами, GitHub App, наблюдаемость генерации). Список расширен анализами кода и новых возможностей. Обновлено: реализованы авто-улучшение запросов, мульти-стратегия поиска, контекстное переупорядочивание, кеширование RAG, интерактивная оценка качества RAG, XLSX со всеми листами, поддержка xls/rtf/doc, дедупликация по пути и metadata. Завершено Comprehensive тестирование Coder: unit, integration, security-тесты (59+8+14=81 тестов) и написано E2E. Реализованы приоритеты A/B/C/E плана coder.qwen.ai: sandbox+живой preview+публикация (`utils/coder/sandbox.py`, миграция `c0d3r45ndb0x`), режимы и шаблоны генерации (`utils/coder/modes.py`), управление задачами (pin/archive/поиск/title/followups, `coder_task_meta`), метрики стрима (`POST /stream/metrics`). Документация синхронизирована: docs/CODER.md v2.1 (API §2.7–§2.10, схема данных, переменные CODER_SANDBOX_*/CODER_PUBLISH_*, runbook, ограничения 9–13), README («Работа с Coder» §3.1 + таблицы env), TROUBLESHOOTING (sandbox/preview/publish), CHANGELOG. Дата: 2026-10-27.
+Дата обновления: 2026-10-29
+Комментарии: Все пункты плана Coder (приоритеты 1–3 и вторая очередь, включая документацию §20) реализованы; ручная проверка OAuth-подключения GitHub — успешно. Добавлен новый план развития Coder по мотивам анализа coder.qwen.ai (раздел «Coder — план развития по мотивам coder.qwen.ai»: sandbox+preview, режимы/шаблоны генерации, управление задачами, GitHub App, наблюдаемость генерации). Список расширен анализами кода и новых возможностей. Обновлено: реализованы авто-улучшение запросов, мульти-стратегия поиска, контекстное переупорядочивание, кеширование RAG, интерактивная оценка качества RAG, XLSX со всеми листами, поддержка xls/rtf/doc, дедупликация по пути и metadata. Завершено Comprehensive тестирование Coder: unit, integration, security-тесты (35+8+14=57 тестов; актуальные числа с учётом share_fork (16), import_export (18) и github_d (7) — всего 98, см. docs/CODER.md §9 и README) и написано E2E. Реализованы приоритеты A/B/C/D/GitHub/E плана coder.qwen.ai: sandbox+живой preview+публикация (`utils/coder/sandbox.py`, миграция `c0d3r45ndb0x`), режимы и шаблоны генерации (`utils/coder/modes.py`), управление задачами (pin/archive/поиск/title/followups, `coder_task_meta`), метрики стрима (`POST /stream/metrics`), fork/шеринг задач, импорт/экспорт истории, GitHub App + фильтр по организациям + валидация соединения (2026-10-29). Документация синхронизирована: docs/CODER.md (API §2.7–§2.10, §D, схема данных, переменные CODER_SANDBOX_*/CODER_PUBLISH_*, runbook, ограничения 9–13, отчёт о тестировании §9), README («Работа с Coder» §3.1 + таблицы env), TROUBLESHOOTING (sandbox/preview/publish), CHANGELOG. Дата: 2026-10-29.
 ## Enhancements from open-webui/computer
 
 ### AI & Agent Improvements
@@ -331,3 +348,5 @@ stream-metrics — документация синхронизирована (do
 > **How to apply**: Review each feature, prioritize, implement and test in this Open WebUI instance, update documentation.
 
 **Дата анализа и интеграции в план: 2026-10-28**
+
+**Дата обновления: 2026-10-29** (пункты раздела остаются в бэклоге — реализованы только план Coder §A–§E и связанные сюиты тестов; актуальные числа тестов: docs/CODER.md §9, README «Тестирование Coder»)
