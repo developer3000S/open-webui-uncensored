@@ -191,8 +191,10 @@ _APP_TOKEN_CACHE: dict[str, tuple[str, float]] = {}  # installation_id -> (token
 def github_app_configured(host: str | None = None) -> bool:
     from open_webui.config import CODER_GITHUB_APP_ID, CODER_GITHUB_APP_PRIVATE_KEY
 
-    if host and host != 'github.com':
-        return False  # GHES apps are configured via env overrides; MVP targets github.com
+    if host and host not in ('github.com', ''):
+        # GHES App support is out of scope (docs/CODER.md §10.4): App ID/private key
+        # below are single github.com credentials — do not claim them for other hosts.
+        return False
     return bool(CODER_GITHUB_APP_ID and CODER_GITHUB_APP_PRIVATE_KEY)
 
 
@@ -366,9 +368,22 @@ class GitHubClient:
     ####################
 
     @staticmethod
-    async def list_repositories(token: str, query: str | None = None, page: int = 1, per_page: int = 30, host: str | None = None) -> list[dict]:
+    async def list_repositories(
+        token: str,
+        query: str | None = None,
+        page: int = 1,
+        per_page: int = 30,
+        host: str | None = None,
+        org: str | None = None,
+    ) -> list[dict]:
         api_base = _api_base(host)
-        if query:
+        # §D: filter the repository list by organization (org selector in the UI).
+        if org:
+            url = f'{api_base}/orgs/{quote(org)}/repos'
+            params = {'per_page': per_page, 'page': page, 'type': 'all', 'sort': 'updated'}
+            if query:
+                params['q'] = query
+        elif query:
             url = f'{api_base}/search/repositories'
             params = {'q': query, 'per_page': per_page, 'page': page}
         else:
