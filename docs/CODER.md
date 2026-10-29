@@ -253,7 +253,25 @@
 
 UI: кнопка «Share publicly» (копирование ссылки/отзыв), обработка `/coder?fork=<token>` с автопереключением на новый `chat_id`. Тесты: `backend/tests/test_coder_share_fork.py` (16 passed: токены/отзыв/идемпотентность, IDOR, XSS, копирование файлов, интеграционный fork-flow).
 
-### 2.11. Метрики стрима генерации (план §E)
+### 2.11. Импорт/экспорт истории без GitHub (план §C)
+
+| Метод | Путь | Описание |
+|---|---|---|
+| GET | `/sandbox/session/{id}/export` | Выгрузка песочницы задачи в zip-архив (`coder-sandbox-{id8}.zip`): все текстовые файлы + манифест `coder-sandbox.json` (session_id/mode/файлы/размеры). IDOR-guard — только своя сессия; аудит `sandbox_exported`; лимит суммарного размера `CODER_SANDBOX_MAX_TOTAL_SIZE` |
+| POST | `/sandbox/import?chat_id=` | Загрузка sandbox-экспорта (multipart, ≤ 25 MiB) в **новую** сессию с привязкой к `chat_id` (или новый id). Каждый путь проходит `_validate_rel_path` (защита от path traversal), битые/опасные записи пропускаются (`files_skipped`); аудит `sandbox_imported` |
+| GET | `/tasks/shared/{token}/export` | Экспорт расшаренной задачи: своя — полный zip с вложенным `sandbox.zip`; чужая публичная — только метаданные (`coder-task.json`: title/tags/mode), содержимое файлов не раскрывается до fork |
+| POST | `/tasks/export` | Тело — массив `{id, title?, chat}` собственных чатов (до 100); ответ — JSON в формате, совместимом с `POST /api/v1/chats/import` (перенос истории между инстансами). Чужие id молча отбрасываются (IDOR-фильтр); аудит `chats_exported` |
+
+UI Workspace: кнопки «Download .zip» (активна при живой sandbox-сессии) и
+«Import .zip» (file-input) под полем ввода; импорт в текущую задачу обновляет
+сессию preview, в отдельную — открывает `/coder?chat=<new_id>`.
+API-хелперы: `exportSandboxZip`, `importSandboxZip`, `downloadSharedTaskExport`,
+`exportCoderChats` (`$lib/apis/coder`).
+Тесты: `backend/tests/test_coder_import_export.py` (18 passed: round-trip
+export→import, path traversal внутри zip, битый архив/без манифеста, лимиты
+объёма, IDOR-гарды эндпоинтов).
+
+### 2.12. Метрики стрима генерации (план §E)
 
 | Метод | Путь | Описание |
 |---|---|---|

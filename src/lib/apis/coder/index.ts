@@ -241,15 +241,100 @@ export const disconnectGitHub = async (
 export const listCoderRepos = async (
   token: string,
   query?: string,
+  org?: string,
 ): Promise<{ repos: CoderRepo[] }> => {
   const params = new URLSearchParams();
   if (query) params.append("query", query);
+  if (org) params.append("org", org);
   const res = await fetch(
     `${WEBUI_API_BASE_URL}/coder/repos?${params.toString()}`,
     {
       headers: jsonHeaders(token),
     },
   );
+  return handle(res);
+};
+
+export const listCoderOrganizations = async (
+  token: string,
+): Promise<{ organizations: { login: string; avatar_url?: string }[] }> => {
+  const res = await fetch(`${WEBUI_API_BASE_URL}/coder/github/organizations`, {
+    headers: jsonHeaders(token),
+  });
+  return handle(res);
+};
+
+// §D: connection validity checks — quick local status and live GitHub validation.
+export const getCoderConnectionStatus = async (
+  token: string,
+): Promise<{
+  connected: boolean;
+  connections: {
+    id: string;
+    login: string;
+    host: string;
+    token_type: string;
+    is_default: boolean;
+    scopes_ok: boolean;
+  }[];
+}> => {
+  const res = await fetch(`${WEBUI_API_BASE_URL}/coder/github/connection_status`, {
+    headers: jsonHeaders(token),
+  });
+  return handle(res);
+};
+
+export const validateCoderGitHubConnection = async (
+  token: string,
+): Promise<{
+  valid: boolean;
+  login?: string;
+  token_type?: string;
+  has_repo_scope?: boolean;
+  warning?: string | null;
+}> => {
+  const res = await fetch(`${WEBUI_API_BASE_URL}/coder/github/validate`, {
+    method: "POST",
+    headers: jsonHeaders(token),
+  });
+  return handle(res);
+};
+
+// §D: GitHub App installation — status (install URL + user's installations) and connect.
+export type CoderGitHubAppInstallation = {
+  installation_id: string;
+  account_login: string | null;
+  account_type: string | null;
+  repository_selection: string | null;
+  github_host: string;
+};
+
+export const getCoderGitHubAppStatus = async (
+  token: string,
+): Promise<{
+  configured: boolean;
+  install_url: string | null;
+  installations: CoderGitHubAppInstallation[];
+}> => {
+  const res = await fetch(`${WEBUI_API_BASE_URL}/coder/github-app/status`, {
+    headers: jsonHeaders(token),
+  });
+  return handle(res);
+};
+
+export const connectCoderGitHubAppInstallation = async (
+  token: string,
+  installationId: string,
+  githubHost?: string,
+): Promise<{ connected: boolean; connection_id: string; github_login: string | null }> => {
+  const res = await fetch(`${WEBUI_API_BASE_URL}/coder/github-app/connection`, {
+    method: "POST",
+    headers: jsonHeaders(token),
+    body: JSON.stringify({
+      installation_id: installationId,
+      github_host: githubHost ?? null,
+    }),
+  });
   return handle(res);
 };
 
@@ -880,6 +965,75 @@ export const publishSandboxSession = async (
 
 export const getPublishedPageUrl = (shareId: string): string =>
   `${WEBUI_API_BASE_URL}/coder/preview/s/${shareId}`;
+
+// §C-im/export: выгрузка песочницы в zip и загрузка sandbox-экспорта
+export const exportSandboxZip = async (
+  token: string,
+  sessionId: string,
+): Promise<Blob> => {
+  const res = await fetch(
+    `${WEBUI_API_BASE_URL}/coder/sandbox/session/${sessionId}/export`,
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
+  if (!res.ok) throw new Error(`Export failed: ${res.status}`);
+  return res.blob();
+};
+
+export const importSandboxZip = async (
+  token: string,
+  file: File,
+  chatId?: string | null,
+): Promise<{
+  session_id: string;
+  chat_id: string;
+  files_written: number;
+  files_skipped: number;
+  source_session_id?: string | null;
+}> => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const url = `${WEBUI_API_BASE_URL}/coder/sandbox/import${chatId ? `?chat_id=${encodeURIComponent(chatId)}` : ""}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+  return handle(res);
+};
+
+// §C-im/export: скачивание zip-экспорта расшаренной задачи (свой чат — с
+// вложенным sandbox.zip; чужой — только метаданные). Возвращает Blob.
+export const downloadSharedTaskExport = async (
+  token: string,
+  shareToken: string,
+): Promise<Blob> => {
+  const res = await fetch(
+    `${WEBUI_API_BASE_URL}/coder/tasks/shared/${shareToken}/export`,
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
+  if (!res.ok) throw new Error(`Task export failed: ${res.status}`);
+  return res.blob();
+};
+
+export type CoderChatExportItem = {
+  id: string;
+  title?: string | null;
+  chat: Record<string, unknown>;
+};
+
+// §C-im/export: выгрузка собственных чатов в формате, совместимом с
+// POST /api/v1/chats/import (перенос истории между инстансами без GitHub).
+export const exportCoderChats = async (
+  token: string,
+  items: CoderChatExportItem[],
+): Promise<CoderChatExportItem[]> => {
+  const res = await fetch(`${WEBUI_API_BASE_URL}/coder/tasks/export`, {
+    method: "POST",
+    headers: jsonHeaders(token),
+    body: JSON.stringify(items),
+  });
+  return handle(res);
+};
 
 // §C1/C2: задачи — список с поиском/фильтрами, pin/archive upsert, удаление
 export const listCoderTasks = async (

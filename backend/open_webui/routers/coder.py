@@ -27,8 +27,8 @@ import time
 from typing import Any
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapi.responses import PlainTextResponse, RedirectResponse
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
+from fastapi.responses import PlainTextResponse, RedirectResponse, Response
 from open_webui.config import CODER_ENABLED, CODER_GITHUB_CLIENT_ID, CODER_AUDIT_RETENTION_DAYS, WEBUI_URL
 from open_webui.constants import ERROR_MESSAGES
 from open_webui.internal.db import get_async_session
@@ -734,13 +734,20 @@ async def github_validate(
             detail={'code': exc.code, 'message': exc.message},
         )
     scopes = conn.scopes or []
-    has_repo = conn.token_type == 'app_installation' or any(s in ('repo', 'public_repo') for s in scopes)
+    # "repo" is the full scope; "public_repo" only exposes public repos -> warn about private ones
+    has_repo = conn.token_type == 'app_installation' or any(s == 'repo' for s in scopes)
+    warning = None
+    if conn.token_type != 'app_installation':
+        if not scopes:
+            warning = 'Token scopes are unknown — some operations may fail. Reconnect to refresh scopes.'
+        elif not has_repo:
+            warning = 'Token lacks the "repo" scope — private repositories will not be listed. Reconnect with updated scopes.'
     return {
         'valid': True,
         'login': me.get('login'),
         'token_type': conn.token_type,
         'has_repo_scope': has_repo,
-        'warning': None if has_repo else 'Token lacks the "repo" scope — private repositories will not be listed. Reconnect with updated scopes.',
+        'warning': warning,
     }
 
 
@@ -754,6 +761,7 @@ async def coder_repos(
     request: Request,
     query: str | None = None,
     page: int = 1,
+    org: str | None = None,
     connection_id: str | None = None,
     user=Depends(get_verified_user),
     db: AsyncSession = Depends(get_async_session),
@@ -762,8 +770,21 @@ async def coder_repos(
     policies = await get_coder_policies()
     host = await _get_connection_host(user.id, db, connection_id)
     token = await _get_connection_token(user.id, db, connection_id)
+    # §D: org filter — validate against the user's real organizations so an arbitrary
+    # org name cannot be used to enumerate private repos of other tenants.
+    if org:
+        try:
+            orgs_resp = await github_request('GET', f'{_api_base_for(host)}/user/orgs', token=token, params={'per_page': 100})
+            allowed_orgs = [o.get('login', '') for o in orgs_resp.json()] if orgs_resp.status_code < 400 else []
+            if org not in allowed_orgs:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail={'code': 'CODER_ORG_NOT_ALLOWED', 'message': f'You are not a member of organization "{org}"'},
+                )
+        except GitHubAPIError as exc:
+            raise HTTPException(status_code=exc.status_code or 502, detail={'code': exc.code, 'message': exc.message})
     try:
-        repos = await GitHubClient.list_repositories(token, query=query, page=page, host=host)
+        repos = await GitHubClient.list_repositories(token, query=query, page=page, host=host, org=org)
     except GitHubAPIError as exc:
         raise HTTPException(status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY, detail={'code': exc.code, 'message': exc.message})
     # §15.1: показываем только разрешённые политики orgs/repos
@@ -1741,6 +1762,16 @@ async def _get_sandbox_session(request: Request, user, session_id: str, db: Asyn
     return session
 
 
+async def _optional_user(request: Request):
+    """Пользователь из Authorization header / cookie, либо None (для stream-метрик)."""
+    from open_webui.utils.auth import get_current_user
+
+    try:
+        return await get_current_user(request, None, None)  # type: ignore[arg-type]
+    except HTTPException:
+        return None
+
+
 @router.get('/modes')
 async def coder_modes_list(request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
     """§B1: список режимов генерации; §B2: галерея шаблонов."""
@@ -1959,6 +1990,186 @@ async def coder_sandbox_sweep(request: Request, admin_user=Depends(get_admin_use
         log.debug('coder sandbox dir sweep failed', exc_info=True)
     await _audit(request, admin_user.id, action='sandbox_sweep', payload={'expired_rows': removed_rows, 'removed_dirs': removed_dirs}, db=db)
     return {'expired_rows': removed_rows, 'removed_dirs': removed_dirs}
+
+
+####################
+# History import/export (план §C: импорт/экспорт истории без GitHub)
+####################
+
+
+@router.get('/sandbox/session/{session_id}/export')
+async def coder_sandbox_export_zip(
+    request: Request, session_id: str,
+    user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session),
+):
+    """§C-im/export: выгрузка песочницы задачи в zip без GitHub."""
+    await _get_sandbox_session(request, user, session_id, db)
+    try:
+        archive = coder_sandbox.export_zip(session_id)
+    except SandboxError as exc:
+        raise _sandbox_error(exc)
+    await CoderSandboxSessions.touch(session_id, db)
+    await _audit(request, user.id, action='sandbox_exported', target=session_id, payload={'bytes': len(archive)}, db=db)
+    from open_webui.utils.coder.metrics import CODER_REQUESTS_TOTAL
+
+    CODER_REQUESTS_TOTAL.inc(labels={'endpoint': 'sandbox_export'})
+    filename = f'coder-sandbox-{session_id[:8]}.zip'
+    return Response(
+        content=archive,
+        media_type='application/zip',
+        headers={'Content-Disposition': f'attachment; filename="{filename}"'},
+    )
+
+
+class CoderSandboxImportForm(BaseModel):
+    chat_id: str | None = None
+    mode: str | None = None
+    title: str | None = None
+
+
+@router.post('/sandbox/import')
+async def coder_sandbox_import_zip(
+    request: Request,
+    file: UploadFile = File(...),
+    chat_id: str | None = None,
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    """§C-im/export: загрузка sandbox-экспорта (zip) в новую сессию.
+
+    Принимает только архивы формата export_zip (манифест coder-sandbox.json);
+    пути файлов проходят валидацию (path traversal), объём — лимиты песочницы.
+    """
+    await check_coder_permission(request, user)
+    raw = await file.read()
+    if len(raw) > 25 * 1024 * 1024:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail={'code': 'CODER_IMPORT_TOO_LARGE', 'message': 'Archive exceeds 25 MiB upload limit'},
+        )
+    try:
+        parsed = coder_sandbox.import_zip_bytes(raw)
+    except SandboxError as exc:
+        raise _sandbox_error(exc)
+
+    target_chat_id = chat_id or str(uuid4())
+    session = await CoderSandboxSessions.create(user.id, mode=parsed['manifest'].get('mode'), chat_id=target_chat_id, db=db)
+    written = skipped = 0
+    try:
+        coder_sandbox.create_sandbox(session.id, {})
+        for rel, content in parsed['files'].items():
+            try:
+                coder_sandbox.write_file(session.id, rel, content)
+                written += 1
+            except SandboxError:
+                skipped += 1
+    except SandboxError as exc:
+        await CoderSandboxSessions.update(session.id, {'status': 'destroyed'}, db)
+        raise _sandbox_error(exc)
+    await _audit(
+        request, user.id, action='sandbox_imported', target=session.id,
+        payload={'files_written': written, 'files_skipped': skipped, 'source_session': parsed['manifest'].get('session_id')},
+        db=db,
+    )
+    return {
+        'session_id': session.id,
+        'chat_id': target_chat_id,
+        'files_written': written,
+        'files_skipped': skipped,
+        'source_session_id': parsed['manifest'].get('session_id'),
+    }
+
+
+@router.get('/tasks/shared/{token}/export')
+async def coder_task_shared_export(
+    request: Request, token: str,
+    user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session),
+):
+    """§C-im/export: экспорт расшаренной задачи (своей или чужой публичной).
+
+    Для своей задачи — полный zip песочницы; для чужой расшаренной —
+    zip с метаданными задачи (title/tags/mode), файлы не раскрываются
+    до момента fork (публичная страница показывает только сводку).
+    """
+    await check_coder_permission(request, user)
+    row = await CoderTaskMetas.get_by_share_token(token, db)
+    if not row:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={'code': 'CODER_TASK_NOT_SHARED', 'message': 'Shared task not found'},
+        )
+    import io
+    import json
+    import zipfile
+
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
+        own = row.user_id == user.id
+        session = await CoderSandboxSessions.get_by_chat(row.user_id, row.chat_id, db) if own else None
+        meta = {
+            'coder_task_export': 1,
+            'chat_id': row.chat_id,
+            'title': row.title,
+            'tags': row.tags or [],
+            'mode': row.mode,
+            'shared': True,
+        }
+        zf.writestr('coder-task.json', json.dumps(meta, ensure_ascii=False, indent=2))
+        if session:
+            try:
+                inner = coder_sandbox.export_zip(session.id)
+                zf.writestr('sandbox.zip', inner)
+            except SandboxError:
+                pass
+    slug = re.sub(r'[^a-zA-Z0-9_-]+', '-', (row.title or row.chat_id))[:24].strip('-') or 'task'
+    filename = f'coder-task-{slug}.zip'
+    await _audit(request, user.id, action='task_exported', target=row.chat_id, db=db)
+    return Response(
+        content=buf.getvalue(),
+        media_type='application/zip',
+        headers={'Content-Disposition': f'attachment; filename="{filename}"'},
+    )
+
+
+class CoderChatExportItem(BaseModel):
+    id: str
+    title: str | None = None
+    chat: dict[str, Any]
+
+
+@router.post('/tasks/export')
+async def coder_tasks_export_chats(
+    request: Request,
+    form: list[CoderChatExportItem],
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    """§C-im/export: выгрузка истории чатов (собственных) в формате /chats/import.
+
+    Возвращает JSON-массив, совместимый с POST /api/v1/chats/import, —
+    историю можно перенести между инстансами без GitHub.
+    """
+    await check_coder_permission(request, user)
+    from open_webui.models.chats import Chats
+
+    exported = []
+    for item in form[:100]:
+        chat = await Chats.get_chat_by_id_and_user_id(item.id, user.id)
+        if not chat:
+            continue  # IDOR-guard: только собственные чаты пользователя
+        exported.append(
+            {
+                'id': chat.id,
+                'title': chat.title,
+                'chat': chat.chat,
+                'meta': chat.meta,
+                'pinned': bool(getattr(chat, 'pinned', False)),
+                'created_at': chat.created_at,
+                'updated_at': chat.updated_at,
+            }
+        )
+    await _audit(request, user.id, action='chats_exported', payload={'count': len(exported)}, db=db)
+    return exported
 
 
 ####################

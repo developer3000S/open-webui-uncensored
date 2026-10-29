@@ -17,6 +17,7 @@
 		getGitHubAuthStartUrl,
 		getGitHubConnection,
 		disconnectGitHub,
+		validateCoderGitHubConnection,
 		validateCoderChangeset,
 		getCoderTree,
 		batchGetCoderFiles,
@@ -30,6 +31,9 @@
 		listGitHubConnections,
 		setDefaultGitHubConnection,
 		deleteGitHubConnection,
+		getCoderGitHubAppStatus,
+		connectCoderGitHubAppInstallation,
+		type CoderGitHubAppInstallation,
 		getCoderModes,
 		createSandboxSession,
 		getSandboxSession,
@@ -38,6 +42,8 @@
 		getPublishedPageUrl,
 		setCoderTaskShare,
 		forkCoderTask,
+		exportSandboxZip,
+		importSandboxZip,
 		upsertCoderTask,
 		generateCoderTaskTitle,
 		getCoderFollowups,
@@ -112,6 +118,28 @@
 			window.location.href = url;
 		} catch (e: any) {
 			toast.error(e?.detail?.message ?? e?.message ?? 'Failed to start GitHub authorization');
+		}
+	};
+
+	// §D: connection validity check — live token/scope validation with a UI warning
+	let ghValidating = false;
+	let ghValidation: { valid: boolean; login?: string; warning?: string | null } | null = null;
+
+	const validateGitHubConnection = async () => {
+		ghValidating = true;
+		ghValidation = null;
+		try {
+			ghValidation = await validateCoderGitHubConnection(token);
+			if (ghValidation.warning) {
+				toast.warning(ghValidation.warning);
+			} else {
+				toast.success($i18n.t('GitHub connection is valid'));
+			}
+		} catch (e: any) {
+			ghValidation = { valid: false };
+			toast.error(e?.detail?.message ?? e?.message ?? 'GitHub connection validation failed');
+		} finally {
+			ghValidating = false;
 		}
 	};
 
@@ -251,6 +279,52 @@ const publishSandbox = async () => {
 		toast.error(e?.detail?.message ?? e?.message ?? 'Publish failed');
 	} finally {
 		sandboxBusy = false;
+	}
+};
+// §C-im/export: выгрузка песочницы текущей задачи в zip без GitHub
+const exportSandbox = async () => {
+	if (!sandboxSessionId) return;
+	sandboxBusy = true;
+	try {
+		const blob = await exportSandboxZip(token, sandboxSessionId);
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = `coder-sandbox-${sandboxSessionId.slice(0, 8)}.zip`;
+		document.body.appendChild(a);
+		a.click();
+		a.remove();
+		setTimeout(() => URL.revokeObjectURL(url), 4000);
+		toast.success($i18n.t('Sandbox exported'));
+	} catch (e: any) {
+		toast.error(e?.detail?.message ?? e?.message ?? 'Export failed');
+	} finally {
+		sandboxBusy = false;
+	}
+};
+
+// §C-im/export: загрузка sandbox-экспорта (zip) — создаёт новую сессию
+let sandboxImportInput: HTMLInputElement | undefined = undefined;
+
+const onSandboxImportFile = async (file?: File) => {
+	if (!file) return;
+	sandboxBusy = true;
+	try {
+		const res = await importSandboxZip(token, file, coderChatId);
+		toast.success(`${$i18n.t('Sandbox imported')} (${res.files_written})`);
+		if (res.session_id && res.chat_id === coderChatId) {
+			sandboxSessionId = res.session_id;
+			sandboxVersion = (sandboxVersion + 1) % 1000000;
+			await refreshSandbox();
+		} else if (res.chat_id) {
+			// импорт в отдельную задачу — открываем её
+			window.location.href = `/coder?chat=${res.chat_id}`;
+		}
+	} catch (e: any) {
+		toast.error(e?.detail?.message ?? e?.message ?? 'Import failed');
+	} finally {
+		sandboxBusy = false;
+		if (sandboxImportInput) sandboxImportInput.value = '';
 	}
 };
 
@@ -947,12 +1021,38 @@ The system will execute it and return matching file snippets in your next turn. 
 					<div class="rounded-2xl border border-gray-200 dark:border-gray-700 p-4 space-y-3">
 						<div class="flex items-center justify-between">
 							<div class="text-sm font-medium">{$i18n.t('GitHub accounts')}</div>
-							<button
-								type="button"
-								class="text-xs px-2.5 py-1 rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900 hover:opacity-90"
-								on:click={() => (showAddConnection = !showAddConnection)}>{$i18n.t('Connect another GitHub')}</button
-							>
+							<div class="flex items-center gap-2">
+								<button
+									type="button"
+									class="text-xs px-2.5 py-1 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50"
+									disabled={ghValidating}
+									on:click={validateGitHubConnection}
+								>
+									{ghValidating ? $i18n.t('Checking…') : $i18n.t('Check connection')}
+								</button>
+								<button
+									type="button"
+									class="text-xs px-2.5 py-1 rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900 hover:opacity-90"
+									on:click={() => (showAddConnection = !showAddConnection)}>{$i18n.t('Connect another GitHub')}</button
+								>
+							</div>
 						</div>
+
+						{#if ghValidation}
+							<div
+								class="text-xs rounded-lg px-3 py-2 {ghValidation.valid
+									? 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300'
+									: 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300'}"
+							>
+								{#if ghValidation.valid && !ghValidation.warning}
+									{$i18n.t('Connection is valid')}{#if ghValidation.login} — {ghValidation.login}{/if}.
+								{:else if ghValidation.warning}
+									{$i18n.t('Warning')}: {ghValidation.warning}
+								{:else}
+									{$i18n.t('GitHub connection validation failed. Reconnect your account.')}
+								{/if}
+							</div>
+						{/if}
 
 						{#if showAddConnection}
 							<div class="flex items-center gap-2">
@@ -1338,6 +1438,31 @@ The system will execute it and return matching file snippets in your next turn. 
 							on:click={() => navigator.clipboard?.writeText(taskShareUrl).catch(() => {})}>{$i18n.t('Copy link')}</button
 						>
 					{/if}
+					<!-- §C-im/export: sandbox zip export/import without GitHub -->
+					{#if sandboxSessionId}
+						<button
+							type="button"
+							class="text-[11px] px-2 py-0.5 rounded-lg ring-1 text-gray-600 ring-gray-200 hover:bg-gray-50 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-gray-900 disabled:opacity-40"
+							disabled={sandboxBusy}
+							on:click={exportSandbox}
+							title={$i18n.t('Download the sandbox files as a zip archive')}>{$i18n.t('Download .zip')}</button
+						>
+					{/if}
+					<button
+						type="button"
+						class="text-[11px] px-2 py-0.5 rounded-lg ring-1 text-gray-600 ring-gray-200 hover:bg-gray-50 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-gray-900 disabled:opacity-40"
+						disabled={sandboxBusy}
+						on:click={() => sandboxImportInput?.click()}
+						title={$i18n.t('Restore a sandbox from a previously exported zip archive')}
+					>{$i18n.t('Import .zip')}</button
+					>
+					<input
+						bind:this={sandboxImportInput}
+						type="file"
+						accept=".zip,application/zip"
+						class="hidden"
+						on:change={(e) => onSandboxImportFile((e.target as HTMLInputElement).files?.[0])}
+					/>
 				</div>
 				{#if recommendedModels.length > 0 && !CODER_MODEL_PATTERN.test(modelId)}
 						<div class="text-[11px] text-gray-500 mt-1.5 px-1">
