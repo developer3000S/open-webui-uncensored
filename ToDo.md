@@ -158,9 +158,19 @@ API-маршруты, названия состояний, тексты кноп
       под полем ввода с копированием ссылки и отзывом, обработка `/coder?fork=<token>`.
       Тесты: `backend/tests/test_coder_share_fork.py` — 16 passed (токены, отзыв, IDOR,
       XSS, копирование файлов, интеграционный fork-flow).
-- [ ] **Импорт/экспорт истории**: загрузка чатов/проектов (`/chats/import`) и
-      выгрузка Change Set в zip без GitHub — не реализовано (частично закрыто
-      экспортом в Gist).
+- [x] **Импорт/экспорт истории** (план coder.qwen.ai §C): `sandbox.export_zip` /
+      `import_zip_bytes` (utils/coder/sandbox.py) + эндпоинты
+      `GET /sandbox/session/{id}/export` (zip песочницы, IDOR-guard, аудит
+      `sandbox_exported`), `POST /sandbox/import` (multipart zip → новая сессия,
+      лимит 25 MiB, path-traversal-валидация каждого пути),
+      `GET /tasks/shared/{token}/export` (своя задача — полный zip с вложенным
+      sandbox.zip; чужая расшаренная — только метаданные title/tags/mode),
+      `POST /tasks/export` (выгрузка собственных чатов в формате, совместимом с
+      `POST /chats/import`, лимит 100 чатов). UI: кнопки «Download .zip» /
+      «Import .zip» под полем ввода Workspace + API-хелперы
+      (`exportSandboxZip`, `importSandboxZip`, `downloadSharedTaskExport`,
+      `exportCoderChats`). Тесты: `backend/tests/test_coder_import_export.py` —
+      18 passed (round-trip, traversal в zip, битый архив, лимиты, IDOR).
 
 ### D. Подключение репозиториев и аккаунтов
 
@@ -189,13 +199,14 @@ API-маршруты, названия состояний, тексты кноп
 
 ### Итог
 
-Приоритеты **A, B, C (кроме импорта истории) и E (метрики стрима) реализованы**
-(2026-10-27; fork/шеринг задач закрыт 2026-10-28): sandbox+preview+publish, режимы/шаблоны,
-управление задачами, публичный share+fork,
+Приоритеты **A, B, C (включая импорт/экспорт истории) и E (метрики стрима) реализованы**
+(2026-10-27; fork/шеринг задач закрыт 2026-10-28; импорт/экспорт истории закрыт
+2026-10-29): sandbox+preview+publish, режимы/шаблоны,
+управление задачами, публичный share+fork, zip export/import песочниц и чатов,
 stream-metrics — документация синхронизирована (docs/CODER.md §1–§10, README
 «Работа с Coder» §3.1, TROUBLESHOOTING, CHANGELOG). Остались: D (GitHub App,
-валидация соединения, Google/OTP), C-импорт истории, E-стрим стадий
-агента. Дата обновления: 2026-10-28.
+валидация соединения, Google/OTP), E-стрим стадий
+агента. Дата обновления: 2026-10-29.
 
 ## RAG и обработка знаний
 

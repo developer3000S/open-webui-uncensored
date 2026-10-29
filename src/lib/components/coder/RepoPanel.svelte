@@ -6,6 +6,7 @@
 	import {
 		listCoderRepos,
 		listCoderBranches,
+		listCoderOrganizations,
 		getCoderTree,
 		getCoderFile,
 		type CoderRepo,
@@ -31,6 +32,10 @@
 	let loadingBranches = false;
 	let loadingTree = false;
 
+	// §D: organization filter for the repository list
+	let orgs: { login: string }[] = [];
+	let selectedOrg = '';
+
 	let selectedPath = '';
 	let fileContent: string | null = null;
 	let fileBinary = false;
@@ -42,12 +47,21 @@
 	const searchRepos = async () => {
 		loadingRepos = true;
 		try {
-			const res = await listCoderRepos(token, repoQuery || undefined);
+			const res = await listCoderRepos(token, repoQuery || undefined, selectedOrg || undefined);
 			repos = res.repos ?? [];
 		} catch (e: any) {
 			toast.error(e?.message ?? 'Failed to load repositories');
 		} finally {
 			loadingRepos = false;
+		}
+	};
+
+	const loadOrgs = async () => {
+		try {
+			const res = await listCoderOrganizations(token);
+			orgs = res.organizations ?? [];
+		} catch {
+			orgs = []; // non-fatal: the org filter simply stays empty
 		}
 	};
 
@@ -150,6 +164,7 @@
 		} else {
 			await searchRepos();
 		}
+		loadOrgs();
 	});
 
 	onDestroy(() => clearTimeout(repoSearchTimer));
@@ -165,6 +180,19 @@
 				placeholder={$i18n.t('Search a repository')}
 				class="w-full rounded-xl bg-gray-50 dark:bg-gray-850 px-3 py-1.5 text-xs outline-hidden ring-1 ring-transparent focus:ring-gray-300 dark:focus:ring-gray-700"
 			/>
+			{#if orgs.length > 0}
+				<!-- §D: filter the repository list by organization -->
+				<select
+					bind:value={selectedOrg}
+					on:change={searchRepos}
+					class="w-full rounded-xl bg-gray-50 dark:bg-gray-850 px-2.5 py-1.5 text-xs outline-hidden"
+				>
+					<option value="">{$i18n.t('All organizations')}</option>
+					{#each orgs as o (o.login)}
+						<option value={o.login}>{o.login}</option>
+					{/each}
+				</select>
+			{/if}
 		{:else}
 			<div class="flex items-center justify-between gap-1">
 				<div class="font-medium truncate text-black dark:text-white">{owner}/{repo}</div>
