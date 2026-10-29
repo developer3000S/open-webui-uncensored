@@ -598,9 +598,12 @@ http://<ваш-хост>/api/v1/coder/github/auth/callback
 ### 6. Тестирование
 
 Реализован comprehensive набор тестов для Coder:
-- **Unit-тесты** (`test_coder_changeset.py`, `test_coder_crypto.py`): валидация путей, Change Set, шифрование/расшифровка токенов, генерация diff (59 успешно пройдено).
+- **Unit-тесты** (`test_coder_changeset.py`, `test_coder_crypto.py`): валидация путей, Change Set, шифрование/расшифровка токенов, генерация diff (35 успешно пройдено).
 - **Integration-тесты** (`test_coder_integration.py`): mock GitHub клиент, OAuth, repo/file/commit/PR операции (8 тестов).
 - **Security-тесты** (`test_coder_security.py`): защита от path traversal, XSS, resource consumption, политики allowlist (14 тестов).
+- **Share/Fork** (`test_coder_share_fork.py`): токены шеринга, отзыв, IDOR, XSS, копирование sandbox при fork (16 тестов).
+- **Импорт/экспорт** (`test_coder_import_export.py`): zip round-trip песочниц, path traversal в архиве, лимиты, IDOR (18 тестов).
+- **GitHub §D** (`test_coder_github_d.py`): фильтр репозиториев по организации, `/github/organizations`, `/github/validate`, `/github/connection_status` (7 тестов). Совместный прогон `test_coder_github_d + test_coder_import_export + test_coder_share_fork` — 41 passed без конфликтов (2026-10-29).
 - **E2E-тесты** (`test_coder_e2e.py`): headless-Firefox на запущенном приложении — загрузка страницы `/coder`, клик по кнопке "Connect GitHub" с проверкой перехода на github.com OAuth, проверка `/api/v1/coder/config`. Требуют запущенного контейнера `open-webui` с `CODER_ENABLED=true` и заведённого тестового пользователя `e2e@test.local`.
 
 

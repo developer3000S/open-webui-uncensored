@@ -65,6 +65,7 @@
 	import Github from '$lib/components/icons/Github.svelte';
 	import CodeBracket from '$lib/components/icons/CodeBracket.svelte';
 	import ModelDropdown from '$lib/components/automations/ModelDropdown.svelte';
+	import Markdown from '$lib/components/chat/Messages/Markdown.svelte';
 	import RepoPanel from '$lib/components/coder/RepoPanel.svelte';
 	import RepositoryEnvironmentPanel from '$lib/components/coder/RepositoryEnvironmentPanel.svelte';
 	import ExportDialog from '$lib/components/coder/ExportDialog.svelte';
@@ -210,6 +211,42 @@
 	// current change set produced by the model
 	let changeset: CoderChangeFile[] = [];
 	let changesetError: string | null = null;
+
+	// Chat rendering helpers: strip machine blocks (changeset / repo_search) from
+	// the displayed assistant text and provide "copy as Markdown" for each reply.
+	const stripMachineBlocks = (text: string): string => {
+		if (!text) return '';
+		const cfence = String.fromCharCode(96).repeat(3);
+		// Remove only machine blocks: changeset-tagged fences and json/changeset/repo_search
+		// fences that actually contain the tool payload keys ("files" / "query").
+		// Ordinary ```json code examples in prose are preserved.
+		const stripIf = (blockRe: RegExp, payloadRe: RegExp) =>
+			text.replace(blockRe, (whole, inner) => (payloadRe.test(inner ?? '') ? '' : whole));
+		text = stripIf(
+			new RegExp(cfence + 'changeset\\s*([\\s\\S]*?)' + cfence, 'gi'),
+			/"files"\s*:/
+		);
+		text = stripIf(
+			new RegExp(cfence + '(?:json|repo_search)\\s*([\\s\\S]*?)' + cfence, 'gi'),
+			/"(?:files|query)"\s*:/
+		);
+		return text
+			.replace(/\n{3,}/g, '\n\n')
+			.trim();
+	};
+
+	let copiedMessageIndex: number | null = null;
+	let copyTimer: ReturnType<typeof setTimeout> | null = null;
+	const copyAsMarkdown = async (content: string, idx: number) => {
+		try {
+			await navigator.clipboard.writeText(content);
+			copiedMessageIndex = idx;
+			if (copyTimer) clearTimeout(copyTimer);
+			copyTimer = setTimeout(() => (copiedMessageIndex = null), 2000);
+		} catch (_) {
+			toast.error($i18n.t('Clipboard access denied'));
+		}
+	};
 
 let showExport = false;
 
@@ -1354,13 +1391,39 @@ The system will execute it and return matching file snippets in your next turn. 
 
 					{#each messages as msg, i (i)}
 						<div class="flex {msg.role === 'user' ? 'justify-end' : 'justify-start'}">
-							<div
-								class="max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm whitespace-pre-wrap leading-relaxed {msg.role ===
-								'user'
-									? 'bg-gray-900 text-white dark:bg-blue-600'
-									: 'bg-gray-100 dark:bg-gray-800 text-black dark:text-white'}"
-							>{msg.content}</div
-							>
+							{#if msg.role === 'user'}
+								<div
+									class="max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm whitespace-pre-wrap leading-relaxed bg-gray-900 text-white dark:bg-blue-600"
+								>{msg.content}</div
+								>
+							{:else}
+								{@const displayContent = stripMachineBlocks(msg.content)}
+								<div class="max-w-[85%] min-w-0 flex flex-col items-start gap-1">
+									<div
+										class="w-full rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed bg-gray-100 dark:bg-gray-800 text-black dark:text-white prose prose-sm dark:prose-invert max-w-none break-words [&_pre]:overflow-x-auto"
+									>
+										{#if displayContent}
+											<Markdown content={displayContent} id={`coder-msg-${i}`} done={!sending || i !== messages.length - 1} />
+										{:else}
+											<span class="text-gray-400 italic">{$i18n.t('Change set proposed — see the panel below.')}</span>
+										{/if}
+									</div>
+									{#if displayContent && (!sending || i !== messages.length - 1)}
+										<button
+											type="button"
+											class="self-start inline-flex items-center gap-1 text-[11px] text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 px-1.5 py-0.5 rounded-md transition"
+											on:click={() => copyAsMarkdown(displayContent, i)}
+											title={$i18n.t('Copy this answer as Markdown')}
+										>
+											{#if copiedMessageIndex === i}
+												✓ {$i18n.t('Copied')}
+											{:else}
+												⧉ {$i18n.t('Copy as Markdown')}
+											{/if}
+										</button>
+									{/if}
+								</div>
+							{/if}
 						</div>
 					{/each}
 
