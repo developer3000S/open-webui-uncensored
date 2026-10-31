@@ -1185,7 +1185,7 @@
 			document.documentElement.classList.contains('her') &&
 			document.getElementById('progress-bar')
 		) {
-			loadingProgress.subscribe((value) => {
+			const unsubscribeProgress = loadingProgress.subscribe((value) => {
 				const progressBar = document.getElementById('progress-bar');
 
 				if (progressBar) {
@@ -1193,7 +1193,16 @@
 				}
 			});
 
-			await loadingProgress.set(100);
+			// In Svelte 5, spring() returns a signal, not a legacy store:
+			// there is no `.set()` method. Animate the value to 100 instead.
+			loadingProgress.set(100, true);
+
+			// Wait until the spring animation settles at 100
+			while ($loadingProgress < 99.9) {
+				await new Promise((resolve) => setTimeout(resolve, 50));
+			}
+
+			unsubscribeProgress();
 
 			document.getElementById('splash-screen')?.remove();
 
