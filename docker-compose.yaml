@@ -33,7 +33,6 @@ services:
       - ./${ENV_FILE:-.env}:/app/.env:ro
       - ./backend/data/.webui_secret_key:/app/backend/data/.webui_secret_key:ro
     ports:
-#      - "8081:8080"
       - ${OPEN_WEBUI_PORT:-8080}:8080
     extra_hosts:
       - host.docker.internal:host-gateway

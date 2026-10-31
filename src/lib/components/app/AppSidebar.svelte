@@ -39,6 +39,25 @@
 		</Tooltip>
 	</div>
 
+	<div class="flex flex-col gap-1 mb-4">
+		<Tooltip content="Coder">
+			<a
+				href="/coder"
+				class="flex items-center justify-center px-2 py-1.5 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+			>
+				Coder
+			</a>
+		</Tooltip>
+		<Tooltip content="Studio">
+			<a
+				href="/studio"
+				class="flex items-center justify-center px-2 py-1.5 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+			>
+				Studio
+			</a>
+		</Tooltip>
+	</div>
+
 	<div class=" -mt-1 border-[1.5px] border-gray-100 dark:border-gray-900 mx-4"></div>
 
 	<div class="flex justify-center relative group">
