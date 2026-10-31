@@ -40,7 +40,11 @@ WORKDIR /app
 RUN apk add --no-cache git
 
 COPY package.json package-lock.json ./
-RUN npm ci --force
+# npm ci requires package.json and package-lock.json to be in sync.
+# If you edit package.json, regenerate the lock file first:
+#   rm -rf node_modules package-lock.json && npm install
+# --engine-strict=false keeps the install working on the Node version pinned above.
+RUN npm ci --no-audit --no-fund --engine-strict=false
 
 COPY . .
 ENV APP_BUILD_HASH=${BUILD_HASH}
