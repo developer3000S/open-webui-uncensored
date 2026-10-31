@@ -1,6 +1,5 @@
-// Flat config for ESLint 9 (migrated from .eslintrc.cjs).
-// In ESLint >= 9 the .eslintrc.* format is no longer used; ignore patterns
-// live in `ignores` below instead of .eslintignore.
+// Flat config for ESLint 10.
+// Ignore patterns live in `ignores` below instead of .eslintignore.
 import js from '@eslint/js';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
