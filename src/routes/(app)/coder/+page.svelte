@@ -214,22 +214,24 @@
 
 	// Chat rendering helpers: strip machine blocks (changeset / repo_search) from
 	// the displayed assistant text and provide "copy as Markdown" for each reply.
+	// Regexes are built once at component init instead of on every call: during
+	// streaming stripMachineBlocks runs per assistant message per throttled render,
+	// so re-creating three global regexes per invocation was pure GC churn.
+	const CFENCE = String.fromCharCode(96).repeat(3);
+	const CHANGESET_BLOCK_RE = new RegExp(CFENCE + 'changeset\\s*([\\s\\S]*?)' + CFENCE, 'gi');
+	const TOOL_JSON_BLOCK_RE = new RegExp(CFENCE + '(?:json|repo_search)\\s*([\\s\\S]*?)' + CFENCE, 'gi');
+
 	const stripMachineBlocks = (text: string): string => {
 		if (!text) return '';
-		const cfence = String.fromCharCode(96).repeat(3);
 		// Remove only machine blocks: changeset-tagged fences and json/changeset/repo_search
 		// fences that actually contain the tool payload keys ("files" / "query").
 		// Ordinary ```json code examples in prose are preserved.
-		const stripIf = (blockRe: RegExp, payloadRe: RegExp) =>
-			text.replace(blockRe, (whole, inner) => (payloadRe.test(inner ?? '') ? '' : whole));
-		text = stripIf(
-			new RegExp(cfence + 'changeset\\s*([\\s\\S]*?)' + cfence, 'gi'),
-			/"files"\s*:/
-		);
-		text = stripIf(
-			new RegExp(cfence + '(?:json|repo_search)\\s*([\\s\\S]*?)' + cfence, 'gi'),
-			/"(?:files|query)"\s*:/
-		);
+		const stripIf = (blockRe: RegExp, payloadRe: RegExp) => {
+			blockRe.lastIndex = 0; // reset stateful /g regex before reuse
+			return text.replace(blockRe, (whole, inner) => (payloadRe.test(inner ?? '') ? '' : whole));
+		};
+		text = stripIf(CHANGESET_BLOCK_RE, /"files"\s*:/);
+		text = stripIf(TOOL_JSON_BLOCK_RE, /"(?:files|query)"\s*:/);
 		return text
 			.replace(/\n{3,}/g, '\n\n')
 			.trim();
@@ -509,8 +511,9 @@ The system will execute it and return matching file snippets in your next turn. 
 	};
 
 	const extractChangeset = (text: string): { files: CoderChangeFile[] } | null => {
-		const cfence = String.fromCharCode(96).repeat(3);
-		const cre = new RegExp(cfence + '(?:json|changeset)\\s*([\\s\\S]*?)' + cfence, 'i');
+		// reuses CFENCE and the shared fence regexes (built once above) instead of
+		// recompiling them on every call
+		const cre = new RegExp(CFENCE + '(?:json|changeset)\\s*([\\s\\S]*?)' + CFENCE, 'i');
 		const match = text.match(cre);
 		const candidates: string[] = [];
 		if (match) candidates.push(match[1]);
@@ -651,8 +654,8 @@ The system will execute it and return matching file snippets in your next turn. 
 	};
 
 	const extractToolRequest = (text: string): { query: string; paths?: string[]; max_results?: number } | null => {
-		const fence = String.fromCharCode(96).repeat(3);
-		const re = new RegExp(fence + '(?:repo_search|json)\\s*([\\s\\S]*?)' + fence, 'i');
+		// non-global clone of the shared TOOL_JSON_BLOCK_RE (same pattern, no /g state)
+		const re = new RegExp(TOOL_JSON_BLOCK_RE.source, 'i');
 		const match = text.match(re);
 		if (match && /"query"\s*:/.test(match[1])) {
 			try {
