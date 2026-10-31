@@ -31,8 +31,10 @@ services:
       # second copy of the same settings in front of that mechanism.
       # Override the file with:  ENV_FILE=.env.staging docker compose up -d
       - ./${ENV_FILE:-.env}:/app/.env:ro
+      - ./backend/data/.webui_secret_key:/app/backend/data/.webui_secret_key:ro
     ports:
-      - ${OPEN_WEBUI_PORT:-8083}:8080
+#      - "8081:8080"
+      - ${OPEN_WEBUI_PORT:-8080}:8080
     extra_hosts:
       - host.docker.internal:host-gateway
     # Default soft nofile of 1024 in the container exhausts descriptors during
@@ -44,7 +46,9 @@ services:
     restart: unless-stopped
     depends_on:
       neo4j:
-        condition: service_healthy
+        condition: service_started
+    healthcheck:
+      disable: true
     networks:
       - default
       - open-webui-uncensored-net
@@ -64,8 +68,9 @@ services:
       - neo4j-data:/data
     ports:
       - 127.0.0.1:${NEO4J_BOLT_PORT:-7687}:7687
-    mem_limit: 2g
-    memswap_limit: 3g
+    mem_limit: 3g
+    memswap_limit: 4g
+    cpus: 2
     restart: unless-stopped
     healthcheck:
       disable: true
