@@ -1,0 +1,5 @@
+{
+  " Enabling this will allow users to run scheduled prompts automatically.": "",
+  " Enabling this will allow users to upload arbitrary code on the server.": "",
+  " Jupyter execution enables arbitrary code execution, posing severe security risks—proceed with extreme caution.": ""
+}
