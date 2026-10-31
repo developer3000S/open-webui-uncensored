@@ -739,30 +739,45 @@ The system will execute it and return matching file snippets in your next turn. 
 		let assistantText = '';
 		messages = [...messages, { role: 'assistant', content: '' }];
 
+		// Buffer raw bytes and split on '\n' ourselves: a chunk may end in the middle
+		// of a multi-byte UTF-8 sequence and an SSE line may span two chunks.
+		let sseBuffer = '';
+		const handleLine = (line: string) => {
+			const trimmed = line.trim();
+			if (!trimmed.startsWith('data:')) return;
+			const data = trimmed.slice(5).trim();
+			if (data === '[DONE]') return;
+			try {
+				const json = JSON.parse(data);
+				const delta = json.choices?.[0]?.delta?.content ?? '';
+				if (delta) assistantText += delta;
+			} catch (_) {
+				/* partial line */
+			}
+		};
+
+		// Throttle store updates to ~20/s instead of per token: avoids O(n^2) array
+		// copies and full Markdown re-parsing on long streaming answers.
+		let lastRender = 0;
+		const renderIfDue = (force = false) => {
+			const now = performance.now();
+			if (!force && now - lastRender < 50) return;
+			lastRender = now;
+			messages = [...messages.slice(0, -1), { role: 'assistant', content: assistantText }];
+		};
+
 		while (true) {
 			const { done, value } = await reader.read();
 			if (done) break;
-			const chunk = decoder.decode(value, { stream: true });
-			for (const line of chunk.split('\n')) {
-				const trimmed = line.trim();
-				if (!trimmed.startsWith('data:')) continue;
-				const data = trimmed.slice(5).trim();
-				if (data === '[DONE]') continue;
-				try {
-					const json = JSON.parse(data);
-					const delta = json.choices?.[0]?.delta?.content ?? '';
-					if (delta) {
-						assistantText += delta;
-						messages = [
-							...messages.slice(0, -1),
-							{ role: 'assistant', content: assistantText }
-						];
-					}
-				} catch (_) {
-					/* partial line */
-				}
-			}
+			sseBuffer += decoder.decode(value, { stream: true });
+			const lines = sseBuffer.split('\n');
+			sseBuffer = lines.pop() ?? '';
+			for (const line of lines) handleLine(line);
+			renderIfDue();
 		}
+		sseBuffer += decoder.decode(); // flush trailing multi-byte sequence
+		if (sseBuffer) handleLine(sseBuffer);
+		renderIfDue(true);
 		return assistantText;
 	};
 
