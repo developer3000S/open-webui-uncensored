@@ -1,10 +1,10 @@
-<script>
+<script lang="ts">
 	import { io } from 'socket.io-client';
 	import { spring } from 'svelte/motion';
 	import { createPyodideWorker } from '$lib/pyodide/createPyodideWorker';
 	import { Toaster, toast } from 'svelte-sonner';
 
-	let loadingProgress = spring(0, {
+	const loadingProgress = spring(0, {
 		stiffness: 0.05
 	});
 
@@ -41,11 +41,11 @@
 	} from '$lib/stores';
 	import { getFileContentById } from '$lib/apis/files';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
-	import { beforeNavigate } from '$app/navigation';
-	import { updated } from '$app/state';
+	import { beforeNavigate, pages } from '$app/state';
 
 	import i18n, { initI18n, getLanguages, changeLanguage } from '$lib/i18n';
+
+	let { children } = $props();
 
 	import '../tailwind.css';
 	import '../app.css';
@@ -97,7 +97,7 @@
 
 	// handle frontend updates (https://svelte.dev/docs/kit/configuration#version)
 	beforeNavigate(async ({ willUnload, to }) => {
-		if (updated.current && !willUnload && to?.url) {
+		if (pages.updated.current && !willUnload && to?.url) {
 			await unregisterServiceWorkers();
 			location.href = to.url.href;
 		}
@@ -107,14 +107,14 @@
 
 	const bc = new BroadcastChannel('active-tab-channel');
 
-	let loaded = false;
+	let loaded = $state(false);
 	let tokenTimer = null;
 	let isAuthRedirectInProgress = false;
 
-	let showRefresh = false;
+	let showRefresh = $state(false);
 
-	let showSyncStatsModal = false;
-	let syncStatsEventData = null;
+	let showSyncStatsModal = $state(false);
+	let syncStatsEventData = $state(null);
 
 	let heartbeatInterval = null;
 	let disconnectToastTimer = null;
@@ -459,7 +459,7 @@
 	};
 
 	const chatEventHandler = async (event, cb) => {
-		const chat = $page.url.pathname.includes(`/c/${event.chat_id}`);
+		const chat = pages.url.pathname.includes(`/c/${event.chat_id}`);
 
 		// Skip events from temporary chats that are not the current chat.
 		// This prevents notifications from being sent to other tabs/devices
@@ -691,7 +691,7 @@
 		}
 
 		// check url path
-		const channel = $page.url.pathname.includes(`/channels/${event.channel_id}`);
+		const channel = pages.url.pathname.includes(`/channels/${event.channel_id}`);
 
 		let isInBackground = document.visibilityState !== 'visible';
 		if (window.electronAPI) {
@@ -1169,7 +1169,7 @@
 				} else {
 					// Don't redirect if we're already on the auth page
 					// Needed because we pass in tokens from OAuth logins via URL fragments
-					if ($page.url.pathname !== '/auth') {
+					if (pages.url.pathname !== '/auth') {
 						await goto(`/auth?redirect=${encodedUrl}`);
 					}
 				}
@@ -1185,7 +1185,7 @@
 			document.documentElement.classList.contains('her') &&
 			document.getElementById('progress-bar')
 		) {
-			loadingProgress.subscribe((value) => {
+			const unsubscribeProgress = loadingProgress.subscribe((value) => {
 				const progressBar = document.getElementById('progress-bar');
 
 				if (progressBar) {
@@ -1193,7 +1193,16 @@
 				}
 			});
 
-			await loadingProgress.set(100);
+			// In Svelte 5, spring() returns a signal, not a legacy store:
+			// there is no `.set()` method. Animate the value to 100 instead.
+			loadingProgress.set(100, true);
+
+			// Wait until the spring animation settles at 100
+			while ($loadingProgress < 99.9) {
+				await new Promise((resolve) => setTimeout(resolve, 50));
+			}
+
+			unsubscribeProgress();
 
 			document.getElementById('splash-screen')?.remove();
 
@@ -1214,7 +1223,7 @@
 		// Auto-show SyncStatsModal when opened with ?sync=true (from community)
 		if (
 			(window.opener ?? false) &&
-			$page.url.searchParams.get('sync') === 'true' &&
+			pages.url.searchParams.get('sync') === 'true' &&
 			($config?.features?.enable_community_sharing ?? false)
 		) {
 			showSyncStatsModal = true;
@@ -1262,11 +1271,11 @@
 			<AppSidebar />
 
 			<div class="w-full flex-1 max-w-[calc(100%-4.5rem)]">
-				<slot />
+				{@render children()}
 			</div>
 		</div>
 	{:else}
-		<slot />
+		{@render children()}
 	{/if}
 {/if}
 
