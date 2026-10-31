@@ -1,6 +1,7 @@
 // i18next-cli.config.mjs
 // Config for i18next-cli (replacement for the deprecated i18next-parser).
 import { readFileSync } from 'node:fs';
+import sveltePlugin from 'i18next-cli-plugin-svelte';
 
 const getLangCodes = () => {
 	const languages = JSON.parse(
@@ -10,23 +11,20 @@ const getLangCodes = () => {
 };
 
 export default {
-	parserOptions: {
-		contextSeparator: '_',
+	locales: getLangCodes(),
+	extract: {
+		input: ['src/**/*.svelte', 'src/**/*.js'],
+		output: 'src/lib/i18n/locales/{{language}}/{{namespace}}.json',
+		primaryLanguage: 'en',
 		keySeparator: false,
 		namespaceSeparator: false,
-		defaultNamespace: 'translation',
-		keepRemoved: false,
+		defaultNS: 'translation',
+		contextSeparator: '_',
 		sort: true,
-		lexers: {
-			svelte: ['html'],
-			js: ['default'],
-			ts: ['default'],
-			default: ['default']
-		}
+		removeUnusedKeys: false,
+		// Файл содержит невалидный синтаксис Svelte ({:else} без {:if}),
+		// парсер его не обрабатывает — исключаем из извлечения.
+		ignore: ['src/routes/(app)/coder/**']
 	},
-	input: ['src/**/*.js', 'src/**/*.svelte'],
-	output: 'src/lib/i18n/locales/$LOCALE/$NAMESPACE.json',
-	locales: getLangCodes(),
-	createOldCatalogs: false,
-	verbose: true
+	plugins: [new sveltePlugin()]
 };
