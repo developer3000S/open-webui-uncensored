@@ -68,11 +68,7 @@ services:
     memswap_limit: 3g
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "timeout 5 bash -c 'curl -sf http://localhost:7474' || exit 1"]
-      interval: 30s
-      timeout: 10s
-      start_period: 60s
-      retries: 3
+      disable: true
     networks:
       - open-webui-uncensored-net
 
