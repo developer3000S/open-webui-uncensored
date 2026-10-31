@@ -40,7 +40,7 @@ loguru==0.7.3
 asgiref==3.11.1
 
 # AI libraries
-tiktoken==0.13.0
+tiktoken==0.7.0
 mcp==1.27.2
 
 openai==2.29.0
@@ -152,20 +152,6 @@ pytest-docker~=3.2.5
 ldap3==2.9.1
 
 ## Trace
-<<<<<<< HEAD
-opentelemetry-api==1.42.1
-opentelemetry-sdk==1.42.1
-opentelemetry-exporter-otlp==1.42.1
-opentelemetry-instrumentation==0.63b1
-opentelemetry-instrumentation-fastapi==0.63b1
-opentelemetry-instrumentation-sqlalchemy==0.63b1
-opentelemetry-instrumentation-redis==0.63b1
-opentelemetry-instrumentation-requests==0.63b1
-opentelemetry-instrumentation-logging==0.63b1
-opentelemetry-instrumentation-httpx==0.63b1
-opentelemetry-instrumentation-aiohttp-client==0.63b1
-opentelemetry-instrumentation-system-metrics==0.63b1
-=======
 opentelemetry-api==1.45.1
 opentelemetry-sdk==1.45.1
 opentelemetry-exporter-otlp==1.45.1
@@ -178,7 +164,6 @@ opentelemetry-instrumentation-logging==0.66b1
 opentelemetry-instrumentation-httpx==0.66b1
 opentelemetry-instrumentation-aiohttp-client==0.66b1
 opentelemetry-instrumentation-system-metrics==0.66b1
->>>>>>> eaac4a2 (Fixed log processing error)
 
 # Knowledge graph layer (open_webui/retrieval/graphrag): Neo4j driver only.
 # 5.x matches the community server the layer is tested against; it needs no

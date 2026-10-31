@@ -1,0 +1,36 @@
+Metadata-Version: 2.4
+Name: pycrdt
+Version: 0.13.1
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.13
+Classifier: Programming Language :: Python :: 3.14
+Classifier: Programming Language :: Rust
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Requires-Dist: anyio>=4.4.0,<5.0.0
+Requires-Dist: typing-extensions>=4.14.0 ; python_full_version < '3.11'
+Requires-Dist: exceptiongroup ; python_full_version < '3.11'
+Requires-Dist: typing-extensions>=4.15.0,<5.0.0 ; python_full_version < '3.11'
+License-File: LICENSE
+Summary: Python bindings for Yrs
+Keywords: crdt
+Author-email: David Brochart <david.brochart@gmail.com>
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown; charset=UTF-8; variant=GFM
+Project-URL: Homepage, https://github.com/y-crdt/pycrdt
+
+[![Build Status](https://github.com/y-crdt/pycrdt/actions/workflows/test.yml/badge.svg?query=branch%3Amain++)](https://github.com/y-crdt/pycrdt/actions/workflows/test.yml/badge.svg?query=branch%3Amain++)
+[![Code Coverage](https://img.shields.io/badge/coverage-100%25-green)](https://img.shields.io/badge/coverage-100%25-green)
+
+# pycrdt
+
+CRDTs based on [Yrs](https://github.com/y-crdt/y-crdt/tree/main/yrs).
+
+Documentation is available [here](https://y-crdt.github.io/pycrdt).
+

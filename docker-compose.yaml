@@ -15,6 +15,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        BUILDPLATFORM: linux/amd64
     image: open-webui-uncensored:local
     container_name: open-webui
     volumes:
@@ -52,7 +54,7 @@ services:
     # mandatory on a 16 GB CPU-only host. Bolt is published to loopback only
     # for host-side debugging; the app reaches the graph over the shared
     # network by service name.
-    image: neo4j:5.26
+    image: dockerhub.timeweb.cloud/neo4j:5.26
     container_name: open-webui-neo4j
     environment:
       - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:-MyPasword12345}
@@ -66,7 +68,7 @@ services:
     memswap_limit: 3g
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "timeout 5 bash -c '</dev/tcp/127.0.0.1/7687' || exit 1"]
+      test: ["CMD-SHELL", "timeout 5 bash -c 'curl -sf http://localhost:7474' || exit 1"]
       interval: 30s
       timeout: 10s
       start_period: 60s
@@ -103,9 +105,8 @@ services:
     environment:
       - FRONTEND_PORT=14200
       - LLM_PORT=10086
-      # Backends bind 0.0.0.0 so the WebUI can reach llama-server by service
-      # name over the stack network (serve.cjs reads HOST/BACKEND_HOST).
       - HOST=0.0.0.0
+      - RUNNING_IN_DOCKER=1
     restart: unless-stopped
     networks:
       - open-webui-uncensored-net

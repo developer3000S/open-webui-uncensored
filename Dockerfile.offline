@@ -1,0 +1,84 @@
+# syntax=docker/dockerfile:1
+FROM dockerhub.timeweb.cloud/python:3.11-slim-bullseye
+
+# Install dependencies from local directory
+COPY openwebui_offline_packages /tmp/openwebui_offline_packages
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir --upgrade setuptools wheel && \
+    pip install --no-cache-dir --no-index --find-links=/tmp/openwebui_offline_packages -r /tmp/requirements.txt && \
+    rm -rf /tmp/openwebui_offline_packages
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    git \
+    build-essential \
+    pandoc \
+    gcc \
+    netcat-openbsd \
+    curl \
+    jq \
+    ca-certificates \
+    libmariadb-dev \
+    python3-dev \
+    ffmpeg \
+    libsm6 \
+    libxext6 \
+    zstd \
+    tesseract-ocr \
+    tesseract-ocr-rus \
+    tesseract-ocr-eng \
+    poppler-utils && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy application files
+WORKDIR /app/backend
+COPY ./backend/requirements.txt /tmp/requirements.txt
+COPY ./backend/start.sh /app/backend/start.sh
+COPY ./backend /app/backend
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    ENV=prod \
+    PORT=8080 \
+    USE_CUDA_DOCKER=false \
+    USE_SLIM_DOCKER=true \
+    USE_OLLAMA_DOCKER=false \
+    USE_CUDA_DOCKER_VER=cu128 \
+    OLLAMA_BASE_URL=/ollama \
+    WHISPER_MODEL=base \
+    RAG_EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2 \
+    RAG_RERANKING_MODEL="" \
+    AUXILIARY_EMBEDDING_MODEL=TaylorAI/bge-micro-v2 \
+    TIKTOKEN_ENCODING_NAME=cl100k_base \
+    WHISPER_MODEL_DIR=/app/backend/data/cache/whisper/models \
+    SENTENCE_TRANSFORMERS_HOME=/app/backend/data/cache/embedding/models \
+    TIKTOKEN_CACHE_DIR=/app/backend/data/cache/tiktoken \
+    HF_HOME=/app/backend/data/cache/embedding/models \
+    SCARF_NO_ANALYTICS=true \
+    DO_NOT_TRACK=true \
+    ANONYMIZED_TELEMETRY=false
+
+# Create directories
+RUN mkdir -p /app/backend/data && \
+    mkdir -p /app/backend/data/cache/whisper/models && \
+    mkdir -p /app/backend/data/cache/embedding/models && \
+    mkdir -p /app/backend/data/cache/tiktoken && \
+    echo -n 00000000-0000-0000-0000-000000000000 > /root/.cache/chroma/telemetry_user_id
+
+# Install Python dependencies
+RUN pip install torch==2.9.1 torchvision torchaudio && \
+    pip install --no-cache-dir -r /tmp/requirements.txt && \
+    python -c "import nltk; nltk.download('punkt_tab')" && \
+    rm -rf /tmp/requirements.txt
+
+# Copy frontend files
+COPY --from=build /app/build /app/build
+
+# Set permissions and expose port
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK CMD curl --silent --fail http://localhost:8080/health | jq -ne '.status == true' || exit 1
+
+CMD ["bash", "start.sh"]

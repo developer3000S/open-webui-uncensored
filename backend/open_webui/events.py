@@ -12,7 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from open_webui.env import VERSION
 from open_webui.models.config import Config
-from open_webui.retrieval.web.utils import validate_url
+# from open_webui.retrieval.web.utils import validate_url
 from open_webui.utils.webhook import post_webhook
 
 log = logging.getLogger(__name__)
