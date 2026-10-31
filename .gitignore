@@ -2,6 +2,8 @@ x.py
 yarn.lock
 .DS_Store
 node_modules
+openwebui_offline_packages
+docker
 /build
 /.svelte-kit
 /package

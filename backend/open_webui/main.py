@@ -429,13 +429,13 @@ if LOG_FORMAT != 'json':
 
 v{VERSION} - building the best AI user interface.
 {f'Commit: {WEBUI_BUILD_HASH}' if WEBUI_BUILD_HASH != 'dev-build' else ''}
-https://github.com/open-webui/open-webui
+https://github.com/developer30000s/open-webui-uncensored
 """
     try:
         print(banner)
     except UnicodeEncodeError:
         # Stdout can't encode the box-drawing banner (Windows cp1252, redirected/headless stdout); fall back to ASCII.
-        print(f'Open WebUI v{VERSION} - building the best AI user interface.\nhttps://github.com/open-webui/open-webui')
+        print(f'Open WebUI v{VERSION} - building the best AI user interface.\nhttps://github.com/developer30000s/open-webui-uncensored')
 
 
 @asynccontextmanager

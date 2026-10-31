@@ -1,23 +1,29 @@
 # Uncensored AI Studio — сервисный образ.
-# Вся runtime-логика и бинарники (node, llama-server, whisper, sd-server, Kokoro)
-# уже установлены в studio/app на хосте и пробрасываются целиком через bind
-# mount — внутри контейнера ничего не пересобирается.
-FROM node:22-bookworm
+# Используем локально доступный образ Node.js для корректной работы.
+FROM dockerhub.timeweb.cloud/node:22-alpine3.20
 
-# Бэкендам студии нужны libsamplerate0 (whisper) и libgomp1 (ggml/OpenBLAS);
-# sqlite3 — serve.cjs выполняет им миграции/запросы к studio.db; curl —
-# HEALTHCHECK. Всё остальное разрешается системными библиотеками Debian.
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        libgomp1 \
-        libsamplerate0 \
-        sqlite3 \
-        ca-certificates \
-        curl \
-    && rm -rf /var/lib/apt/lists/*
+# Устанавливаем необходимые системные зависимости
+RUN apk add --no-cache --update \
+    libgomp \
+    libsamplerate \
+    sqlite \
+    ca-certificates \
+    curl \
+    bash \
+    && rm -rf /var/cache/apk/*
+
+# Проверяем, что Node.js доступен в PATH
+RUN echo "PATH: $PATH" && \
+    which node && \
+    node --version && npm --version
+
+# Устанавливаем дополнительные зависимости, если они необходимы
+RUN apk add --no-cache --virtual .build-deps \
+    build-base \
+    && rm -rf /var/cache/apk/*
 
 # /app = studio/ на хосте. linux.sh и serve.cjs отсчитывают пути от своего
-# расположения: SCRIPT_DIR=/app, APP_DIR=/app/app, ROOT=/app — поэтому весь
+# расположжения: SCRIPT_DIR=/app, APP_DIR=/app/app, ROOT=/app — поэтому весь
 # studio/ монтируется в /app одним куском, а не только app/. COPY не нужен:
 # всё содержимое приходит bind mount'ом.
 WORKDIR /app

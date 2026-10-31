@@ -153,5 +153,5 @@ OPEN_WEBUI_PORT=8080 ./docker-compose-run.sh
 ## Контакты и документация
 
 - [Официальная документация Open WebUI](https://docs.openwebui.com/)
-- [GitHub репозиторий](https://github.com/open-webui/open-webui)
+- [GitHub репозиторий](https://github.com/developer3000s/open-webui-uncensored)
 - [Discord сообщество](https://discord.gg/5rJgQTnV4s)

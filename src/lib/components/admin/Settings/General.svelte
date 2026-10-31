@@ -100,7 +100,7 @@
 
 									{#if $config?.features?.enable_version_update_check}
 										<a
-											href="https://github.com/open-webui/open-webui/releases/tag/v{version.latest}"
+											href="https://github.com/developer3000s/open-webui-uncensored/releases/tag/v{version.latest}"
 											target="_blank"
 										>
 											{updateAvailable === null

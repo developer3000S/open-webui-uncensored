@@ -87,7 +87,21 @@ fi
 
 if [[ "${USE_OLLAMA_DOCKER,,}" == "true" ]]; then
   echo "Starting bundled ollama serve..."
-  ollama serve &
+  ollama serve > /tmp/ollama.log 2>&1 &
+  ollama_pid=$!
+  sleep 2
+  for i in {1..10}; do
+    if nc -z localhost 11434 2>/dev/null; then
+      echo "Ollama is ready on port 11434"
+      break
+    fi
+    sleep 1
+  done
+  if ! nc -z localhost 11434 2>/dev/null; then
+    echo "ERROR: Ollama failed to start on port 11434. Check /tmp/ollama.log"
+    kill $ollama_pid 2>/dev/null || true
+    # Continue anyway - open-webui can still work without Ollama
+  fi
 fi
 
 # ── CUDA library paths ──────────────────────────────────────────────────────

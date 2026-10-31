@@ -1,0 +1,42 @@
+services:
+  open-webui:
+    build:
+      context: .
+      dockerfile: Dockerfile.offline
+      args:
+        BUILDPLATFORM: linux/amd64
+    ports:
+      - "8080:8080"
+    environment:
+      - WEBUI_SECRET_KEY=test-secret-key
+      - USE_CUDA=false
+      - USE_SLIM=true
+    volumes:
+      - ./backend:/app/backend
+      - ./data:/app/backend/data
+      - ./openwebui_offline_packages:/tmp/openwebui_offline_packages
+    depends_on:
+      - neo4j
+    networks:
+      - open-webui-network
+
+  neo4j:
+    image: neo4j:5.26
+    container_name: open-webui-neo4j
+    ports:
+      - "7687:7687"
+      - "7474:7474"
+    environment:
+      - NEO4J_AUTH=neo4j/test
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+    volumes:
+      - neo4j_data:/data
+    networks:
+      - open-webui-network
+
+volumes:
+  neo4j_data:
+
+networks:
+  open-webui-network:
+    driver: bridge

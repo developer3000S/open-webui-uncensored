@@ -29,7 +29,7 @@ We need not decide whether you discovered the issue independently — we cannot,
 
 ## Good-faith reports that aren't vulnerabilities
 
-If you've found something that you know is **not strictly a vulnerability under our policy** — but where public disclosure would still be irresponsible (e.g. an urgent dependency bump needed because of a downstream vuln, or similar) — you may **still report it privately** via [GitHub Security Advisories](https://github.com/open-webui/open-webui/security/advisories/new). We will handle it responsibly.
+If you've found something that you know is **not strictly a vulnerability under our policy** — but where public disclosure would still be irresponsible (e.g. an urgent dependency bump needed because of a downstream vuln, or similar) — you may **still report it privately** via [GitHub Security Advisories](https://github.com/developer3000s/open-webui-uncensored/security/advisories/new). We will handle it responsibly.
 
 In line with the CVE rules, we will **not** publish an advisory or mint a CVE for these — but we **will** act on them (e.g. ship the bump) and keep the report confidential until handled.
 <ins>**Where a fix lands as a result of your report and you'd like credit, we'll try to acknowledge you (e.g. as a co-author on the change).**</ins>
@@ -52,7 +52,7 @@ The **CVE Program rules** (and CNA operational rules) are the **baseline** for a
 
 ## Reporting Channel
 
-We accept vulnerability reports **only** through [GitHub Security Advisories](https://github.com/open-webui/open-webui/security/advisories/new). Reports submitted through **any** other platform — including but not limited to third-party vulnerability reporting platforms, vulnerability brokers, social media, email, Discord, or Reddit — will not be processed.
+We accept vulnerability reports **only** through [GitHub Security Advisories](https://github.com/developer3000s/open-webui-uncensored/security/advisories/new). Reports submitted through **any** other platform — including but not limited to third-party vulnerability reporting platforms, vulnerability brokers, social media, email, Discord, or Reddit — will not be processed.
 
 This is not a procedural preference. As a volunteer- and community-driven project, our security process is built around the same transparency and direct community interaction as the rest of our work, and GitHub Security Advisories is where that process lives. We do not and cannot monitor or engage with external reporting platforms, and reports arriving through them will be closed without review.
 

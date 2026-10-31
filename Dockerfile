@@ -8,8 +8,8 @@ ARG USE_PERMISSION_HARDENING=false
 # Tested with cu117 for CUDA 11 and cu121 for CUDA 12 (default)
 ARG USE_CUDA_VER=cu128
 # any sentence transformer model; models to use can be found at https://huggingface.co/models?library=sentence-transformers
-# Leaderboard: https://huggingface.co/spaces/mteb/leaderboard 
-# for better performance and multilangauge support use "intfloat/multilingual-e5-large" (~2.5GB) or "intfloat/multilingual-e5-base" (~1.5GB)
+# Leaderboard: https://huggingface.co/spaces/mteb/leaderboard
+# for better performance and multilanguage support use "intfloat/multilingual-e5-large" (~2.5GB) or "intfloat/multilingual-e5-base" (~1.5GB)
 # IMPORTANT: If you change the embedding model (sentence-transformers/all-MiniLM-L6-v2) and vice versa, you aren't able to use RAG Chat with your previous documents loaded in the WebUI! You need to re-embed them.
 ARG USE_EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
 ARG USE_RERANKING_MODEL=""
@@ -24,8 +24,11 @@ ARG BUILD_HASH=dev-build
 ARG UID=0
 ARG GID=0
 
+# Platform for cross-compilation, defaults to linux/amd64
+ARG BUILDPLATFORM=linux/amd64
+
 ######## WebUI frontend ########
-FROM --platform=$BUILDPLATFORM node:22-alpine3.20 AS build
+FROM --platform=$BUILDPLATFORM dockerhub.timeweb.cloud/node:22-alpine3.20 AS build
 ARG BUILD_HASH
 
 # Set Node.js options (heap limit Allocation failed - JavaScript heap out of memory)
@@ -45,7 +48,7 @@ ENV NODE_OPTIONS="--max-old-space-size=8192"
 RUN npm run build
 
 ######## WebUI backend ########
-FROM python:3.11-slim-bookworm AS base
+FROM dockerhub.timeweb.cloud/python:3.11-slim-bookworm AS base
 
 # Use args
 ARG USE_CUDA
@@ -145,8 +148,8 @@ RUN set -e; \
     pip3 install --no-cache-dir uv; \
     if [ "$USE_CUDA" = "true" ]; then \
     # If you use CUDA the whisper and embedding model will be downloaded on first use
-    # fix: pin torch<=2.9.1 - torch 2.10.0 aarch64 wheels cause SIGILL on ARM devices (RPi 4 Cortex-A72) #21349
-    pip3 install 'torch<=2.9.1' torchvision torchaudio --index-url https://download.pytorch.org/whl/$USE_CUDA_DOCKER_VER --no-cache-dir; \
+    # fix: pin torch==2.9.1 - torch 2.10.0 aarch64 wheels cause SIGILL on ARM devices (RPi 4 Cortex-A72) #21349
+    pip3 install 'torch==2.9.1' torchvision torchaudio --index-url https://download.pytorch.org/whl/$USE_CUDA_DOCKER_VER --no-cache-dir; \
     uv pip install --system -r requirements.txt --no-cache-dir; \
     python -c "import os; from sentence_transformers import SentenceTransformer; SentenceTransformer(os.environ['RAG_EMBEDDING_MODEL'], device='cpu')"; \
     python -c "import os; from sentence_transformers import SentenceTransformer; SentenceTransformer(os.environ.get('AUXILIARY_EMBEDDING_MODEL', 'TaylorAI/bge-micro-v2'), device='cpu')"; \
@@ -154,7 +157,7 @@ RUN set -e; \
     python -c "import os; import tiktoken; tiktoken.get_encoding(os.environ['TIKTOKEN_ENCODING_NAME'])"; \
     python -c "import nltk; nltk.download('punkt_tab')"; \
     else \
-    pip3 install 'torch<=2.9.1' torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu --no-cache-dir; \
+    pip3 install torch==2.9.1 torchvision torchaudio --no-cache-dir; \
     uv pip install --system -r requirements.txt --no-cache-dir; \
     if [ "$USE_SLIM" != "true" ]; then \
     python -c "import os; from sentence_transformers import SentenceTransformer; SentenceTransformer(os.environ['RAG_EMBEDDING_MODEL'], device='cpu')"; \
@@ -170,14 +173,10 @@ RUN set -e; \
 # Install Ollama if requested
 RUN if [ "$USE_OLLAMA" = "true" ]; then \
     date +%s > /tmp/ollama_build_hash && \
-    echo "Cache broken at timestamp: `cat /tmp/ollama_build_hash`" && \
+    echo "Cache broken at timestamp: \`cat /tmp/ollama_build_hash\`" && \
     curl -fsSL https://ollama.com/install.sh | sh && \
     rm -rf /var/lib/apt/lists/*; \
     fi
-
-# copy embedding weight from build
-# RUN mkdir -p /root/.cache/chroma/onnx_models/all-MiniLM-L6-v2
-# COPY --from=build /app/onnx /root/.cache/chroma/onnx_models/all-MiniLM-L6-v2/onnx
 
 # copy built frontend files
 COPY --chown=$UID:$GID --from=build /app/build /app/build
@@ -209,4 +208,4 @@ ARG BUILD_HASH
 ENV WEBUI_BUILD_VERSION=${BUILD_HASH}
 ENV DOCKER=true
 
-CMD [ "bash", "start.sh"]
+CMD ["bash", "start.sh"]
