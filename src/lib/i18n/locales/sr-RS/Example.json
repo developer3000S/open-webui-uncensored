@@ -1,0 +1,7 @@
+{
+  " (&(objectClass=inetOrgPerson)(uid=%s))": "",
+  " ALL": "",
+  " mail": "",
+  " ou=users,dc=foo,dc=example": "",
+  " sAMAccountName or uid or userPrincipalName": ""
+}

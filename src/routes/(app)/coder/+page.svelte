@@ -214,22 +214,24 @@
 
 	// Chat rendering helpers: strip machine blocks (changeset / repo_search) from
 	// the displayed assistant text and provide "copy as Markdown" for each reply.
+	// Regexes are built once at component init instead of on every call: during
+	// streaming stripMachineBlocks runs per assistant message per throttled render,
+	// so re-creating three global regexes per invocation was pure GC churn.
+	const CFENCE = String.fromCharCode(96).repeat(3);
+	const CHANGESET_BLOCK_RE = new RegExp(CFENCE + 'changeset\\s*([\\s\\S]*?)' + CFENCE, 'gi');
+	const TOOL_JSON_BLOCK_RE = new RegExp(CFENCE + '(?:json|repo_search)\\s*([\\s\\S]*?)' + CFENCE, 'gi');
+
 	const stripMachineBlocks = (text: string): string => {
 		if (!text) return '';
-		const cfence = String.fromCharCode(96).repeat(3);
 		// Remove only machine blocks: changeset-tagged fences and json/changeset/repo_search
 		// fences that actually contain the tool payload keys ("files" / "query").
 		// Ordinary ```json code examples in prose are preserved.
-		const stripIf = (blockRe: RegExp, payloadRe: RegExp) =>
-			text.replace(blockRe, (whole, inner) => (payloadRe.test(inner ?? '') ? '' : whole));
-		text = stripIf(
-			new RegExp(cfence + 'changeset\\s*([\\s\\S]*?)' + cfence, 'gi'),
-			/"files"\s*:/
-		);
-		text = stripIf(
-			new RegExp(cfence + '(?:json|repo_search)\\s*([\\s\\S]*?)' + cfence, 'gi'),
-			/"(?:files|query)"\s*:/
-		);
+		const stripIf = (blockRe: RegExp, payloadRe: RegExp) => {
+			blockRe.lastIndex = 0; // reset stateful /g regex before reuse
+			return text.replace(blockRe, (whole, inner) => (payloadRe.test(inner ?? '') ? '' : whole));
+		};
+		text = stripIf(CHANGESET_BLOCK_RE, /"files"\s*:/);
+		text = stripIf(TOOL_JSON_BLOCK_RE, /"(?:files|query)"\s*:/);
 		return text
 			.replace(/\n{3,}/g, '\n\n')
 			.trim();
@@ -509,8 +511,9 @@ The system will execute it and return matching file snippets in your next turn. 
 	};
 
 	const extractChangeset = (text: string): { files: CoderChangeFile[] } | null => {
-		const cfence = String.fromCharCode(96).repeat(3);
-		const cre = new RegExp(cfence + '(?:json|changeset)\\s*([\\s\\S]*?)' + cfence, 'i');
+		// reuses CFENCE and the shared fence regexes (built once above) instead of
+		// recompiling them on every call
+		const cre = new RegExp(CFENCE + '(?:json|changeset)\\s*([\\s\\S]*?)' + CFENCE, 'i');
 		const match = text.match(cre);
 		const candidates: string[] = [];
 		if (match) candidates.push(match[1]);
@@ -651,8 +654,8 @@ The system will execute it and return matching file snippets in your next turn. 
 	};
 
 	const extractToolRequest = (text: string): { query: string; paths?: string[]; max_results?: number } | null => {
-		const fence = String.fromCharCode(96).repeat(3);
-		const re = new RegExp(fence + '(?:repo_search|json)\\s*([\\s\\S]*?)' + fence, 'i');
+		// non-global clone of the shared TOOL_JSON_BLOCK_RE (same pattern, no /g state)
+		const re = new RegExp(TOOL_JSON_BLOCK_RE.source, 'i');
 		const match = text.match(re);
 		if (match && /"query"\s*:/.test(match[1])) {
 			try {
@@ -739,30 +742,45 @@ The system will execute it and return matching file snippets in your next turn. 
 		let assistantText = '';
 		messages = [...messages, { role: 'assistant', content: '' }];
 
+		// Buffer raw bytes and split on '\n' ourselves: a chunk may end in the middle
+		// of a multi-byte UTF-8 sequence and an SSE line may span two chunks.
+		let sseBuffer = '';
+		const handleLine = (line: string) => {
+			const trimmed = line.trim();
+			if (!trimmed.startsWith('data:')) return;
+			const data = trimmed.slice(5).trim();
+			if (data === '[DONE]') return;
+			try {
+				const json = JSON.parse(data);
+				const delta = json.choices?.[0]?.delta?.content ?? '';
+				if (delta) assistantText += delta;
+			} catch (_) {
+				/* partial line */
+			}
+		};
+
+		// Throttle store updates to ~20/s instead of per token: avoids O(n^2) array
+		// copies and full Markdown re-parsing on long streaming answers.
+		let lastRender = 0;
+		const renderIfDue = (force = false) => {
+			const now = performance.now();
+			if (!force && now - lastRender < 50) return;
+			lastRender = now;
+			messages = [...messages.slice(0, -1), { role: 'assistant', content: assistantText }];
+		};
+
 		while (true) {
 			const { done, value } = await reader.read();
 			if (done) break;
-			const chunk = decoder.decode(value, { stream: true });
-			for (const line of chunk.split('\n')) {
-				const trimmed = line.trim();
-				if (!trimmed.startsWith('data:')) continue;
-				const data = trimmed.slice(5).trim();
-				if (data === '[DONE]') continue;
-				try {
-					const json = JSON.parse(data);
-					const delta = json.choices?.[0]?.delta?.content ?? '';
-					if (delta) {
-						assistantText += delta;
-						messages = [
-							...messages.slice(0, -1),
-							{ role: 'assistant', content: assistantText }
-						];
-					}
-				} catch (_) {
-					/* partial line */
-				}
-			}
+			sseBuffer += decoder.decode(value, { stream: true });
+			const lines = sseBuffer.split('\n');
+			sseBuffer = lines.pop() ?? '';
+			for (const line of lines) handleLine(line);
+			renderIfDue();
 		}
+		sseBuffer += decoder.decode(); // flush trailing multi-byte sequence
+		if (sseBuffer) handleLine(sseBuffer);
+		renderIfDue(true);
 		return assistantText;
 	};
 
@@ -996,13 +1014,13 @@ The system will execute it and return matching file snippets in your next turn. 
 					<Github className="size-4" />
 					{$i18n.t('Connect GitHub')}
 				</button>
-			{#else}
+			{:else}
 				<div class="text-sm text-gray-500 max-w-md">
 					{$i18n.t('GitHub OAuth is not configured on this server. Set CODER_GITHUB_CLIENT_ID and CODER_GITHUB_CLIENT_SECRET.')}
 				</div>
 			{/if}
 		</div>
-	{#else}
+	{:else}
 		<!-- Header -->
 		<div class="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-800 shrink-0">
 			<div class="flex items-center gap-3 min-w-0">
@@ -1085,7 +1103,7 @@ The system will execute it and return matching file snippets in your next turn. 
 									{$i18n.t('Connection is valid')}{#if ghValidation.login} — {ghValidation.login}{/if}.
 								{:else if ghValidation.warning}
 									{$i18n.t('Warning')}: {ghValidation.warning}
-								{#else}
+								{:else}
 									{$i18n.t('GitHub connection validation failed. Reconnect your account.')}
 								{/if}
 							</div>
@@ -1134,7 +1152,7 @@ The system will execute it and return matching file snippets in your next turn. 
 												class="text-xs text-gray-500 hover:text-red-500 shrink-0"
 												on:click={() => removeConnection(gc.id)}>{$i18n.t('Disconnect')}</button
 											>
-										{#else}
+										{:else}
 											<button type="button" class="text-xs text-gray-500 hover:text-red-500 shrink-0" on:click={disconnect}>
 												{$i18n.t('Disconnect')}
 											</button>
@@ -1142,7 +1160,7 @@ The system will execute it and return matching file snippets in your next turn. 
 									</div>
 								{/each}
 							</div>
-						{#else}
+						{:else}
 							<div class="flex items-center gap-3">
 								<Github className="size-6 shrink-0" />
 								<div class="flex-1 min-w-0">
@@ -1196,7 +1214,7 @@ The system will execute it and return matching file snippets in your next turn. 
 								<div class="text-xs text-red-500 py-2">{auditError}</div>
 							{:else if auditEvents.length === 0}
 								<div class="text-xs text-gray-500 py-2">{$i18n.t('No audit events yet.')}</div>
-							{#else}
+							{:else}
 								<div class="overflow-x-auto max-h-96 overflow-y-auto scrollbar-thin">
 									<table class="w-full text-left text-xs">
 										<thead class="text-gray-500 sticky top-0 bg-white dark:bg-gray-950">
@@ -1270,7 +1288,7 @@ The system will execute it and return matching file snippets in your next turn. 
 						<div class="text-gray-500">{$i18n.t('Loading projects...')}</div>
 					{:else if projects.length === 0}
 						<div class="text-gray-500 text-center py-10">{$i18n.t('No projects saved yet. Create one to get started.')}</div>
-					{#else}
+					{:else}
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 							{#each projects as project (project.id)}
 								<div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-400 dark:hover:border-gray-500">
@@ -1299,7 +1317,7 @@ The system will execute it and return matching file snippets in your next turn. 
 					{/if}
 				</div>
 			</div>
-		{#else}
+		{:else}
 			<!-- Workspace tab: repository panel + chat + changes -->
 			<div class="flex flex-1 min-h-0">
 			<!-- Left: repository panel -->
@@ -1317,7 +1335,7 @@ The system will execute it and return matching file snippets in your next turn. 
 							{$i18n.t('Loading repository into workspace…')} — {owner}/{repo} @ {branch}
 						{:else if owner && repo}
 							{owner}/{repo} @ {branch} · {attachments.length} {$i18n.t('files in context')}
-						{#else}
+						{:else}
 							{$i18n.t('No repository selected')}
 						{/if}
 					</div>
@@ -1355,7 +1373,7 @@ The system will execute it and return matching file snippets in your next turn. 
 								<div class="absolute z-30 mt-1 w-full max-h-64 overflow-y-auto scrollbar-thin rounded-xl bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-gray-700 shadow-lg">
 									{#if semanticError}
 										<div class="text-xs text-red-500 px-3 py-2">{semanticError}</div>
-									{#else}
+									{:else}
 										<div class="text-[10px] text-gray-400 px-3 pt-2">{$i18n.t('mode')}: {semanticMode}</div>
 										{#each semanticResults as r (r.path)}
 											<button
@@ -1396,7 +1414,7 @@ The system will execute it and return matching file snippets in your next turn. 
 									class="max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm whitespace-pre-wrap leading-relaxed bg-gray-900 text-white dark:bg-blue-600"
 								>{msg.content}</div
 								>
-							{#else}
+							{:else}
 								{@const displayContent = stripMachineBlocks(msg.content)}
 								<div class="max-w-[85%] min-w-0 flex flex-col items-start gap-1">
 									<div
@@ -1404,7 +1422,7 @@ The system will execute it and return matching file snippets in your next turn. 
 									>
 										{#if displayContent}
 											<Markdown content={displayContent} id={`coder-msg-${i}`} done={!sending || i !== messages.length - 1} />
-										{#else}
+										{:else}
 											<span class="text-gray-400 italic">{$i18n.t('Change set proposed — see the panel below.')}</span>
 										{/if}
 									</div>
@@ -1417,7 +1435,7 @@ The system will execute it and return matching file snippets in your next turn. 
 										>
 											{#if copiedMessageIndex === i}
 												✓ {$i18n.t('Copied')}
-											{#else}
+											{:else}
 												⧉ {$i18n.t('Copy as Markdown')}
 											{/if}
 										</button>
@@ -1560,7 +1578,7 @@ The system will execute it and return matching file snippets in your next turn. 
 
 					{#if changeset.length === 0}
 						<div class="text-xs text-gray-500 px-1 py-2">{$i18n.t('No changes yet')}</div>
-					{#else}
+					{:else}
 						{#each changeset as f (f.path)}
 							<div class="rounded-xl border border-gray-200 dark:border-gray-700 px-2.5 py-2 flex items-center gap-2">
 								<span
@@ -1574,7 +1592,7 @@ The system will execute it and return matching file snippets in your next turn. 
 								>{f.action}</span>
 								{#if f.action === 'rename'}
 									<span class="text-xs font-mono truncate">{f.old_path} → {f.path}</span>
-								{#else}
+								{:else}
 									<span class="text-xs font-mono truncate">{f.path}</span>
 								{/if}
 							</div>
