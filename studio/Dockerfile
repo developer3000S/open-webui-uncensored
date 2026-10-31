@@ -33,6 +33,24 @@ WORKDIR /app
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=2 \
     CMD curl -sf http://127.0.0.1:${FRONTEND_PORT:-14200}/api/health >/dev/null || exit 1
 
+# Устанавливаем необходимые зависимости
+RUN apk add --no-cache --update \
+    libgomp \
+    libsamplerate \
+    sqlite \
+    ca-certificates \
+    curl \
+    bash \
+    && rm -rf /var/cache/apk/*
+
+# Устанавливаем рабочую директорию
+WORKDIR /app
+
+# Копируем все необходимые файлы из текущей директории
+COPY . /app/
+
+# Устанавливаем права на исполнение для linux.sh
+RUN chmod +x /app/linux.sh
+
 # linux.sh — точка входа: он запускает serve.cjs портабельным node из app/tools.
-# read -rp в linux.sh получает EOF из неинтерактивного контекста и продолжает.
-CMD [ "bash", "/app/linux.sh" ]
+CMD ["bash", "/app/linux.sh"]

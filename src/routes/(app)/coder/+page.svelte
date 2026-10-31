@@ -996,13 +996,13 @@ The system will execute it and return matching file snippets in your next turn. 
 					<Github className="size-4" />
 					{$i18n.t('Connect GitHub')}
 				</button>
-			{:else}
+			{#else}
 				<div class="text-sm text-gray-500 max-w-md">
 					{$i18n.t('GitHub OAuth is not configured on this server. Set CODER_GITHUB_CLIENT_ID and CODER_GITHUB_CLIENT_SECRET.')}
 				</div>
 			{/if}
 		</div>
-	{:else}
+	{#else}
 		<!-- Header -->
 		<div class="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-800 shrink-0">
 			<div class="flex items-center gap-3 min-w-0">
@@ -1085,7 +1085,7 @@ The system will execute it and return matching file snippets in your next turn. 
 									{$i18n.t('Connection is valid')}{#if ghValidation.login} — {ghValidation.login}{/if}.
 								{:else if ghValidation.warning}
 									{$i18n.t('Warning')}: {ghValidation.warning}
-								{:else}
+								{#else}
 									{$i18n.t('GitHub connection validation failed. Reconnect your account.')}
 								{/if}
 							</div>
@@ -1134,7 +1134,7 @@ The system will execute it and return matching file snippets in your next turn. 
 												class="text-xs text-gray-500 hover:text-red-500 shrink-0"
 												on:click={() => removeConnection(gc.id)}>{$i18n.t('Disconnect')}</button
 											>
-										{:else}
+										{#else}
 											<button type="button" class="text-xs text-gray-500 hover:text-red-500 shrink-0" on:click={disconnect}>
 												{$i18n.t('Disconnect')}
 											</button>
@@ -1142,7 +1142,7 @@ The system will execute it and return matching file snippets in your next turn. 
 									</div>
 								{/each}
 							</div>
-						{:else}
+						{#else}
 							<div class="flex items-center gap-3">
 								<Github className="size-6 shrink-0" />
 								<div class="flex-1 min-w-0">
@@ -1196,7 +1196,7 @@ The system will execute it and return matching file snippets in your next turn. 
 								<div class="text-xs text-red-500 py-2">{auditError}</div>
 							{:else if auditEvents.length === 0}
 								<div class="text-xs text-gray-500 py-2">{$i18n.t('No audit events yet.')}</div>
-							{:else}
+							{#else}
 								<div class="overflow-x-auto max-h-96 overflow-y-auto scrollbar-thin">
 									<table class="w-full text-left text-xs">
 										<thead class="text-gray-500 sticky top-0 bg-white dark:bg-gray-950">
@@ -1270,7 +1270,7 @@ The system will execute it and return matching file snippets in your next turn. 
 						<div class="text-gray-500">{$i18n.t('Loading projects...')}</div>
 					{:else if projects.length === 0}
 						<div class="text-gray-500 text-center py-10">{$i18n.t('No projects saved yet. Create one to get started.')}</div>
-					{:else}
+					{#else}
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 							{#each projects as project (project.id)}
 								<div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-400 dark:hover:border-gray-500">
@@ -1299,7 +1299,7 @@ The system will execute it and return matching file snippets in your next turn. 
 					{/if}
 				</div>
 			</div>
-		{:else}
+		{#else}
 			<!-- Workspace tab: repository panel + chat + changes -->
 			<div class="flex flex-1 min-h-0">
 			<!-- Left: repository panel -->
@@ -1317,7 +1317,7 @@ The system will execute it and return matching file snippets in your next turn. 
 							{$i18n.t('Loading repository into workspace…')} — {owner}/{repo} @ {branch}
 						{:else if owner && repo}
 							{owner}/{repo} @ {branch} · {attachments.length} {$i18n.t('files in context')}
-						{:else}
+						{#else}
 							{$i18n.t('No repository selected')}
 						{/if}
 					</div>
@@ -1355,7 +1355,7 @@ The system will execute it and return matching file snippets in your next turn. 
 								<div class="absolute z-30 mt-1 w-full max-h-64 overflow-y-auto scrollbar-thin rounded-xl bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-gray-700 shadow-lg">
 									{#if semanticError}
 										<div class="text-xs text-red-500 px-3 py-2">{semanticError}</div>
-									{:else}
+									{#else}
 										<div class="text-[10px] text-gray-400 px-3 pt-2">{$i18n.t('mode')}: {semanticMode}</div>
 										{#each semanticResults as r (r.path)}
 											<button
@@ -1396,7 +1396,7 @@ The system will execute it and return matching file snippets in your next turn. 
 									class="max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm whitespace-pre-wrap leading-relaxed bg-gray-900 text-white dark:bg-blue-600"
 								>{msg.content}</div
 								>
-							{:else}
+							{#else}
 								{@const displayContent = stripMachineBlocks(msg.content)}
 								<div class="max-w-[85%] min-w-0 flex flex-col items-start gap-1">
 									<div
@@ -1404,7 +1404,7 @@ The system will execute it and return matching file snippets in your next turn. 
 									>
 										{#if displayContent}
 											<Markdown content={displayContent} id={`coder-msg-${i}`} done={!sending || i !== messages.length - 1} />
-										{:else}
+										{#else}
 											<span class="text-gray-400 italic">{$i18n.t('Change set proposed — see the panel below.')}</span>
 										{/if}
 									</div>
@@ -1417,7 +1417,7 @@ The system will execute it and return matching file snippets in your next turn. 
 										>
 											{#if copiedMessageIndex === i}
 												✓ {$i18n.t('Copied')}
-											{:else}
+											{#else}
 												⧉ {$i18n.t('Copy as Markdown')}
 											{/if}
 										</button>
@@ -1560,7 +1560,7 @@ The system will execute it and return matching file snippets in your next turn. 
 
 					{#if changeset.length === 0}
 						<div class="text-xs text-gray-500 px-1 py-2">{$i18n.t('No changes yet')}</div>
-					{:else}
+					{#else}
 						{#each changeset as f (f.path)}
 							<div class="rounded-xl border border-gray-200 dark:border-gray-700 px-2.5 py-2 flex items-center gap-2">
 								<span
@@ -1574,7 +1574,7 @@ The system will execute it and return matching file snippets in your next turn. 
 								>{f.action}</span>
 								{#if f.action === 'rename'}
 									<span class="text-xs font-mono truncate">{f.old_path} → {f.path}</span>
-								{:else}
+								{#else}
 									<span class="text-xs font-mono truncate">{f.path}</span>
 								{/if}
 							</div>
