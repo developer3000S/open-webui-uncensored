@@ -4,9 +4,9 @@ yarn.lock
 node_modules
 openwebui_offline_packages
 docker
-/build
-/.svelte-kit
-/package
+build
+.svelte-kit
+package
 .env
 .env.*
 !.env.example
