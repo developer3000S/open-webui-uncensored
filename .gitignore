@@ -1,1 +1,32 @@
+.github
+.DS_Store
+docs
+kubernetes
+node_modules
+node_modules/
+/.svelte-kit
+build/
+/package
+.env
+.env.*
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+__pycache__
+.idea
+venv
+_old
+uploads
+.ipynb_checkpoints
+**/*.db
+_test
+backend/data/*
+Medical-Graph-RAG
+# Studio ships its own image (build context ./studio); its 249 GB of models
+# and backends must never enter the WebUI build context.
 .tmp-scripts/
+studio/app/llm-models
+studio/app/llm-models/
+studio/app/speech-models
+studio/app/speech-models/
+studio/app/tts-models
+studio/app/tts-models/

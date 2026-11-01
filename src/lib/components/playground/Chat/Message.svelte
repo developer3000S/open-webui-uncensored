@@ -19,7 +19,7 @@
 <div class="flex gap-2 group">
 	<div class="flex items-start pt-1">
 		<div
-			class="px-2 py-1 text-sm font-semibold uppercase min-w-[6rem] text-left rounded-lg transition"
+			class="px-2 py-1 text-sm font-semibold uppercase min-w-[6rem] text-left border-radius: 0.5rem; transition"
 		>
 			{$i18n.t(message.role)}
 		</div>
@@ -31,7 +31,7 @@
 		<textarea
 			id="{message.role}-{idx}-textarea"
 			bind:this={textAreaElement}
-			class="w-full bg-transparent outline-hidden rounded-lg p-2 text-sm resize-none overflow-hidden"
+			class="w-full bg-transparent outline-hidden border-radius: 0.5rem; p-2 text-sm resize-none overflow-hidden"
 			placeholder={$i18n.t(`Enter {{role}} message here`, {
 				role: message.role === 'user' ? $i18n.t('a user') : $i18n.t('an assistant')
 			})}

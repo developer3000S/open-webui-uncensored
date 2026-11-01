@@ -141,10 +141,10 @@
 										<img
 											src={image.url}
 											alt=""
-											class="w-full aspect-square object-cover rounded-lg border border-gray-100/30 dark:border-gray-850/30"
+											class="w-full aspect-square object-cover border-radius: 0.5rem; border: 1px solid rgba(0, 0, 0, 0.09); dark:border: 1px solid rgba(0, 0, 0, 0.3)"
 										/>
 										<div
-											class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition rounded-lg flex items-center justify-center"
+											class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition border-radius: 0.5rem; flex items-center justify-center"
 										>
 											<svg
 												xmlns="http://www.w3.org/2000/svg"
@@ -245,7 +245,7 @@
 							/>
 							<button
 								type="button"
-								class="px-3.5 py-1.5 text-sm font-medium bg-gray-50 hover:bg-gray-100 text-gray-900 dark:bg-gray-850 dark:hover:bg-gray-800 dark:text-gray-200 transition rounded-lg"
+								class="px-3.5 py-1.5 text-sm font-medium bg-gray-50 hover:bg-gray-100 text-gray-900 dark:bg-gray-850 dark:hover:bg-gray-800 dark:text-gray-200 transition border-radius: 0.5rem;"
 								on:click={() => fileInputElement?.click()}
 								on:dragover|preventDefault
 								on:drop={handleDrop}
@@ -258,14 +258,14 @@
 							{#if !loading}
 								<button
 									disabled={prompt.trim() === ''}
-									class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+									class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition border-radius: 0.5rem; disabled:opacity-50 disabled:cursor-not-allowed"
 									on:click={submitHandler}
 								>
 									{$i18n.t('Run')}
 								</button>
 							{:else}
 								<button
-									class="px-3.5 py-1.5 text-sm font-medium bg-gray-300 text-black transition rounded-lg flex items-center gap-2"
+									class="px-3.5 py-1.5 text-sm font-medium bg-gray-300 text-black transition border-radius: 0.5rem; flex items-center gap-2"
 									disabled
 								>
 									<Spinner className="size-4" />

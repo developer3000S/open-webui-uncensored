@@ -344,7 +344,7 @@
 				<Collapsible
 					className="w-full flex-1"
 					bind:open={showSystem}
-					buttonClassName="w-full rounded-lg text-sm border border-gray-100/30 dark:border-gray-850/30 w-full py-1 px-1.5"
+					buttonClassName="w-full border-radius: 0.5rem; text-sm border: 1px solid rgba(0, 0, 0, 0.09); dark:border: 1px solid rgba(0, 0, 0, 0.3); w-full py-1 px-1.5"
 					grow={true}
 				>
 					<div class="flex gap-2 justify-between items-center">
@@ -359,7 +359,7 @@
 						{/if}
 
 						<div class="shrink-0">
-							<button class="p-1.5 bg-transparent hover:bg-white/5 transition rounded-lg">
+							<button class="p-1.5 bg-transparent hover:bg-white/5 transition border-radius: 0.5rem;">
 								{#if showSystem}
 									<ChevronUp className="size-3.5" />
 								{:else}
@@ -387,7 +387,7 @@
 
 				<Dropdown>
 					<button
-						class="p-1.5 text-sm font-medium bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition rounded-lg"
+						class="p-1.5 text-sm font-medium bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition border-radius: 0.5rem;"
 						aria-label={$i18n.t('More options')}
 					>
 						<EllipsisHorizontal className="size-4" />
@@ -474,7 +474,7 @@
 						<div class="shrink-0">
 							<button
 								type="button"
-								class="px-3.5 py-1.5 text-sm font-medium bg-gray-50 hover:bg-gray-100 text-gray-900 dark:bg-gray-850 dark:hover:bg-gray-800 dark:text-gray-200 transition rounded-lg shrink-0 {($settings?.highContrastMode ??
+								class="px-3.5 py-1.5 text-sm font-medium bg-gray-50 hover:bg-gray-100 text-gray-900 dark:bg-gray-850 dark:hover:bg-gray-800 dark:text-gray-200 transition border-radius: 0.5rem; shrink-0" {($settings?.highContrastMode ??
 								false)
 									? ''
 									: 'outline-hidden'}"
@@ -497,7 +497,7 @@
 						<div class="flex items-center justify-between gap-2 w-full sm:w-auto">
 							<div class="flex-1">
 								<select
-									class=" bg-transparent border border-gray-100/30 dark:border-gray-850/30 rounded-lg py-1 px-2 -mx-0.5 text-sm outline-hidden w-full"
+									class="bg-transparent border: 1px solid rgba(0, 0, 0, 0.09); dark:border: 1px solid rgba(0, 0, 0, 0.3); border-radius: 0.5rem; py-1 px-2 -mx-0.5 text-sm outline-hidden w-full"
 									bind:value={selectedModelId}
 								>
 									{#each $models as model}
@@ -509,7 +509,7 @@
 							</div>
 
 							<button
-								class="p-1.5 text-sm font-medium bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 transition rounded-lg {showControls
+								class="p-1.5 text-sm font-medium bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 transition border-radius: 0.5rem;" {showControls
 									? 'text-black dark:text-white'
 									: 'text-gray-500 dark:text-gray-400'}"
 								aria-label={$i18n.t('Controls')}
