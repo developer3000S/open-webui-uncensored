@@ -4,7 +4,6 @@ import js from '@eslint/js';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 import svelte from 'eslint-plugin-svelte';
-import cypress from 'eslint-plugin-cypress/flat';
 import prettier from 'eslint-config-prettier';
 
 export default tseslint.config(
@@ -36,7 +35,6 @@ export default tseslint.config(
 	js.configs.recommended,
 	...tseslint.configs.recommended,
 	...svelte.configs['flat/recommended'],
-	cypress.configs.recommended,
 	{
 		languageOptions: {
 			globals: {
