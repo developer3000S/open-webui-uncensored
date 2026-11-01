@@ -36,3 +36,7 @@ studio/app/speech-models
 studio/app/speech-models/
 studio/app/tts-models
 studio/app/tts-models/
+
+docker/
+# Исключаем большие файлы Docker
+docker/*.tar
