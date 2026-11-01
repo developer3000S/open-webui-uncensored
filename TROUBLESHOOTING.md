@@ -64,11 +64,29 @@ Diagnose with `docker logs <container> --tail 40`; if the traceback ends in that
 
 ## Docker Image Build Issues (`open-webui-uncensored:local`)
 
-**Требуемые версии инструментов.** Сборка образа WebUI (`Dockerfile`, stage `build`) и студии (`studio/Dockerfile`) закреплена за **Node.js 24.12.0** (образ `node:24.12.0-alpine`) и **npm 12.2.1** (устанавливается в образе через `npm install -g npm@12.2.1`). Эти же версии объявлены в поле `engines` корневых `package.json` и `studio/package.json`, а CI (`.github/workflows/release-pypi.yml`) использует `node-version: 24.12.0`. Локально можно поставить их через `nvm install 24.12.0 && npm install -g npm@12.2.1`.
+**Требуемые версии инструментов.**
+Сборка образа WebUI (`Dockerfile`, stage `build`) и студии (`studio/Dockerfile`) закреплена за **Node.js 24.22.2** и **npm 12.2.1**. Эти версии установлены в образе через `node:24.22.2-alpine` и `npm install -g npm@12.2.1`. Локально можно установить их через:
 
-**`npm warn EBADENGINE Unsupported engine ...` — это предупреждения, а не ошибки.** Они появляются, когда версия Node в окружении не совпадает с полем `engines` пакетов, но установку/сборку не прерывают (в `.npmrc` стоит `engine-strict=false`, а `npm ci` в Dockerfile запускается с `--engine-strict=false`). Если вы видите только EBADENGINE-варнинги и таймер `docker build` продолжает идти — сборка идёт штатно: сборка SvelteKit-фронтенда (`npm run build`) занимает 7–10 минут, это нормально.
+```bash
+nvm install 24.22.2 && npm install -g npm@12.2.1
+```
 
-**`npm error code ERESOLVE ... Conflicting peer dependency: eslint@...`** — ошибка разрешения peer-зависимостей (например, транзитивные пакеты `@typescript-eslint/*`, `eslint-plugin-svelte`, `eslint-config-prettier` требуют `eslint >=8`, а в дереве встречается старая копия `eslint@4`). Решение уже встроено в репозиторий:
+**`npm warn EBADENGINE Unsupported engine ...`** — это предупреждения, а не ошибки. Они появляются, если версия Node в окружении не совпадает с полем `engines` пакетов, но не мешают сборке. В `.npmrc` стоит `engine-strict=false`, а `npm ci` в Dockerfile запускается с `--engine-strict=false`.
+
+**`npm error code ERESOLVE ... Conflicting peer dependency: eslint@...`** — ошибка разрешения peer-зависимостей (например, конфликт `eslint@4` и `@typescript-eslint/*`). Используйте `--legacy-peer-deps` или добавьте `legacy-peer-deps=true` в `.npmrc`.
+
+**Старый кэш сборки повторяет прежние ошибки.** Если после обновления `Dockerfile` или `.npmrc` сборка всё равно падает со старыми ошибками, очистите билд-кэш:
+
+```bash
+docker builder prune -f
+docker build -f Dockerfile -t open-webui-uncensored:local .
+```
+
+**`npm warn EBADENGINE Unsupported engine ...`** — это предупреждения, а не ошибки. Они появляются, если версия Node в окружении не совпадает с полем `engines` пакетов, но не мешают сборке. В `.npmrc` стоит `engine-strict=false`, а `npm ci` в Dockerfile запускается с `--engine-strict=false`.
+
+**`npm error code ERESOLVE ... Conflicting peer dependency: eslint@...`** — ошибка разрешения peer-зависимостей (например, конфликт `eslint@4` и `@typescript-eslint/*`). Используйте `--legacy-peer-deps` или добавьте `legacy-peer-deps=true` в `.npmrc`.
+
+**Решение конфликтов peer-зависимостей уже встроено в репозиторий:**
 - `.npmrc` содержит `legacy-peer-deps=true`;
 - `Dockerfile` выполняет `npm ci --no-audit --no-fund --engine-strict=false --legacy-peer-deps`;
 - в lock-файле зафиксирован современный `eslint@10.x`.
