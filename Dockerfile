@@ -40,7 +40,7 @@ ARG BUILDPLATFORM=linux/amd64
 # The runtime stage was always python:3.11-slim-bookworm (Debian), so this also aligns both
 # stages on one libc. The frontend is only *built* here; its static output is copied into
 # the Debian runtime image, so nothing musl-dependent ever ships in the final image.
-FROM --platform=$BUILDPLATFORM dockerhub.timeweb.cloud/node:24.22.2-bookworm AS build
+FROM --platform=$BUILDPLATFORM node:24.22.2 AS build
 ARG BUILD_HASH
 
 # Pin exact toolchain versions everywhere in this stage

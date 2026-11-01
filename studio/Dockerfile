@@ -1,6 +1,6 @@
 # Uncensored AI Studio — сервисный образ.
-# Используем локально доступный образ Node.js для корректной работы.
-FROM dockerhub.timeweb.cloud/node:24.22.2-boorworm AS build
+# Используем стандартный образ Node.js для корректной работы.
+FROM node:24.22.2 AS build
 
 # Pin exact npm version for this image
 ENV NODE_VERSION=24.22.2 NPM_VERSION=12.2.1
