@@ -1,6 +1,6 @@
 # Uncensored AI Studio — сервисный образ.
 # Используем локально доступный образ Node.js для корректной работы.
-FROM dockerhub.timeweb.cloud/node:24.12.0-alpine
+FROM dockerhub.timeweb.cloud/node:24.22.2-alpine
 
 # Pin exact npm version for this image
 RUN npm install -g npm@12.2.1 && node -v && npm -v

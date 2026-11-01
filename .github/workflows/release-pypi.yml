@@ -23,7 +23,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y git
       - uses: actions/setup-node@v6
         with:
-          node-version: 24.12.0
+          node-version: 24.22.2
       - uses: actions/setup-python@v6
         with:
           python-version: 3.11

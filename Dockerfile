@@ -11,7 +11,7 @@ ARG USE_CUDA_VER=cu128
 # Leaderboard: https://huggingface.co/spaces/mteb/leaderboard
 # for better performance and multilanguage support use "intfloat/multilingual-e5-large" (~2.5GB) or "intfloat/multilingual-e5-base" (~1.5GB)
 # IMPORTANT: If you change the embedding model (sentence-transformers/all-MiniLM-L6-v2) and vice versa, you aren't able to use RAG Chat with your previous documents loaded in the WebUI! You need to re-embed them.
-ARG USE_EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+ARG USE_EMBEDDING_MODEL=intfloat/multilingual-e5-largintfloat/multilingual-e5-larg
 ARG USE_RERANKING_MODEL=""
 ARG USE_AUXILIARY_EMBEDDING_MODEL=TaylorAI/bge-micro-v2
 ARG USE_WHISPER_MODEL=base
@@ -28,11 +28,11 @@ ARG GID=0
 ARG BUILDPLATFORM=linux/amd64
 
 ######## WebUI frontend ########
-FROM --platform=$BUILDPLATFORM dockerhub.timeweb.cloud/node:24.12.0-alpine AS build
+FROM --platform=$BUILDPLATFORM dockerhub.timeweb.cloud/node:24.22.2-alpine AS build
 ARG BUILD_HASH
 
 # Pin exact toolchain versions everywhere in this stage
-ENV NODE_VERSION=24.12.0 NPM_VERSION=12.2.1
+ENV NODE_VERSION=24.22.2 NPM_VERSION=12.2.1
 RUN corepack enable && \
     npm install -g npm@12.2.1 && \
     node -v && npm -v
