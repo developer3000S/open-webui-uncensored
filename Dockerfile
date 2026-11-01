@@ -28,7 +28,19 @@ ARG GID=0
 ARG BUILDPLATFORM=linux/amd64
 
 ######## WebUI frontend ########
-FROM --platform=$BUILDPLATFORM dockerhub.timeweb.cloud/node:24.22.2-alpine AS build
+# Build stage uses Debian (glibc), NOT Alpine (musl).
+# Why: the frontend toolchain (vite 8 / rolldown / @tailwindcss/oxide / sharp) ships
+# platform-specific *native* binaries. On Alpine npm must resolve the "-musl" variants
+# (@rolldown/binding-linux-x64-musl etc.), which are marked "optional" in the dep tree and
+# are regularly skipped by npm's known optional-dependencies bug (npm/cli#4828), producing
+# "Error: Cannot find native binding" at `npm run build`. Slapping workarounds into the
+# lock file / install command only papers over this. On a glibc image the plain
+# "-linux-x64-gnu" bindings are the canonical entries already present in package-lock.json,
+# so a normal `npm ci` is deterministic and needs no --install-strategy=nested hacks.
+# The runtime stage was always python:3.11-slim-bookworm (Debian), so this also aligns both
+# stages on one libc. The frontend is only *built* here; its static output is copied into
+# the Debian runtime image, so nothing musl-dependent ever ships in the final image.
+FROM --platform=$BUILDPLATFORM dockerhub.timeweb.cloud/node:24.22.2-bookworm AS build
 ARG BUILD_HASH
 
 # Pin exact toolchain versions everywhere in this stage
@@ -37,30 +49,23 @@ RUN corepack enable && \
     npm install -g npm@12.2.1 && \
     node -v && npm -v
 
-# Set Node.js options (heap limit Allocation failed - JavaScript heap out of memory)
-# ENV NODE_OPTIONS="--max-old-space-size=4096"
-
 WORKDIR /app
 
 # to store git revision in build
-RUN apk add --no-cache git
+RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json ./
-# npm ci requires package.json and package-lock.json to be in sync.
-# If you edit package.json, regenerate the lock file first:
-#   rm -rf node_modules package-lock.json && npm install
+# `npm ci` now works again: package-lock.json contains every needed binding for
+# linux/x64/glibc (and the WASI fallback @rolldown/binding-wasm32-wasi +
+# @tailwindcss/oxide-wasm32-wasi were added to the lock file as well).
 # --engine-strict=false keeps the install working on the Node version pinned above.
-# --legacy-peer-deps avoids ERESOLVE failures from transitive peer-dependency
-# conflicts (e.g. @eslint-community/eslint-utils & typescript-eslint wanting
-# eslint>=8 while some older transitive copy resolves eslint@4).
-# --os=any makes optional native packages (e.g. @img/sharp-darwin/win32,
-# @tailwindcss/oxide-win32/*) eligible for installation on any host OS so the
-# lock file stays fully in sync with package.json regardless of the build
-# platform; unrunable binaries are simply ignored at runtime.
-RUN npm ci --no-audit --no-fund --engine-strict=false --legacy-peer-deps --os=any
+# --legacy-peer-deps avoids ERESOLVE failures from transitive peer-dependency conflicts.
+RUN npm ci --no-audit --no-fund --engine-strict=false --legacy-peer-deps
 
 COPY . .
 ENV APP_BUILD_HASH=${BUILD_HASH}
+# JS heap limit for the vite/rolldown build (was "JavaScript heap out of memory")
 ENV NODE_OPTIONS="--max-old-space-size=8192"
 RUN npm run build
 
