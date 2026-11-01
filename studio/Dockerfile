@@ -16,7 +16,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
     bash \
-    apt-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # Проверяем, что Node.js доступен в PATH
