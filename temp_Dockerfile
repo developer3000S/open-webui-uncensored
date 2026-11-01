@@ -1,0 +1,19 @@
+# syntax=docker/dockerfile:1.4
+FROM node:24.22.2
+
+WORKDIR /app
+
+# Copy package files first for better caching
+COPY package*.json yarn.lock* ./
+
+# Install dependencies
+RUN npm install
+
+# Fix vulnerabilities
+RUN npm audit fix
+
+# Copy the rest of the application
+COPY . .
+
+# Build the application
+RUN npm run build
