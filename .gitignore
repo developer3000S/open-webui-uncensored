@@ -7,6 +7,10 @@ node_modules/
 /.svelte-kit
 build/
 /package
+openwebui_offline_packages
+openwebui_offline_packages/
+static
+static/
 .env
 .env.*
 vite.config.js.timestamp-*

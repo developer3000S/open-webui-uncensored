@@ -47,7 +47,6 @@
 
 	let { children } = $props();
 
-	import '../tailwind.css';
 	import '../app.css';
 	import 'tippy.js/dist/tippy.css';
 
