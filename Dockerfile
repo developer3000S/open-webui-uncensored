@@ -52,7 +52,10 @@ RUN corepack enable && \
 WORKDIR /app
 
 # to store git revision in build
-RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    apt-utils \
+    git \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json ./
@@ -66,7 +69,7 @@ RUN npm ci --no-audit --no-fund --engine-strict=false --legacy-peer-deps
 COPY . .
 ENV APP_BUILD_HASH=${BUILD_HASH}
 # JS heap limit for the vite/rolldown build (was "JavaScript heap out of memory")
-ENV NODE_OPTIONS="--max-old-space-size=8192"
+ENV NODE_OPTIONS="--max-old-space-size=16384"
 RUN npm run build
 
 ######## WebUI backend ########
@@ -151,6 +154,7 @@ RUN echo -n 00000000-0000-0000-0000-000000000000 > $HOME/.cache/chroma/telemetry
 RUN chown -R $UID:$GID /app $HOME
 
 # Install common system dependencies
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     git build-essential pandoc gcc netcat-openbsd curl jq ca-certificates apt-utils \

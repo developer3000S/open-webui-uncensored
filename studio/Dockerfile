@@ -7,7 +7,9 @@ ENV NODE_VERSION=24.22.2 NPM_VERSION=12.2.1
 RUN npm install -g npm@12.2.1 && node -v && npm -v
 
 # Устанавливаем необходимые системные зависимости
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    apt-utils \
     libgomp1 \
     libsamplerate0 \
     sqlite3 \
@@ -23,7 +25,8 @@ RUN echo "PATH: $PATH" && \
     node --version && npm --version
 
 # Устанавливаем дополнительные зависимости, если они необходимы
-RUN apt-get update && apt-get install -y \
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
