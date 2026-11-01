@@ -679,6 +679,8 @@
 									getUsageInfo();
 								}
 							}}
+							role="button"
+							tabindex="0"
 						>
 							<div class=" flex items-center">
 								<span class="relative flex size-2">
