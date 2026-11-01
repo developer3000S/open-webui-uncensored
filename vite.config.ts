@@ -8,6 +8,13 @@ import { defineConfig } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 export default defineConfig({
+  // SvelteKit 3 removed the built-in `$lib` alias; restore it so the existing
+  // sources (which import from `$lib/...`) keep working without a rewrite.
+  resolve: {
+    alias: {
+      $lib: new URL('./src/lib', import.meta.url).pathname
+    }
+  },
   plugins: [
     sveltekit({
       // Consult https://kit.svelte.dev/docs/integrations#preprocessors
