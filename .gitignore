@@ -11,6 +11,8 @@ openwebui_offline_packages
 openwebui_offline_packages/
 static
 static/
+docker
+docker/
 .env
 .env.*
 vite.config.js.timestamp-*
