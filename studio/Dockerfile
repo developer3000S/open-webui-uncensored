@@ -7,13 +7,14 @@ ENV NODE_VERSION=24.22.2 NPM_VERSION=12.2.1
 RUN npm install -g npm@12.2.1 && node -v && npm -v
 
 # Устанавливаем необходимые системные зависимости
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libgomp1 \
     libsamplerate0 \
     sqlite3 \
     ca-certificates \
     curl \
     bash \
+    apt-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # Проверяем, что Node.js доступен в PATH
