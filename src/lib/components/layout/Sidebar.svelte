@@ -181,13 +181,13 @@
 			automations: { label: 'Automations', href: '/automations', iconType: 'automations' },
 			calendar: { label: 'Calendar', href: '/calendar', iconType: 'calendar' },
 			coder: {
-		label: 'Coder',
-		href: '/coder?standalone=1',
-		iconType: 'coder',
-		// Coder opens as a standalone application in a separate window
-		openInNewWindow: true,
-		windowFeatures: 'width=1400,height=900,resizable=yes,scrollbars=yes'
-	},
+				label: 'Coder',
+				href: '/coder?standalone=1',
+				iconType: 'coder',
+				// Coder opens as a standalone application in a separate window
+				openInNewWindow: true,
+				windowFeatures: 'width=1400,height=900,resizable=yes,scrollbars=yes'
+			},
 			playground: { label: 'Playground', href: '/playground', iconType: 'playground' }
 		};
 		return items[id];
@@ -885,7 +885,7 @@
 />
 
 <button
-  aria-label={$i18n.t('New Chat')}
+	aria-label={$i18n.t('New Chat')}
 	id="sidebar-new-chat-button"
 	class="hidden"
 	on:click={() => {
@@ -1059,7 +1059,7 @@
 												stroke-width="1.5"
 												stroke="currentColor"
 												class="size-4.5"
-												>
+											>
 												<path
 													stroke-linecap="round"
 													stroke-linejoin="round"
@@ -1386,7 +1386,7 @@
 													stroke-width="1.5"
 													stroke="currentColor"
 													class="size-4.5"
-													>
+												>
 													<path
 														stroke-linecap="round"
 														stroke-linejoin="round"
@@ -1420,7 +1420,9 @@
 							<div class="self-center mr-3 shrink-0 text-gray-600 dark:text-gray-400">
 								<Sparkles className="size-4.5" strokeWidth="2" />
 							</div>
-							<div class="flex-1 self-center text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide truncate">
+							<div
+								class="flex-1 self-center text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide truncate"
+							>
 								AI Студия
 							</div>
 							<div class="self-center text-gray-400 dark:text-gray-600">

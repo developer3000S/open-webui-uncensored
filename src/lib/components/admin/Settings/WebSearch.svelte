@@ -1276,22 +1276,22 @@
 									</div>
 								</div>
 							</div>
-						<div class="mt-2">
-							<div class="self-center text-xs font-medium mb-1">
-								{$i18n.t('Playwright Search Engine')}
-							</div>
+							<div class="mt-2">
+								<div class="self-center text-xs font-medium mb-1">
+									{$i18n.t('Playwright Search Engine')}
+								</div>
 
-							<select
-								class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
-								bind:value={webConfig.PLAYWRIGHT_SEARCH_ENGINE}
-							>
-								<option value="duckduckgo">DuckDuckGo</option>
-								<option value="bing">Bing</option>
-								<option value="google">Google</option>
-								<option value="brave">Brave</option>
-								<option value="mojeek">Mojeek</option>
-							</select>
-						</div>
+								<select
+									class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
+									bind:value={webConfig.PLAYWRIGHT_SEARCH_ENGINE}
+								>
+									<option value="duckduckgo">DuckDuckGo</option>
+									<option value="bing">Bing</option>
+									<option value="google">Google</option>
+									<option value="brave">Brave</option>
+									<option value="mojeek">Mojeek</option>
+								</select>
+							</div>
 						</div>
 					{:else if webConfig.WEB_LOADER_ENGINE === 'firecrawl' && webConfig.WEB_SEARCH_ENGINE !== 'firecrawl'}
 						<div class="mb-2.5 flex w-full flex-col">

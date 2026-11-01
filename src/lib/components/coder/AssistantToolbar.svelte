@@ -5,11 +5,7 @@
 
 	import Spinner from '$lib/components/common/Spinner.svelte';
 
-	import {
-		getCoderCIStatus,
-		suggestCoderTests,
-		type CoderCIStatus
-	} from '$lib/apis/coder';
+	import { getCoderCIStatus, suggestCoderTests, type CoderCIStatus } from '$lib/apis/coder';
 
 	const i18n = getContext('i18n');
 	const dispatch = createEventDispatcher();
@@ -84,11 +80,19 @@
 		class="text-xs px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-40 flex items-center gap-1"
 		disabled={loadingCI || !owner || !repo}
 		title={$i18n.t('Refresh CI status')}
-		on:click={refreshCI}>
+		on:click={refreshCI}
+	>
 		{#if loadingCI}
 			<Spinner className="size-3" />
 		{:else}
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-3.5">
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				fill="none"
+				viewBox="0 0 24 24"
+				stroke-width="1.5"
+				stroke="currentColor"
+				class="size-3.5"
+			>
 				<path
 					stroke-linecap="round"
 					stroke-linejoin="round"
@@ -98,7 +102,9 @@
 		{/if}
 		{$i18n.t('CI')}
 		{#if ciStatus}
-			<span class="px-1.5 py-0.5 rounded text-[10px] {stateColor(ciStatus.state)}">{ciStatus.state}</span>
+			<span class="px-1.5 py-0.5 rounded text-[10px] {stateColor(ciStatus.state)}"
+				>{ciStatus.state}</span
+			>
 		{/if}
 	</button>
 
@@ -109,7 +115,9 @@
 					href={c.url ?? '#'}
 					target="_blank"
 					rel="noopener noreferrer"
-					class="text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap {stateColor(c.conclusion ?? c.status)}"
+					class="text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap {stateColor(
+						c.conclusion ?? c.status
+					)}"
 					title="{c.name}: {c.status} {c.conclusion ?? ''}">{c.name}</a
 				>
 			{/each}
@@ -121,11 +129,19 @@
 		class="text-xs px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-40 flex items-center gap-1"
 		disabled={generatingTests || !owner || !repo}
 		title={$i18n.t('Generate test skeleton (creates a GitHub issue)')}
-		on:click={generateTests}>
+		on:click={generateTests}
+	>
 		{#if generatingTests}
 			<Spinner className="size-3" />
 		{:else}
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-3.5">
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				fill="none"
+				viewBox="0 0 24 24"
+				stroke-width="1.5"
+				stroke="currentColor"
+				class="size-3.5"
+			>
 				<path
 					stroke-linecap="round"
 					stroke-linejoin="round"

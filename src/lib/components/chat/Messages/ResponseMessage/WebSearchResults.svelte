@@ -18,9 +18,9 @@
 			const response = await fetch('/api/search', {
 				method: 'POST',
 				headers: {
-					'Content-Type': 'application/json',
+					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({ query: status.query }),
+				body: JSON.stringify({ query: status.query })
 			});
 			if (!response.ok) {
 				throw new Error('Failed to load search results');
@@ -55,7 +55,9 @@
 	>
 		{#if loading}
 			<div class="flex justify-center py-4">
-				<div class="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 dark:border-white"></div>
+				<div
+					class="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 dark:border-white"
+				></div>
 			</div>
 		{:else if searchError}
 			<div class="text-red-500 text-sm p-2 bg-red-50 dark:bg-red-900/20 rounded">

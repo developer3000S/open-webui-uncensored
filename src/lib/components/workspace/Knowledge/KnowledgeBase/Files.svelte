@@ -174,7 +174,9 @@
 					{#if isInFlight(file)}
 						{@const percent = progressPercent(file)}
 						<div class="flex items-center gap-2 pt-1">
-							<div class="flex-1 min-w-[50px] h-1 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
+							<div
+								class="flex-1 min-w-[50px] h-1 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden"
+							>
 								<div
 									class="h-full rounded-full bg-gray-700 dark:bg-gray-300 transition-all duration-300"
 									style="width: {percent ?? 0}%"
@@ -251,31 +253,38 @@
 									{$i18n.t('Download')}
 								</button>
 								{#if file?.status === 'uploading' || file?.status === 'processing' || file?.status === 'pending'}
-								<button
-									type="button"
-									class="select-none flex rounded-xl py-1.5 px-3 w-full hover:bg-gray-50 dark:hover:bg-gray-800 transition items-center gap-2 text-sm text-red-500 dark:text-red-400"
-									on:click={() => {
-										onCancelEmbedding(file?.id ?? file?.itemId ?? file?.tempId);
-									}}
-								>
-									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-3.5">
-										<circle cx="12" cy="12" r="10" />
-										<line x1="15" y1="9" x2="9" y2="15" />
-										<line x1="9" y1="9" x2="15" y2="15" />
-									</svg>
-									{$i18n.t('Cancel embedding')}
-								</button>
+									<button
+										type="button"
+										class="select-none flex rounded-xl py-1.5 px-3 w-full hover:bg-gray-50 dark:hover:bg-gray-800 transition items-center gap-2 text-sm text-red-500 dark:text-red-400"
+										on:click={() => {
+											onCancelEmbedding(file?.id ?? file?.itemId ?? file?.tempId);
+										}}
+									>
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											viewBox="0 0 24 24"
+											fill="none"
+											stroke="currentColor"
+											stroke-width="2"
+											class="size-3.5"
+										>
+											<circle cx="12" cy="12" r="10" />
+											<line x1="15" y1="9" x2="9" y2="15" />
+											<line x1="9" y1="9" x2="15" y2="15" />
+										</svg>
+										{$i18n.t('Cancel embedding')}
+									</button>
 								{:else}
-								<button
-									type="button"
-									class="select-none flex rounded-xl py-1.5 px-3 w-full hover:bg-gray-50 dark:hover:bg-gray-800 transition items-center gap-2 text-sm"
-									on:click={() => {
-										onMoveFile(file?.id ?? file?.tempId);
-									}}
-								>
-									<Folder className="size-3.5" />
-									{$i18n.t('Move to folder')}
-								</button>
+									<button
+										type="button"
+										class="select-none flex rounded-xl py-1.5 px-3 w-full hover:bg-gray-50 dark:hover:bg-gray-800 transition items-center gap-2 text-sm"
+										on:click={() => {
+											onMoveFile(file?.id ?? file?.tempId);
+										}}
+									>
+										<Folder className="size-3.5" />
+										{$i18n.t('Move to folder')}
+									</button>
 								{/if}
 								<button
 									type="button"

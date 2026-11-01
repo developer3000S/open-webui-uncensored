@@ -43,9 +43,10 @@
 	$: {
 		const current = $theme ?? 'system';
 		if (current === 'system') {
-			isDark = typeof window !== 'undefined'
-				? window.matchMedia('(prefers-color-scheme: dark)').matches
-				: true;
+			isDark =
+				typeof window !== 'undefined'
+					? window.matchMedia('(prefers-color-scheme: dark)').matches
+					: true;
 		} else {
 			isDark = current === 'dark' || current === 'oled-dark';
 		}
@@ -61,8 +62,7 @@
 		localStorage.setItem('theme', _theme);
 		theme.set(_theme);
 
-		const themeToApply =
-			_theme === 'oled-dark' ? 'dark' : _theme === 'her' ? 'light' : _theme;
+		const themeToApply = _theme === 'oled-dark' ? 'dark' : _theme === 'her' ? 'light' : _theme;
 
 		allThemes
 			.filter((e) => e !== themeToApply)
@@ -238,9 +238,7 @@
 				title={$i18n.t('System Memory Usage')}
 			>
 				<span class="tabular-nums"
-					>{$i18n.t('RAM')}: {formatGb(telemetry.ram_used_gb)} / {formatGb(
-						telemetry.ram_total_gb
-					)} GB</span
+					>{$i18n.t('RAM')}: {formatGb(telemetry.ram_used_gb)} / {formatGb(telemetry.ram_total_gb)} GB</span
 				>
 			</div>
 		</div>

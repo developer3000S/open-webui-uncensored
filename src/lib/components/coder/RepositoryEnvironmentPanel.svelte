@@ -36,7 +36,11 @@
 	let validation: { valid: boolean; login?: string; warning?: string | null } | null = null;
 
 	// §D: GitHub App installations state
-	let appStatus: { configured: boolean; install_url: string | null; installations: CoderGitHubAppInstallation[] } | null = null;
+	let appStatus: {
+		configured: boolean;
+		install_url: string | null;
+		installations: CoderGitHubAppInstallation[];
+	} | null = null;
 	let appLoading = false;
 	let connectingInstallation = '';
 
@@ -88,7 +92,10 @@
 			// a valid OAuth connection may grant org access — refresh the filter list
 			loadOrganizations();
 		} catch (e: any) {
-			validation = { valid: false, warning: e?.detail?.message ?? e?.message ?? 'Validation failed' };
+			validation = {
+				valid: false,
+				warning: e?.detail?.message ?? e?.message ?? 'Validation failed'
+			};
 			toast.error(validation.warning);
 		} finally {
 			validating = false;
@@ -149,8 +156,14 @@
 	</div>
 
 	{#if validation}
-		<div class="px-2 py-1 text-[11px] {validation.valid ? 'text-green-600 dark:text-green-400' : 'text-red-500'}">
-			{validation.valid ? $i18n.t('Connection is valid') : (validation.warning ?? $i18n.t('Connection is invalid'))}
+		<div
+			class="px-2 py-1 text-[11px] {validation.valid
+				? 'text-green-600 dark:text-green-400'
+				: 'text-red-500'}"
+		>
+			{validation.valid
+				? $i18n.t('Connection is valid')
+				: (validation.warning ?? $i18n.t('Connection is invalid'))}
 		</div>
 	{/if}
 
@@ -168,8 +181,12 @@
 	{/if}
 
 	{#if appStatus && appStatus.configured && appStatus.installations.length > 0}
-		<div class="flex flex-col gap-1 rounded-xl border border-gray-200 dark:border-gray-700 px-2.5 py-2">
-			<div class="text-[10px] uppercase tracking-wide text-gray-400">{$i18n.t('GitHub App installations')}</div>
+		<div
+			class="flex flex-col gap-1 rounded-xl border border-gray-200 dark:border-gray-700 px-2.5 py-2"
+		>
+			<div class="text-[10px] uppercase tracking-wide text-gray-400">
+				{$i18n.t('GitHub App installations')}
+			</div>
 			{#each appStatus.installations as inst (inst.installation_id)}
 				<button
 					type="button"
@@ -178,7 +195,9 @@
 					disabled={connectingInstallation === inst.installation_id}
 				>
 					<span class="truncate">{inst.account_login ?? inst.installation_id}</span>
-					<span class="shrink-0 text-[10px] text-gray-400">{connectingInstallation === inst.installation_id ? '…' : $i18n.t('Use')}</span>
+					<span class="shrink-0 text-[10px] text-gray-400"
+						>{connectingInstallation === inst.installation_id ? '…' : $i18n.t('Use')}</span
+					>
 				</button>
 			{/each}
 		</div>
@@ -199,11 +218,15 @@
 		<div class="px-2 py-3 text-xs text-gray-500">
 			{#if errored}
 				{$i18n.t('Failed to load repositories.')}
-				<button type="button" class="underline text-blue-500" on:click={refresh}>{$i18n.t('Try again')}</button>
+				<button type="button" class="underline text-blue-500" on:click={refresh}
+					>{$i18n.t('Try again')}</button
+				>
 			{:else if query}
 				{$i18n.t('No repositories found')}
 			{:else}
-				{$i18n.t('No repositories found')} — {$i18n.t('reconnect your GitHub account with the repo permission, then press Refresh')}
+				{$i18n.t('No repositories found')} — {$i18n.t(
+					'reconnect your GitHub account with the repo permission, then press Refresh'
+				)}
 			{/if}
 		</div>
 	{:else}
@@ -211,7 +234,8 @@
 			{#each repos as r (r.full_name)}
 				<button
 					type="button"
-					class="w-full text-left rounded-2xl border px-3.5 py-3 flex items-center gap-3 transition {selectedRepo === r.full_name
+					class="w-full text-left rounded-2xl border px-3.5 py-3 flex items-center gap-3 transition {selectedRepo ===
+					r.full_name
 						? 'border-blue-400 dark:border-blue-600 bg-blue-50/50 dark:bg-blue-950/20'
 						: 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/60'}"
 					on:click={() => dispatch('select', r)}
@@ -225,16 +249,21 @@
 					</div>
 					<div class="flex items-center gap-1.5 shrink-0">
 						{#if r.private}
-							<span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500">private</span>
+							<span
+								class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500"
+								>private</span
+							>
 						{/if}
 						{#if r.push_allowed}
-							<span class="text-[10px] px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-950/50 text-green-700 dark:text-green-400"
+							<span
+								class="text-[10px] px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-950/50 text-green-700 dark:text-green-400"
 								>{$i18n.t('write')}</span
 							>
 						{/if}
 						{#if selectedRepo === r.full_name}
 							<span
-								class="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400">{$i18n.t('loaded')}</span
+								class="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400"
+								>{$i18n.t('loaded')}</span
 							>
 						{:else}
 							<span class="text-[11px] text-gray-400">{$i18n.t('Load')}</span>

@@ -120,7 +120,9 @@
 					} else if (open && event.key === 'ArrowUp') {
 						event.preventDefault();
 						activeSuggestionIndex =
-							activeSuggestionIndex <= 0 ? filteredSuggestionTags.length - 1 : activeSuggestionIndex - 1;
+							activeSuggestionIndex <= 0
+								? filteredSuggestionTags.length - 1
+								: activeSuggestionIndex - 1;
 					} else if (event.key === 'Enter' || event.key === ' ') {
 						event.preventDefault();
 						if (open && activeSuggestionIndex >= 0) {
@@ -154,9 +156,9 @@
 						<button
 							type="button"
 							class="flex w-full items-center rounded-xl px-2 py-[5px] text-left text-xs text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800 {i ===
-								activeSuggestionIndex
-									? 'bg-gray-50 dark:bg-gray-800'
-									: ''}"
+							activeSuggestionIndex
+								? 'bg-gray-50 dark:bg-gray-800'
+								: ''}"
 							role="option"
 							aria-selected={i === activeSuggestionIndex}
 							on:mousedown={(event) => {

@@ -72,8 +72,6 @@
 	/** @type {import('./structuredOutput').OutputItem[]} */
 	export let output = [];
 
-
-
 	export let done = true;
 	export let model = null;
 	export let sources = null;

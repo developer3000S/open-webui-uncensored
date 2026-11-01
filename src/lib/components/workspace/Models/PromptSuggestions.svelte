@@ -160,7 +160,7 @@
 					</div>
 
 					<button
-       aria-label={$i18n.t('Delete')}
+						aria-label={$i18n.t('Delete')}
 						class="p-1 self-start"
 						type="button"
 						on:click={() => {

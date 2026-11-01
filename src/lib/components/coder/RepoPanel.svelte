@@ -24,7 +24,8 @@
 
 	let repos: CoderRepo[] = [];
 	let branches: CoderBranch[] = [];
-	let tree: CoderTreeEntry[] = []; let repoKey = '';
+	let tree: CoderTreeEntry[] = [];
+	let repoKey = '';
 
 	let repoQuery = '';
 	let repoSearchTimer: ReturnType<typeof setTimeout>;
@@ -123,7 +124,13 @@
 	};
 
 	// build a nested structure from flat tree entries
-	type TreeNode = { name: string; path: string; type: 'blob' | 'tree'; children: TreeNode[]; entry?: CoderTreeEntry };
+	type TreeNode = {
+		name: string;
+		path: string;
+		type: 'blob' | 'tree';
+		children: TreeNode[];
+		entry?: CoderTreeEntry;
+	};
 
 	const buildTree = (entries: CoderTreeEntry[]): TreeNode[] => {
 		const root: TreeNode = { name: '', path: '', type: 'tree', children: [] };
@@ -139,7 +146,9 @@
 			map[e.path] = node;
 		}
 		const sortRec = (nodes: TreeNode[]) => {
-			nodes.sort((a, b) => (a.type === b.type ? a.name.localeCompare(b.name) : a.type === 'tree' ? -1 : 1));
+			nodes.sort((a, b) =>
+				a.type === b.type ? a.name.localeCompare(b.name) : a.type === 'tree' ? -1 : 1
+			);
 			nodes.forEach((n) => n.children.length && sortRec(n.children));
 		};
 		sortRec(root.children);
@@ -243,7 +252,9 @@
 						>
 							<span class="truncate flex-1">{r.full_name}</span>
 							{#if r.private}
-								<span class="text-[10px] px-1 rounded bg-gray-100 dark:bg-gray-800 text-gray-500">private</span>
+								<span class="text-[10px] px-1 rounded bg-gray-100 dark:bg-gray-800 text-gray-500"
+									>private</span
+								>
 							{/if}
 						</button>
 					{:else}
@@ -271,7 +282,8 @@
 										? 'bg-gray-100 dark:bg-gray-800 text-black dark:text-white'
 										: 'text-gray-600 dark:text-gray-400'}"
 									style="padding-left: {6 + depth * 12}px"
-									on:click={() => openFile(node.entry ?? { path: node.path, type: node.type, sha: '' })}
+									on:click={() =>
+										openFile(node.entry ?? { path: node.path, type: node.type, sha: '' })}
 								>
 									{#if node.type === 'tree'}
 										<svg
@@ -280,9 +292,15 @@
 											viewBox="0 0 24 24"
 											stroke-width="2"
 											stroke="currentColor"
-											class="size-3 shrink-0 transition-transform {collapsed[node.path] ? '' : 'rotate-90'}"
+											class="size-3 shrink-0 transition-transform {collapsed[node.path]
+												? ''
+												: 'rotate-90'}"
 										>
-											<path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												d="m8.25 4.5 7.5 7.5-7.5 7.5"
+											/>
 										</svg>
 									{:else}
 										<span class="size-3 shrink-0"></span>
@@ -302,11 +320,15 @@
 
 		<!-- Selected file preview -->
 		{#if selectedPath}
-			<div class="border-t border-gray-100 dark:border-gray-800 max-h-64 overflow-auto scrollbar-thin">
+			<div
+				class="border-t border-gray-100 dark:border-gray-800 max-h-64 overflow-auto scrollbar-thin"
+			>
 				<div
 					class="sticky top-0 flex items-center justify-between gap-2 bg-gray-50 dark:bg-gray-900 px-2.5 py-1.5 border-b border-gray-100 dark:border-gray-800"
 				>
-					<div class="truncate text-xs font-mono text-gray-600 dark:text-gray-400">{selectedPath}</div>
+					<div class="truncate text-xs font-mono text-gray-600 dark:text-gray-400">
+						{selectedPath}
+					</div>
 					<div class="flex gap-1 shrink-0">
 						<button
 							type="button"
@@ -332,11 +354,15 @@
 				{#if loadingFile}
 					<div class="px-3 py-3 text-xs text-gray-500">...</div>
 				{:else if fileBinary}
-					<div class="px-3 py-3 text-xs text-gray-500">{$i18n.t('Binary file — content is not shown')}</div>
+					<div class="px-3 py-3 text-xs text-gray-500">
+						{$i18n.t('Binary file — content is not shown')}
+					</div>
 				{:else}
 					<pre
-						class="px-3 py-2 text-[11px] font-mono whitespace-pre text-gray-700 dark:text-gray-300 leading-relaxed">{fileContent?.slice(0, 20000)}</pre
-					>
+						class="px-3 py-2 text-[11px] font-mono whitespace-pre text-gray-700 dark:text-gray-300 leading-relaxed">{fileContent?.slice(
+							0,
+							20000
+						)}</pre>
 				{/if}
 			</div>
 		{/if}

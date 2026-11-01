@@ -33,7 +33,6 @@
 		setTerminalServerConnections
 	} from '$lib/apis/configs';
 
-
 	type ToolServerConnection = any;
 	type TerminalConnection = {
 		id?: string;
@@ -98,10 +97,7 @@
 	};
 
 	const addTerminalConnection = (server: TerminalConnection) => {
-		terminalConnections = [
-			...terminalConnections,
-			{ ...server, id: server.id ?? generateUUID() }
-		];
+		terminalConnections = [...terminalConnections, { ...server, id: server.id ?? generateUUID() }];
 		saveTerminalServers();
 	};
 

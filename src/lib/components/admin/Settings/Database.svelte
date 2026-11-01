@@ -12,7 +12,6 @@
 
 	const i18n = getContext('i18n');
 
-
 	const exportAllUserChats = async () => {
 		let blob = new Blob([JSON.stringify(await getAllUserChats(localStorage.token))], {
 			type: 'application/json'

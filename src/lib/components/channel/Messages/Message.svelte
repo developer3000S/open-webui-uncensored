@@ -465,8 +465,8 @@
 										<Image src={fileUrl} alt={file.name} imageClassName=" max-h-96 rounded-lg" />
 									{:else if file.type === 'video' || (file?.content_type ?? '').startsWith('video/')}
 										<video src={fileUrl} controls class=" max-h-96 rounded-lg">
-										<track kind="captions" label="Captions" srclang="en" default />
-									</video>
+											<track kind="captions" label="Captions" srclang="en" default />
+										</video>
 									{:else}
 										<FileItem
 											item={file}

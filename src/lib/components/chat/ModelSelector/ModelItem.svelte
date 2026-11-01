@@ -129,9 +129,7 @@
 							content={$i18n.t('Context window: {{N}} tokens', { N: item.model.context_length })}
 							className="self-end"
 						>
-							<span
-								class="text-xs font-medium text-gray-600 dark:text-gray-400 line-clamp-1"
-							>
+							<span class="text-xs font-medium text-gray-600 dark:text-gray-400 line-clamp-1">
 								{Math.round(item.model.context_length / 1024) >= 1
 									? `${(item.model.context_length / 1024).toFixed(0)}K`
 									: item.model.context_length}

@@ -109,7 +109,7 @@
 			<div class="text-[11px] font-medium">{miniMonthNames[miniMonth]} {miniYear}</div>
 			<div class="flex items-center gap-0.5">
 				<button
-      aria-label={$i18n.t('Previous month')}
+					aria-label={$i18n.t('Previous month')}
 					class="p-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition"
 					on:click={() => navigateMini(-1)}
 				>
@@ -128,7 +128,7 @@
 					>
 				</button>
 				<button
-      aria-label={$i18n.t('Next month')}
+					aria-label={$i18n.t('Next month')}
 					class="p-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition"
 					on:click={() => navigateMini(1)}
 				>

@@ -65,15 +65,23 @@
 		const path = detail.path ? ` (${detail.path})` : '';
 		switch (code) {
 			case 'CODER_GITHUB_UNAUTHORIZED':
-				return $i18n.t('Your GitHub connection has expired. Reconnect your account in the Environment tab, then try again.');
+				return $i18n.t(
+					'Your GitHub connection has expired. Reconnect your account in the Environment tab, then try again.'
+				);
 			case 'CODER_GITHUB_RATE_LIMIT':
 				return $i18n.t('GitHub API rate limit exceeded. Try again in a few minutes.');
 			case 'CODER_FORBIDDEN':
-				return $i18n.t('Access denied by GitHub — your token may lack the required repository scopes (repo). Reconnect GitHub in the Environment tab.');
+				return $i18n.t(
+					'Access denied by GitHub — your token may lack the required repository scopes (repo). Reconnect GitHub in the Environment tab.'
+				);
 			case 'CODER_BRANCH_PROTECTED':
-				return $i18n.t('The target branch is protected on GitHub. Export always pushes to a new branch and opens a pull request.');
+				return $i18n.t(
+					'The target branch is protected on GitHub. Export always pushes to a new branch and opens a pull request.'
+				);
 			case 'CODER_CONFLICT':
-				return $i18n.t('Conflict with the remote repository (the base branch moved). Run Preview again and retry.');
+				return $i18n.t(
+					'Conflict with the remote repository (the base branch moved). Run Preview again and retry.'
+				);
 			case 'CODER_VALIDATION_FAILED':
 				return `${$i18n.t('GitHub rejected the change set')}: ${msg}${path}`;
 			case 'CODER_FILE_NOT_FOUND':
@@ -185,12 +193,23 @@
 	<div class="flex flex-col gap-3 max-h-[80dvh] overflow-y-auto scrollbar-thin p-1">
 		{#if result}
 			<div class="flex flex-col items-center gap-2 py-6 text-center">
-				<div class="size-12 rounded-full bg-green-50 dark:bg-green-950/40 flex items-center justify-center">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 text-green-600">
+				<div
+					class="size-12 rounded-full bg-green-50 dark:bg-green-950/40 flex items-center justify-center"
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="1.5"
+						stroke="currentColor"
+						class="size-6 text-green-600"
+					>
 						<path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
 					</svg>
 				</div>
-				<div class="text-base font-medium text-black dark:text-white">{$i18n.t('Pull request created')}</div>
+				<div class="text-base font-medium text-black dark:text-white">
+					{$i18n.t('Pull request created')}
+				</div>
 				{#if result.commit_sha}
 					<div class="text-xs font-mono text-gray-500">commit {result.commit_sha.slice(0, 10)}</div>
 				{/if}
@@ -242,7 +261,14 @@
 			</div>
 
 			<div class="text-[11px] text-gray-500 flex items-center gap-1.5">
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-3.5 shrink-0">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke-width="1.5"
+					stroke="currentColor"
+					class="size-3.5 shrink-0"
+				>
 					<path
 						stroke-linecap="round"
 						stroke-linejoin="round"
@@ -255,20 +281,25 @@
 			{#if preview}
 				<div class="flex flex-col gap-2">
 					{#each preview.errors as err (err.path + err.code)}
-						<div class="text-xs rounded-xl bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 px-3 py-2">
+						<div
+							class="text-xs rounded-xl bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 px-3 py-2"
+						>
 							<span class="font-mono">{err.path}</span>: {err.message}
 						</div>
 					{/each}
 					{#each preview.diffs as d (d.path)}
 						<div class="flex flex-col gap-1">
-							<div class="text-xs font-mono text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+							<div
+								class="text-xs font-mono text-gray-600 dark:text-gray-400 flex items-center gap-1.5"
+							>
 								<span
 									class="px-1.5 py-0.5 rounded text-[10px] font-sans {d.action === 'create'
 										? 'bg-green-100 text-green-700 dark:bg-green-950/50 dark:text-green-400'
 										: d.action === 'delete'
 											? 'bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400'
 											: 'bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400'}"
-								>{d.action}</span>
+									>{d.action}</span
+								>
 								{d.path}
 							</div>
 							<DiffView diff={d.diff} action={d.action} />
@@ -278,20 +309,29 @@
 			{/if}
 
 			{#if exportError}
-				<div class="text-xs rounded-xl bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 px-3 py-2">
+				<div
+					class="text-xs rounded-xl bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 px-3 py-2"
+				>
 					{exportError}
 				</div>
 			{/if}
 
 			<!-- Gist export (§22.2): share the change set without touching the repository -->
 			<div class="flex flex-col gap-2 rounded-xl border border-gray-200 dark:border-gray-700 p-3">
-				<div class="text-xs font-medium text-gray-600 dark:text-gray-400">{$i18n.t('Export as Gist')}</div>
+				<div class="text-xs font-medium text-gray-600 dark:text-gray-400">
+					{$i18n.t('Export as Gist')}
+				</div>
 				<label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
 					<input type="checkbox" bind:checked={gistPublic} class="rounded" />
 					{$i18n.t('Public gist')}
 				</label>
 				{#if gistUrl}
-					<a href={gistUrl} target="_blank" rel="noopener noreferrer" class="text-sm text-blue-500 hover:underline truncate">
+					<a
+						href={gistUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="text-sm text-blue-500 hover:underline truncate"
+					>
 						{gistUrl}
 					</a>
 				{:else}
@@ -299,7 +339,8 @@
 						type="button"
 						class="self-start px-3 py-1.5 rounded-xl text-xs bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 flex items-center gap-2"
 						disabled={gistBusy || changeset.files.length === 0}
-						on:click={exportAsGist}>
+						on:click={exportAsGist}
+					>
 						{#if gistBusy}
 							<Spinner className="size-3.5" />
 						{/if}
@@ -313,7 +354,8 @@
 					type="button"
 					class="px-3.5 py-1.5 rounded-xl text-sm bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50"
 					disabled={loadingPreview || changeset.files.length === 0}
-					on:click={runPreview}>
+					on:click={runPreview}
+				>
 					{#if loadingPreview}
 						<Spinner className="size-4" />
 					{:else}
@@ -324,7 +366,8 @@
 					type="button"
 					class="px-3.5 py-1.5 rounded-xl text-sm bg-gray-900 text-white dark:bg-white dark:text-gray-900 hover:bg-gray-800 disabled:opacity-50 flex items-center gap-2"
 					disabled={exporting || !preview?.valid}
-					on:click={confirmExport}>
+					on:click={confirmExport}
+				>
 					{#if exporting}
 						<Spinner className="size-4" />
 					{/if}

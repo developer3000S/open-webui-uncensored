@@ -282,7 +282,7 @@
 						terminalEnabled = config?.features?.terminal !== false;
 					}
 
-						applyCwdAndLoad(await getCwd(terminal.url, terminal.key, chatId ?? undefined));
+					applyCwdAndLoad(await getCwd(terminal.url, terminal.key, chatId ?? undefined));
 				})();
 			}
 		}

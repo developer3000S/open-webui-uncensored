@@ -63,7 +63,7 @@
 	import AddContentMenu from './KnowledgeBase/AddContentMenu.svelte';
 	import AddTextContentModal from './KnowledgeBase/AddTextContentModal.svelte';
 	import NewDirectoryModal from './KnowledgeBase/NewDirectoryModal.svelte';
-	import MoveToFolderModal from './KnowledgeBase/MoveToFolderModal.svelte'
+	import MoveToFolderModal from './KnowledgeBase/MoveToFolderModal.svelte';
 
 	import SyncConfirmDialog from '../../common/ConfirmDialog.svelte';
 	import ConfirmDialog from '../../common/ConfirmDialog.svelte';
@@ -89,8 +89,8 @@
 	let showAddWebpageModal = false;
 	let showAddTextContentModal = false;
 	let showNewDirectoryModal = false;
-		let showMoveFileModal = false;
-		let showCancelEmbeddingModal = false;
+	let showMoveFileModal = false;
+	let showCancelEmbeddingModal = false;
 
 	let showSyncConfirmModal = false;
 	let pendingSyncFiles: Array<{ path: string; filename: string; file: File }> | null = null;
@@ -1050,7 +1050,7 @@
 			const res = await cancelFileEmbedding(localStorage.token, id, pendingCancelFileId);
 			if (res?.cancelled) {
 				toast.success($i18n.t('Embedding cancelled.'));
-				fileItems = fileItems.filter(item => item.id !== pendingCancelFileId);
+				fileItems = fileItems.filter((item) => item.id !== pendingCancelFileId);
 				if (pendingPollTimer) {
 					clearInterval(pendingPollTimer);
 					pendingPollTimer = null;
@@ -1413,7 +1413,9 @@
 	}}
 >
 	<div class="text-sm text-gray-700 dark:text-gray-300 flex-1 line-clamp-3">
-		{$i18n.t('Are you sure you want to cancel embedding for this file? This will stop processing and the file will not be indexed.')}
+		{$i18n.t(
+			'Are you sure you want to cancel embedding for this file? This will stop processing and the file will not be indexed.'
+		)}
 	</div>
 </ConfirmDialog>
 
@@ -1819,8 +1821,8 @@
 													moveFileToDirectoryHandler(fileId, dirId)}
 												onMoveDirectoryToDirectory={(dirId, targetId) =>
 													moveDirectoryHandler(dirId, targetId)}
-										onMoveFile={(fileId) => handleMoveFile(fileId)}
-										onCancelEmbedding={(fileId) => handleCancelEmbedding(fileId)}
+												onMoveFile={(fileId) => handleMoveFile(fileId)}
+												onCancelEmbedding={(fileId) => handleCancelEmbedding(fileId)}
 											/>
 										</div>
 

@@ -250,7 +250,7 @@
 										</div>
 										<div class=" absolute -top-1 -right-1">
 											<button
-             aria-label={$i18n.t('Remove File')}
+												aria-label={$i18n.t('Remove File')}
 												class=" bg-white text-black border border-white rounded-full {($settings?.highContrastMode ??
 												false)
 													? ''
@@ -405,7 +405,7 @@
 						{#if siblings.length > 1}
 							<div class="flex self-center" dir="ltr">
 								<button
-          aria-label={$i18n.t('Previous Message')}
+									aria-label={$i18n.t('Previous Message')}
 									class="self-center p-1 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-white hover:text-black rounded-md transition"
 									on:click={() => {
 										showPreviousMessage(message);
@@ -473,7 +473,7 @@
 								{/if}
 
 								<button
-          aria-label={$i18n.t('Next Message')}
+									aria-label={$i18n.t('Next Message')}
 									class="self-center p-1 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-white hover:text-black rounded-md transition"
 									on:click={() => {
 										showNextMessage(message);
@@ -500,7 +500,7 @@
 					{#if !readOnly}
 						<Tooltip content={$i18n.t('Edit')} placement="bottom">
 							<button
-       aria-label={$i18n.t('Edit')}
+								aria-label={$i18n.t('Edit')}
 								class="{($settings?.highContrastMode ?? false)
 									? ''
 									: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg dark:hover:text-white hover:text-black transition edit-user-message-button"
@@ -529,7 +529,7 @@
 					{#if message?.content}
 						<Tooltip content={$i18n.t('Copy')} placement="bottom">
 							<button
-       aria-label={$i18n.t('Copy')}
+								aria-label={$i18n.t('Copy')}
 								class="{($settings?.highContrastMode ?? false)
 									? ''
 									: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg dark:hover:text-white hover:text-black transition"
@@ -559,7 +559,7 @@
 						{#if !readOnly && (!isFirstMessage || siblings.length > 1)}
 							<Tooltip content={$i18n.t('Delete')} placement="bottom">
 								<button
-        aria-label={$i18n.t('Delete')}
+									aria-label={$i18n.t('Delete')}
 									class="{($settings?.highContrastMode ?? false)
 										? ''
 										: 'invisible group-hover:visible'} p-1 rounded-sm dark:hover:text-white hover:text-black transition"
@@ -594,7 +594,7 @@
 						{#if siblings.length > 1}
 							<div class="flex self-center" dir="ltr">
 								<button
-          aria-label={$i18n.t('Previous Message')}
+									aria-label={$i18n.t('Previous Message')}
 									class="self-center p-1 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-white hover:text-black rounded-md transition"
 									on:click={() => {
 										showPreviousMessage(message);
@@ -662,7 +662,7 @@
 								{/if}
 
 								<button
-          aria-label={$i18n.t('Next Message')}
+									aria-label={$i18n.t('Next Message')}
 									class="self-center p-1 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-white hover:text-black rounded-md transition"
 									on:click={() => {
 										showNextMessage(message);

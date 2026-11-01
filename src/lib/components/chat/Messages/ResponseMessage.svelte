@@ -158,7 +158,6 @@
 	export let continueResponse: Function;
 	export let regenerateResponse: Function;
 
-
 	export let isLastMessage = true;
 	export let readOnly = false;
 	export let editCodeBlock = true;
@@ -440,13 +439,12 @@
 
 	let feedbackLoading = false;
 
-
 	let ragFeedbackLoading = false;
 
 	const ragFeedbackHandler = async (rating: number | null = null) => {
 		ragFeedbackLoading = true;
 		console.log('RAG Feedback', rating);
-	
+
 		const updatedMessage = {
 			...message,
 			annotation: {
@@ -454,16 +452,16 @@
 				...(rating !== null ? { rag_quality_rating: rating } : {})
 			}
 		};
-	
+
 		const chat = await getChatById(localStorage.token, chatId).catch((error) => {
 			toast.error(`${error}`);
 		});
 		if (!chat) {
 			return;
 		}
-	
+
 		const messagesList = createMessagesList(history, message.id);
-	
+
 		let feedbackItem = {
 			type: 'rag_rating',
 			data: {
@@ -476,15 +474,17 @@
 				rag_quality: true
 			}
 		};
-	
+
 		if (rating !== null) {
-			await createNewFeedback(localStorage.token, feedbackItem).catch((error) => {
-				toast.error(`RAG feedback error: ${error}`);
-			}).then(() => {
-				// Optionally update local state
-			});
+			await createNewFeedback(localStorage.token, feedbackItem)
+				.catch((error) => {
+					toast.error(`RAG feedback error: ${error}`);
+				})
+				.then(() => {
+					// Optionally update local state
+				});
 		}
-	
+
 		ragFeedbackLoading = false;
 	};
 
@@ -1325,73 +1325,81 @@
 										</Tooltip>
 									{/if}
 
+									<Tooltip content={$i18n.t('RAG quality hit?')} placement="bottom">
+										<button
+											aria-label={$i18n.t('RAG quality hit?')}
+											class="{isLastMessage || ($settings?.highContrastMode ?? false)
+												? 'visible'
+												: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 border-radius: 0.5rem; {/** @type {string} */ (
+												message?.annotation?.rag_quality_rating ?? ''
+											) === '1'
+												? 'bg-gray-100 dark:bg-gray-800'
+												: ''} dark:hover:text-white hover:text-black transition disabled:cursor-progress disabled:hover:bg-transparent"
+											disabled={ragFeedbackLoading}
+											on:click={async () => {
+												await ragFeedbackHandler(1);
+												window.setTimeout(() => {
+													document
+														.getElementById(`message-feedback-${message.id}`)
+														?.scrollIntoView();
+												}, 0);
+											}}
+										>
+											<svg
+												aria-hidden="true"
+												stroke="currentColor"
+												fill="none"
+												stroke-width="2.3"
+												viewBox="0 0 24 24"
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												class="w-4 h-4"
+												xmlns="http://www.w3.org/2000/svg"
+											>
+												<path
+													d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"
+												/>
+											</svg>
+										</button>
+									</Tooltip>
 
-															<Tooltip content={$i18n.t('RAG quality hit?')} placement="bottom">
-																<button
-																aria-label={$i18n.t('RAG quality hit?')}
-																	class="{isLastMessage || ($settings?.highContrastMode ?? false)
-																		? 'visible'
-																		: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 border-radius: 0.5rem; {
-																	(/** @type {string} */(message?.annotation?.rag_quality_rating ?? '')) === '1'
-																		? 'bg-gray-100 dark:bg-gray-800'
-																		: ''} dark:hover:text-white hover:text-black transition disabled:cursor-progress disabled:hover:bg-transparent"
-																disabled={ragFeedbackLoading}
-																on:click={async () => {
-																	await ragFeedbackHandler(1);
-																	window.setTimeout(() => {
-																		document.getElementById(`message-feedback-${message.id}`)?.scrollIntoView();
-																	}, 0);
-																}}
-																>
-																	<svg
-																	aria-hidden="true"
-																		stroke="currentColor"
-																		fill="none"
-																		stroke-width="2.3"
-																		viewBox="0 0 24 24"
-																		stroke-linecap="round"
-																		stroke-linejoin="round"
-																		class="w-4 h-4"
-																		xmlns="http://www.w3.org/2000/svg"
-																	>
-																		<path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
-																	</svg>
-																</button>
-															</Tooltip>
-
-															<Tooltip content={$i18n.t('RAG quality miss?')} placement="bottom">
-																<button
-																aria-label={$i18n.t('RAG quality miss?')}
-																	class="{isLastMessage || ($settings?.highContrastMode ?? false)
-																		? 'visible'
-																		: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 border-radius: 0.5rem; {
-																	(/** @type {string} */(message?.annotation?.rag_quality_rating ?? '')) === '-1'
-																		? 'bg-gray-100 dark:bg-gray-800'
-																		: ''} dark:hover:text-white hover:text-black transition disabled:cursor-progress disabled:hover:bg-transparent"
-																disabled={ragFeedbackLoading}
-																on:click={async () => {
-																	await ragFeedbackHandler(-1);
-																	window.setTimeout(() => {
-																		document.getElementById(`message-feedback-${message.id}`)?.scrollIntoView();
-																	}, 0);
-																}}
-																>
-																	<svg
-																	aria-hidden="true"
-																		stroke="currentColor"
-																		fill="none"
-																		stroke-width="2.3"
-																		viewBox="0 0 24 24"
-																		stroke-linecap="round"
-																		stroke-linejoin="round"
-																		class="w-4 h-4"
-																		xmlns="http://www.w3.org/2000/svg"
-																	>
-																		<path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/>
-																	</svg>
-																</button>
-															</Tooltip>
-
+									<Tooltip content={$i18n.t('RAG quality miss?')} placement="bottom">
+										<button
+											aria-label={$i18n.t('RAG quality miss?')}
+											class="{isLastMessage || ($settings?.highContrastMode ?? false)
+												? 'visible'
+												: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 border-radius: 0.5rem; {/** @type {string} */ (
+												message?.annotation?.rag_quality_rating ?? ''
+											) === '-1'
+												? 'bg-gray-100 dark:bg-gray-800'
+												: ''} dark:hover:text-white hover:text-black transition disabled:cursor-progress disabled:hover:bg-transparent"
+											disabled={ragFeedbackLoading}
+											on:click={async () => {
+												await ragFeedbackHandler(-1);
+												window.setTimeout(() => {
+													document
+														.getElementById(`message-feedback-${message.id}`)
+														?.scrollIntoView();
+												}, 0);
+											}}
+										>
+											<svg
+												aria-hidden="true"
+												stroke="currentColor"
+												fill="none"
+												stroke-width="2.3"
+												viewBox="0 0 24 24"
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												class="w-4 h-4"
+												xmlns="http://www.w3.org/2000/svg"
+											>
+												<path
+													d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"
+												/>
+											</svg>
+										</button>
+									</Tooltip>
 
 									{#if isLastMessage && ($user?.role === 'admin' || ($user?.permissions?.chat?.continue_response ?? true))}
 										<Tooltip content={$i18n.t('Continue Response')} placement="bottom">
@@ -1433,7 +1441,7 @@
 									{#if $user?.role === 'admin' || ($user?.permissions?.chat?.regenerate_response ?? true)}
 										{#if $settings?.regenerateMenu ?? true}
 											<button
-             aria-label={$i18n.t('Regenerate Response')}
+												aria-label={$i18n.t('Regenerate Response')}
 												type="button"
 												class="hidden regenerate-response-button"
 												on:click={() => {

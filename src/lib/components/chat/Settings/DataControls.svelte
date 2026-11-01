@@ -31,7 +31,6 @@
 
 	const i18n = getContext('i18n');
 
-
 	// Chats
 	let importFiles;
 

@@ -158,8 +158,9 @@
 					href="https://openwebui.com"
 					target="_blank"
 					class="underline">Open WebUI Inc.</a
-				> <a href="https://github.com/developer3000s/open-webui-uncensored/blob/main/LICENSE" target="_blank"
-					>All rights reserved.</a
+				> <a
+					href="https://github.com/developer3000s/open-webui-uncensored/blob/main/LICENSE"
+					target="_blank">All rights reserved.</a
 				>
 </pre>
 		</div>
