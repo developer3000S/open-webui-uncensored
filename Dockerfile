@@ -53,7 +53,11 @@ COPY package.json package-lock.json ./
 # --legacy-peer-deps avoids ERESOLVE failures from transitive peer-dependency
 # conflicts (e.g. @eslint-community/eslint-utils & typescript-eslint wanting
 # eslint>=8 while some older transitive copy resolves eslint@4).
-RUN npm ci --no-audit --no-fund --engine-strict=false --legacy-peer-deps
+# --os=any makes optional native packages (e.g. @img/sharp-darwin/win32,
+# @tailwindcss/oxide-win32/*) eligible for installation on any host OS so the
+# lock file stays fully in sync with package.json regardless of the build
+# platform; unrunable binaries are simply ignored at runtime.
+RUN npm ci --no-audit --no-fund --engine-strict=false --legacy-peer-deps --os=any
 
 COPY . .
 ENV APP_BUILD_HASH=${BUILD_HASH}
