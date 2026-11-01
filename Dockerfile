@@ -46,18 +46,23 @@ WORKDIR /app
 RUN apk add --no-cache git
 
 COPY package.json package-lock.json ./
-# npm ci requires package.json and package-lock.json to be in sync.
-# If you edit package.json, regenerate the lock file first:
-#   rm -rf node_modules package-lock.json && npm install
+# Вариант 2 (по требованию): не полагаться на строгий sync package.json/lock —
+# пересобрать зависимости нативным npm этого образа прямо в контейнере. Это
+# гарантирует, что для платформы сборки (linux/x64/musl на Alpine) будут
+# установлены ровно те бинарные пакеты, которые нужны: rolldown иначе падает с
+# "Cannot find native binding" (см. npm/cli#4828 — баг npm с optional-зависимостями;
+# лок-файл был сгенерирован на хосте без musl и не содержал WASI-биндинга — он
+# добавлен в package-lock.json отдельно).
 # --engine-strict=false keeps the install working on the Node version pinned above.
 # --legacy-peer-deps avoids ERESOLVE failures from transitive peer-dependency
 # conflicts (e.g. @eslint-community/eslint-utils & typescript-eslint wanting
 # eslint>=8 while some older transitive copy resolves eslint@4).
-# --os=any makes optional native packages (e.g. @img/sharp-darwin/win32,
-# @tailwindcss/oxide-win32/*) eligible for installation on any host OS so the
-# lock file stays fully in sync with package.json regardless of the build
-# platform; unrunable binaries are simply ignored at runtime.
-RUN npm ci --no-audit --no-fund --engine-strict=false --legacy-peer-deps --os=any
+# --install-strategy=nested обходит npm/cli#4828: каждый пакет кладётся рядом со
+# своим родителем, поэтому все платформенные биндинги (в т.ч. required-бинарь
+# rolldown) гарантированно устанавливаются.
+# --no-save: layer cache не должен изменять лок-файл в репозитории.
+RUN rm -rf node_modules package-lock.json && \
+    npm install --no-audit --no-fund --engine-strict=false --legacy-peer-deps --install-strategy=nested --no-save
 
 COPY . .
 ENV APP_BUILD_HASH=${BUILD_HASH}
