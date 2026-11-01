@@ -51,6 +51,7 @@
 
 			<Tooltip placement="top" content={$i18n.t('Delete')}>
 				<button
+      aria-label={$i18n.t('Delete')}
 					class=" text-transparent group-hover:text-gray-500 dark:hover:text-gray-300 transition"
 					on:click={() => {
 						onDelete();

@@ -707,6 +707,7 @@
 					{#if id === $chatId}
 						<!-- Shortcut support using "delete-chat-button" id -->
 						<button
+        aria-label={$i18n.t('Delete Chat')}
 							id="delete-chat-button"
 							class="hidden"
 							on:click={() => {

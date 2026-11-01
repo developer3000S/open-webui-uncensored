@@ -1,0 +1,158 @@
+{
+	"/(app)": [
+		"src/routes/+layout.js",
+		"src/routes/+layout.js"
+	],
+	"/": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/admin": [
+		"src/routes/+layout.js",
+		"src/routes/+layout.js"
+	],
+	"/(app)/admin/analytics": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/admin/analytics/[tab]": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/admin/evaluations": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/admin/evaluations/[tab]": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/admin/functions": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/admin/functions/create": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/admin/functions/edit": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/admin/settings": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/admin/settings/[tab]": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/admin/users": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/admin/users/[tab]": [
+		"src/routes/+layout.js"
+	],
+	"/auth": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/automations": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/automations/[id]": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/calendar": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/channels/[id]": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/coder": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/c/[id]": [
+		"src/routes/+layout.js"
+	],
+	"/error": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/home": [
+		"src/routes/+layout.js",
+		"src/routes/+layout.js"
+	],
+	"/(app)/notes": [
+		"src/routes/+layout.js",
+		"src/routes/+layout.js"
+	],
+	"/(app)/notes/new": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/notes/[id]": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/playground": [
+		"src/routes/+layout.js",
+		"src/routes/+layout.js"
+	],
+	"/(app)/playground/completions": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/playground/images": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/studio": [
+		"src/routes/(app)/studio/+layout.ts",
+		"src/routes/+layout.js",
+		"src/routes/(app)/studio/+layout.ts",
+		"src/routes/+layout.js"
+	],
+	"/s/[id]": [
+		"src/routes/+layout.js"
+	],
+	"/watch": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/workspace": [
+		"src/routes/+layout.js",
+		"src/routes/+layout.js"
+	],
+	"/(app)/workspace/functions/create": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/workspace/knowledge": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/workspace/knowledge/create": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/workspace/knowledge/[id]": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/workspace/models": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/workspace/models/create": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/workspace/models/edit": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/workspace/prompts": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/workspace/prompts/create": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/workspace/prompts/[id]": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/workspace/skills": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/workspace/skills/create": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/workspace/skills/edit": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/workspace/tools": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/workspace/tools/create": [
+		"src/routes/+layout.js"
+	],
+	"/(app)/workspace/tools/edit": [
+		"src/routes/+layout.js"
+	]
+}

@@ -30,7 +30,6 @@
 	export let show = false;
 
 	export let title = 'Chats';
-	export let emptyPlaceholder = '';
 	export let shareUrl = false;
 	export let showUserInfo = false;
 	export let showSearch = true;
@@ -106,6 +105,7 @@
 				{/if}
 			</div>
 			<button
+     aria-label={$i18n.t('Close')}
 				class="self-center"
 				on:click={() => {
 					show = false;
@@ -179,6 +179,7 @@
 									</div>
 								{/if}
 								<button
+          aria-label={$i18n.t('Title')}
 									class="px-1.5 py-1 cursor-pointer select-none {showUserInfo
 										? 'flex-1'
 										: 'basis-3/5'}"
@@ -203,6 +204,7 @@
 									</div>
 								</button>
 								<button
+          aria-label={$i18n.t('Updated at')}
 									class="px-1.5 py-1 cursor-pointer select-none hidden sm:flex {showUserInfo
 										? 'w-28'
 										: 'sm:basis-2/5'} justify-end"
@@ -311,6 +313,7 @@
 												{#if unarchiveHandler}
 													<Tooltip content={$i18n.t('Unarchive Chat')}>
 														<button
+              aria-label={$i18n.t('Unarchive Chat')}
 															class="self-center w-fit px-1 text-sm rounded-xl"
 															on:click={async (e) => {
 																e.stopImmediatePropagation();

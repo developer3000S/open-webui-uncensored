@@ -616,6 +616,7 @@
 						<div>
 							<Tooltip content="Update All Models" placement="top">
 								<button
+          aria-label={$i18n.t('Update All Models')}
 									class="flex gap-2 items-center bg-transparent rounded-lg transition"
 									on:click={() => {
 										updateModelsHandler();
@@ -720,6 +721,7 @@
 
 							<Tooltip content={$i18n.t('Cancel')}>
 								<button
+        aria-label={$i18n.t('Cancel')}
 									class="text-gray-800 dark:text-gray-100"
 									on:click={() => {
 										cancelUpdateModelHandler(updateModelId);
@@ -768,6 +770,7 @@
 
 											<Tooltip content={$i18n.t('Cancel')}>
 												<button
+            aria-label={$i18n.t('Cancel')}
 													class="text-gray-800 dark:text-gray-100"
 													on:click={() => {
 														cancelModelPullHandler(model);
@@ -827,6 +830,7 @@
 						</div>
 						<Tooltip content={$i18n.t('Delete Model')} placement="top">
 							<button
+       aria-label={$i18n.t('Delete Model')}
 								class="px-2.5 bg-gray-50 hover:bg-gray-200 text-gray-800 dark:bg-gray-850 dark:hover:bg-gray-800 dark:text-gray-100 rounded-lg transition"
 								on:click={() => {
 									showModelDeleteConfirm = true;
@@ -875,6 +879,7 @@
 						<div class="flex self-start">
 							<Tooltip content={$i18n.t('Create Model')} placement="top">
 								<button
+        aria-label={$i18n.t('Create Model')}
 									class="px-2.5 py-2.5 bg-gray-50 hover:bg-gray-200 text-gray-800 dark:bg-gray-850 dark:hover:bg-gray-800 dark:text-gray-100 rounded-lg transition disabled:cursor-not-allowed"
 									on:click={() => {
 										createModelHandler();

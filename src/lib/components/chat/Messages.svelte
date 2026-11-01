@@ -29,7 +29,6 @@
 	export let chatId = '';
 	export let user = $_user;
 
-	export let prompt;
 	export let history = {};
 	export let selectedModels;
 	export let atSelectedModel;
@@ -44,7 +43,6 @@
 	export let mergeResponses: Function;
 
 	export let chatActionHandler: Function;
-	export let showMessage: Function = () => {};
 	export let submitMessage: Function = () => {};
 	export let addMessages: Function = () => {};
 

@@ -161,6 +161,7 @@
 />
 
 {#if message}
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class="swipe-reply-wrapper relative"
 		on:touchstart={handleTouchStart}
@@ -463,7 +464,9 @@
 									{#if file.type === 'image' || (file?.content_type ?? '').startsWith('image/')}
 										<Image src={fileUrl} alt={file.name} imageClassName=" max-h-96 rounded-lg" />
 									{:else if file.type === 'video' || (file?.content_type ?? '').startsWith('video/')}
-										<video src={fileUrl} controls class=" max-h-96 rounded-lg"></video>
+										<video src={fileUrl} controls class=" max-h-96 rounded-lg">
+										<track kind="captions" label="Captions" srclang="en" default />
+									</video>
 									{:else}
 										<FileItem
 											item={file}

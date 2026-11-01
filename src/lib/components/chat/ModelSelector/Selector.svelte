@@ -523,7 +523,9 @@
 		type="button"
 		on:click={toggleOpen}
 	>
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
+			role="presentation"
 			class="flex w-full text-left px-0.5 bg-transparent truncate {triggerClassName} justify-between {($settings?.highContrastMode ??
 			false)
 				? 'dark:placeholder-gray-100 placeholder-gray-800'

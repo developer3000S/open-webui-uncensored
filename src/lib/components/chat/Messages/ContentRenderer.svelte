@@ -72,10 +72,7 @@
 	/** @type {import('./structuredOutput').OutputItem[]} */
 	export let output = [];
 
-	export let history;
-	export let messageId;
 
-	export let selectedModels = [];
 
 	export let done = true;
 	export let model = null;

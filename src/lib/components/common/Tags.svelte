@@ -16,6 +16,9 @@
 	let popupElement: HTMLDivElement | null = null;
 	let suggestionsOpen = false;
 
+	const listboxId = `tags-listbox-${Math.random().toString(36).slice(2, 9)}`;
+	let activeSuggestionIndex = -1;
+
 	$: tagNames = new Set((tags ?? []).map((tag) => tag.name.toLowerCase()));
 	$: filteredSuggestionTags = (suggestionTags ?? [])
 		.map((tag) => (typeof tag === 'string' ? tag : (tag?.name ?? '')).trim())
@@ -28,6 +31,8 @@
 		.slice(0, 8);
 	$: if (suggestionsOpen && filteredSuggestionTags.length > 0) {
 		tick().then(positionPopup);
+	} else {
+		activeSuggestionIndex = -1;
 	}
 
 	const portal = (node: HTMLElement) => {
@@ -96,6 +101,7 @@
 				placeholder={$i18n.t('Add a tag...')}
 				role="combobox"
 				aria-autocomplete="list"
+				aria-controls={listboxId}
 				aria-expanded={suggestionsOpen && filteredSuggestionTags.length > 0}
 				autocomplete="off"
 				on:focus={() => {
@@ -107,9 +113,21 @@
 					positionPopup();
 				}}
 				on:keydown={(event) => {
-					if (event.key === 'Enter' || event.key === ' ') {
+					const open = suggestionsOpen && filteredSuggestionTags.length > 0;
+					if (open && event.key === 'ArrowDown') {
 						event.preventDefault();
-						addTag();
+						activeSuggestionIndex = (activeSuggestionIndex + 1) % filteredSuggestionTags.length;
+					} else if (open && event.key === 'ArrowUp') {
+						event.preventDefault();
+						activeSuggestionIndex =
+							activeSuggestionIndex <= 0 ? filteredSuggestionTags.length - 1 : activeSuggestionIndex - 1;
+					} else if (event.key === 'Enter' || event.key === ' ') {
+						event.preventDefault();
+						if (open && activeSuggestionIndex >= 0) {
+							addTag(filteredSuggestionTags[activeSuggestionIndex]);
+						} else {
+							addTag();
+						}
 					} else if (event.key === 'Escape') {
 						suggestionsOpen = false;
 					}
@@ -128,14 +146,19 @@
 					use:portal
 					bind:this={popupElement}
 					class="fixed w-48 max-h-48 overflow-y-auto rounded-2xl border border-gray-200 bg-white p-0.5 shadow-lg dark:border-gray-800 dark:bg-gray-850"
+					id={listboxId}
 					role="listbox"
 					style="z-index: 9999; top: 0; left: 0;"
 				>
-					{#each filteredSuggestionTags as tag (tag)}
+					{#each filteredSuggestionTags as tag, i (tag)}
 						<button
 							type="button"
-							class="flex w-full items-center rounded-xl px-2 py-[5px] text-left text-xs text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
+							class="flex w-full items-center rounded-xl px-2 py-[5px] text-left text-xs text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800 {i ===
+								activeSuggestionIndex
+									? 'bg-gray-50 dark:bg-gray-800'
+									: ''}"
 							role="option"
+							aria-selected={i === activeSuggestionIndex}
 							on:mousedown={(event) => {
 								event.preventDefault();
 							}}

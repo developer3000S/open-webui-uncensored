@@ -607,6 +607,7 @@
 				</div>
 			{:else}
 				<button
+      aria-label={$i18n.t('Confirm Recording')}
 					id="confirm-recording-button"
 					type="button"
 					class="p-1.5 bg-indigo-500 text-white dark:bg-indigo-500 dark:text-blue-950 rounded-full"

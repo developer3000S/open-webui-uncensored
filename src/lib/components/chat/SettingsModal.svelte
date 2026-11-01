@@ -957,9 +957,4 @@
 		-ms-overflow-style: none; /* IE and Edge */
 		scrollbar-width: none; /* Firefox */
 	}
-
-	input[type='number'] {
-		appearance: textfield;
-		-moz-appearance: textfield; /* Firefox */
-	}
 </style>

@@ -216,6 +216,7 @@
 				{/if}
 			</div>
 			<button
+     aria-label={$i18n.t('Close')}
 				class="self-center"
 				on:click={() => {
 					show = false;
@@ -283,6 +284,7 @@
 						{#if files.length > 0}
 							<div class="flex text-xs font-medium mb-1.5">
 								<button
+          aria-label={$i18n.t('Filename')}
 									class="px-1.5 py-1 cursor-pointer select-none basis-3/5"
 									on:click={() => setSortKey('filename')}
 								>
@@ -304,6 +306,7 @@
 									</div>
 								</button>
 								<button
+          aria-label={$i18n.t('Created at')}
 									class="px-1.5 py-1 cursor-pointer select-none hidden sm:flex sm:basis-2/5 justify-end"
 									on:click={() => setSortKey('created_at')}
 								>

@@ -401,6 +401,7 @@
 							</div>
 
 							<button
+         aria-label={$i18n.t('Add')}
 								class="p-1 px-3 text-xs flex rounded-sm transition"
 								type="button"
 								on:click={() => {

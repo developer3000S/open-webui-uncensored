@@ -49,7 +49,6 @@
 
 	const i18n = getContext('i18n');
 
-	export let onAttach: ((blob: Blob, name: string, contentType: string) => void) | null = null;
 	export let overlay = false;
 	export let chatId: string | null = null;
 
@@ -270,7 +269,7 @@
 			if (chatChanged && chatId && !oldChatId) {
 				// Chat just got created (null → real ID): persist the current
 				// browsed path as the new session's cwd — don't re-fetch.
-				setCwd(terminal.url, terminal.key, savedPath, chatId);
+				setCwd(terminal.url, terminal.key, currentPath, chatId);
 			} else if (terminalChanged || chatChanged) {
 				// Terminal switched, new chat started, or switched between
 				// existing chats — re-fetch the session cwd.
@@ -283,8 +282,7 @@
 						terminalEnabled = config?.features?.terminal !== false;
 					}
 
-					savedPath = applyCwd(await getCwd(terminal.url, terminal.key, chatId ?? undefined));
-					loadDir(savedPath);
+						applyCwdAndLoad(await getCwd(terminal.url, terminal.key, chatId ?? undefined));
 				})();
 			}
 		}
@@ -328,6 +326,13 @@
 	const clampToFileRoot = (path: string) => {
 		if (!fileRoot) return asDirectoryPath(path);
 		return isInsideFileRoot(path) ? asDirectoryPath(path) : fileRoot.path;
+	};
+
+	// Wraps the module-level `savedPath` assignment so reactive statements never
+	// read or write module-scope variables directly.
+	const applyCwdAndLoad = (cwd: TerminalCwd | null) => {
+		savedPath = applyCwd(cwd);
+		loadDir(savedPath);
 	};
 
 	const applyCwd = (cwd: TerminalCwd | null) => {
@@ -1297,7 +1302,10 @@
 		{/if}
 
 		<!-- Content -->
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
+			role="presentation"
 			class="flex-1 overflow-y-auto min-h-0 min-w-0"
 			on:click={(e) => {
 				if (e.target === e.currentTarget && selectedCount > 0) clearSelection();

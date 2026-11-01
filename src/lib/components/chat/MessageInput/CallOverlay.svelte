@@ -927,6 +927,7 @@
 
 					<div class=" absolute top-4 md:top-8 left-4">
 						<button
+        aria-label={$i18n.t('Close')}
 							type="button"
 							class="p-1.5 text-white cursor-pointer backdrop-blur-xl bg-black/10 rounded-full"
 							on:click={() => {
@@ -985,6 +986,7 @@
 						}}
 					>
 						<button class="p-3 rounded-full bg-gray-50 dark:bg-gray-900" type="button">
+        aria-label={$i18n.t('Switch Camera')}
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								viewBox="0 0 20 20"
@@ -1002,6 +1004,7 @@
 				{:else}
 					<Tooltip content={$i18n.t('Camera')}>
 						<button
+      aria-label={$i18n.t('Camera')}
 							class="p-3 rounded-full bg-gray-50 dark:bg-gray-900"
 							type="button"
 							on:click={async () => {
@@ -1087,6 +1090,7 @@
 				</Tooltip>
 
 				<button
+      aria-label={$i18n.t('End Call')}
 					class="p-3 rounded-full bg-gray-50 dark:bg-gray-900"
 					on:click={async () => {
 						await stopAudioStream();

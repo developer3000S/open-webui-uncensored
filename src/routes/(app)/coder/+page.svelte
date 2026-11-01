@@ -1487,6 +1487,7 @@ The system will execute it and return matching file snippets in your next turn. 
 							}}></textarea
 						>
 						<button
+        aria-label={$i18n.t('Send')}
 							type="button"
 							class="size-8 rounded-xl flex items-center justify-center bg-gray-900 text-white dark:bg-white dark:text-gray-900 disabled:opacity-40 shrink-0"
 							disabled={sending || !input.trim()}

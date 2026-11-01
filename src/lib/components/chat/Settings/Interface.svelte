@@ -1107,7 +1107,7 @@
 
 			<div>
 				<div class=" py-0.5 flex w-full justify-between">
-					<label id="floating-action-buttons-label" class=" self-center text-xs">
+					<label id="floating-action-buttons-label" for="floating-action-buttons-switch" class=" self-center text-xs">
 						{$i18n.t('Floating Quick Actions')}
 					</label>
 
@@ -1126,6 +1126,7 @@
 						{/if}
 
 						<Switch
+							id="floating-action-buttons-switch"
 							ariaLabelledbyId="floating-action-buttons-label"
 							tooltip={true}
 							bind:state={showFloatingActionButtons}

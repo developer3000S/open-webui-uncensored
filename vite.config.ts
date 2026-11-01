@@ -48,12 +48,12 @@ export default defineConfig({
         pollInterval: 60000
       },
 
-      // remaining options are passed through to vite-plugin-svelte
-      onwarn: (warning, handler) => {
-        const { code } = warning;
-        if (code === 'css-unused-selector' || code === 'svelte-ignore-export-condition') return;
-
-        handler(warning);
+      // options that don't belong to SvelteKit are forwarded by the sveltekit()
+      // plugin to vite-plugin-svelte. we do NOT suppress warnings here - every
+      // reported issue (unused CSS selectors, a11y problems, unused export
+      // properties, etc.) is fixed directly in the source .svelte files.
+      onwarn: (warning, defaultHandler) => {
+        defaultHandler(warning);
       }
     }),
     viteStaticCopy({

@@ -23,7 +23,6 @@
 	const nodesInitialized = useNodesInitialized();
 
 	export let history;
-	export let onClose;
 	export let onNodeClick;
 
 	let selectedMessageId = null;

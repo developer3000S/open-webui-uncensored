@@ -8,7 +8,6 @@
 	const i18n = getContext('i18n');
 
 	export let show = false;
-	export let className = 'max-w-[170px]';
 
 	export let onEdit = () => {};
 	export let onChat = () => {};

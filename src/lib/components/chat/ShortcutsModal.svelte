@@ -114,22 +114,4 @@
 </Modal>
 
 <style>
-	input::-webkit-outer-spin-button,
-	input::-webkit-inner-spin-button {
-		-webkit-appearance: none;
-		margin: 0;
-	}
-
-	.tabs::-webkit-scrollbar {
-		display: none;
-	}
-
-	.tabs {
-		-ms-overflow-style: none;
-		scrollbar-width: none;
-	}
-
-	input[type='number'] {
-		-moz-appearance: textfield;
-	}
 </style>

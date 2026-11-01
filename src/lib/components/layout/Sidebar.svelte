@@ -885,6 +885,7 @@
 />
 
 <button
+  aria-label={$i18n.t('New Chat')}
 	id="sidebar-new-chat-button"
 	class="hidden"
 	on:click={() => {

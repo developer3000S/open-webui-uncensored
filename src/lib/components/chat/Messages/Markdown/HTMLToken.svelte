@@ -5,7 +5,6 @@
 	import { WEBUI_BASE_URL } from '$lib/constants';
 	import { settings } from '$lib/stores';
 
-	export let id: string;
 	export let token: Token;
 
 	let html: string | null = null;

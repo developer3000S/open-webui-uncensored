@@ -121,7 +121,6 @@
 	export let chatId = '';
 	export let history;
 	export let messageId;
-	export let selectedModels = [];
 
 	let message: MessageType = structuredClone(history.messages[messageId]);
 	$: if (history.messages) {
@@ -152,7 +151,6 @@
 	export let updateChat: Function;
 	export let editMessage: Function;
 	export let saveMessage: Function;
-	export let rateMessage: Function;
 	export let actionMessage: Function;
 	export let deleteMessage: Function;
 
@@ -160,7 +158,6 @@
 	export let continueResponse: Function;
 	export let regenerateResponse: Function;
 
-	export let addMessages: Function;
 
 	export let isLastMessage = true;
 	export let readOnly = false;
@@ -1436,6 +1433,7 @@
 									{#if $user?.role === 'admin' || ($user?.permissions?.chat?.regenerate_response ?? true)}
 										{#if $settings?.regenerateMenu ?? true}
 											<button
+             aria-label={$i18n.t('Regenerate Response')}
 												type="button"
 												class="hidden regenerate-response-button"
 												on:click={() => {
