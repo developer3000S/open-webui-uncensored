@@ -28,8 +28,14 @@ ARG GID=0
 ARG BUILDPLATFORM=linux/amd64
 
 ######## WebUI frontend ########
-FROM --platform=$BUILDPLATFORM dockerhub.timeweb.cloud/node:24-alpine AS build
+FROM --platform=$BUILDPLATFORM dockerhub.timeweb.cloud/node:24.12.0-alpine AS build
 ARG BUILD_HASH
+
+# Pin exact toolchain versions everywhere in this stage
+ENV NODE_VERSION=24.12.0 NPM_VERSION=12.2.1
+RUN corepack enable && \
+    npm install -g npm@12.2.1 && \
+    node -v && npm -v
 
 # Set Node.js options (heap limit Allocation failed - JavaScript heap out of memory)
 # ENV NODE_OPTIONS="--max-old-space-size=4096"
@@ -44,7 +50,10 @@ COPY package.json package-lock.json ./
 # If you edit package.json, regenerate the lock file first:
 #   rm -rf node_modules package-lock.json && npm install
 # --engine-strict=false keeps the install working on the Node version pinned above.
-RUN npm ci --no-audit --no-fund --engine-strict=false
+# --legacy-peer-deps avoids ERESOLVE failures from transitive peer-dependency
+# conflicts (e.g. @eslint-community/eslint-utils & typescript-eslint wanting
+# eslint>=8 while some older transitive copy resolves eslint@4).
+RUN npm ci --no-audit --no-fund --engine-strict=false --legacy-peer-deps
 
 COPY . .
 ENV APP_BUILD_HASH=${BUILD_HASH}

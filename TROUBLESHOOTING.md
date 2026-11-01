@@ -62,6 +62,26 @@ A `restart: always` deployment converts a startup failure into a silent crash-lo
 
 Diagnose with `docker logs <container> --tail 40`; if the traceback ends in that `ImportError`, comment `VECTOR_DB`/`VALKEY_URL` out in `.env` and restart — the default (`chroma`) keeps indexes in the `data` volume. To actually use Valkey, install the client (`pip install valkey-glide-sync==2.3.1`) into the image *and* run a Valkey server first.
 
+## Docker Image Build Issues (`open-webui-uncensored:local`)
+
+**Требуемые версии инструментов.** Сборка образа WebUI (`Dockerfile`, stage `build`) и студии (`studio/Dockerfile`) закреплена за **Node.js 24.12.0** (образ `node:24.12.0-alpine`) и **npm 12.2.1** (устанавливается в образе через `npm install -g npm@12.2.1`). Эти же версии объявлены в поле `engines` корневых `package.json` и `studio/package.json`, а CI (`.github/workflows/release-pypi.yml`) использует `node-version: 24.12.0`. Локально можно поставить их через `nvm install 24.12.0 && npm install -g npm@12.2.1`.
+
+**`npm warn EBADENGINE Unsupported engine ...` — это предупреждения, а не ошибки.** Они появляются, когда версия Node в окружении не совпадает с полем `engines` пакетов, но установку/сборку не прерывают (в `.npmrc` стоит `engine-strict=false`, а `npm ci` в Dockerfile запускается с `--engine-strict=false`). Если вы видите только EBADENGINE-варнинги и таймер `docker build` продолжает идти — сборка идёт штатно: сборка SvelteKit-фронтенда (`npm run build`) занимает 7–10 минут, это нормально.
+
+**`npm error code ERESOLVE ... Conflicting peer dependency: eslint@...`** — ошибка разрешения peer-зависимостей (например, транзитивные пакеты `@typescript-eslint/*`, `eslint-plugin-svelte`, `eslint-config-prettier` требуют `eslint >=8`, а в дереве встречается старая копия `eslint@4`). Решение уже встроено в репозиторий:
+- `.npmrc` содержит `legacy-peer-deps=true`;
+- `Dockerfile` выполняет `npm ci --no-audit --no-fund --engine-strict=false --legacy-peer-deps`;
+- в lock-файле зафиксирован современный `eslint@10.x`.
+
+Если при локальной установке вручную (`npm install` вне Docker) снова вылезает ERESOLVE — добавьте флаг `--legacy-peer-deps` или отредактируйте `.npmrc` так же.
+
+**Старый кэш сборки повторяет прежние ошибки.** Если после обновления `Dockerfile`/`.npmrc` сборка всё равно падает со «старыми» сообщениями, очистите билд-кэш:
+```bash
+docker builder prune -f
+docker build -f Dockerfile -t open-webui-uncensored:local .
+# или целиком: docker compose build --no-cache && docker compose up -d
+```
+
 ## Coder Section Issues
 
 **Пункт «Coder» не появляется в боковом меню:** раздел управляется feature flag и по умолчанию выключен. Убедитесь, что в `.env` объявлено `CODER_ENABLED=true` и контейнер перезапущен (имена из `.env` применяются только при старте). Проверить состояние флага можно в ответе `GET /api/v1/config` — поле `features.enable_coder`.

@@ -242,6 +242,14 @@ docker compose down
 `docker compose up -d --build --pull always` и ждёт готовности `open-webui`
 (подробности — в [START.md](START.md)).
 
+Сборка образов требует **Node.js 24.12.0** и **npm 12.2.1** — они закреплены
+в `Dockerfile` (`node:24.12.0-alpine` + `npm install -g npm@12.2.1`),
+`studio/Dockerfile`, полях `engines` обоих `package.json` и в CI. Предупреждения
+`EBADENGINE` не опасны, а конфликт peer-зависимостей `ESLINT/ERESOLVE` решён
+флагом `--legacy-peer-deps`; если сборка падает с «старыми» ошибками — очистите
+билд-кэш (`docker builder prune -f`). Подробности — в
+[TROUBLESHOOTING.md](TROUBLESHOOTING.md) (раздел «Docker Image Build Issues»).
+
 Тома `open-webui` и `neo4j-data` объявлены `external` и привязаны к существующим
 `open-webui-rus_open-webui` / `open-webui-rus_neo4j-data` — поэтому переезд с
 `docker-run.sh` на compose **не теряет** `webui.db`, `.webui_secret_key` (сессии
