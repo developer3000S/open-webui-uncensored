@@ -63,7 +63,7 @@
     "@codemirror/theme-one-dark": "^6.1.2",
     "@floating-ui/dom": "^1.7.2",
     "@huggingface/transformers": "^4.4.0-next.0",
-    "@jimp/core": "^0.16.2",
+    "@jimp/core": "^1.6.1",
     "@jimp/plugin-blit": "^0.22.12",
     "@jimp/plugin-contain": "^0.22.12",
     "@jimp/plugin-cover": "^0.22.12",
