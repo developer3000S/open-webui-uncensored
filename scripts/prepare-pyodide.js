@@ -10,7 +10,7 @@ async function downloadPackages() {
 console.log('Preparing Pyodide packages (browser runtime staging only)');
 
 const srcDir = 'node_modules/pyodide';
-let hasSrc = false;
+let hasSrc;
 try {
 hasSrc = (await stat(srcDir)).isDirectory();
 } catch {
@@ -41,7 +41,7 @@ console.log('Copying Pyodide files into static directory');
 const srcDir = 'node_modules/pyodide';
 const destDir = 'static/pyodide';
 
-let hasSrc = false;
+let hasSrc;
 try {
 hasSrc = (await stat(srcDir)).isDirectory();
 } catch {

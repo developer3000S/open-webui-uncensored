@@ -68,7 +68,7 @@ export const AIAutocompletion = Extension.create({
 		let isComposing = false;
 
 		const handleAICompletion = (view) => {
-			const { state, dispatch } = view;
+			const { state } = view;
 			const { selection } = state;
 			const { $head } = selection;
 
@@ -239,7 +239,7 @@ export const AIAutocompletion = Extension.create({
 							}
 							return false;
 						},
-						mouseup: (view, event) => {
+						mouseup: (view, _event) => {
 							const { state, dispatch } = view;
 
 							// Reset debounce timer on mouse click
