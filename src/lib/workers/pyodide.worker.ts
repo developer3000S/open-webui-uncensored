@@ -4,11 +4,11 @@ declare global {
 	interface Window {
 		stdout: string | null;
 		stderr: string | null;
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		 
 		result: any;
 		pyodide: PyodideInterface;
 		packages: string[];
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		 
 		[key: string]: any;
 	}
 }

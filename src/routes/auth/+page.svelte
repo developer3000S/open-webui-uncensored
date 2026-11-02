@@ -29,25 +29,24 @@
 
 	import type { I18nStore } from '$lib/i18n';
 
-interface ConfigWithMetadata extends Config {
-    metadata?: {
-        login_footer?: string;
-        auth_logo_position?: string;
-    };
-    features?: {
-        enable_ldap?: boolean;
-        enable_login_form?: boolean;
-        onboarding?: boolean;
-    };
-}
+	interface ConfigWithMetadata extends Config {
+		metadata?: {
+			login_footer?: string;
+			auth_logo_position?: string;
+		};
+		features?: {
+			enable_ldap?: boolean;
+			enable_login_form?: boolean;
+			onboarding?: boolean;
+		};
+	}
 	const i18n: I18nStore = getContext('i18n');
 
 	let loaded = false;
-let form: { email?: string; password?: string; } = {};
+	let form: { email?: string; password?: string } = {};
 
 	let mode = $config?.features.enable_ldap ? 'ldap' : 'signin';
 
-	
 	let name = '';
 	let email = '';
 	let password = '';
@@ -610,7 +609,9 @@ let form: { email?: string; password?: string; } = {};
 						{#if ($config as ConfigWithMetadata)?.metadata?.login_footer}
 							<div class="max-w-3xl mx-auto">
 								<div class="mt-2 text-[0.7rem] text-gray-500 dark:text-gray-400 marked">
-									{@html DOMPurify.sanitize(marked(($config as ConfigWithMetadata)?.metadata?.login_footer || ''))}
+									{@html DOMPurify.sanitize(
+										marked(($config as ConfigWithMetadata)?.metadata?.login_footer || '')
+									)}
 								</div>
 							</div>
 						{/if}
