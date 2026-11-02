@@ -16,7 +16,7 @@
 	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	export let show = false;
-	export let eventData = null;
+	export let eventData: any = null;
 
 	// Listen for verify:chat messages from opener
 	const handleMessage = async (event: MessageEvent) => {
@@ -243,7 +243,7 @@
 			}
 
 			downloadController = controller;
-			const reader = res.body.getReader();
+			const reader = (res.body as ReadableStream<Uint8Array>).getReader();
 			const decoder = new TextDecoder();
 
 			const items: any[] = [];
@@ -415,7 +415,7 @@
 								<input
 									type="checkbox"
 									checked={syncMode === 'incremental'}
-									on:change={(e) => (syncMode = e.target.checked ? 'incremental' : 'full')}
+									on:change={(e) => (syncMode = (e.target as HTMLInputElement).checked ? 'incremental' : 'full')}
 									disabled={syncing}
 									class="w-4 h-4 rounded border-gray-300 dark:border-gray-600"
 								/>

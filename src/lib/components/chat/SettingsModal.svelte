@@ -33,7 +33,7 @@
 	import type { i18n as i18nType } from 'i18next';
 	const i18n = getContext<Writable<i18nType>>('i18n');
 
-	export let show: boolean | string = false;
+	export let show: boolean = false;
 
 	$: if (show) {
 		if (typeof show === 'string') {
@@ -479,10 +479,10 @@
 	];
 
 	let availableSettings = [];
-	let filteredSettings = [];
+	let filteredSettings: string[] = [];
 
 	let search = '';
-	let searchDebounceTimeout;
+	let searchDebounceTimeout: ReturnType<typeof setTimeout> | undefined;
 
 	const getAvailableSettings = () => {
 		return allSettings.filter((tab) => {
@@ -538,7 +538,7 @@
 		}, 100);
 	};
 
-	const saveSettings = async (updated) => {
+	const saveSettings = async (updated: Record<string, any>) => {
 		console.log(updated);
 		await settings.set({ ...$settings, ...updated });
 		await models.set(await getModels());
@@ -548,14 +548,14 @@
 	const getModels = async () => {
 		return await _getModels(
 			localStorage.token,
-			$config?.features?.enable_direct_connections && ($settings?.directConnections ?? null)
+			($config?.features?.enable_direct_connections ? ($settings?.directConnections ?? null) : null)
 		);
 	};
 
 	let selectedTab = 'general';
 
 	// Function to handle sideways scrolling
-	const scrollHandler = (event) => {
+	const scrollHandler = (event: WheelEvent) => {
 		const settingsTabsContainer = document.getElementById('settings-tabs-container');
 		if (settingsTabsContainer) {
 			event.preventDefault(); // Prevent default vertical scrolling
@@ -885,7 +885,6 @@
 			>
 				{#if selectedTab === 'general'}
 					<General
-						{getModels}
 						{saveSettings}
 						on:save={() => {
 							toast.success($i18n.t('Settings saved successfully!'));
@@ -900,14 +899,14 @@
 					/>
 				{:else if selectedTab === 'connections'}
 					<Connections
-						saveSettings={async (updated) => {
+						saveSettings={async (updated: Record<string, any>) => {
 							await saveSettings(updated);
 							toast.success($i18n.t('Settings saved successfully!'));
 						}}
 					/>
 				{:else if selectedTab === 'tools'}
 					<Integrations
-						saveSettings={async (updated) => {
+						saveSettings={async (updated: Record<string, any>) => {
 							await saveSettings(updated);
 							toast.success($i18n.t('Settings saved successfully!'));
 						}}
@@ -927,7 +926,7 @@
 						}}
 					/>
 				{:else if selectedTab === 'data_controls'}
-					<DataControls {saveSettings} />
+					<DataControls />
 				{:else if selectedTab === 'account'}
 					<Account
 						{saveSettings}

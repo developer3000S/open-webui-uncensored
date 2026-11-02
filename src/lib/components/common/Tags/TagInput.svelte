@@ -6,7 +6,7 @@
 	import type { i18n as i18nType } from 'i18next';
 	const i18n = getContext<Writable<i18nType>>('i18n');
 
-	export let suggestionTags = [];
+	export let suggestionTags: any[] = [];
 	export let disabled = false;
 
 	let tagName = '';
