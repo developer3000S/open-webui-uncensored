@@ -1,0 +1,1976 @@
+
+/workspace/src/lib/apis/channels/index.ts
+  148:6  error  The value assigned to 'res' is not used in subsequent statements  no-useless-assignment
+
+/workspace/src/lib/apis/files/index.ts
+   71:9  error  The value assigned to 'parsed' is not used in subsequent statements  no-useless-assignment
+  147:7  error  The value assigned to 'status' is not used in subsequent statements  no-useless-assignment
+
+/workspace/src/lib/apis/index.ts
+  104:19  warning  'err' is defined but never used. Allowed unused args must match /^_/u                   @typescript-eslint/no-unused-vars
+  541:6   error    The value assigned to 'error' is not used in subsequent statements                      no-useless-assignment
+  598:15  error    Do not access Object.prototype method 'hasOwnProperty' from target object               no-prototype-builtins
+  624:10  warning  'contentType' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  640:25  error    'RequestInit' is not defined                                                            no-undef
+
+/workspace/src/lib/apis/ollama/index.ts
+  3:78  error  'dict' is not defined  no-undef
+
+/workspace/src/lib/apis/openai/index.ts
+    1:31  warning  'WEBUI_API_BASE_URL' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  136:14  error    'dict' is not defined                                                                 no-undef
+  145:6   error    The value assigned to 'res' is not used in subsequent statements                      no-useless-assignment
+
+/workspace/src/lib/apis/streaming/index.ts
+  7:2  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  9:2  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/workspace/src/lib/apis/users/index.ts
+  154:6  error  The value assigned to 'res' is not used in subsequent statements  no-useless-assignment
+  204:6  error  The value assigned to 'res' is not used in subsequent statements  no-useless-assignment
+  248:6  error  The value assigned to 'res' is not used in subsequent statements  no-useless-assignment
+
+/workspace/src/lib/apis/utils/index.ts
+   99:6  warning  'error' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  128:8  warning  'res' is assigned a value but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+
+/workspace/src/lib/components/AddConnectionModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/AddFilesPlaceholder.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/AddTerminalServerModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/AddToolServerModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/AutomationModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/ChangelogModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/ImportModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/NotificationToast.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/OnBoarding.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Analytics.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Analytics/AnalyticsModelModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Analytics/ChartLine.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Analytics/Dashboard.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Analytics/ModelUsage.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Analytics/UserUsage.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Evaluations.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Evaluations/FeedbackMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Evaluations/FeedbackModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Evaluations/Feedbacks.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Evaluations/Leaderboard.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Evaluations/LeaderboardModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Evaluations/ModelActivityChart.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Functions.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Functions/AddFunctionMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Functions/FunctionEditor.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Functions/FunctionMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Audio.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Authentication.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/CodeExecution.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Connections.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Connections/ManageOllamaModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Connections/OllamaConnection.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Connections/OpenAIConnection.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Database.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Documents.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Evaluations.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Evaluations/ArenaModelModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Evaluations/Model.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Events.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/ExternalKnowledge.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/General.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Images.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Integrations.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Interface.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Interface/Banners.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Models.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Models/AdminViewSelector.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Models/Manage/ManageMultipleOllama.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Models/Manage/ManageOllama.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Models/ManageModelsModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Models/ModelList.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Models/ModelMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Models/ModelSelector.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Models/ModelSettingsModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/Pipelines.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Settings/WebSearch.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/UserPreviewModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Users.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Users/Groups.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Users/Groups/EditGroupModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Users/Groups/General.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Users/Groups/GroupItem.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Users/Groups/GroupPreviewPanel.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Users/Groups/Permissions.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Users/Groups/Users.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Users/UserList.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Users/UserList/AddUserModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Users/UserList/EditUserModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/admin/Users/UserList/UserChatsModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/app/AppSidebar.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/automations/AutomationEditor.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/automations/AutomationMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/automations/ModelDropdown.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/automations/ScheduleDropdown.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/automations/TerminalDropdown.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/calendar/CalendarEventChip.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/calendar/CalendarEventModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/calendar/CalendarSidebar.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/calendar/CalendarView.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/calendar/CreateCalendarModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/channel/Channel.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/channel/ChannelInfoModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/channel/ChannelInfoModal/AddMembersModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/channel/ChannelInfoModal/UserList.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/channel/MessageInput.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/channel/MessageInput/InputMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/channel/MessageInput/MentionList.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/channel/Messages.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/channel/Messages/Message.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/channel/Messages/Message/ProfilePreview.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/channel/Messages/Message/UserStatus.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/channel/Messages/Message/UserStatusLinkPreview.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/channel/Navbar.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/channel/PinnedMessagesModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/channel/Thread.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/channel/WebhookItem.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/channel/WebhooksModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Artifacts.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Chat.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/ChatControls.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/ChatControls/Embeds.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/ChatPlaceholder.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/ContentRenderer/FloatingButtons.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Controls/Controls.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Controls/Valves.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/FileNav.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/FileNav/BulkActionBar.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/FileNav/CellEditor.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/FileNav/FileCodeEditor.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/FileNav/FileEntryRow.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/FileNav/FileNavToolbar.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/FileNav/FilePreview.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/FileNav/JsonTreeView.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/FileNav/NotebookView.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/FileNav/PortList.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/FileNav/PortPreview.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/FileNav/SqliteView.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/MessageInput.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/MessageInput/AttachWebpageModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/MessageInput/CallOverlay.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/MessageInput/CallOverlay/VideoInputMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/MessageInput/CommandSuggestionList.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/MessageInput/Commands/Emojis.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/MessageInput/Commands/Knowledge.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/MessageInput/Commands/Models.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/MessageInput/Commands/Prompts.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/MessageInput/Commands/Skills.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/MessageInput/FilesOverlay.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/MessageInput/InputMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/MessageInput/InputMenu/Chats.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/MessageInput/InputMenu/Files.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/MessageInput/InputMenu/Knowledge.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/MessageInput/InputMenu/Notes.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/MessageInput/InputVariablesModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/MessageInput/IntegrationsMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/MessageInput/QueuedMessageItem.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/MessageInput/TerminalMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/MessageInput/VoiceRecording.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/Citations.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/Citations/CitationModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/Citations/CitationsModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/CodeBlock.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/CodeExecutionModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/CodeExecutions.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/ContentRenderer.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/Error.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/Markdown.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/Markdown/AlertRenderer.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/Markdown/ColonFenceBlock.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/Markdown/ConsecutiveDetailsGroup.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/Markdown/HTMLToken.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/Markdown/KatexRenderer.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/Markdown/MarkdownInlineTokens.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/Markdown/MarkdownInlineTokens/CodespanToken.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/Markdown/MarkdownInlineTokens/MentionToken.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/Markdown/MarkdownInlineTokens/NoteLinkToken.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/Markdown/MarkdownInlineTokens/TextToken.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/Markdown/MarkdownTokens.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/Markdown/Source.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/Markdown/SourceToken.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/Message.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/MultiResponseMessages.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/Name.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/OutputEditView.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/ProfileImage.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/RateComment.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/ResponseMessage.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/ResponseMessage/FollowUps.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/ResponseMessage/RegenerateMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/ResponseMessage/StatusHistory.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/ResponseMessage/StatusHistory/StatusItem.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/ResponseMessage/TaskList.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/ResponseMessage/WebSearchResults.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/Skeleton.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/StructuredOutputRenderer.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Messages/UserMessage.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/ModelSelector.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/ModelSelector/ModelItem.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/ModelSelector/ModelItemMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/ModelSelector/Selector.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Navbar.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Overview.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Overview/Flow.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Overview/Node.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Overview/View.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Placeholder.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Placeholder/ChatList.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Placeholder/FolderPlaceholder.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Placeholder/FolderTitle.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/PyodideFileNav.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Settings/About.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Settings/Account.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Settings/Account/UpdatePassword.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Settings/Account/UserProfileImage.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Settings/Advanced/AdvancedParams.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Settings/Audio.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Settings/Connections.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Settings/Connections/Connection.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Settings/DataControls.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Settings/General.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Settings/Integrations.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Settings/Integrations/Terminals.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Settings/Integrations/Terminals/Connection.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Settings/Interface.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Settings/Interface/ManageFloatingActionButtonsModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Settings/Interface/ManageImageCompressionModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Settings/Personalization.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Settings/Personalization/ManageModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Settings/Personalization/MemoryModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Settings/SyncStatsModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Settings/Tools/Connection.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/SettingsModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/ShareChatModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/ShortcutItem.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/ShortcutsModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/SkillsModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Suggestions.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/TagChatModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/Tags.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/ToolServersModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/TopStatusBar.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/chat/XTerminal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/coder/AssistantToolbar.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/coder/DiffView.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/coder/ExportDialog.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/coder/RepoPanel.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/coder/RepositoryEnvironmentPanel.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Badge.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Banner.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/ChatList.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Checkbox.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/CodeEditor.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/CodeEditorModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Collapsible.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/ConfirmDialog.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/DragGhost.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Drawer.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Dropdown.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/DropdownOptions.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/DropdownSub.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Emoji.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/EmojiPicker.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/FileItem.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/FileItemModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Folder.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/FullHeightIframe.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/HotkeyHint.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Image.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/ImagePreview.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/InputModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Loader.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Marquee.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Modal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/NativeSelect.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Overlay.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/PDFViewer.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Pagination.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/PanzoomContainer.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/RichTextInput.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/RichTextInput/FormattingButtons.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/RichTextInput/suggestions.ts
+   1:10  warning  'mount' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+   1:17  warning  'unmount' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  11:14  error    'TippyInstance' is not defined                                             no-undef
+
+/workspace/src/lib/components/common/SVGPanZoom.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Select.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Selector.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/SensitiveInput.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Sidebar.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/SlideShow.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Spinner.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Switch.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Tags.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Tags/TagInput.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Tags/TagItem.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Tags/TagList.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Textarea.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/ToolCallDisplay.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Tooltip.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Valves.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/common/Valves/MapSelector.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/AdjustmentsHorizontal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/AdjustmentsHorizontalOutline.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Agile.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/AlignHorizontal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/AlignVertical.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/AppNotification.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ArchiveBox.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ArrowDownTray.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ArrowForward.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ArrowLeft.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ArrowLeftTag.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ArrowPath.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ArrowRight.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ArrowRightCircle.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ArrowRightTag.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ArrowTurnDownRight.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ArrowUpCircle.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ArrowUpLeft.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ArrowUpLeftAlt.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ArrowUpTray.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ArrowUturnLeft.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ArrowUturnRight.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ArrowsPointingOut.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Bars3BottomLeft.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/BarsArrowUp.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Bold.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Bolt.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/BookOpen.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Bookmark.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/BookmarkSlash.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Calendar.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/CalendarSolid.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Camera.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/CameraSolid.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ChartBar.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ChatBubble.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ChatBubbleDotted.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ChatBubbleDottedChecked.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ChatBubbleOval.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ChatBubbles.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ChatCheck.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ChatPlus.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Check.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/CheckBox.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/CheckCircle.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ChevronDown.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ChevronLeft.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ChevronRight.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ChevronUp.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ChevronUpDown.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Clip.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Clipboard.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ClockRotateRight.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Cloud.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/CloudArrowUp.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Code.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/CodeBracket.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Cog6.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Cog6Solid.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Collapse.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/CommandLine.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/CommandLineSolid.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Component.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Computer.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Cpu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Cube.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/CursorArrowRays.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Database.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/DatabaseSettings.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Document.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/DocumentArrowDown.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/DocumentArrowUp.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/DocumentArrowUpSolid.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/DocumentChartBar.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/DocumentCheck.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/DocumentDuplicate.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/DocumentPage.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Download.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/EditPencil.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/EllipsisHorizontal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/EllipsisVertical.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Expand.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Eye.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/EyeSlash.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Face.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/FaceId.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/FaceSmile.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/FilePlusAlt.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/FloppyDisk.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Folder.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/FolderOpen.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/GarbageBin.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Github.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Glasses.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/GlobeAlt.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/GlobeAltSolid.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Grid.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/H1.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/H2.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/H3.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Hashtag.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Headphone.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Heart.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Home.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Info.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/InfoCircle.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Italic.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Keyboard.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/KeyframePlus.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Keyframes.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Knobs.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Label.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Lifebuoy.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/LightBulb.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/LineSpace.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/LineSpaceSmaller.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Link.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/LinkSlash.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ListBullet.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Lock.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/LockClosed.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Map.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/MenuLines.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Merge.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Mic.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/MicSolid.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Minus.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Moon.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/NewFolderAlt.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Note.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/NumberedList.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/PageEdit.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/PagePlus.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Palette.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/PenAlt.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Pencil.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/PencilSolid.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/PencilSquare.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/PeopleTag.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Photo.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/PhotoSolid.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Pin.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/PinSlash.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Plus.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/PlusAlt.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/QuestionMarkCircle.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/QueueList.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Refresh.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Reset.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Search.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Settings.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/SettingsAlt.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Share.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Sidebar.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/SignOut.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/SoundHigh.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Sparkles.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/SparklesSolid.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Star.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Strikethrough.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Sun.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Tag.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/TaskList.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Terminal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Underline.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Union.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/User.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/UserAlt.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/UserBadgeCheck.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/UserCircle.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/UserCircleSolid.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/UserGroup.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/UserPlusSolid.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Users.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/UsersSolid.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Voice.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Wrench.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/WrenchAlt.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/WrenchSolid.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/XMark.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/Youtube.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/icons/ZoomReset.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/ArchivedChatsModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/ChatsModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/FilesModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/Navbar/Menu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/Overlay/AccountPending.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/SearchModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/SharedChatsModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/Sidebar.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/Sidebar/ChannelItem.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/Sidebar/ChannelModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/Sidebar/ChatItem.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/Sidebar/ChatMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/Sidebar/Folders.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/Sidebar/Folders/FolderMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/Sidebar/Folders/FolderModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/Sidebar/Folders/FolderShareModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/Sidebar/PinnedModelItem.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/Sidebar/PinnedModelList.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/Sidebar/PinnedNoteList.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/Sidebar/RecursiveFolder.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/Sidebar/SearchInput.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/Sidebar/SearchInput.test.ts
+  4:10  warning  'getAllTags' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/workspace/src/lib/components/layout/Sidebar/SharedFolderItem.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/Sidebar/UserMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/Sidebar/UserStatusModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/layout/UpdateInfoToast.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/notes/AIMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/notes/NoteEditor.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/notes/NoteEditor/Chat.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/notes/NoteEditor/Chat/Message.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/notes/NoteEditor/Chat/Messages.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/notes/NoteEditor/Controls.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/notes/NotePanel.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/notes/Notes.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/notes/Notes/NoteMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/notes/RecordMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/playground/Chat.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/playground/Chat/Message.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/playground/Chat/Messages.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/playground/Completions.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/playground/Images.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Knowledge.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Knowledge/CreateKnowledgeBase.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Knowledge/ItemMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Knowledge/KnowledgeBase.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Knowledge/KnowledgeBase/AddContentMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Knowledge/KnowledgeBase/AddTextContentModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Knowledge/KnowledgeBase/DirectoryRow.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Knowledge/KnowledgeBase/Files.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Knowledge/KnowledgeBase/KnowledgeBreadcrumbs.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Knowledge/KnowledgeBase/MoveToFolderModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Knowledge/KnowledgeBase/NewDirectoryModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Models.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Models/ActionsSelector.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Models/BuiltinTools.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Models/Capabilities.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Models/DefaultFeatures.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Models/DefaultFiltersSelector.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Models/FiltersSelector.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Models/Knowledge.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Models/Knowledge/KnowledgeSelector.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Models/ModelEditor.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Models/ModelMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Models/PromptSuggestions.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Models/SkillsSelector.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Models/TTSVoiceInput.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Models/TerminalSelector.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Models/ToolsSelector.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Models/TypeaheadSelector.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Prompts.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Prompts/PromptEditor.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Prompts/PromptHistoryMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Prompts/PromptMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Skills.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Skills/SkillEditor.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Skills/SkillMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Tools.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Tools/AddToolMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Tools/ToolMenu.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/Tools/ToolkitEditor.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/common/AccessControl.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/common/AccessControlModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/common/AddAccessModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/common/ManifestModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/common/MemberSelector.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/common/TagSelector.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/common/ValvesModal.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/common/ViewSelector.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/components/workspace/common/Visibility.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/lib/pyodide/pyodideSandboxHost.ts
+    3:52  error  'Transferable' is not defined  no-undef
+  249:42  error  'Transferable' is not defined  no-undef
+  284:43  error  'Transferable' is not defined  no-undef
+
+/workspace/src/lib/utils/google-drive-picker.ts
+   34:5   warning  'pickerApiLoaded' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   44:5   error    'gapi' is not defined                                                                       no-undef
+   52:4   error    'gapi' is not defined                                                                       no-undef
+   77:24  error    'google' is not defined                                                                     no-undef
+  108:21  error    Promise executor functions should not be async                                              no-async-promise-executor
+  120:23  error    'google' is not defined                                                                     no-undef
+  121:20  error    'google' is not defined                                                                     no-undef
+  122:20  error    'google' is not defined                                                                     no-undef
+  124:10  error    'google' is not defined                                                                     no-undef
+  135:15  error    'google' is not defined                                                                     no-undef
+  135:50  error    'google' is not defined                                                                     no-undef
+  137:25  error    'google' is not defined                                                                     no-undef
+  138:27  error    'google' is not defined                                                                     no-undef
+  139:29  error    'google' is not defined                                                                     no-undef
+  140:14  warning  'fileUrl' is assigned a value but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+  140:28  error    'google' is not defined                                                                     no-undef
+  147:29  error    'google' is not defined                                                                     no-undef
+  201:22  error    'google' is not defined                                                                     no-undef
+  201:57  error    'google' is not defined                                                                     no-undef
+
+/workspace/src/lib/utils/index.ts
+   498:7   error    The value assigned to 'styledHtml' is not used in subsequent statements          no-useless-assignment
+  1089:27  error    Unexpected control character(s) in regular expression: \x00, \x00                no-control-regex
+  1112:28  error    Unexpected control character(s) in regular expression: \x00, \x00                no-control-regex
+  1299:6   error    The value assigned to 'frontmatterStarted' is not used in subsequent statements  no-useless-assignment
+  1318:5   error    The value assigned to 'frontmatterEnded' is not used in subsequent statements    no-useless-assignment
+  1509:14  warning  'path' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  1647:18  error    Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  1754:9   error    Unnecessary escape character: \[                                                 no-useless-escape
+  1892:3   error    There is no `cause` attached to the symptom error being thrown                   preserve-caught-error
+  2006:80  warning  'i18n' is defined but never used. Allowed unused args must match /^_/u           @typescript-eslint/no-unused-vars
+
+/workspace/src/lib/utils/marked/colon-fence-extension.ts
+  52:26  warning  'options' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/workspace/src/lib/utils/marked/katex-extension.ts
+   34:27  error    Unnecessary escape character: \/                                           no-useless-escape
+  179:22  warning  'options' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  195:21  warning  'options' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/workspace/src/lib/utils/onedrive-file-picker.ts
+  156:4  error    There is no `cause` attached to the symptom error being thrown                                         preserve-caught-error
+  192:2  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  239:2  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/workspace/src/lib/workers/pyodide.worker.ts
+   7:3  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  11:3  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/workspace/src/routes/(app)/+layout.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/admin/+layout.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/admin/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/admin/analytics/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/admin/analytics/[tab]/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/admin/evaluations/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/admin/evaluations/[tab]/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/admin/functions/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/admin/functions/create/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/admin/functions/edit/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/admin/settings/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/admin/settings/[tab]/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/admin/users/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/admin/users/[tab]/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/automations/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/automations/[id]/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/c/[id]/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/calendar/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/channels/[id]/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/coder/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/home/+layout.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/notes/+layout.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/notes/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/notes/[id]/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/notes/new/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/playground/+layout.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/playground/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/playground/completions/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/playground/images/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/studio/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/workspace/+layout.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/workspace/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/workspace/functions/create/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/workspace/knowledge/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/workspace/knowledge/[id]/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/workspace/knowledge/create/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/workspace/models/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/workspace/models/create/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/workspace/models/edit/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/workspace/prompts/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/workspace/prompts/[id]/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/workspace/prompts/create/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/workspace/skills/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/workspace/skills/create/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/workspace/skills/edit/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/workspace/tools/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/workspace/tools/create/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/(app)/workspace/tools/edit/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/+error.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/+layout.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/auth/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/error/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/s/[id]/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/src/routes/watch/+page.svelte
+  1:1  error  Parsing error: Unexpected token <
+
+/workspace/studio/app/frontend/src/components/AgentsManager.jsx
+    2:147  warning  'Bot' is defined but never used. Allowed unused vars must match /^_/u                        @typescript-eslint/no-unused-vars
+  131:25   warning  'setWebTimeFilter' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  134:9    warning  'supportsVision' is assigned a value but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  136:9    warning  'visionStatus' is assigned a value but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  633:11   warning  'requestStartedAt' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  635:9    warning  'firstTokenAt' is assigned a value but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+
+/workspace/studio/app/frontend/src/components/Generator.jsx
+   52:3   warning  'setActiveTab' is defined but never used. Allowed unused args must match /^_/u                  @typescript-eslint/no-unused-vars
+   79:9   warning  'handleEnhancePrompt' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  387:11  error    The value assigned to 'step' is not used in subsequent statements                               no-useless-assignment
+  466:9   error    There is no `cause` attached to the symptom error being thrown                                  preserve-caught-error
+
+/workspace/studio/app/frontend/src/components/ModelManager.jsx
+  401:7  error  The value assigned to 'visibleModelLibrary' is not used in subsequent statements  no-useless-assignment
+
+/workspace/studio/app/frontend/src/components/Settings.jsx
+    3:18  warning  'Cpu' is defined but never used. Allowed unused vars must match /^_/u                                  @typescript-eslint/no-unused-vars
+    3:23  warning  'Info' is defined but never used. Allowed unused vars must match /^_/u                                 @typescript-eslint/no-unused-vars
+    3:63  warning  'Zap' is defined but never used. Allowed unused vars must match /^_/u                                  @typescript-eslint/no-unused-vars
+    5:12  warning  'HardDrive' is defined but never used. Allowed unused vars must match /^_/u                            @typescript-eslint/no-unused-vars
+    5:23  warning  'MemoryStick' is defined but never used. Allowed unused vars must match /^_/u                          @typescript-eslint/no-unused-vars
+    5:36  warning  'Thermometer' is defined but never used. Allowed unused vars must match /^_/u                          @typescript-eslint/no-unused-vars
+    5:49  warning  'Hash' is defined but never used. Allowed unused vars must match /^_/u                                 @typescript-eslint/no-unused-vars
+    5:55  warning  'Layers' is defined but never used. Allowed unused vars must match /^_/u                               @typescript-eslint/no-unused-vars
+    6:3   warning  'ChevronRight' is defined but never used. Allowed unused vars must match /^_/u                         @typescript-eslint/no-unused-vars
+    6:17  warning  'Box' is defined but never used. Allowed unused vars must match /^_/u                                  @typescript-eslint/no-unused-vars
+    6:22  warning  'Wand2' is defined but never used. Allowed unused vars must match /^_/u                                @typescript-eslint/no-unused-vars
+    6:29  warning  'Lightbulb' is defined but never used. Allowed unused vars must match /^_/u                            @typescript-eslint/no-unused-vars
+    6:40  warning  'RotateCcw' is defined but never used. Allowed unused vars must match /^_/u                            @typescript-eslint/no-unused-vars
+   11:3   warning  'formatBytes' is defined but never used. Allowed unused vars must match /^_/u                          @typescript-eslint/no-unused-vars
+   41:10  warning  'CollapsibleCard' is defined but never used. Allowed unused vars must match /^_/u                      @typescript-eslint/no-unused-vars
+  100:10  warning  'HardwareTierBadge' is defined but never used. Allowed unused vars must match /^_/u                    @typescript-eslint/no-unused-vars
+  236:3   warning  'health' is defined but never used. Allowed unused args must match /^_/u                               @typescript-eslint/no-unused-vars
+  237:3   warning  'cleanupItems' is defined but never used. Allowed unused args must match /^_/u                         @typescript-eslint/no-unused-vars
+  238:3   warning  'isReadinessBusy' is defined but never used. Allowed unused args must match /^_/u                      @typescript-eslint/no-unused-vars
+  239:3   warning  'refreshReadiness' is defined but never used. Allowed unused args must match /^_/u                     @typescript-eslint/no-unused-vars
+  240:3   warning  'copyDiagnostics' is defined but never used. Allowed unused args must match /^_/u                      @typescript-eslint/no-unused-vars
+  241:3   warning  'cleanupSafeItems' is defined but never used. Allowed unused args must match /^_/u                     @typescript-eslint/no-unused-vars
+  242:3   warning  'diagnosticsCopied' is defined but never used. Allowed unused args must match /^_/u                    @typescript-eslint/no-unused-vars
+  250:10  warning  'llmStats' is assigned a value but never used. Allowed unused vars must match /^_/u                    @typescript-eslint/no-unused-vars
+  251:10  warning  'benchmarkBusy' is assigned a value but never used. Allowed unused vars must match /^_/u               @typescript-eslint/no-unused-vars
+  346:9   warning  'supportsThinking' is assigned a value but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+  502:9   warning  'handleBenchmarkTextBackend' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  533:9   warning  'handleThinkingToggle' is assigned a value but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+
+/workspace/studio/app/frontend/src/components/Sidebar.jsx
+  1:33  warning  'useEffect' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/workspace/studio/app/frontend/src/components/SpeechTranscriber.jsx
+  136:3  warning  'showConfirm' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  172:9  warning  'isEnglishOnly' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/workspace/studio/app/frontend/src/components/TextChat.jsx
+  117:3   warning  'setConversations' is defined but never used. Allowed unused args must match /^_/u           @typescript-eslint/no-unused-vars
+  138:25  warning  'setWebTimeFilter' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  195:9   warning  'statsDebounceRef' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/workspace/studio/app/frontend/src/services/api.js
+  1051:94  error  'errJson' is not defined  no-undef
+
+✖ 714 problems (651 errors, 63 warnings)
+  0 errors and 6 warnings potentially fixable with the `--fix` option.
+
