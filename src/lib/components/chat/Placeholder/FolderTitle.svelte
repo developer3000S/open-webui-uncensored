@@ -33,8 +33,8 @@
 	export let folder = null;
 	export let readOnly: boolean = false;
 
-	export let onUpdate: Function = (folderId) => {};
-	export let onDelete: Function = (folderId) => {};
+	export let onUpdate: (folderId: string) => void = (folderId) => {};
+	export let onDelete: (folderId: string) => void = (folderId) => {};
 
 	let showFolderModal = false;
 	let showCreateSubFolderModal = false;
@@ -42,7 +42,7 @@
 	let showDeleteConfirm = false;
 	let deleteFolderContents = true;
 
-	const updateHandler = async ({ name, meta, data }) => {
+	const updateHandler = async ({ name, meta, data }: { name: string; meta?: any; data?: any }) => {
 		if (name === '') {
 			toast.error($i18n.t('Folder name cannot be empty.'));
 			return;

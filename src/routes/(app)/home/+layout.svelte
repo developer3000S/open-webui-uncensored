@@ -5,7 +5,7 @@
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import Sidebar from '$lib/components/icons/Sidebar.svelte';
 
-	const i18n = getContext('i18n');
+	const i18n = getContext<{ t: (key: string, options?: any) => string }>('i18n');
 
 	onMount(async () => {});
 </script>

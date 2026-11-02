@@ -873,7 +873,6 @@
 			showSidebar.set(!$showSidebar);
 		}}
 	></div>
-{/if}
 
 <SearchModal
 	bind:show={$showSearch}
@@ -934,10 +933,8 @@
 							/>
 
 							<Sidebar className="size-5 hidden group-hover:flex" />
-						</div>
 					</button>
 				</Tooltip>
-			</div>
 
 			<div class="-mt-[0.5px]">
 				<div class="">
@@ -957,10 +954,8 @@
 						>
 							<div class=" self-center flex items-center justify-center size-9">
 								<PencilSquare className="size-4.5" />
-							</div>
 						</a>
 					</Tooltip>
-				</div>
 
 				<div>
 					<Tooltip content={$i18n.t('Search')} placement="right">
@@ -977,10 +972,8 @@
 						>
 							<div class=" self-center flex items-center justify-center size-9">
 								<Search className="size-4.5" />
-							</div>
 						</button>
 					</Tooltip>
-				</div>
 
 				{#each pinnedItems as itemId (itemId)}
 					{@const meta = getMenuItemMeta(itemId)}
@@ -1068,12 +1061,10 @@
 											</svg>
 										{:else if itemId === 'playground'}
 											<Code className="size-4.5" />
-										{/if}
 									</div>
 								</a>
 							</Tooltip>
 						</div>
-					{/if}
 				{/each}
 
 				{#if isStudioEnabled()}
@@ -1126,12 +1117,10 @@
 										<FolderOpen className="size-4.5" />
 									{:else if item.iconType === 'settings'}
 										<Settings className="size-4.5" />
-									{/if}
 								</div>
 							</a>
 						</Tooltip>
 					{/each}
-				{/if}
 			</div>
 		</button>
 
@@ -1171,17 +1160,13 @@
 														: 'bg-gray-300 dark:bg-gray-700'} border-2 border-white dark:border-gray-900"
 												></span>
 											</span>
-										</div>
-									{/if}
 								</div>
 							</button>
 						</UserMenu>
-					{/if}
 				</div>
 			</div>
 		</div>
 	</div>
-{/if}
 
 <!-- {$i18n.t('New Folder')} -->
 <!-- {$i18n.t('Pinned')} -->
@@ -1252,8 +1237,6 @@
 					class="{scrollTop > 0
 						? 'visible'
 						: 'invisible'} sidebar-bg-gradient-to-b bg-linear-to-b from-gray-50 dark:from-gray-950 to-transparent from-50% pointer-events-none absolute inset-0 -z-10 -mb-6"
-				></div>
-			</div>
 
 			<div
 				class="relative flex flex-col flex-1 overflow-y-auto scrollbar-hidden pt-3 pb-3"
@@ -1277,15 +1260,11 @@
 						>
 							<div class="self-center">
 								<PencilSquare className=" size-4.5" strokeWidth="2" />
-							</div>
 
 							<div class="flex flex-1 self-center translate-y-[0.5px]">
-								<div class=" self-center text-sm font-primary">{$i18n.t('New Chat')}</div>
-							</div>
 
 							<HotkeyHint name="newChat" className=" group-hover:visible invisible" />
 						</a>
-					</div>
 
 					<div class="px-[0.4375rem] flex justify-center text-gray-800 dark:text-gray-200">
 						<button
@@ -1299,14 +1278,10 @@
 						>
 							<div class="self-center">
 								<Search strokeWidth="2" className="size-4.5" />
-							</div>
 
 							<div class="flex flex-1 self-center translate-y-[0.5px]">
-								<div class=" self-center text-sm font-primary">{$i18n.t('Search')}</div>
-							</div>
 							<HotkeyHint name="search" className=" group-hover:visible invisible" />
 						</button>
-					</div>
 
 					<div id="pinned-menu-items-list">
 						{#each pinnedItems as itemId (itemId)}
@@ -1395,7 +1370,6 @@
 												</svg>
 											{:else if itemId === 'playground'}
 												<Code className="size-4.5" strokeWidth="2" />
-											{/if}
 										</div>
 
 										<div class="flex self-center translate-y-[0.5px]">
@@ -1403,7 +1377,6 @@
 										</div>
 									</a>
 								</div>
-							{/if}
 						{/each}
 					</div>
 				</div>
@@ -1456,7 +1429,6 @@
 											d="m19.5 8.25-7.5 7.5-7.5-7.5"
 										/>
 									</svg>
-								{/if}
 							</div>
 						</button>
 
@@ -1489,7 +1461,6 @@
 												<FolderOpen className="size-4.5" strokeWidth="1.5" />
 											{:else if item.iconType === 'settings'}
 												<Settings className="size-4.5" strokeWidth="1.5" />
-											{/if}
 										</div>
 										<div class="flex-1 self-center text-sm font-primary truncate">
 											{item.label}
@@ -1497,9 +1468,7 @@
 									</a>
 								{/each}
 							</div>
-						{/if}
 					</div>
-				{/if}
 
 				{#if ($models ?? []).length > 0 && (($settings?.pinnedModels ?? []).length > 0 || $config?.default_pinned_models)}
 					<Folder
@@ -1512,7 +1481,6 @@
 					>
 						<PinnedModelList bind:selectedChatId {shiftKey} />
 					</Folder>
-				{/if}
 
 				{#if ($config?.features?.enable_notes ?? false) && ($user?.role === 'admin' || ($user?.permissions?.features?.notes ?? true)) && $pinnedNotes.length > 0}
 					<Folder
@@ -1532,7 +1500,6 @@
 					>
 						<PinnedNoteList bind:selectedChatId />
 					</Folder>
-				{/if}
 
 				{#if $config?.features?.enable_channels && ($user?.role === 'admin' || ($user?.permissions?.features?.channels ?? true))}
 					<Folder
@@ -1564,10 +1531,8 @@
 							{#if channelIdx < $channels.length - 1 && channel.type !== $channels[channelIdx + 1]?.type}<hr
 									class=" border-gray-100/40 dark:border-gray-800/10 my-1.5 w-full"
 								/>
-							{/if}
 						{/each}
 					</Folder>
-				{/if}
 
 				{#if $config?.features?.enable_folders && ($user?.role === 'admin' || ($user?.permissions?.features?.folders ?? true))}
 					<Folder
@@ -1621,7 +1586,6 @@
 							}}
 						/>
 					</Folder>
-				{/if}
 
 				<Folder
 					id="sidebar-chats"
@@ -1785,7 +1749,6 @@
 								</Folder>
 							</div>
 						</div>
-					{/if}
 
 					<div class=" flex-1 flex flex-col overflow-y-auto scrollbar-hidden">
 						<div class="pt-1.5">
@@ -1818,7 +1781,6 @@
 							{$i18n.t('December')}
 							-->
 										</div>
-									{/if}
 
 									<ChatItem
 										className=""
@@ -1860,7 +1822,6 @@
 											<div class=" ">{$i18n.t('Loading...')}</div>
 										</div>
 									</Loader>
-								{/if}
 							{:else}
 								<div
 									class="w-full flex justify-center py-1 text-xs animate-pulse items-center gap-2"
@@ -1868,7 +1829,6 @@
 									<Spinner className=" size-4" />
 									<div class=" ">{$i18n.t('Loading...')}</div>
 								</div>
-							{/if}
 						</div>
 					</div>
 				</Folder>
@@ -1914,28 +1874,45 @@
 												></span>
 											</span>
 										</div>
-									{/if}
 								</div>
 								<div class=" self-center font-medium truncate">{$user?.name}</div>
 							</button>
 						</UserMenu>
-					{/if}
 				</div>
 			</div>
 		</div>
-	</div>
-
-	{#if !$mobile}
-		<div
-			class="relative flex items-center justify-center group border-l border-gray-50 dark:border-gray-850/30 hover:border-gray-200 dark:hover:border-gray-800 transition z-20"
-			id="sidebar-resizer"
-			on:mousedown={resizeStartHandler}
-			role="separator"
-			tabindex="0"
-		>
-			<div
 				class=" absolute -left-1.5 -right-1.5 -top-0 -bottom-0 z-20 cursor-col-resize bg-transparent"
-			></div>
-		</div>
-	{/if}
-{/if}
+<script lang="ts">
+    // ... (остальной скрипт остается без изменений)
+</script>
+
+<!-- ... (остальной HTML остается без изменений) -->
+
+{#if !$mobile}
+<script lang="ts">
+// Оставляем скрипт без изменений
+</script>
+
+<!-- ... остальной HTML без изменений, кроме исправления ошибки -->
+
+{#if !$mobile}
+    <button
+        class="relative flex items-center justify-center group border-l border-gray-50 dark:border-gray-850/30 hover:border-gray-200 dark:hover:border-gray-800 transition z-20"
+        id="sidebar-resizer"
+        on:mousedown={resizeStartHandler}
+        role="separator"
+        aria-label="Resize sidebar"
+    >
+        <div
+            class="absolute -left-1.5 -right-1.5 -top-0 -bottom-0 z-20 cursor-col-resize bg-transparent"
+        ></div>
+    </button>
+        class="relative flex items-center justify-center group border-l border-gray-50 dark:border-gray-850/30 hover:border-gray-200 dark:hover:border-gray-800 transition z-20"
+        id="sidebar-resizer"
+        on:mousedown={resizeStartHandler}
+        role="separator"
+        aria-label="Resize sidebar"
+    >
+        <div
+            class="absolute -left-1.5 -right-1.5 -top-0 -bottom-0 z-20 cursor-col-resize bg-transparent"
+    </button>

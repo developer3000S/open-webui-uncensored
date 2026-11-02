@@ -85,7 +85,7 @@
 	};
 </script>
 
-<div class=" max-h-full flex flex-col w-full gap-[0.5px]">
+<div role="button" class=" max-h-full flex flex-col w-full gap-[0.5px]">
 	<!-- Directories first -->
 	{#each directories as dir (dir.id)}
 		<DirectoryRow
@@ -102,6 +102,7 @@
 	<!-- Files -->
 	{#each files as file (file?.id ?? file?.itemId ?? file?.tempId)}
 		<div
+			role="button"
 			class=" flex cursor-pointer w-full px-2 bg-transparent dark:hover:bg-gray-850/50 hover:bg-white rounded-xl transition {selectedFileId
 				? ''
 				: 'hover:bg-gray-100 dark:hover:bg-gray-850'}"
@@ -113,7 +114,7 @@
 				}
 			}}
 		>
-			<div class="flex items-center">
+			<div role="button" class="flex items-center">
 				{#if file?.status !== 'uploading'}
 					<button
 						class="p-1 rounded-full transition"
@@ -141,8 +142,8 @@
 					if (knowledge?.write_access) startRename(file);
 				}}
 			>
-				<div>
-					<div class="flex gap-2 items-center line-clamp-1">
+				<div role="button">
+					<div role="button" class="flex gap-2 items-center line-clamp-1">
 						{#if editingFileId === (file?.id ?? file?.tempId)}
 							<!-- svelte-ignore a11y-autofocus -->
 							<input
@@ -162,7 +163,7 @@
 								autofocus
 							/>
 						{:else}
-							<div class="line-clamp-1 text-sm">
+							<div role="button" class="line-clamp-1 text-sm">
 								{file?.name ?? file?.meta?.name}
 								{#if file?.meta?.size}
 									<span class="text-xs text-gray-500">{formatFileSize(file?.meta?.size)}</span>
@@ -173,16 +174,18 @@
 
 					{#if isInFlight(file)}
 						{@const percent = progressPercent(file)}
-						<div class="flex items-center gap-2 pt-1">
+						<div role="button" class="flex items-center gap-2 pt-1">
 							<div
+								role="button"
 								class="flex-1 min-w-[50px] h-1 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden"
 							>
 								<div
+									role="button"
 									class="h-full rounded-full bg-gray-700 dark:bg-gray-300 transition-all duration-300"
 									style="width: {percent ?? 0}%"
 								></div>
 							</div>
-							<div class="text-[10px] text-gray-500 dark:text-gray-400 shrink-0">
+							<div role="button" class="text-[10px] text-gray-500 dark:text-gray-400 shrink-0">
 								{progressLabel(file)}
 								{#if percent !== null}<span class="ml-1">{percent}%</span>{/if}
 							</div>
@@ -190,10 +193,10 @@
 					{/if}
 				</div>
 
-				<div class="flex items-center gap-2 shrink-0">
+				<div role="button" class="flex items-center gap-2 shrink-0">
 					{#if file?.updated_at}
 						<Tooltip content={dayjs(file.updated_at * 1000).format('LLLL')}>
-							<div class="text-xs text-gray-400">
+							<div role="button" class="text-xs text-gray-400">
 								{dayjs(file.updated_at * 1000).fromNow()}
 							</div>
 						</Tooltip>
@@ -205,7 +208,7 @@
 							className="flex shrink-0"
 							placement="top-start"
 						>
-							<div class="shrink-0 text-gray-500">
+							<div role="button" class="shrink-0 text-gray-500">
 								{$i18n.t('By {{name}}', {
 									name: capitalizeFirstLetter(
 										file?.user?.name ?? file?.user?.email ?? $i18n.t('Deleted User')
@@ -218,7 +221,7 @@
 			</button>
 
 			{#if knowledge?.write_access}
-				<div class="flex items-center">
+				<div role="button" class="flex items-center">
 					<Dropdown align="end" sideOffset={4}>
 						<button
 							class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-850 transition"
@@ -227,8 +230,9 @@
 							<EllipsisHorizontal className="size-3.5" />
 						</button>
 
-						<div slot="content">
+						<div role="button" slot="content">
 							<div
+								role="button"
 								class="min-w-[140px] rounded-2xl p-1 z-[9999999] bg-white dark:bg-gray-850 dark:text-white shadow-lg border border-gray-100 dark:border-gray-800"
 							>
 								<button

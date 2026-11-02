@@ -41,7 +41,7 @@
 	let chatStreaming = false;
 	let rmsLevel = 0;
 	let hasStartedSpeaking = false;
-	let mediaRecorder;
+	let mediaRecorder: MediaRecorder | null = null;
 	let audioStream = null;
 	let audioChunks = [];
 
@@ -296,7 +296,7 @@
 		return Math.sqrt(sumSquares / data.length);
 	};
 
-	const analyseAudio = (stream) => {
+	const analyseAudio = (stream: MediaStream) => {
 		const audioContext = new AudioContext();
 		const audioStreamSource = audioContext.createMediaStreamSource(stream);
 
@@ -378,9 +378,9 @@
 		detectSound();
 	};
 
-	let finishedMessages = {};
-	let currentMessageId = null;
-	let currentUtterance = null;
+	let finishedMessages: Record<string, boolean> = {};
+	let currentMessageId: string | null = null;
+	let currentUtterance: SpeechSynthesisUtterance | null = null;
 
 	// Get voice: model-specific > user settings > config default
 	const getVoiceId = () => {
@@ -389,13 +389,13 @@
 			return model.info.meta.tts.voice;
 		}
 		// Fall back to user settings or config default
-		if ($settings?.audio?.tts?.defaultVoice === $config.audio.tts.voice) {
+		if ($settings?.audio?.tts?.defaultVoice === $config?.audio?.tts?.voice ?? '') {
 			return $settings?.audio?.tts?.voice ?? $config?.audio?.tts?.voice;
 		}
 		return $config?.audio?.tts?.voice;
 	};
 
-	const speakSpeechSynthesisHandler = (content) => {
+	const speakSpeechSynthesisHandler = (content: string) => {
 		if ($showCallOverlay) {
 			return new Promise((resolve) => {
 				let voices = [];
@@ -537,9 +537,9 @@
 
 	const monitorAndPlayAudio = async (id, signal) => {
 		while (!signal.aborted) {
-			if (messages[id] && messages[id].length > 0) {
+			if (messages[id as string] && messages[id as string].length > 0) {
 				// Retrieve the next content string from the queue
-				const content = messages[id].shift(); // Dequeues the content for playing
+				const content = messages[id as string].shift(); // Dequeues the content for playing
 
 				if (audioCache.has(content)) {
 					// If content is available in the cache, play it
@@ -571,11 +571,15 @@
 					}
 				} else {
 					// If not available in the cache, push it back to the queue and delay
-					messages[id].unshift(content); // Re-queue the content at the start
+					messages[id as string].unshift(content); // Re-queue the content at the start
 					console.log(`Audio for "${content}" not yet available in the cache, re-queued...`);
 					await new Promise((resolve) => setTimeout(resolve, 200)); // Wait before retrying to reduce tight loop
 				}
-			} else if (finishedMessages[id] && messages[id] && messages[id].length === 0) {
+			} else if (
+				finishedMessages[id] &&
+				messages[id as string] &&
+				messages[id as string].length === 0
+			) {
 				// If the message is finished and there are no more messages to process, break the loop
 				assistantSpeaking = false;
 				break;
@@ -587,7 +591,7 @@
 		console.log(`Audio monitoring and playing stopped for message ID ${id}`);
 	};
 
-	const chatStartHandler = async (e) => {
+	const chatStartHandler = async (e: CustomEvent) => {
 		const { id } = e.detail;
 
 		chatStreaming = true;
@@ -607,7 +611,7 @@
 		}
 	};
 
-	const chatEventHandler = async (e) => {
+	const chatEventHandler = async (e: CustomEvent) => {
 		const { id, content } = e.detail;
 		// "id" here is message id
 		// if "id" is not the same as "currentMessageId" then do not process
@@ -618,10 +622,10 @@
 			console.log(`Received chat event for message ID ${id}: ${content}`);
 
 			try {
-				if (messages[id] === undefined) {
-					messages[id] = [content];
+				if (messages[id as string] === undefined) {
+					messages[id as string] = [content];
 				} else {
-					messages[id].push(content);
+					messages[id as string].push(content);
 				}
 
 				console.log(content);

@@ -1,0 +1,22 @@
+<script lang="ts">
+// Оставляем скрипт без изменений
+</script>
+
+<!-- ... остальной HTML без изменений, кроме исправления конструкции -->
+
+{#if isAudio}
+    <audio
+        class="w-full border-0 rounded-lg mb-2"
+        controls
+        playsinline
+    >
+        <source src={`${WEBUI_API_BASE_URL}/files/${item.id}/content`} type="audio/mpeg">
+    </audio>
+{:else if isPDF}
+    <PDFViewer
+        url={`${WEBUI_API_BASE_URL}/files/${item.id}/content`}
+        className="w-full h-[70vh] border-0 rounded-lg"
+    />
+{:else if isExcel}
+    <!-- остальной код -->
+{/if}

@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { HTMLTextAreaElement, HTMLDivElement } from "svelte/elements"
+	import type { HTMLTextAreaElement, HTMLDivElement } from 'svelte/elements';
 	import { getContext, tick } from 'svelte';
 	import { marked } from 'marked';
 	import DOMPurify from 'dompurify';
@@ -196,7 +196,7 @@ import type { HTMLTextAreaElement, HTMLDivElement } from "svelte/elements"
 	$: csvBody = csvRows.length > 1 ? csvRows.slice(1) : [];
 
 	// ── Shiki code highlighting (SVG only) ──────────────────────────────
-	
+
 	let highlightingFile: string | null = null;
 
 	$: if (isSvg && fileContent !== null && selectedFile) {
@@ -214,41 +214,30 @@ import type { HTMLTextAreaElement, HTMLDivElement } from "svelte/elements"
 				if (highlightingFile === currentFile) highlightedHtml = html;
 			})
 			.catch(() => {
-                if (highlightingFile === currentFile) {
-                    // Ignore syntax highlighting errors
-                }
-            });
-		
+				if (highlightingFile === currentFile) {
+					// Ignore syntax highlighting errors
+				}
+			});
 	}
 
 	// ── JSON parsing ────────────────────────────────────────────────────
-	
-	
 
 	$: if (isJson && fileContent !== null) {
 		try {
 			parsedJson = JSON.parse(fileContent);
-			
 		} catch (e) {
-			
 			jsonError = e instanceof Error ? e.message : 'Invalid JSON';
 		}
 	} else {
-		
-		
 	}
 
 	// ── Notebook parsing ─────────────────────────────────────────────────
-	
 
 	$: if (isNotebook && fileContent !== null) {
 		try {
 			parsedNotebook = JSON.parse(fileContent);
-		} catch {
-			
-		}
+		} catch {}
 	} else {
-		
 	}
 
 	export let showRaw = false;

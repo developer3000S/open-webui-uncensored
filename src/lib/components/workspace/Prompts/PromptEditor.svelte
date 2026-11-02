@@ -42,7 +42,7 @@
 	let name = '';
 	let command = '';
 	let content = '';
-	let tags = [];
+	let tags: { name: string }[] = [];
 	let commitMessage = '';
 	let isProduction = true;
 

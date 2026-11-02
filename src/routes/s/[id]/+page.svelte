@@ -1,4 +1,4 @@
-<script lang=ts>
+<script lang="ts">
     import { onMount, tick, getContext } from 'svelte';
     import { goto } from '$app/navigation';
     import { page } from '$app/stores';
@@ -18,8 +18,17 @@
     import { toast } from "svelte-sonner";
     import localizedFormat from "dayjs/plugin/localizedFormat";
 
-    const i18n = getContext("i18n")
-    dayjs.extend(localizedFormat)
+    const i18n = getContext<{ t: (key: string, options?: any) => string }>('i18n');
+    dayjs.extend(localizedFormat);
+
+    interface SessionUser {
+        role?: string;
+        permissions?: {
+            chat?: {
+                import?: boolean;
+            };
+        };
+    }
 
     let chat: { chat?: any; id?: string; user_id?: string; timestamp?: number } | null = null;
     let user: any | null = null;
@@ -41,7 +50,6 @@
     let processing = "";
     let messagesContainerElement: HTMLDivElement;
 
-    // let chatId = .params.id;
     let showModelSelector = false;
     let selectedModels = [""];
 
@@ -81,7 +89,7 @@
         await models.set(
             await getModels(
                 localStorage.token,
-                $config?.features?.enable_direct_connections && ($settings?.directConnections ?? null)
+                $config?.features?.enable_direct_connections ? ($settings?.directConnections || {}) : null
             )
         );
         await chatId.set($page.params.id);
@@ -91,7 +99,7 @@
         });
 
         if (chat) {
-            user = await getUserInfoById(localStorage.token, chat.user_id).catch((error) => {
+            user = await getUserInfoById(localStorage.token, chat.user_id!).catch((error) => {
                 console.error(error);
                 return null;
             });
@@ -127,29 +135,27 @@
     };
 
     const cloneSharedChat = async () => {
-        if (!(?.role === "admin" || (?.permissions?.chat?.import ?? true))) {
-            toast.error(i18n.t("Access prohibited"));
+        if (!($sessionUser?.role === 'admin' || ($sessionUser?.permissions?.chat?.import ?? true))) {
+            toast.error(i18n.t('Access prohibited'));
             return;
         }
 
         if (!chat) return;
 
-        const res = await cloneSharedChatById(localStorage.token, chat.id).catch((error) => {
-            toast.error();
+        const res = await cloneSharedChatById(localStorage.token, chat.id!).catch((error) => {
+            toast.error(i18n.t('Failed to clone chat'));
             return null;
         });
 
         if (res) {
-            goto();
+            goto('/');
         }
     };
 </script>
 
 <svelte:head>
     <title>
-        {title
-            ? 
-            : }
+        {title ? `${title.length > 30 ? `${title.slice(0, 30)}...` : title} • ${WEBUI_NAME}` : `${WEBUI_NAME}`}
     </title>
 </svelte:head>
 
@@ -158,14 +164,12 @@
         class="h-screen max-h-[100dvh] w-full flex flex-col text-gray-700 dark:text-gray-100 bg-white dark:bg-gray-900"
     >
         <div class="flex flex-col flex-auto justify-center relative">
-            <div class=" flex flex-col w-full flex-auto overflow-auto h-0" id="messages-container">
+            <div class="flex flex-col w-full flex-auto overflow-auto h-0" id="messages-container">
                 <div
-                    class="pt-5 px-2 w-full {(?.widescreenMode ?? null)
-                        ? "max-w-full"
-                        : "max-w-5xl"} mx-auto"
+                    class="pt-5 px-2 w-full {($settings?.widescreenMode ?? null) ? 'max-w-full' : 'max-w-5xl'} mx-auto"
                 >
                     <div class="px-3">
-                        <h1 class=" text-2xl font-medium line-clamp-1 m-0">
+                        <h1 class="text-2xl font-medium line-clamp-1 m-0">
                             {title}
                         </h1>
 
@@ -174,21 +178,21 @@
                                 class="text-gray-400"
                                 datetime={new Date(chat?.chat?.timestamp || Date.now()).toISOString()}
                             >
-                                {dayjs(chat.chat.timestamp).format("LLL")}
+                                {dayjs(chat?.chat?.timestamp || Date.now()).format('LLL')}
                             </time>
                         </div>
                     </div>
                 </div>
 
-                <div class=" h-full w-full flex flex-col py-2" role="main">
+                <div class="h-full w-full flex flex-col py-2" role="main">
                     <div class="w-full">
                         <Messages
-                            className="h-full flex pt-4 pb-8 "
-                            {user}
-                            chatId={}
+                            className="h-full flex pt-4 pb-8"
+                            user={user}
+                            chatId={$chatId}
                             readOnly={true}
-                            {selectedModels}
-                            {processing}
+                            selectedModels={selectedModels}
+                            processing={processing}
                             bind:history
                             bind:messages
                             bind:autoScroll
@@ -201,7 +205,7 @@
                 </div>
             </div>
 
-            {#if ?.role === "admin" || (?.permissions?.chat?.import ?? true)}
+            {#if $sessionUser?.role === "admin" || ($sessionUser?.permissions?.chat?.import ?? true)}
                 <div
                     class="absolute bottom-0 right-0 left-0 flex justify-center w-full bg-linear-to-b from-transparent to-white dark:to-gray-900"
                 >

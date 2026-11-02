@@ -182,7 +182,9 @@
 		}, {});
 
 		groupedMessageIdsIdx = parentMessage?.models.reduce((a, model, modelIdx) => {
-			const idx = groupedMessageIds[modelIdx].messageIds.findIndex((id) => id === messageId);
+			const idx = groupedMessageIds[modelIdx].messageIds.findIndex(
+				(id: string) => id === messageId
+			);
 			if (idx !== -1) {
 				return {
 					...a,

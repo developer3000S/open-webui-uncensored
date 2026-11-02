@@ -22,7 +22,7 @@
 	import Check from '$lib/components/icons/Check.svelte';
 	import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
 
-	const i18n = getContext('i18n');
+	const i18n = getContext<{ t: (key: string, options?: any) => string }>('i18n');
 
 	let loaded = false;
 	let calendars: CalendarModel[] = [];

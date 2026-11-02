@@ -28,14 +28,26 @@
 	import { redirect } from '@sveltejs/kit';
 
 	import type { I18nStore } from '$lib/i18n';
-const i18n: I18nStore = getContext('i18n');
+
+interface ConfigWithMetadata extends Config {
+    metadata?: {
+        login_footer?: string;
+        auth_logo_position?: string;
+    };
+    features?: {
+        enable_ldap?: boolean;
+        enable_login_form?: boolean;
+        onboarding?: boolean;
+    };
+}
+	const i18n: I18nStore = getContext('i18n');
 
 	let loaded = false;
+let form: { email?: string; password?: string; } = {};
 
 	let mode = $config?.features.enable_ldap ? 'ldap' : 'signin';
 
-	let form = null;
-
+	
 	let name = '';
 	let email = '';
 	let password = '';
@@ -299,7 +311,7 @@ const i18n: I18nStore = getContext('i18n');
 									{/if}
 								</div>
 
-								{#if $config?.features.enable_login_form || $config?.features.enable_ldap || form}
+								{#if ($config as ConfigWithMetadata)?.features?.enable_login_form || ($config as ConfigWithMetadata)?.features?.enable_ldap || form}
 									<div class="flex flex-col mt-4">
 										{#if mode === 'signup'}
 											<div class="mb-2">
@@ -392,7 +404,7 @@ const i18n: I18nStore = getContext('i18n');
 									</div>
 								{/if}
 								<div class="mt-5">
-									{#if $config?.features.enable_login_form || $config?.features.enable_ldap || form}
+									{#if ($config as ConfigWithMetadata)?.features?.enable_login_form || ($config as ConfigWithMetadata)?.features?.enable_ldap || form}
 										{#if mode === 'ldap'}
 											<button
 												class="bg-gray-700/5 hover:bg-gray-700/10 dark:bg-gray-100/5 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition w-full rounded-full font-medium text-sm py-2.5"
@@ -407,12 +419,12 @@ const i18n: I18nStore = getContext('i18n');
 											>
 												{mode === 'signin'
 													? i18n.t('Sign in')
-													: ($config?.onboarding ?? false)
+													: ($config as ConfigWithMetadata)?.features?.onboarding
 														? i18n.t('Create Admin Account')
 														: i18n.t('Create Account')}
 											</button>
 
-											{#if $config?.features.enable_signup && !($config?.onboarding ?? false)}
+											{#if ($config as ConfigWithMetadata)?.features.enable_signup && !($config as ConfigWithMetadata)?.features?.onboarding}
 												<div class=" mt-4 text-sm text-center">
 													{mode === 'signin'
 														? i18n.t("Don't have an account?")
@@ -441,7 +453,7 @@ const i18n: I18nStore = getContext('i18n');
 							{#if Object.keys($config?.oauth?.providers ?? {}).length > 0}
 								<div class="inline-flex items-center justify-center w-full">
 									<hr class="w-32 h-px my-4 border-0 dark:bg-gray-100/10 bg-gray-700/10" />
-									{#if $config?.features.enable_login_form || $config?.features.enable_ldap || form}
+									{#if ($config as ConfigWithMetadata)?.features?.enable_login_form || ($config as ConfigWithMetadata)?.features?.enable_ldap || form}
 										<span
 											class="px-3 text-sm font-medium text-gray-900 dark:text-white bg-transparent"
 											>{i18n.t('or')}</span
@@ -508,8 +520,7 @@ const i18n: I18nStore = getContext('i18n');
 													fill="#ffb900"
 												/>
 											</svg>
-											<span>{i18n.t('Continue with {{provider}}', { provider: 'Microsoft' })}</span
-											>
+											<span>{i18n.t('Continue with {{provider}}', { provider: 'Microsoft' })}</span>
 										</button>
 									{/if}
 									{#if $config?.oauth?.providers?.github}
@@ -576,14 +587,14 @@ const i18n: I18nStore = getContext('i18n');
 								</div>
 							{/if}
 
-							{#if $config?.features.enable_ldap && $config?.features.enable_login_form}
+							{#if ($config as ConfigWithMetadata)?.features.enable_ldap && ($config as ConfigWithMetadata)?.features.enable_login_form}
 								<div class="mt-2">
 									<button
 										class="flex justify-center items-center text-xs w-full text-center underline"
 										type="button"
 										on:click={() => {
 											if (mode === 'ldap')
-												mode = ($config?.onboarding ?? false) ? 'signup' : 'signin';
+												mode = ($config as ConfigWithMetadata)?.onboarding ? 'signup' : 'signin';
 											else mode = 'ldap';
 										}}
 									>
@@ -596,10 +607,10 @@ const i18n: I18nStore = getContext('i18n');
 								</div>
 							{/if}
 						</div>
-						{#if $config?.metadata?.login_footer}
+						{#if ($config as ConfigWithMetadata)?.metadata?.login_footer}
 							<div class="max-w-3xl mx-auto">
 								<div class="mt-2 text-[0.7rem] text-gray-500 dark:text-gray-400 marked">
-									{@html DOMPurify.sanitize(marked($config?.metadata?.login_footer))}
+									{@html DOMPurify.sanitize(marked(($config as ConfigWithMetadata)?.metadata?.login_footer || ''))}
 								</div>
 							</div>
 						{/if}
@@ -608,7 +619,7 @@ const i18n: I18nStore = getContext('i18n');
 			</div>
 		</div>
 
-		{#if !$config?.metadata?.auth_logo_position}
+		{#if !($config as ConfigWithMetadata)?.metadata?.auth_logo_position}
 			<div class="fixed m-10 z-50">
 				<div class="flex space-x-2">
 					<div class=" self-center">

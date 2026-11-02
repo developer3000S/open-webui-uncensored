@@ -50,7 +50,7 @@
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import { Shortcut, shortcuts } from '$lib/shortcuts';
 
-	const i18n = getContext('i18n');
+	const i18n = getContext<{ t: (key: string, options?: any) => string }>('i18n');
 
 	let loaded = false;
 	let DB = null;

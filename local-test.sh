@@ -6,7 +6,7 @@ echo
 echo "######################"
 echo "Запускаю git pull"
 echo "######################"
-git pull
+# git pull
 # or copy the two edited files: src/routes/+layout.svelte, package.json (+package-lock.json)
 
 echo "######################"
@@ -18,9 +18,9 @@ node -v # Should print "v22.23.3"
 # Verify npm version:
 npm -v # Should print "12.2.1".
 
-npm install # picks up @internationalized/date
-npm install --save-dev typescript-eslint@latest @typescript-eslint/eslint-plugin@latest @typescript-eslint/parser@latest
-npm install vue @vitejs/plugin-vue vite-plugin-singlefile --save-dev
+# npm install # picks up @internationalized/date
+# npm install --save-dev typescript-eslint@latest @typescript-eslint/eslint-plugin@latest @typescript-eslint/parser@latest
+# npm install vue @vitejs/plugin-vue vite-plugin-singlefile --save-dev
 
 echo "########################"
 echo "Запускаю npm run check"

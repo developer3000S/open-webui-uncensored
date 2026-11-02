@@ -47,7 +47,7 @@
 	import PortPreview from './FileNav/PortPreview.svelte';
 	import XTerminal from './XTerminal.svelte';
 
-	const i18n = getContext('i18n');
+	const i18n = getContext<{ t: (key: string, options?: any) => string }>('i18n');
 
 	export let overlay = false;
 	export let chatId: string | null = null;

@@ -136,7 +136,7 @@
 	export let files = [];
 
 	export let selectedToolIds = [];
-	export let selectedSkillIds = [];
+	export let selectedSkillIds: string[] = [];
 	export let selectedFilterIds = [];
 
 	export let imageGenerationEnabled = false;
@@ -422,7 +422,7 @@
 	export let showCommands = false;
 	$: showCommands =
 		['/', '#', '@', '$', ':'].includes(command?.charAt(0)) || '\\#' === command?.slice(0, 2);
-	let suggestions = null;
+	let suggestions: any[] | null = null;
 
 	let showTools = false;
 	let showSkills = false;
@@ -457,7 +457,7 @@
 	}
 
 	let chatInputContainerElement;
-	let chatInputElement;
+	let chatInputElement: HTMLInputElement | null = null;
 
 	let filesInputElement;
 	let commandsElement;

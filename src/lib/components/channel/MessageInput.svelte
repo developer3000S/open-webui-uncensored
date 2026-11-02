@@ -71,7 +71,7 @@
 
 	let recording = false;
 	let content = '';
-	let files = [];
+	let files: File[] = [];
 
 	let filesInputElement;
 	let inputFiles;
@@ -700,7 +700,6 @@
 				filesInputElement.value = '';
 			}}
 		/>
-	{/if}
 
 	<InputVariablesModal
 		bind:show={showInputVariablesModal}
@@ -740,9 +739,6 @@
 										/>
 									</svg>
 								</button>
-							</div>
-						{/if}
-					</div>
 
 					{#if typingUsers.length > 0}
 						<div
@@ -756,12 +752,6 @@
 										{typingUsers.map((user) => user.name).join(', ')}
 									</span>
 									{$i18n.t('is typing...')}
-								</div>
-							</div>
-						</div>
-					{/if}
-				</div>
-			</div>
 
 			<div
 				class="{disabled ? 'opacity-50 pointer-events-none cursor-not-allowed' : ''} relative z-20"
@@ -814,8 +804,6 @@
 														NAME: replyToMessage?.meta?.model_name ?? replyToMessage.user.name
 													})}</span
 												>
-											</div>
-										</div>
 										<div>
 											<button
 												class="flex items-center dark:text-gray-500"
@@ -825,10 +813,6 @@
 											>
 												<XMark />
 											</button>
-										</div>
-									</div>
-								</div>
-							{/if}
 
 							{#if files.length > 0}
 								<div class="mx-2 mt-2.5 -mb-1 flex flex-wrap gap-2">
@@ -845,7 +829,6 @@
 														alt=""
 														imageClassName=" size-10 rounded-xl object-cover"
 													/>
-												</div>
 												<div class=" absolute -top-1 -right-1">
 													<button
 														aria-label={$i18n.t('Remove File')}
@@ -867,8 +850,6 @@
 															/>
 														</svg>
 													</button>
-												</div>
-											</div>
 										{:else}
 											<FileItem
 												item={file}
@@ -887,16 +868,13 @@
 													console.log(file);
 												}}
 											/>
-										{/if}
 									{/each}
-								</div>
-							{/if}
 
 							<div class="px-2.5">
 								<div
 									class="scrollbar-hidden rtl:text-right ltr:text-left bg-transparent dark:text-gray-100 outline-hidden w-full pt-2.5 pb-[5px] px-1 resize-none h-fit max-h-96 overflow-auto"
 								>
-									{#key $settings?.richTextInput && $settings?.showFormattingToolbar}
+									{#if showRichTextToolbar}
 										<RichTextInput
 											id="chat-input"
 											bind:this={chatInputElement}
@@ -905,13 +883,13 @@
 											editable={!disabled}
 											{placeholder}
 											richText={$settings?.richTextInput ?? true}
-											showFormattingToolbar={$settings?.showFormattingToolbar ?? false}
+											showFormattingToolbar={$settings?.showFormattingToolbar}
 											shiftEnter={!($settings?.ctrlEnterToSend ?? false) &&
 												!$mobile &&
 												!(
 													'ontouchstart' in window ||
 													navigator.maxTouchPoints > 0 ||
-													navigator.msMaxTouchPoints > 0
+													navigator.maxTouchPoints > 0
 												)}
 											largeTextAsFile={$settings?.largeTextAsFile ?? false}
 											floatingMenuPlacement={'top-start'}
@@ -934,7 +912,7 @@
 														!(
 															'ontouchstart' in window ||
 															navigator.maxTouchPoints > 0 ||
-															navigator.msMaxTouchPoints > 0
+															navigator.maxTouchPoints > 0
 														)
 													) {
 														// Prevent Enter key from creating a new line
@@ -976,9 +954,6 @@
 												}
 											}}
 										/>
-									{/key}
-								</div>
-							</div>
 
 							<div class=" flex justify-between mb-2.5 mx-0.5">
 								<div class="ml-1 self-end flex space-x-1 flex-1">
@@ -1008,9 +983,7 @@
 													</svg>
 												</button>
 											</InputMenu>
-										{/if}
 									</slot>
-								</div>
 
 								<div class="self-end flex space-x-1 mr-1">
 									{#if content === ''}
@@ -1060,7 +1033,6 @@
 												</svg>
 											</button>
 										</Tooltip>
-									{/if}
 
 									<div class=" flex items-center">
 										{#if inputLoading && onStop}
@@ -1087,7 +1059,6 @@
 														</svg>
 													</button>
 												</Tooltip>
-											</div>
 										{:else}
 											<div class=" flex items-center">
 												<Tooltip content={$i18n.t('Send message')}>
@@ -1114,15 +1085,4 @@
 														</svg>
 													</button>
 												</Tooltip>
-											</div>
-										{/if}
-									</div>
-								</div>
-							</div>
-						</div>
 					</form>
-				{/if}
-			</div>
-		</div>
-	</div>
-{/if}
