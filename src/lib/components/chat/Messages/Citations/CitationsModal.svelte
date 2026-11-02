@@ -11,14 +11,14 @@
 
 	export let id = '';
 	export let show = false;
-	export let citations = [];
+	export let citations: any[] = [];
 	export let showPercentage = false;
 	export let showRelevance = true;
 
 	let showCitationModal = false;
 	let selectedCitation: any = null;
 
-	export const showCitation = (citation) => {
+	export const showCitation = (citation: any) => {
 		selectedCitation = citation;
 		showCitationModal = true;
 	};
