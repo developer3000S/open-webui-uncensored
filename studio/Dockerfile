@@ -1,9 +1,9 @@
 # Uncensored AI Studio — сервисный образ.
 # Используем стандартный образ Node.js для корректной работы.
-FROM node:24.22.2 AS build
+FROM node:22.23.3 AS build
 
 # Pin exact npm version for this image
-ENV NODE_VERSION=24.22.2 NPM_VERSION=12.2.1
+ENV NODE_VERSION=22.23.3 NPM_VERSION=12.2.1
 RUN npm install -g npm@12.2.1 && node -v && npm -v
 
 # Устанавливаем необходимые системные зависимости

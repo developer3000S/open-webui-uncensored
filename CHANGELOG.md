@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- 🔧 **Закреплены версии сборки:** Node.js 24.22.2 и npm 12.2.1 для стабильности и совместимости. Обновлены Dockerfile, studio/Dockerfile, package.json и CI-конфигурации. Добавлены инструкции по сборке в TROUBLESHOOTING.md.
+- 🔧 **Закреплены версии сборки:** Node.js 22.23.3 и npm 12.2.1 для стабильности и совместимости. Обновлены Dockerfile, studio/Dockerfile, package.json и CI-конфигурации. Добавлены инструкции по сборке в TROUBLESHOOTING.md.
 
 ### Added
 

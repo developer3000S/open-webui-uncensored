@@ -65,10 +65,10 @@ Diagnose with `docker logs <container> --tail 40`; if the traceback ends in that
 ## Docker Image Build Issues (`open-webui-uncensored:local`)
 
 **Требуемые версии инструментов.**
-Сборка образа WebUI (`Dockerfile`, stage `build`) и студии (`studio/Dockerfile`) закреплена за **Node.js 24.22.2** и **npm 12.2.1**. Эти версии установлены в образе через `node:24.22.2-alpine` и `npm install -g npm@12.2.1`. Локально можно установить их через:
+Сборка образа WebUI (`Dockerfile`, stage `build`) и студии (`studio/Dockerfile`) закреплена за **Node.js 22.23.3** и **npm 12.2.1**. Эти версии установлены в образе через `node:22.23.3-alpine` и `npm install -g npm@12.2.1`. Локально можно установить их через:
 
 ```bash
-nvm install 24.22.2 && npm install -g npm@12.2.1
+nvm install 22.23.3 && npm install -g npm@12.2.1
 ```
 
 **`npm warn EBADENGINE Unsupported engine ...`** — это предупреждения, а не ошибки. Они появляются, если версия Node в окружении не совпадает с полем `engines` пакетов, но не мешают сборке. В `.npmrc` стоит `engine-strict=false`, а `npm ci` в Dockerfile запускается с `--engine-strict=false`.

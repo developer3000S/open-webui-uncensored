@@ -6,58 +6,34 @@ echo
 echo "######################"
 echo "Запускаю git pull"
 echo "######################"
-
-echo "######################" > errors.txt
-echo "Запускаю git pull" >> errors.txt
-echo "######################" >> errors.txt  
-git pull >> errors.txt
+git pull
 # or copy the two edited files: src/routes/+layout.svelte, package.json (+package-lock.json)
 
 echo "######################"
 echo "Запускаю npm install"
 echo "######################"
-
-echo "######################" >> errors.txt
-echo "Запускаю npm install" >> errors.txt
-echo "######################" >> errors.txt
-
-nvm install 24                                                                                                                                   root@mac16
+# nvm install 22.23.3                                                                                                                                   root@mac16
 # Verify the Node.js version:
-node -v # Should print "v24.22.2".
+node -v # Should print "v22.23.3"
 # Verify npm version:
 npm -v # Should print "12.2.1".
 
-npm install >> errors.txt
+npm install
 # picks up @internationalized/date
-npm update typescript-eslint @typescript-eslint/eslint-plugin @typescript-eslint/parser --latest  >> errors.txt
+npm update typescript-eslint @typescript-eslint/eslint-plugin @typescript-eslint/parser --latest
 
 echo "########################"
 echo "Запускаю npm run check"
 echo "########################"
-
-echo "########################" >> errors.txt
-echo "Запускаю npm run check" >> errors.txt
-echo "########################" >> errors.txt
-npm run check >> errors.txt
-# svelte-check — уже есть в package.json, но, видимо, не запускался
+npm run check # svelte-check — уже есть в package.json, но, видимо, не запускался
 
 echo "########################"
 echo "Запускаю npx prettier"
 echo "########################"
-
-echo "########################" >> errors.txt
-echo "Запускаю npx prettier" >> errors.txt
-echo "########################" >> errors.txt
-npx prettier --check "src/**/*.svelte" >> errors.txt 
+npx prettier --check "src/**/*.svelte"
 
 echo "########################"
 echo "Запускаю npm run build"
 echo "########################"
-
-echo "########################" >> errors.txt
-echo "Запускаю npm run build" >> errors.txt
-echo "########################" >> errors.txt
-npm run build >> errors.txt
-# verify full production build (my final build attempt here was OOM-killed at the bundling stage, exit 137 — close to completion; add NODE_OPTIONS=--max-old-space-size=8192 if you see "Killed")
-npm run lint:frontend >> errors.txt
-# should pass after the typescript-eslint update
+npm run build # verify full production build (my final build attempt here was OOM-killed at the bundling stage, exit 137 — close to completion; add NODE_OPTIONS=--max-old-space-size=8192 if you see "Killed")
+npm run lint:frontend # should pass after the typescript-eslint update

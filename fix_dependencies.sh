@@ -3,7 +3,7 @@
 # Запускаем Docker-контейнер с нужной версией Node.js
 # и обновляем зависимости
 
-docker run --rm -it -v $(pwd):/app -w /app node:24.22.2 bash -c "
+docker run --rm -it -v $(pwd):/app -w /app node:22.23.3 bash -c "
   # Устанавливаем зависимости
   npm install --legacy-peer-deps && 
   # Пытаемся обновить уязвимые пакеты
