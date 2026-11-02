@@ -3,7 +3,6 @@
   "version": "0.10.2",
   "private": true,
   "scripts": {
-    "preinstall": "npm config set allow-scripts true",
     "dev": "npm run pyodide:fetch && vite dev --host",
     "dev:5050": "npm run pyodide:fetch && vite dev --port 5050",
     "build": "npm run pyodide:fetch && vite build",
@@ -28,7 +27,7 @@
     "@sveltejs/adapter-static": "^4.0.1",
     "@sveltejs/kit": "^3.1.1",
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
-    "eslint": "^9.9.0",
+    "eslint": "^10.14.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-svelte": "^3.20.0",
     "globals": "^16.5.0",

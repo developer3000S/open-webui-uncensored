@@ -1,3 +1,6 @@
+echo "Для переустановки запусти: rm -rf node_modules package-lock.json && npm install"
+echo
+
 echo "########################"
 echo "Запускаю npm run check"
 echo "########################"
