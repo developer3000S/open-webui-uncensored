@@ -5,7 +5,9 @@
 	import Check from '$lib/components/icons/Check.svelte';
 	import Select from '$lib/components/common/Select.svelte';
 
-	const i18n = getContext('i18n');
+import type { Writable } from 'svelte/store';
+import type { i18n as i18nType } from 'i18next';
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	export let value = '';
 	export let placeholder = $i18n.t('Select view');

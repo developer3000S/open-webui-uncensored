@@ -3,6 +3,8 @@
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import TypeaheadSelector from './TypeaheadSelector.svelte';
 	import { getContext } from 'svelte';
+	import type { i18n as i18nType } from 'i18next';
+	import type { Writable } from 'svelte/store';
 
 	type Skill = {
 		id: string;
@@ -13,7 +15,7 @@
 	export let skills: Skill[] = [];
 	export let selectedSkillIds: string[] = [];
 
-	const i18n = getContext('i18n') as any;
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	$: selectedSkills = skills.filter((skill) => selectedSkillIds.includes(skill.id));
 	$: availableSkills = skills.filter((skill) => !selectedSkillIds.includes(skill.id));

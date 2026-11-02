@@ -3,6 +3,8 @@
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import TypeaheadSelector from './TypeaheadSelector.svelte';
 	import { getContext } from 'svelte';
+	import type { i18n as i18nType } from 'i18next';
+	import type { Writable } from 'svelte/store';
 
 	type Tool = {
 		id: string;
@@ -15,7 +17,7 @@
 	export let tools: Tool[] = [];
 	export let selectedToolIds: string[] = [];
 
-	const i18n = getContext('i18n') as any;
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	$: selectedTools = tools.filter((tool) => selectedToolIds.includes(tool.id));
 	$: availableTools = tools.filter((tool) => !selectedToolIds.includes(tool.id));

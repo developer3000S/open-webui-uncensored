@@ -3,7 +3,9 @@
 	import { v4 as uuidv4 } from 'uuid';
 
 	import { getContext } from 'svelte';
-	const i18n = getContext('i18n');
+import type { Writable } from 'svelte/store';
+import type { i18n as i18nType } from 'i18next';
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';

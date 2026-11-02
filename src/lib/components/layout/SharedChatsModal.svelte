@@ -7,8 +7,9 @@
 	import ChatsModal from './ChatsModal.svelte';
 	import UnshareAllConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import Spinner from '../common/Spinner.svelte';
+	import type { i18n as i18nType } from 'i18next';
 
-	const i18n: Writable<any> = getContext('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	export let show = false;
 	export let onUpdate = () => {};

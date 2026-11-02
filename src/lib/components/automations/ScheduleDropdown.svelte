@@ -1,10 +1,12 @@
 <script lang="ts">
-	import type i18nType from '$lib/i18n';
+
 	import { getContext } from 'svelte';
 
 	import Dropdown from '$lib/components/common/Dropdown.svelte';
+	import type { i18n as i18nType } from 'i18next';
+	import type { Writable } from 'svelte/store';
 
-	const i18n: typeof i18nType = getContext('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	export let frequency = 'DAILY';
 	export let interval = 1;

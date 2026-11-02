@@ -25,7 +25,9 @@
 
 	import { onMount, getContext, onDestroy } from 'svelte';
 
-	const i18n = getContext('i18n');
+import type { Writable } from 'svelte/store';
+import type { i18n as i18nType } from 'i18next';
+	const i18n = getContext<Writable<i18nType>>('i18n');
 	// Assuming $i18n.languages is an array of language codes
 	$: loadLocale($i18n.languages);
 

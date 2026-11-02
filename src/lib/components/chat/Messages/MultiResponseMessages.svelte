@@ -20,7 +20,9 @@
 	import ProfileImage from './ProfileImage.svelte';
 	import { WEBUI_BASE_URL } from '$lib/constants';
 	import equal from 'fast-deep-equal';
-	const i18n = getContext('i18n');
+import type { Writable } from 'svelte/store';
+import type { i18n as i18nType } from 'i18next';
+	const i18n = getContext<Writable<i18nType>>('i18n');
 	dayjs.extend(localizedFormat);
 
 	export let chatId;

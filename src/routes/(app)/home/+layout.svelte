@@ -4,8 +4,10 @@
 	import { page } from '$app/stores';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import Sidebar from '$lib/components/icons/Sidebar.svelte';
+	import type { i18n as i18nType } from 'i18next';
+	import type { Writable } from 'svelte/store';
 
-	const i18n = getContext<{ t: (key: string, options?: any) => string }>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	onMount(async () => {});
 </script>

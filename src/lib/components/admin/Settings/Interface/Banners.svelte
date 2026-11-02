@@ -6,7 +6,9 @@
 	import XMark from '$lib/components/icons/XMark.svelte';
 	import Sortable from 'sortablejs';
 	import { getContext } from 'svelte';
-	const i18n = getContext('i18n');
+import type { Writable } from 'svelte/store';
+import type { i18n as i18nType } from 'i18next';
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	export let banners = [];
 

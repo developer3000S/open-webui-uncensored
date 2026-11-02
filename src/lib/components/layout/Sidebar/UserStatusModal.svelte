@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { getContext, createEventDispatcher, onMount, tick } from 'svelte';
-	const i18n = getContext('i18n');
+import type { Writable } from 'svelte/store';
+import type { i18n as i18nType } from 'i18next';
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import { page } from '$app/stores';

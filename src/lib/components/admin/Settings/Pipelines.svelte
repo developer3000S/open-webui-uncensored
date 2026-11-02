@@ -21,7 +21,7 @@
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import Switch from '$lib/components/common/Switch.svelte';
 
-	const i18n: Writable<i18nType> = getContext('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	export let saveHandler: Function;
 

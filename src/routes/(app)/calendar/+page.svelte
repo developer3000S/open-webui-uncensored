@@ -10,6 +10,8 @@
 		type CalendarModel,
 		type CalendarEventModel
 	} from '$lib/apis/calendar';
+	import type { i18n as i18nType } from 'i18next';
+	import type { Writable } from 'svelte/store';
 	import CalendarView from '$lib/components/calendar/CalendarView.svelte';
 	import CalendarSidebar from '$lib/components/calendar/CalendarSidebar.svelte';
 	import CalendarEventModal from '$lib/components/calendar/CalendarEventModal.svelte';
@@ -22,7 +24,7 @@
 	import Check from '$lib/components/icons/Check.svelte';
 	import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
 
-	const i18n = getContext<{ t: (key: string, options?: any) => string }>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	let loaded = false;
 	let calendars: CalendarModel[] = [];

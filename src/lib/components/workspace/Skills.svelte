@@ -4,7 +4,9 @@
 	const { saveAs } = fileSaver;
 
 	import { onMount, getContext, tick, onDestroy } from 'svelte';
-	const i18n = getContext('i18n');
+import type { Writable } from 'svelte/store';
+import type { i18n as i18nType } from 'i18next';
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { WEBUI_NAME, user, skills as _skills } from '$lib/stores';
 	import { goto } from '$app/navigation';

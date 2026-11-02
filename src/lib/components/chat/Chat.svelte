@@ -5,7 +5,7 @@
 
 	import { getContext, onDestroy, onMount, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
-	const i18n: Writable<i18nType> = getContext('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
