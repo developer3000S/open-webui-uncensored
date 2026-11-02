@@ -27,7 +27,8 @@
 	import SensitiveInput from '$lib/components/common/SensitiveInput.svelte';
 	import { redirect } from '@sveltejs/kit';
 
-	import type { I18nStore } from '$lib/i18n';
+	import type { Writable } from 'svelte/store';
+	import type { i18n as i18nType } from 'i18next';
 
 	interface ConfigWithMetadata extends Config {
 		metadata?: {
@@ -40,7 +41,7 @@
 			onboarding?: boolean;
 		};
 	}
-	const i18n: I18nStore = getContext('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	let loaded = false;
 	let form: { email?: string; password?: string } = {};

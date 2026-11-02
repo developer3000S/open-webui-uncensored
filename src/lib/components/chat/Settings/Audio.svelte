@@ -8,9 +8,11 @@
 	import Switch from '$lib/components/common/Switch.svelte';
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
+	import type { i18n as i18nType } from 'i18next';
+	import type { Writable } from 'svelte/store';
 	const dispatch = createEventDispatcher();
 
-	const i18n = getContext<{ t: (key: string, options?: any) => string }>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	export let saveSettings: Function;
 

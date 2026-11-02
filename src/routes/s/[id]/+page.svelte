@@ -17,8 +17,10 @@
 	import { getModels } from '$lib/apis';
 	import { toast } from 'svelte-sonner';
 	import localizedFormat from 'dayjs/plugin/localizedFormat';
+	import type { i18n as i18nType } from 'i18next';
+	import type { Writable } from 'svelte/store';
 
-	const i18n = getContext<{ t: (key: string, options?: any) => string }>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 	dayjs.extend(localizedFormat);
 
 	interface SessionUser {

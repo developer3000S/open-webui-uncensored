@@ -1,5 +1,7 @@
 import { mount, unmount } from 'svelte';
 import { createClassComponent } from 'svelte/legacy';
+import type { Writable } from 'svelte/store';
+import type { i18n as i18nType } from 'i18next';
 
 import tippy from 'tippy.js';
 
@@ -29,7 +31,7 @@ export function getSuggestionRenderer(Component: any, ComponentProps: Record<str
 						},
 						...ComponentProps
 					},
-					context: new Map<string, any>([['i18n', ComponentProps?.i18n]])
+					context: new Map<string, any>([['i18n', ComponentProps?.i18n as Writable<i18nType>]])
 				});
 
 				// Create a tiny reference element so outside taps are truly "outside"

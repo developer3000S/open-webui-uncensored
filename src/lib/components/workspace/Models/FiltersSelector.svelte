@@ -3,6 +3,8 @@
 	import Checkbox from '$lib/components/common/Checkbox.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import TypeaheadSelector from './TypeaheadSelector.svelte';
+	import type { i18n as i18nType } from 'i18next';
+	import type { Writable } from 'svelte/store';
 
 	type Filter = {
 		id: string;
@@ -13,7 +15,7 @@
 		};
 	};
 
-	const i18n = getContext('i18n') as any;
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	export let filters: Filter[] = [];
 	export let selectedFilterIds: string[] = [];

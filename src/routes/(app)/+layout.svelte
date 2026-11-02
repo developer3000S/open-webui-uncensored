@@ -3,6 +3,8 @@
 	import { onMount, tick, getContext } from 'svelte';
 	import { openDB, deleteDB } from 'idb';
 	import fileSaver from 'file-saver';
+	import type { i18n as i18nType } from 'i18next';
+	import type { Writable } from 'svelte/store';
 	const { saveAs } = fileSaver;
 
 	import { goto } from '$app/navigation';
@@ -50,7 +52,7 @@
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import { Shortcut, shortcuts } from '$lib/shortcuts';
 
-	const i18n = getContext<{ t: (key: string, options?: any) => string }>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	let loaded = false;
 	let DB = null;

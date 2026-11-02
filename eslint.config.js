@@ -21,6 +21,10 @@ const sharedGlobals = {
   ...globals.es2021,
   APP_VERSION: 'readonly',
   APP_BUILD_HASH: 'readonly',
+  // Google platform scripts loaded at runtime in the browser
+  // (src/lib/utils/google-drive-picker.ts uses gapi/google pickers).
+  gapi: 'readonly',
+  google: 'readonly',
   __SVELTEKIT_ADAPTER_NAME__: 'readonly',
   __SVELTEKIT_APP_VERSION_FILE__: 'readonly',
   __SVELTEKIT_APP_VERSION_POLL_INTERVAL__: 'readonly',

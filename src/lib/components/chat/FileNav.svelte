@@ -1,4 +1,6 @@
 <script context="module">
+	import type { i18n as i18nType } from 'i18next';
+	import type { Writable } from 'svelte/store';
 	// Persists across mount/unmount cycles (module-level, not per-instance)
 	let savedPath = '/';
 </script>
@@ -47,7 +49,7 @@
 	import PortPreview from './FileNav/PortPreview.svelte';
 	import XTerminal from './XTerminal.svelte';
 
-	const i18n = getContext<{ t: (key: string, options?: any) => string }>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	export let overlay = false;
 	export let chatId: string | null = null;
