@@ -1,0 +1,45 @@
+nohup: ignoring input
+npm notice run open-webui@0.10.2 check
+npm notice run svelte-kit sync && svelte-check --tsconfig ./tsconfig.json
+vite.config.js (2:18) [33m[UNRESOLVED_IMPORT] [0mCould not resolve '@vitejs/plugin-react' in vite.config.js
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m vite.config.js:2:19 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m2 │[0m [38;5;249mi[0m[38;5;249mm[0m[38;5;249mp[0m[38;5;249mo[0m[38;5;249mr[0m[38;5;249mt[0m[38;5;249m [0m[38;5;249mr[0m[38;5;249me[0m[38;5;249ma[0m[38;5;249mc[0m[38;5;249mt[0m[38;5;249m [0m[38;5;249mf[0m[38;5;249mr[0m[38;5;249mo[0m[38;5;249mm[0m[38;5;249m [0m"@vitejs/plugin-react"[38;5;249m;[0m
+ [38;5;240m  │[0m                   ───────────┬──────────  
+ [38;5;240m  │[0m                              ╰──────────── Module not found, treating it as an external dependency
+[38;5;246m───╯[0m
+
+failed to load config from /workspace/studio/app/frontend/vite.config.js
+Error while loading config at  /workspace/studio/app/frontend/vite.config.js
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@vitejs/plugin-react' imported from /workspace/node_modules/.vite-temp/vite.config.js.timestamp-1793641451282-8bea26037b6f4.mjs
+    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:314:9)
+    at packageResolve (node:internal/modules/esm/resolve:772:81)
+    at moduleResolve (node:internal/modules/esm/resolve:859:18)
+    at defaultResolve (node:internal/modules/esm/resolve:989:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
+    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
+    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
+    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
+  code: 'ERR_MODULE_NOT_FOUND'
+}
+
+<--- Last few GCs --->
+
+[3331:0x7e04000]    75670 ms: Scavenge (interleaved) 1017.7 (1041.6) -> 1017.0 (1043.6) MB, pooled: 0 MB, 13.65 / 0.00 ms  (average mu = 0.175, current mu = 0.247) allocation failure; 
+[3331:0x7e04000]    77670 ms: Mark-Compact 1019.0 (1043.8) -> 1016.5 (1044.1) MB, pooled: 0 MB, 1975.11 / 0.00 ms  (average mu = 0.155, current mu = 0.131) allocation failure; scavenge might not succeed
+
+
+<--- JS stacktrace --->
+
+FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+
+ 1: 0xe46bbe node::OOMErrorHandler(char const*, v8::OOMDetails const&) [node]
+ 2: 0x1245390 v8::Utils::ReportOOMFailure(v8::internal::Isolate*, char const*, v8::OOMDetails const&) [node]
+ 3: 0x1245667 v8::internal::V8::FatalProcessOutOfMemory(v8::internal::Isolate*, char const*, v8::OOMDetails const&) [node]
+ 4: 0x1474575  [node]
+ 5: 0x14745a3  [node]
+ 6: 0x148d67a  [node]
+ 7: 0x1490848  [node]
+ 8: 0x1cf93d1  [node]
+Aborted
