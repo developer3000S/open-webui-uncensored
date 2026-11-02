@@ -374,10 +374,10 @@
 												>
 													<GarbageBin class="size-4" strokeWidth="1.5" />
 												</button>
-											</Tooltip>
-										</div>
+												</Tooltip>
+											</div>
 									</div>
-								</div>
+								</button>
 							{/each}
 
 							{#if !allFilesLoaded}

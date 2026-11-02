@@ -474,9 +474,7 @@
 						<div class="shrink-0">
 							<button
 								type="button"
-								class="px-3.5 py-1.5 text-sm font-medium bg-gray-50 hover:bg-gray-100 text-gray-900 dark:bg-gray-850 dark:hover:bg-gray-800 dark:text-gray-200 transition rounded-lg shrink-0 {($settings?.highContrastMode ?? false)
-									? ''
-									: 'outline-hidden'}"
+								class="px-3.5 py-1.5 text-sm font-medium bg-gray-50 hover:bg-gray-100 text-gray-900 dark:bg-gray-850 dark:hover:bg-gray-800 dark:text-gray-200 transition rounded-lg shrink-0 outline-hidden"
 								aria-pressed={role === 'assistant'}
 								aria-label={$i18n.t(
 									role === 'user' ? 'Switch to Assistant role' : 'Switch to User role'
