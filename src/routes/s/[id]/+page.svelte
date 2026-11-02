@@ -2,6 +2,7 @@
 	import { onMount, tick, getContext } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+import type { PageData } from '$app/stores';
 
 	import dayjs from 'dayjs';
 
@@ -129,7 +130,7 @@
 
 	const cloneSharedChat = async () => {
 		if (!($sessionUser?.role === 'admin' || ($sessionUser?.permissions?.chat?.import ?? true))) {
-			toast.error($i18n.t('Access prohibited'));
+			toast.error(i18n.t('Access prohibited'));
 			return;
 		}
 
@@ -211,7 +212,7 @@
 							class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 							on:click={cloneSharedChat}
 						>
-							{$i18n.t('Clone Chat')}
+							{i18n.t('Clone Chat')}
 						</button>
 					</div>
 				</div>

@@ -71,6 +71,7 @@
     "@codemirror/theme-one-dark": "^6.1.2",
     "@floating-ui/dom": "^1.7.2",
     "@huggingface/transformers": "^4.4.0-next.0",
+    "@internationalized/date": "^3.12.4",
     "@jimp/core": "^0.16.2",
     "@jimp/plugin-blit": "^0.22.12",
     "@jimp/plugin-contain": "^0.22.12",
