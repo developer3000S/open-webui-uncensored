@@ -27,7 +27,8 @@
 	import SensitiveInput from '$lib/components/common/SensitiveInput.svelte';
 	import { redirect } from '@sveltejs/kit';
 
-	const i18n = getContext('i18n');
+	import type { I18nStore } from '$lib/i18n';
+const i18n: I18nStore = getContext('i18n');
 
 	let loaded = false;
 
@@ -217,7 +218,7 @@
 
 <svelte:head>
 	<title>
-		{`${$WEBUI_NAME}`}
+		{`${WEBUI_NAME}`}
 	</title>
 </svelte:head>
 
@@ -246,7 +247,7 @@
 							class="flex items-center justify-center gap-3 text-xl sm:text-2xl text-center font-medium dark:text-gray-200"
 						>
 							<div>
-								{i18n.t('Signing in to {{WEBUI_NAME}}', { WEBUI_NAME: $WEBUI_NAME })}
+								{i18n.t('Signing in to {{WEBUI_NAME}}', { WEBUI_NAME: WEBUI_NAME })}
 							</div>
 
 							<div>
@@ -264,7 +265,7 @@
 										crossorigin="anonymous"
 										src="{WEBUI_BASE_URL}/static/favicon.png"
 										class="size-24 rounded-full"
-										alt="{$WEBUI_NAME} logo"
+										alt="{WEBUI_NAME} logo"
 									/>
 								</div>
 							{/if}
@@ -278,20 +279,20 @@
 								<div class="mb-1">
 									<div class=" text-2xl font-medium">
 										{#if $config?.onboarding ?? false}
-											{i18n.t(`Get started with {{WEBUI_NAME}}`, { WEBUI_NAME: $WEBUI_NAME })}
+											{i18n.t(`Get started with {{WEBUI_NAME}}`, { WEBUI_NAME: WEBUI_NAME })}
 										{:else if mode === 'ldap'}
-											{i18n.t(`Sign in to {{WEBUI_NAME}} with LDAP`, { WEBUI_NAME: $WEBUI_NAME })}
+											{i18n.t(`Sign in to {{WEBUI_NAME}} with LDAP`, { WEBUI_NAME: WEBUI_NAME })}
 										{:else if mode === 'signin'}
-											{i18n.t(`Sign in to {{WEBUI_NAME}}`, { WEBUI_NAME: $WEBUI_NAME })}
+											{i18n.t(`Sign in to {{WEBUI_NAME}}`, { WEBUI_NAME: WEBUI_NAME })}
 										{:else}
-											{i18n.t(`Sign up to {{WEBUI_NAME}}`, { WEBUI_NAME: $WEBUI_NAME })}
+											{i18n.t(`Sign up to {{WEBUI_NAME}}`, { WEBUI_NAME: WEBUI_NAME })}
 										{/if}
 									</div>
 
 									{#if $config?.onboarding ?? false}
 										<div class="mt-1 text-xs font-medium text-gray-600 dark:text-gray-500">
-											ⓘ {$WEBUI_NAME}
-											{$i18n.t(
+											ⓘ {WEBUI_NAME}
+											{i18n.t(
 												'does not make any external connections, and your data stays securely on your locally hosted server.'
 											)}
 										</div>
@@ -428,7 +429,7 @@
 															}
 														}}
 													>
-														{mode === 'signin' ? $i18n.t('Sign up') : i18n.t('Sign in')}
+														{mode === 'signin' ? i18n.t('Sign up') : i18n.t('Sign in')}
 													</button>
 												</div>
 											{/if}
@@ -556,7 +557,7 @@
 											</svg>
 
 											<span
-												>{$i18n.t('Continue with {{provider}}', {
+												>{i18n.t('Continue with {{provider}}', {
 													provider: $config?.oauth?.providers?.oidc ?? 'SSO'
 												})}</span
 											>
