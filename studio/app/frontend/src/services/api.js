@@ -321,7 +321,9 @@ export async function stopServer() {
   }
   try {
     await fetch("/api/stop-backend", { method: "POST" });
-  } catch (_) {}
+  } catch (_) {
+    // Server may already be shutting down; the request failing is fine.
+  }
   return "Backend stopped";
 }
 
@@ -1038,8 +1040,9 @@ export async function generateImage(prompt, negativePrompt, constraints, activeM
       }
     } else {
       let errMsg = `Generation failed (HTTP ${response.status})`;
+      let errJson;
       try {
-        const errJson = await response.json();
+        errJson = await response.json();
         if (errJson?.detail || errJson?.error?.message) {
           errMsg = errJson.detail || errJson.error.message;
         }
