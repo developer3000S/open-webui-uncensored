@@ -183,5 +183,13 @@
   "engines": {
     "node": "24.22.2",
     "npm": "12.2.1"
+  },
+  "allowScripts": {
+    "@swc/core@1.16.21": true,
+    "onnxruntime-node@1.31.1": true,
+    "core-js@3.51.0": true,
+    "protobufjs@7.6.6": true,
+    "sharp@0.34.5": true,
+    "sharp@0.35.5": true
   }
 }
