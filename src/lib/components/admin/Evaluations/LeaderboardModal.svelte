@@ -10,7 +10,9 @@
 	export let model = null;
 	export let onClose: () => void = () => {};
 
-	const i18n = getContext('i18n');
+import type { Writable } from 'svelte/store';
+import type { i18n as i18nType } from 'i18next';
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	type TimeRange = '30d' | '1y' | 'all';
 	const TIME_RANGES: { key: TimeRange; label: string; days: number }[] = [

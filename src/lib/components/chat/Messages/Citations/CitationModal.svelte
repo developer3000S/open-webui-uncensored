@@ -10,7 +10,9 @@
 	import XMark from '$lib/components/icons/XMark.svelte';
 	import Textarea from '$lib/components/common/Textarea.svelte';
 
-	const i18n = getContext('i18n');
+import type { Writable } from 'svelte/store';
+import type { i18n as i18nType } from 'i18next';
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	const CONTENT_PREVIEW_LIMIT = 10000;
 	let expandedDocs: Set<number> = new Set();
