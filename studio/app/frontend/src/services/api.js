@@ -66,7 +66,7 @@ export function normalizeModel(model) {
 
 async function readJsonResponse(res, fallbackMessage = "The local server returned an invalid response.") {
   const text = await res.text();
-  let data = {};
+  let data;
   try {
     data = JSON.parse(text || "{}");
   } catch (_) {
@@ -168,7 +168,7 @@ export async function getTelemetry() {
       const stats = await invoke("get_telemetry");
       return stats;
     } catch (e) {
-      // Ignore and use fallback
+      // Ignore and use fallback below.
     }
   }
 
@@ -178,7 +178,9 @@ export async function getTelemetry() {
       if (res.ok) {
         return await res.json();
       }
-    } catch (_) {}
+    } catch (_) {
+      // Ignore and use fallback below.
+    }
   }
 
   return {
@@ -1035,14 +1037,15 @@ export async function generateImage(prompt, negativePrompt, constraints, activeM
           errMsg = errJson.detail || errJson.error.message;
         }
       } catch (_) {}
-      throw new Error(errMsg);
+      throw new Error(errMsg, { cause: response });
     }
   } catch (err) {
     if (err.name === "AbortError" || err.message.startsWith("Generation failed")) throw err;
     console.warn("Could not reach local server.", err);
     throw new Error(
       "The image generation server is not responding or crashed. " +
-      "Try restarting the backend from Model Manager, or check the terminal for a backend error."
+      "Try restarting the backend from Model Manager, or check the terminal for a backend error.",
+      { cause: err }
     );
   }
 }
@@ -1084,7 +1087,6 @@ export async function importModelFile(sourcePath, onProgress, signal) {
   console.log(`Web Mode: Simulating copying ${filename} to USB models folder`);
   
   const totalSteps = 40;
-  const start = Date.now();
 
   for (let i = 1; i <= totalSteps; i++) {
     if (signal?.aborted) {
@@ -1092,7 +1094,6 @@ export async function importModelFile(sourcePath, onProgress, signal) {
     }
     await new Promise((r) => setTimeout(r, 150)); // ~6 seconds copy total
     const progress = (i / totalSteps) * 100;
-    const elapsedSecs = (Date.now() - start) / 1000;
     const speed = 40 + Math.sin(i) * 5 + Math.random() * 2; // ~42 MB/s
     const eta = (totalSteps - i) * 0.15;
 
@@ -1233,7 +1234,7 @@ export async function pingServer() {
 export async function waitForServerReady(maxAttempts = 30) {
   const attempts = isTauri() || isLocalServerMode() ? maxAttempts : 3;
   for (let i = 0; i < attempts; i++) {
-    let ok = false;
+    let ok;
     if (isLocalServerMode()) {
       const status = await getBackendStatus();
       ok = Boolean(status.ready);
