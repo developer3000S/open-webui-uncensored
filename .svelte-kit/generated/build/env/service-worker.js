@@ -1,7 +1,7 @@
-globalThis.__sveltekit_1c44nzo = {
+globalThis.__sveltekit_1kdge63 = {
 	base: location.pathname.split('/').slice(0, -1).join('/'),
 	env: {
 		// empty
 	},
-	version: "ac01b73c3f48652c303d50b40ecda3769634d732"
+	version: "d843f52edaf958df91eaf0c4ae72bb0f84c7e175"
 };

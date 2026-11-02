@@ -3,7 +3,14 @@ echo "npm install eslint@10.14.0 jimp@1.6.1 minimatch@11.0.4 tmp@0.2.7 phin@3.7.
 echo ""
 echo
 
+echo "######################"
+echo "Запускаю git pull"
+echo "######################"
 git pull   # or copy the two edited files: src/routes/+layout.svelte, package.json (+package-lock.json)
+
+echo "######################"
+echo "Запускаю npm install"
+echo "######################"
 npm install            # picks up @internationalized/date
 npm update typescript-eslint @typescript-eslint/eslint-plugin @typescript-eslint/parser --latest
 

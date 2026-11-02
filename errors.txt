@@ -1,0 +1,10 @@
+Для переустановки запусти: rm -rf node_modules package-lock.json && npm install
+npm install eslint@10.14.0 jimp@1.6.1 minimatch@11.0.4 tmp@0.2.7 phin@3.7.1 file-type@21.3.4
+
+
+######################
+Запускаю git pull
+######################
+######################
+Запускаю npm install
+######################
