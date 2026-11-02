@@ -1,21 +1,34 @@
-import svelte from 'eslint-plugin-svelte';
+import eslint from '@eslint/js';
+import tseslint from '@typescript-eslint/eslint-plugin';
 import parser from '@typescript-eslint/parser';
-import svelteParser from 'svelte-eslint-parser';
+import svelte from 'eslint-plugin-svelte';
 
-const svelteParserInstance = svelteParser;
+const svelteParser = svelte.parser;
 
 const baseConfig = {
-  files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx', '**/*.svelte'],
+  files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
+  plugins: {
+    '@typescript-eslint': tseslint,
+  },
   languageOptions: {
     globals: {
       browser: true,
       es2021: true,
+      node: true,
+      process: 'readonly',
+      URL: 'readonly',
+      Buffer: 'readonly',
+      console: 'readonly',
+    },
+    parserOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
     },
   },
   rules: {
-    'no-console': 'warn',
-    'no-unused-vars': 'warn',
-    'no-undef': 'error',
+    ...eslint.configs.recommended.rules,
+    '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    '@typescript-eslint/no-explicit-any': 'off',
   },
 };
 
@@ -25,7 +38,7 @@ const svelteConfig = {
     svelte,
   },
   languageOptions: {
-    parser: svelteParserInstance,
+    parser: svelteParser,
     parserOptions: {
       parser: '@typescript-eslint/parser',
       ecmaVersion: 'latest',
@@ -44,22 +57,7 @@ const svelteConfig = {
   },
 };
 
-const jsConfig = {
-  files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
-  languageOptions: {
-    parser: parser,
-    parserOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'module',
-    },
-  },
-  rules: {
-    '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-  },
-};
-
 export default [
   baseConfig,
   svelteConfig,
-  jsConfig,
 ];

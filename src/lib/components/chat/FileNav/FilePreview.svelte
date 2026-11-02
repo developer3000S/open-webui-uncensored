@@ -214,7 +214,6 @@ import type { HTMLTextAreaElement, HTMLDivElement } from "svelte/elements"
 				if (highlightingFile === currentFile) highlightedHtml = html;
 			})
 			.catch(() => {
-            .catch(() => {
                 if (highlightingFile === currentFile) {
                     // Ignore syntax highlighting errors
                 }

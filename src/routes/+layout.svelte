@@ -41,7 +41,7 @@
 	} from '$lib/stores';
 	import { getFileContentById } from '$lib/apis/files';
 	import { goto } from '$app/navigation';
-	import { beforeNavigate, pages } from '$app/state';
+	import { beforeNavigate } from '$app/navigation';
 
 	import i18n, { initI18n, getLanguages, changeLanguage } from '$lib/i18n';
 
