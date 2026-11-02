@@ -25,7 +25,9 @@ async function getBackendPort() {
         cachedBackendPort = port;
         return port;
       }
-    } catch (_) {}
+    } catch (_) {
+      // Corrupted/absent localStorage port entry; fall through to defaults.
+    }
   }
   if (cachedBackendPort) return cachedBackendPort;
   return 8080;
@@ -71,7 +73,12 @@ async function readJsonResponse(res, fallbackMessage = "The local server returne
     data = JSON.parse(text || "{}");
   } catch (_) {
     const looksLikeHtml = text.trim().startsWith("<!doctype") || text.trim().startsWith("<html");
-    throw new Error(looksLikeHtml ? "The local server is serving an older frontend/API. Restart the image generator." : fallbackMessage);
+    throw new Error(
+      looksLikeHtml
+        ? "The local server is serving an older frontend/API. Restart the image generator."
+        : fallbackMessage,
+      { cause: _ }
+    );
   }
 
   if (!res.ok || data.ok === false) {
@@ -1036,8 +1043,10 @@ export async function generateImage(prompt, negativePrompt, constraints, activeM
         if (errJson?.detail || errJson?.error?.message) {
           errMsg = errJson.detail || errJson.error.message;
         }
-      } catch (_) {}
-      throw new Error(errMsg, { cause: response });
+      } catch (_) {
+        // Response body was not JSON; keep the generic HTTP error message.
+      }
+      throw new Error(errMsg, { cause: { response, errJson: typeof errJson !== "undefined" ? errJson : undefined } });
     }
   } catch (err) {
     if (err.name === "AbortError" || err.message.startsWith("Generation failed")) throw err;
@@ -1163,7 +1172,9 @@ function uploadModelFileToEndpoint(file, endpoint, onProgress, signal) {
       let data = {};
       try {
         data = JSON.parse(xhr.responseText || "{}");
-      } catch (_) {}
+      } catch (_) {
+        // Non-JSON upload response; treated as success if HTTP status is OK.
+      }
 
       if (xhr.status >= 200 && xhr.status < 300 && data.ok !== false) {
         if (onProgress) {
@@ -1225,7 +1236,7 @@ export async function pingServer() {
   try {
     const response = await fetch(`${baseUrl}/v1/models`, { method: "GET" });
     return response.ok;
-  } catch (e) {
+  } catch {
     return false;
   }
 }

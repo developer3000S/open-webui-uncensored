@@ -57,7 +57,7 @@ const parsePngText = (arrayBuffer) => {
 	try {
 		return new TextDecoder().decode(Uint8Array.from(atob(textChunk.text), (c) => c.charCodeAt(0)));
 	} catch (e) {
-		throw new Error('Unable to parse "chara" field as base64', e);
+		throw new Error('Unable to parse "chara" field as base64', { cause: e });
 	}
 };
 

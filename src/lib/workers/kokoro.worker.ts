@@ -1,3 +1,4 @@
+/// <reference lib="webworker" />
 import { env } from '@huggingface/transformers';
 import { KokoroTTS } from 'kokoro-js';
 
