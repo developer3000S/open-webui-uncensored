@@ -1,4 +1,6 @@
 <script lang="ts">
+import type { HTMLTextAreaElement, HTMLDivElement } from "svelte/elements"
+import type { HTMLTextAreaElement, HTMLDivElement } from "svelte/elements"
 	import { getContext, tick } from 'svelte';
 	import { marked } from 'marked';
 	import DOMPurify from 'dompurify';
@@ -14,8 +16,8 @@
 	import SqliteView from './SqliteView.svelte';
 	import FileCodeEditor from './FileCodeEditor.svelte';
 
-	let pdfViewerRef: PDFViewer;
-	let fileCodeEditorRef: FileCodeEditor;
+	let _pdfViewerRef: PDFViewer;
+	let _fileCodeEditorRef: FileCodeEditor;
 
 	const i18n = getContext('i18n');
 
@@ -195,7 +197,7 @@
 	$: csvBody = csvRows.length > 1 ? csvRows.slice(1) : [];
 
 	// ── Shiki code highlighting (SVG only) ──────────────────────────────
-	let highlightedHtml: string | null = null;
+	
 	let highlightingFile: string | null = null;
 
 	$: if (isSvg && fileContent !== null && selectedFile) {
@@ -213,40 +215,40 @@
 				if (highlightingFile === currentFile) highlightedHtml = html;
 			})
 			.catch(() => {
-				if (highlightingFile === currentFile) highlightedHtml = null;
+				if (highlightingFile === currentFile) 
 			});
 	} else {
-		highlightedHtml = null;
+		
 	}
 
 	// ── JSON parsing ────────────────────────────────────────────────────
-	let parsedJson: unknown = undefined;
-	let jsonError: string | null = null;
+	
+	
 
 	$: if (isJson && fileContent !== null) {
 		try {
 			parsedJson = JSON.parse(fileContent);
-			jsonError = null;
+			
 		} catch (e) {
-			parsedJson = undefined;
+			
 			jsonError = e instanceof Error ? e.message : 'Invalid JSON';
 		}
 	} else {
-		parsedJson = undefined;
-		jsonError = null;
+		
+		
 	}
 
 	// ── Notebook parsing ─────────────────────────────────────────────────
-	let parsedNotebook: Record<string, unknown> | null = null;
+	
 
 	$: if (isNotebook && fileContent !== null) {
 		try {
 			parsedNotebook = JSON.parse(fileContent);
 		} catch {
-			parsedNotebook = null;
+			
 		}
 	} else {
-		parsedNotebook = null;
+		
 	}
 
 	export let showRaw = false;

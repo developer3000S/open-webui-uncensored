@@ -18,9 +18,9 @@ node -v # Should print "v22.23.3"
 # Verify npm version:
 npm -v # Should print "12.2.1".
 
-npm install
-# picks up @internationalized/date
-npm update typescript-eslint @typescript-eslint/eslint-plugin @typescript-eslint/parser --latest
+npm install # picks up @internationalized/date
+npm install --save-dev typescript-eslint@latest @typescript-eslint/eslint-plugin@latest @typescript-eslint/parser@latest
+npm install vue @vitejs/plugin-vue vite-plugin-singlefile --save-dev
 
 echo "########################"
 echo "Запускаю npm run check"
@@ -30,7 +30,7 @@ npm run check # svelte-check — уже есть в package.json, но, види
 echo "########################"
 echo "Запускаю npx prettier"
 echo "########################"
-npx prettier --check "src/**/*.svelte"
+npx prettier --check "src/**/*.svelte" --write
 
 echo "########################"
 echo "Запускаю npm run build"

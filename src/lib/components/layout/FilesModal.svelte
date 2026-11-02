@@ -374,8 +374,8 @@
 												>
 													<GarbageBin class="size-4" strokeWidth="1.5" />
 												</button>
-												</Tooltip>
-											</div>
+											</Tooltip>
+										</div>
 									</div>
 								</button>
 							{/each}

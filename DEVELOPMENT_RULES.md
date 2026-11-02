@@ -5,21 +5,22 @@
 
 ## 1. Синтаксис Svelte
 
-- **Никогда не вставляйте многострочные JS-выражения внутрь строкового атрибута**
-  вида `class="... {cond ? 'a' : 'b'}"` — это ломает парсер (`attribute_empty_shorthand`).
+- **Никогда не вставляйте многострочные JS-выражения внутрь строкового атрибута** вида `class="... {cond ? 'a' : 'b'}"` — это ломает парсер (`attribute_empty_shorthand`).
   Используйте шаблонные строки:
   ```svelte
   <!-- ПЛОХО -->
   <button class="px-3 {($settings?.x ?? false) ? '' : 'outline-hidden'}">
   <!-- ХОРОШО -->
-  <button class={`px-3 ${$settings?.x ? '' : 'outline-hidden'}`}>
+  <button class={"`px-3 ${$settings?.x ? '' : 'outline-hidden'}`"}>
   <!-- ЛУЧШЕ (clsx) -->
   <button class={clsx('px-3', !$settings?.x && 'outline-hidden')}>
   ```
-- CSS-декларации (`border-radius: 0.5rem;`) запрещены внутри `class=""` — только Tailwind-классы
-  либо `<style>`-блок компонента.
+
+- CSS-декларации (`border-radius: 0.5rem;`) запрещены внутри `class=""` — только Tailwind-классы либо `<style>`-блок компонента.
+
 - Кликабельный элемент — это `<button type="button">` или `<a>`, а не `<div on:click>`.
   Не «глушите» a11y-предупреждения через `<!-- svelte-ignore -->`; исправляйте разметку.
+
 - После любого патча проверяйте баланс открывающих/закрывающих тегов и блоков `{#each}…{/each}`.
 
 ## 2. Инструментальная проверка (обязательно перед коммитом)
@@ -33,8 +34,7 @@ node scripts/svelte-compile-check.mjs src/**/*.svelte   # быстрая про�
 
 - `eslint.config.js`: правило `svelte/valid-compile` должно быть `'error'`
   (сейчас отключено — именно поэтому битый `Chat.svelte` дошёл до сборки).
-- Предупреждения a11y (`a11y_click_events_have_key_events`,
-  `a11y_no_static_element_interactions`) не подавляются `svelte-ignore` без задачи-тикета.
+- Предупреждения a11y (`a11y_click_events_have_key_events`, `a11y_no_static_element_interactions`) не подавляются `svelte-ignore` без задачи-тикета.
 
 ## 3. CI / pre-commit
 
@@ -46,9 +46,11 @@ node scripts/svelte-compile-check.mjs src/**/*.svelte   # быстрая про�
 
 ## 4. Патчи и правки, сгенерированные AI/инструментами
 
+- **Используйте Python для редактирования файлов** при необходимости сложных изменений.
 - Любой автопатч `.svelte` проходит через `svelte-check`/компилятор **до** коммита.
 - Правки применяются маленькими кусками: один логический блок = один diff;
   после каждой правки — перечитать изменённый фрагмент глазами (баланс тегов/кавычек).
+- Удаляйте временные файлы после их использования.
 - Ручной smoke-test UI затронутых компонентов (`FilesModal`, `playground/Chat`) после изменений.
 
 ## 5. Про «переписать проект на другом стеке»
