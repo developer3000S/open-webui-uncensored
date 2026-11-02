@@ -25,8 +25,8 @@
 	} from '$lib/apis/channels';
 	import { WEBUI_API_BASE_URL } from '$lib/constants';
 
-import type { Writable } from 'svelte/store';
-import type { i18n as i18nType } from 'i18next';
+	import type { Writable } from 'svelte/store';
+	import type { i18n as i18nType } from 'i18next';
 	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	export let id = null;

@@ -4,8 +4,8 @@
 	import { skills } from '$lib/stores';
 	import { onMount, getContext } from 'svelte';
 
-import type { Writable } from 'svelte/store';
-import type { i18n as i18nType } from 'i18next';
+	import type { Writable } from 'svelte/store';
+	import type { i18n as i18nType } from 'i18next';
 	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { getSkillById, getSkills, updateSkillById } from '$lib/apis/skills';

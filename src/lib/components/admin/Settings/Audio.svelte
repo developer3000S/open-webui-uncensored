@@ -69,7 +69,6 @@
 		};
 	};
 
-	 
 	let voices: SpeechSynthesisVoice[] = [];
 	let providerVoices: Voice[] = [];
 	let models: Awaited<ReturnType<typeof _getModels>>['models'] = [];

@@ -5,8 +5,8 @@
 	import { settings, WEBUI_NAME } from '$lib/stores';
 	import { WEBUI_VERSION } from '$lib/constants';
 
-import type { Writable } from 'svelte/store';
-import type { i18n as i18nType } from 'i18next';
+	import type { Writable } from 'svelte/store';
+	import type { i18n as i18nType } from 'i18next';
 	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	export let suggestionPrompts = [];

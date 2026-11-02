@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { afterUpdate, getContext } from 'svelte';
-import type { Writable } from 'svelte/store';
-import type { i18n as i18nType } from 'i18next';
+	import type { Writable } from 'svelte/store';
+	import type { i18n as i18nType } from 'i18next';
 	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import ChevronRight from '$lib/components/icons/ChevronRight.svelte';

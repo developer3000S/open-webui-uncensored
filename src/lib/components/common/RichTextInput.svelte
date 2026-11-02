@@ -121,8 +121,8 @@
 	import { onMount, onDestroy, tick, getContext } from 'svelte';
 	import { createEventDispatcher } from 'svelte';
 
-import type { Writable } from 'svelte/store';
-import type { i18n as i18nType } from 'i18next';
+	import type { Writable } from 'svelte/store';
+	import type { i18n as i18nType } from 'i18next';
 	const i18n = getContext<Writable<i18nType>>('i18n');
 	const eventDispatch = createEventDispatcher();
 
@@ -249,7 +249,7 @@ import type { i18n as i18nType } from 'i18next';
 			if (htmlContent) {
 				// if there is htmlContent, stop manual insertion & let other extensions handle insertion via inputRule
 				// you could extract the pasted file from this url string and upload it to a server for example
-				console.log(htmlContent);  
+				console.log(htmlContent);
 				return false;
 			}
 

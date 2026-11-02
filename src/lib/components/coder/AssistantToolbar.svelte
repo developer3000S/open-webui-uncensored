@@ -7,8 +7,8 @@
 
 	import { getCoderCIStatus, suggestCoderTests, type CoderCIStatus } from '$lib/apis/coder';
 
-import type { Writable } from 'svelte/store';
-import type { i18n as i18nType } from 'i18next';
+	import type { Writable } from 'svelte/store';
+	import type { i18n as i18nType } from 'i18next';
 	const i18n = getContext<Writable<i18nType>>('i18n');
 	const dispatch = createEventDispatcher();
 

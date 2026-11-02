@@ -3,8 +3,8 @@
 	import { goto } from '$app/navigation';
 	import { onMount, getContext } from 'svelte';
 
-import type { Writable } from 'svelte/store';
-import type { i18n as i18nType } from 'i18next';
+	import type { Writable } from 'svelte/store';
+	import type { i18n as i18nType } from 'i18next';
 	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { getPromptById, updatePromptById } from '$lib/apis/prompts';
