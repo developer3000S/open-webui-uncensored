@@ -1,6 +1,5 @@
 <script lang="ts">
 import type { HTMLTextAreaElement, HTMLDivElement } from "svelte/elements"
-import type { HTMLTextAreaElement, HTMLDivElement } from "svelte/elements"
 	import { getContext, tick } from 'svelte';
 	import { marked } from 'marked';
 	import DOMPurify from 'dompurify';
@@ -215,9 +214,11 @@ import type { HTMLTextAreaElement, HTMLDivElement } from "svelte/elements"
 				if (highlightingFile === currentFile) highlightedHtml = html;
 			})
 			.catch(() => {
-				if (highlightingFile === currentFile) 
-			});
-	} else {
+            .catch(() => {
+                if (highlightingFile === currentFile) {
+                    // Ignore syntax highlighting errors
+                }
+            });
 		
 	}
 
