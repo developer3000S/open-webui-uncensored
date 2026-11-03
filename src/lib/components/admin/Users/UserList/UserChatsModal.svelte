@@ -1,6 +1,9 @@
 <script lang="ts">
-	import { toast } from 'svelte-sonner';
+	import type i18nType from 'i18next';
 	import { getContext } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
+	import { toast } from 'svelte-sonner';
 
 	import dayjs from 'dayjs';
 	import localizedFormat from 'dayjs/plugin/localizedFormat';
@@ -15,20 +18,17 @@
 	import ChatsModal from '$lib/components/layout/ChatsModal.svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
-	export let show = false;
-	export let user;
-
-	let chatList = null;
+	export let show: any = false;
+	export let user: any;
+	let chatList: any = null;
 	let page = 1;
 
 	let query = '';
 	let orderBy = 'updated_at';
 	let direction = 'desc';
 
-	let filter = {};
+	let filter: Record<string, any> = {};
 	$: filter = {
 		...(query ? { query } : {}),
 		...(orderBy ? { order_by: orderBy } : {}),
@@ -75,7 +75,7 @@
 		chatListLoading = true;
 		page += 1;
 
-		let newChatList = [];
+		let newChatList: any[] = [];
 
 		newChatList = await getChatListByUserId(localStorage.token, user.id, page, filter);
 
@@ -111,10 +111,29 @@
 	bind:query
 	bind:orderBy
 	bind:direction
-	title={$i18n.t("{{user}}'s Chats", {
+	title={i18n.t("{{user}}'s Chats", {
 		user: user.name.length > 32 ? `${user.name.slice(0, 32)}...` : user.name
 	})}
-	emptyPlaceholder={$i18n.t('No chats found for this user.')}
+	emptyPlaceholder={i18n.t('No chats found for this user.')}
+	shareUrl={true}
+	{chatList}
+	{allChatsLoaded}
+	{chatListLoading}
+	onUpdate={() => {
+		init();
+	}}
+	loadHandler={loadMoreChats}
+></ChatsModal>
+
+<ChatsModal
+	bind:show
+	bind:query
+	bind:orderBy
+	bind:direction
+	title={i18n.t("{{user}}'s Chats", {
+		user: user.name.length > 32 ? `${user.name.slice(0, 32)}...` : user.name
+	})}
+	emptyPlaceholder={i18n.t('No chats found for this user.')}
 	shareUrl={true}
 	{chatList}
 	{allChatsLoaded}

@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let size = 'md';
+	export let size: any = 'md';
 </script>
 
 <span

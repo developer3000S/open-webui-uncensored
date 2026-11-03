@@ -1,19 +1,20 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
+	import { getContext } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import Switch from '$lib/components/common/Switch.svelte';
 	import Textarea from '$lib/components/common/Textarea.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import EllipsisVertical from '$lib/components/icons/EllipsisVertical.svelte';
 	import XMark from '$lib/components/icons/XMark.svelte';
 	import Sortable from 'sortablejs';
-	import { getContext } from 'svelte';
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
-	export let banners = [];
+	export let banners: any = [];
 
-	let sortable = null;
-	let bannerListElement = null;
+	let sortable: any = null;
+	let bannerListElement: any = null;
 
 	const positionChangeHandler = () => {
 		const bannerIdOrder = Array.from(bannerListElement.children).map((child) =>
@@ -47,7 +48,7 @@
 			sortable = new Sortable(bannerListElement, {
 				animation: 150,
 				handle: '.item-handle',
-				onUpdate: async (event) => {
+				onUpdate: (event: any)  => {
 					positionChangeHandler();
 				}
 			});
@@ -66,22 +67,68 @@
 					bind:value={banner.type}
 					required
 				>
-					<option value="" disabled hidden class="text-gray-900">{$i18n.t('Type')}</option>
-					<option value="info" class="text-gray-900">{$i18n.t('Info')}</option>
-					<option value="warning" class="text-gray-900">{$i18n.t('Warning')}</option>
-					<option value="error" class="text-gray-900">{$i18n.t('Error')}</option>
-					<option value="success" class="text-gray-900">{$i18n.t('Success')}</option>
+					<option value="" disabled hidden class="text-gray-900">{i18n.t('Type')}</option>
+					<option value="info" class="text-gray-900">{i18n.t('Info')}</option>
+					<option value="warning" class="text-gray-900">{i18n.t('Warning')}</option>
+					<option value="error" class="text-gray-900">{i18n.t('Error')}</option>
+					<option value="success" class="text-gray-900">{i18n.t('Success')}</option>
 				</select>
 
 				<Textarea
 					className="mr-2 text-xs w-full bg-transparent outline-hidden resize-none"
-					placeholder={$i18n.t('Content')}
+					placeholder={i18n.t('Content')}
 					bind:value={banner.content}
 					maxSize={100}
 				/>
 
 				<div class="relative -left-2">
-					<Tooltip content={$i18n.t('Remember Dismissal')} className="flex h-fit items-center">
+					<Tooltip content={i18n.t('Remember Dismissal')} className="flex h-fit items-center">
+						<Switch bind:state={banner.dismissible} />
+					</Tooltip>
+				</div>
+			</div>
+
+			<button
+				class="pr-3"
+				type="button"
+				on:click={() => {
+					banners.splice(bannerIdx, 1);
+					banners = banners;
+				}}
+			>
+				<XMark className={'size-4'} />
+			</button>
+		</div>
+	{/each}
+</div>
+
+<div class=" flex flex-col gap-3 {banners?.length > 0 ? 'mt-2' : ''}" bind:this={bannerListElement}>
+	{#each banners as banner, bannerIdx (banner.id)}
+		<div class=" flex justify-between items-start -ml-1" id="banner-item-{banner.id}">
+			<EllipsisVertical className="size-4 cursor-move item-handle" />
+
+			<div class="flex flex-row flex-1 gap-2 items-start">
+				<select
+					class="w-fit capitalize rounded-xl text-xs bg-transparent outline-hidden pl-1 pr-5"
+					bind:value={banner.type}
+					required
+				>
+					<option value="" disabled hidden class="text-gray-900">{i18n.t('Type')}</option>
+					<option value="info" class="text-gray-900">{i18n.t('Info')}</option>
+					<option value="warning" class="text-gray-900">{i18n.t('Warning')}</option>
+					<option value="error" class="text-gray-900">{i18n.t('Error')}</option>
+					<option value="success" class="text-gray-900">{i18n.t('Success')}</option>
+				</select>
+
+				<Textarea
+					className="mr-2 text-xs w-full bg-transparent outline-hidden resize-none"
+					placeholder={i18n.t('Content')}
+					bind:value={banner.content}
+					maxSize={100}
+				/>
+
+				<div class="relative -left-2">
+					<Tooltip content={i18n.t('Remember Dismissal')} className="flex h-fit items-center">
 						<Switch bind:state={banner.dismissible} />
 					</Tooltip>
 				</div>

@@ -2,9 +2,7 @@
 	import { getContext, createEventDispatcher, onMount, onDestroy } from 'svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
-	const dispatch = createEventDispatcher();
+		const dispatch = createEventDispatcher();
 
 	import ChevronDown from '../icons/ChevronDown.svelte';
 	import ChevronRight from '../icons/ChevronRight.svelte';
@@ -12,21 +10,17 @@
 	import Tooltip from './Tooltip.svelte';
 	import Plus from '../icons/Plus.svelte';
 
-	export let open = true;
-
-	export let id = '';
-	export let name = '';
-	export let collapsible = true;
-
-	export let className = '';
-	export let buttonClassName = 'text-gray-600 dark:text-gray-400';
-
-	export let chevron = true;
+	export let open: any = true;
+	export let id: any = '';
+	export let name: any = '';
+	export let collapsible: any = true;
+	export let className: any = '';
+	export let buttonClassName: any = 'text-gray-600 dark:text-gray-400';
+	export let chevron: any = true;
 	export let onAddLabel: string = '';
 	export let onAdd: null | Function = null;
 
-	export let dragAndDrop = true;
-
+	export let dragAndDrop: any = true;
 	let folderElement: HTMLDivElement;
 	let loaded = false;
 
@@ -56,7 +50,7 @@
 
 							// Read the JSON file with FileReader
 							const reader = new FileReader();
-							reader.onload = async function (event) {
+							reader.onload = async (event: any)  => {
 								try {
 									const fileContent = JSON.parse((event.target as FileReader).result as string);
 									console.log('Parsed JSON Content: ', fileContent);

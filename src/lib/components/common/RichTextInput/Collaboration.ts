@@ -117,7 +117,7 @@ export class SocketIOCollaborationProvider {
 		});
 
 		// Listen for document state from server
-		this.socket.on('ydoc:document:state', async (data) => {
+		this.socket.on('ydoc:document:state', (data: any)  => {
 			if (data.document_id === this.documentId) {
 				try {
 					if (data.state) {
@@ -193,7 +193,7 @@ export class SocketIOCollaborationProvider {
 		this.socket.on('disconnect', this.onDisconnect);
 
 		// Listen for document updates from Yjs
-		this.doc.on('update', async (update, origin) => {
+		this.doc.on('update', (update: any, origin: any)  => {
 			if (this.editor && origin !== 'server' && this.isConnected) {
 				await tick(); // Ensure the DOM is updated before sending
 				this.socket.emit('ydoc:document:update', {

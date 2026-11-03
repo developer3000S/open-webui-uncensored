@@ -1,7 +1,7 @@
 <script lang="ts">
 	import AddFilesPlaceholder from '$lib/components/AddFilesPlaceholder.svelte';
 
-	export let show = false;
+	export let show: any = false;
 </script>
 
 {#if show}

@@ -59,7 +59,7 @@ export const AIAutocompletion = Extension.create({
 	},
 
 	addProseMirrorPlugins() {
-		let debounceTimer = null;
+		let debounceTimer: any = null;
 		let loading = false;
 
 		let touchStartX = 0;

@@ -1,7 +1,10 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
+	import { getContext } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { WEBUI_API_BASE_URL } from '$lib/constants';
 	import { Handle, Position, type NodeProps } from '@xyflow/svelte';
-	import { getContext } from 'svelte';
 
 	import ProfileImage from '../Messages/ProfileImage.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
@@ -9,9 +12,6 @@
 	import { getOutputText } from '../Messages/structuredOutput';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
-
 	type $$Props = NodeProps;
 	export let data: $$Props['data'];
 
@@ -52,7 +52,7 @@
 		{:else}
 			<div class="flex w-full">
 				<ProfileImage
-					src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${data.model?.id ?? data.message.model}&lang=${$i18n.language}`}
+					src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${data.model?.id ?? data.message.model}&lang=${$language}`}
 					className={'size-5 -translate-y-[1px] flex-shrink-0'}
 				/>
 
@@ -65,8 +65,8 @@
 						<button
 							class={data?.message?.favorite ? '' : 'invisible group-hover:visible'}
 							aria-label={data?.message?.favorite
-								? $i18n.t('Remove from favorites')
-								: $i18n.t('Add to favorites')}
+								? i18n.t('Remove from favorites')
+								: i18n.t('Add to favorites')}
 							on:click={() => {
 								data.message.favorite = !(data?.message?.favorite ?? false);
 							}}

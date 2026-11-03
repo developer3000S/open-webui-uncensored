@@ -1,13 +1,13 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
 	import { getContext, onDestroy, onMount, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { v4 as uuidv4 } from 'uuid';
 	import fileSaver from 'file-saver';
 	const { saveAs } = fileSaver;
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
-
 	import { marked } from 'marked';
 	import { toast } from 'svelte-sonner';
 	import equal from 'fast-deep-equal';
@@ -50,19 +50,19 @@
 	import NotePanel from '$lib/components/notes/NotePanel.svelte';
 	import AccessControlModal from '$lib/components/workspace/common/AccessControlModal.svelte';
 
-	async function loadLocale(locales) {
+	async function loadLocale(locales: any) {
 		for (const locale of locales) {
 			try {
 				dayjs.locale(locale);
 				break; // Stop after successfully loading the first available locale
-			} catch (error) {
+			} catch (error: any) {
 				console.error(`Could not load locale '${locale}':`, error);
 			}
 		}
 	}
 
-	// Assuming $i18n.languages is an array of language codes
-	$: loadLocale($i18n.languages);
+	// Assuming $languages is an array of language codes
+	$: loadLocale($languages);
 
 	import {
 		deleteNoteById,
@@ -104,8 +104,8 @@
 
 	export let id: null | string = null;
 
-	let editor = null;
-	let note = null;
+	let editor: any = null;
+	let note: any = null;
 
 	const newNote = {
 		title: '',
@@ -123,7 +123,7 @@
 		access_grants: []
 	};
 
-	const hasPublicReadGrant = (grants) =>
+	const hasPublicReadGrant = (grants: any) =>
 		Array.isArray(grants) &&
 		grants.some(
 			(grant) =>
@@ -132,14 +132,14 @@
 				grant?.permission === 'read'
 		);
 
-	let files = [];
-	let messages = [];
+	let files: any = [];
+	let messages: any = [];
 
 	let wordCount = 0;
 	let charCount = 0;
 
-	let versionIdx = null;
-	let selectedModelId = null;
+	let versionIdx: any = null;
+	let selectedModelId: any = null;
 
 	let recording = false;
 	let displayMediaRecord = false;
@@ -147,7 +147,7 @@
 	let showPanel = false;
 	let selectedPanel = 'chat';
 
-	let selectedContent = null;
+	let selectedContent: any = null;
 
 	let showDeleteConfirm = false;
 	let showAccessControlModal = false;
@@ -164,7 +164,7 @@
 
 	let stopResponseFlag = false;
 
-	let inputElement = null;
+	let inputElement: any = null;
 
 	// Computed HTML for editor: fall back to markdown if HTML is missing
 	$: editorHtml =
@@ -213,12 +213,12 @@
 
 		debounceTimeout = setTimeout(async () => {
 			const res = await updateNoteById(localStorage.token, id, {
-				title: note?.title === '' ? $i18n.t('Untitled') : note.title,
+				title: note?.title === '' ? i18n.t('Untitled') : note.title,
 				data: {
 					files: files
 				},
 				access_grants: note?.access_grants ?? []
-			}).catch((e) => {
+			}).catch(async (e)=> {
 				toast.error(`${e}`);
 			});
 
@@ -232,11 +232,11 @@
 		init();
 	}
 
-	function areContentsEqual(a, b) {
+	function areContentsEqual(a: any, b: any) {
 		return equal(a, b);
 	}
 
-	function insertNoteVersion(note) {
+	function insertNoteVersion(note: any) {
 		const current = {
 			json: note.data.content.json,
 			html: note.data.content.html,
@@ -316,9 +316,9 @@ ${content}
 						note.title = parsed.title.trim();
 					}
 				}
-			} catch (e) {
+			} catch (e: any) {
 				console.error('Error parsing JSON response:', e);
-				toast.error($i18n.t('Failed to generate title'));
+				toast.error(i18n.t('Failed to generate title'));
 			}
 		}
 
@@ -333,7 +333,7 @@ ${content}
 
 	async function enhanceNoteHandler() {
 		if (selectedModelId === '') {
-			toast.error($i18n.t('Please select a model.'));
+			toast.error(i18n.t('Please select a model.'));
 			return;
 		}
 
@@ -359,7 +359,7 @@ ${content}
 		console.log('stopResponse', stopResponseFlag);
 	};
 
-	function setContentByVersion(versionIdx) {
+	function setContentByVersion(versionIdx: any) {
 		if (!note.data.versions?.length) return;
 		let idx = versionIdx;
 
@@ -382,7 +382,7 @@ ${content}
 	}
 
 	// Navigation
-	function versionNavigateHandler(direction) {
+	function versionNavigateHandler(direction: any) {
 		if (!note.data.versions || note.data.versions.length === 0) return;
 
 		if (versionIdx === null) {
@@ -414,7 +414,7 @@ ${content}
 		setContentByVersion(versionIdx);
 	}
 
-	const uploadFileHandler = async (file) => {
+	const uploadFileHandler = async (file: any) => {
 		const tempItemId = uuidv4();
 		const fileItem = {
 			type: 'file',
@@ -430,7 +430,7 @@ ${content}
 		};
 
 		if (fileItem.size == 0) {
-			toast.error($i18n.t('You cannot upload an empty file.'));
+			toast.error(i18n.t('You cannot upload an empty file.'));
 			return null;
 		}
 
@@ -445,7 +445,7 @@ ${content}
 
 		try {
 			// If the file is an audio file, provide the language for STT.
-			let metadata = null;
+			let metadata: any = null;
 			if (
 				(file.type.startsWith('audio/') || file.type.startsWith('video/')) &&
 				$settings?.audio?.stt?.language
@@ -481,7 +481,7 @@ ${content}
 			} else {
 				files = files.filter((item) => item?.itemId !== tempItemId);
 			}
-		} catch (e) {
+		} catch (e: any) {
 			toast.error(`${e}`);
 			files = files.filter((item) => item?.itemId !== tempItemId);
 		}
@@ -499,7 +499,7 @@ ${content}
 		return fileItem;
 	};
 
-	const compressImageHandler = async (imageUrl, settings = {}, config = {}) => {
+	const compressImageHandler = async (imageUrl: any, settings: any = {}, config: any = {}) => {
 		// Quick shortcut so we don’t do unnecessary work.
 		const settingsCompression = settings?.imageCompression ?? false;
 		const configWidth = config?.file?.image_compression?.width ?? null;
@@ -511,8 +511,8 @@ ${content}
 		}
 
 		// Default to null (no compression unless set)
-		let width = null;
-		let height = null;
+		let width: any = null;
+		let height: any = null;
 
 		// If user/settings want compression, pick their preferred size.
 		if (settingsCompression) {
@@ -535,7 +535,7 @@ ${content}
 		return imageUrl;
 	};
 
-	const inputFileHandler = async (file) => {
+	const inputFileHandler = async (file: any) => {
 		console.log('Processing file:', {
 			name: file.name,
 			type: file.type,
@@ -552,7 +552,7 @@ ${content}
 				maxSize: ($config?.file?.max_size ?? 0) * 1024 * 1024
 			});
 			toast.error(
-				$i18n.t(`File size should not exceed {{maxSize}} MB.`, {
+				i18n.t(`File size should not exceed {{maxSize}} MB.`, {
 					maxSize: $config?.file?.max_size
 				})
 			);
@@ -560,9 +560,9 @@ ${content}
 		}
 
 		if (file['type'].startsWith('image/')) {
-			const uploadImagePromise = new Promise(async (resolve, reject) => {
+			const uploadImagePromise = new Promise((resolve: any, reject: any) => {
 				let reader = new FileReader();
-				reader.onload = async (event) => {
+				reader.onload = (event: any) {
 					try {
 						let imageUrl = event.target.result;
 						imageUrl = await compressImageHandler(imageUrl, $settings, $config);
@@ -593,14 +593,14 @@ ${content}
 		}
 	};
 
-	const inputFilesHandler = async (inputFiles) => {
+	const inputFilesHandler = async (inputFiles: any) => {
 		console.log('Input files handler called with:', inputFiles);
-		inputFiles.forEach(async (file) => {
+		inputFiles.forEach((file: any) {
 			await inputFileHandler(file);
 		});
 	};
 
-	const downloadHandler = async (type) => {
+	const downloadHandler = async (type: any) => {
 		console.log('downloadHandler', type);
 		if (type === 'txt') {
 			const blob = new Blob([note.data.content.md], { type: 'text/plain' });
@@ -611,24 +611,24 @@ ${content}
 		} else if (type === 'pdf') {
 			try {
 				await downloadPdf(note);
-			} catch (error) {
+			} catch (error: any) {
 				toast.error(`${error}`);
 			}
 		}
 	};
 
-	const deleteNoteHandler = async (id) => {
-		const res = await deleteNoteById(localStorage.token, id).catch((error) => {
+	const deleteNoteHandler = async (id: any) => {
+		const res = await deleteNoteById(localStorage.token, id).catch(async (error)=> {
 			toast.error(`${error}`);
 			return null;
 		});
 
 		if (res) {
 			pinnedNotes.set(await getPinnedNoteList(localStorage.token).catch(() => []));
-			toast.success($i18n.t('Note deleted successfully'));
+			toast.success(i18n.t('Note deleted successfully'));
 			goto('/notes');
 		} else {
-			toast.error($i18n.t('Failed to delete note'));
+			toast.error(i18n.t('Failed to delete note'));
 		}
 	};
 
@@ -640,7 +640,7 @@ ${content}
 		}
 	};
 
-	const enhanceCompletionHandler = async (model) => {
+	const enhanceCompletionHandler = async (model: any) => {
 		stopResponseFlag = false;
 		let enhancedContent = {
 			json: null,
@@ -730,7 +730,7 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 							}
 						}
 					}
-				} catch (error) {
+				} catch (error: any) {
 					console.log(error);
 				}
 			}
@@ -739,7 +739,7 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 		streaming = false;
 	};
 
-	const onDragOver = (e) => {
+	const onDragOver = (e: any) => {
 		e.preventDefault();
 
 		if (
@@ -770,7 +770,7 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 		dragged = false;
 	};
 
-	const onDrop = async (e) => {
+	const onDrop = async (e: any) => {
 		e.preventDefault();
 		console.log(e);
 
@@ -785,12 +785,12 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 		dragged = false;
 	};
 
-	const insertHandler = (content) => {
+	const insertHandler = (content: any) => {
 		insertNoteVersion(note);
 		inputElement?.insertContent(content);
 	};
 
-	const noteEventHandler = async (_note) => {
+	const noteEventHandler = async (_note: any) => {
 		console.log('noteEventHandler', _note);
 		if (_note.id !== id) return;
 
@@ -889,8 +889,8 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 			if (id) {
 				try {
 					await updateNoteAccessGrants(localStorage.token, id, note.access_grants ?? []);
-					toast.success($i18n.t('Saved'));
-				} catch (error) {
+					toast.success(i18n.t('Saved'));
+				} catch (error: any) {
 					toast.error(`${error}`);
 				}
 			}
@@ -902,14 +902,14 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 
 <DeleteConfirmDialog
 	bind:show={showDeleteConfirm}
-	title={$i18n.t('Delete note?')}
+	title={i18n.t('Delete note?')}
 	on:confirm={() => {
 		deleteNoteHandler(note.id);
 		showDeleteConfirm = false;
 	}}
 >
 	<div class=" text-sm text-gray-500">
-		{$i18n.t('This will delete')} <span class="  font-semibold">{note.title}</span>.
+		{i18n.t('This will delete')} <span class="  font-semibold">{note.title}</span>.
 	</div>
 </DeleteConfirmDialog>
 
@@ -933,7 +933,7 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 										: ''} flex flex-none items-center pr-1 -translate-x-1"
 								>
 									<Tooltip
-										content={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
+										content={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
 									>
 										<button
 											id="sidebar-toggle-button"
@@ -954,14 +954,14 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 								class="w-full text-2xl font-medium bg-transparent outline-hidden"
 								type="text"
 								bind:value={note.title}
-								placeholder={titleGenerating ? $i18n.t('Generating...') : $i18n.t('Title')}
+								placeholder={titleGenerating ? i18n.t('Generating...') : i18n.t('Title')}
 								disabled={(note?.user_id !== $user?.id && $user?.role !== 'admin') ||
 									titleGenerating}
 								required
 								on:focus={() => {
 									titleInputFocused = true;
 								}}
-								on:blur={(e) => {
+								on:blur={(e: any) => {
 									// check if target is generate button
 									if (ignoreBlur) {
 										ignoreBlur = false;
@@ -977,7 +977,7 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 								<div
 									class="flex self-center items-center space-x-1.5 z-10 translate-y-[0.5px] -translate-x-[0.5px] pl-2"
 								>
-									<Tooltip content={$i18n.t('Generate')}>
+									<Tooltip content={i18n.t('Generate')}>
 										<button
 											class=" self-center dark:hover:text-white transition"
 											id="generate-title-button"
@@ -986,7 +986,7 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 											on:mouseenter={() => {
 												ignoreBlur = true;
 											}}
-											on:click={(e) => {
+											on:click={(e: any) => {
 												e.preventDefault();
 												e.stopImmediatePropagation();
 												e.stopPropagation();
@@ -1031,7 +1031,7 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 										</div>
 									{/if}
 
-									<Tooltip placement="top" content={$i18n.t('Chat')} className="cursor-pointer">
+									<Tooltip placement="top" content={i18n.t('Chat')} className="cursor-pointer">
 										<button
 											class="p-1.5 bg-transparent hover:bg-white/5 transition rounded-lg"
 											on:click={() => {
@@ -1049,7 +1049,7 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 										</button>
 									</Tooltip>
 
-									<Tooltip placement="top" content={$i18n.t('Controls')} className="cursor-pointer">
+									<Tooltip placement="top" content={i18n.t('Controls')} className="cursor-pointer">
 										<button
 											class="p-1.5 bg-transparent hover:bg-white/5 transition rounded-lg"
 											on:click={() => {
@@ -1069,7 +1069,7 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 								{/if}
 
 								<NoteMenu
-									onDownload={(type) => {
+									onDownload={(type: any) => {
 										downloadHandler(type);
 									}}
 									onCopyLink={async () => {
@@ -1077,9 +1077,9 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 										const res = await copyToClipboard(`${baseUrl}/notes/${note.id}`);
 
 										if (res) {
-											toast.success($i18n.t('Copied link to clipboard'));
+											toast.success(i18n.t('Copied link to clipboard'));
 										} else {
-											toast.error($i18n.t('Failed to copy link'));
+											toast.error(i18n.t('Failed to copy link'));
 										}
 									}}
 									onCopyToClipboard={async () => {
@@ -1087,13 +1087,13 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 											note.data.content.md,
 											note.data.content.html,
 											true
-										).catch((error) => {
+										).catch(async (error)=> {
 											toast.error(`${error}`);
 											return null;
 										});
 
 										if (res) {
-											toast.success($i18n.t('Copied to clipboard'));
+											toast.success(i18n.t('Copied to clipboard'));
 										}
 									}}
 									onDelete={() => {
@@ -1120,11 +1120,11 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 										disabled={note?.user_id !== $user?.id && $user?.role !== 'admin'}
 									>
 										<LockClosed strokeWidth="2.5" className="size-3.5" />
-										{$i18n.t('Access')}
+										{i18n.t('Access')}
 									</button>
 								{:else}
 									<div class="shrink-0 text-xs text-gray-500 px-2 py-1">
-										{$i18n.t('Read-Only Access')}
+										{i18n.t('Read-Only Access')}
 									</div>
 								{/if}
 							</div>
@@ -1134,7 +1134,7 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 					<div class="  px-2.5">
 						<div
 							class=" flex w-full bg-transparent overflow-x-auto scrollbar-none"
-							on:wheel={(e) => {
+							on:wheel={(e: any) => {
 								if (e.deltaY !== 0) {
 									e.preventDefault();
 									e.currentTarget.scrollLeft += e.deltaY;
@@ -1149,34 +1149,34 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 
 									{#if dayjs(note.created_at / 1000000).isSame(dayjs(), 'day')}
 										<span
-											>{dayjs(note.created_at / 1000000).format($i18n.t('[Today at] h:mm A'))}</span
+											>{dayjs(note.created_at / 1000000).format(i18n.t('[Today at] h:mm A'))}</span
 										>
 									{:else if dayjs(note.created_at / 1000000).isSame(dayjs().subtract(1, 'day'), 'day')}
 										<span
 											>{dayjs(note.created_at / 1000000).format(
-												$i18n.t('[Yesterday at] h:mm A')
+												i18n.t('[Yesterday at] h:mm A')
 											)}</span
 										>
 									{:else if dayjs(note.created_at / 1000000).isSame(dayjs().subtract(1, 'week'), 'week')}
 										<span
 											>{dayjs(note.created_at / 1000000).format(
-												$i18n.t('[Last] dddd [at] h:mm A')
+												i18n.t('[Last] dddd [at] h:mm A')
 											)}</span
 										>
 									{:else}
-										<span>{dayjs(note.created_at / 1000000).format($i18n.t('DD/MM/YYYY'))}</span>
+										<span>{dayjs(note.created_at / 1000000).format(i18n.t('DD/MM/YYYY'))}</span>
 									{/if}
 								</button>
 
 								{#if editor}
 									<div class="flex items-center gap-1 px-1 min-w-fit">
 										<div>
-											{$i18n.t('{{COUNT}} words', {
+											{i18n.t('{{COUNT}} words', {
 												COUNT: wordCount
 											})}
 										</div>
 										<div>
-											{$i18n.t('{{COUNT}} characters', {
+											{i18n.t('{{COUNT}} characters', {
 												COUNT: charCount
 											})}
 										</div>
@@ -1214,7 +1214,7 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 							link={true}
 							image={true}
 							{files}
-							placeholder={$i18n.t('Write something...')}
+							placeholder={i18n.t('Write something...')}
 							editable={versionIdx === null && !editing && note?.write_access}
 							onSelectionUpdate={({ editor }) => {
 								const { from, to } = editor.state.selection;
@@ -1230,7 +1230,7 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 									};
 								}
 							}}
-							onChange={(content) => {
+							onChange={(content: any) => {
 								note.data.content.html = content.html;
 								note.data.content.md = content.md;
 
@@ -1240,8 +1240,8 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 								}
 							}}
 							fileHandler={true}
-							onFileDrop={(currentEditor, files, pos) => {
-								files.forEach(async (file) => {
+							onFileDrop={async (currentEditor: any, files: any, pos: any) => {
+								files.forEach((file: any) {
 									const fileItem = await inputFileHandler(file).catch((error) => {
 										return null;
 									});
@@ -1262,7 +1262,7 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 								});
 							}}
 							onFilePaste={() => {}}
-							on:paste={async (e) => {
+							on:paste={async (e: any) => {
 								e = e.detail.event || e;
 								const clipboardData = e.clipboardData || window.clipboardData;
 								console.log('Clipboard data:', clipboardData);
@@ -1329,7 +1329,7 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 					<div
 						class="cursor-pointer flex gap-0.5 rounded-full border border-gray-50 dark:border-gray-850/30 dark:bg-gray-850 transition shadow-xl"
 					>
-						<Tooltip content={$i18n.t('AI')} placement="top">
+						<Tooltip content={i18n.t('AI')} placement="top">
 							{#if editing}
 								<button
 									class="p-2 flex justify-center items-center hover:bg-gray-50 dark:hover:bg-gray-800 rounded-full transition shrink-0"
@@ -1366,9 +1366,9 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 							try {
 								let stream = await navigator.mediaDevices
 									.getUserMedia({ audio: true })
-									.catch(function (err) {
+									.catch((err: any) => {
 										toast.error(
-											$i18n.t(`Permission denied when accessing microphone: {{error}}`, {
+											i18n.t(`Permission denied when accessing microphone: {{error}}`, {
 												error: err
 											})
 										);
@@ -1382,7 +1382,7 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 								}
 								stream = null;
 							} catch {
-								toast.error($i18n.t('Permission denied when accessing microphone'));
+								toast.error(i18n.t('Permission denied when accessing microphone'));
 							}
 						}}
 						onCaptureAudio={async () => {
@@ -1397,7 +1397,7 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 							input.multiple = false;
 							input.click();
 
-							input.onchange = async (e) => {
+							input.onchange = async (e: any) => {
 								const files = e.target.files;
 
 								if (files && files.length > 0) {
@@ -1406,7 +1406,7 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 							};
 						}}
 					>
-						<Tooltip content={$i18n.t('Record')} placement="top">
+						<Tooltip content={i18n.t('Record')} placement="top">
 							<div
 								class="cursor-pointer p-2.5 flex rounded-full border border-gray-50 bg-white dark:border-none dark:bg-gray-850 hover:bg-gray-50 dark:hover:bg-gray-800 transition shadow-xl"
 							>
@@ -1452,7 +1452,7 @@ Provide the enhanced notes in markdown format. Use markdown syntax for headings,
 					if (editor) {
 						editor.storage.files = files;
 						const fileIds = new Set(files.map((file) => file.id));
-						const ranges = [];
+						const ranges: any = [];
 
 						editor.state.doc.descendants((node, pos) => {
 							const src = node.attrs.src;

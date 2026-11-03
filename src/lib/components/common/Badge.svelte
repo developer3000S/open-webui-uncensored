@@ -1,7 +1,6 @@
 <script lang="ts">
-	export let type = 'info';
-	export let content = '';
-
+	export let type: any = 'info';
+	export let content: any = '';
 	const classNames: Record<string, string> = {
 		info: 'bg-blue-500/20 text-blue-700 dark:text-blue-200 ',
 		success: 'bg-green-500/20 text-green-700 dark:text-green-200',

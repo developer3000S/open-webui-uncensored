@@ -1,12 +1,12 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
+	import { getContext, onMount, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { toast } from 'svelte-sonner';
 	import { v4 as uuidv4 } from 'uuid';
 
-	import { tick, getContext, onMount } from 'svelte';
-
 import type { Writable } from 'svelte/store';
-import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { config, mobile, settings, socket, user } from '$lib/stores';
 	import {
@@ -43,31 +43,26 @@ import type { i18n as i18nType } from 'i18next';
 	import Skeleton from '../chat/Messages/Skeleton.svelte';
 	import XMark from '../icons/XMark.svelte';
 
-	export let placeholder = $i18n.t('Type here...');
-	export let chatInputElement;
+	export let placeholder = i18n.t('Type here...');
+	export let chatInputElement: any;
+	let channel: any = null;
 
-	export let channel = null;
-
-	export let typingUsers = [];
-	export let inputLoading = false;
-
+	let typingUsers: any[] = [];
+	export let inputLoading: any = false;
 	export let onSubmit: Function = (e) => {};
 	export let onChange: Function = (e) => {};
 	export let onStop: Function = (e) => {};
 
-	export let scrollEnd = true;
+	export let scrollEnd: any = true;
 	export let scrollToBottom: Function = () => {};
 
-	export let disabled = false;
-	export let acceptFiles = true;
+	export let disabled: any = false;
+	export let acceptFiles: any = true;
+	export let userSuggestions: any = false;
+	export let channelSuggestions: any = false;
+	let replyToMessage: any = null;
 
-	export let userSuggestions = false;
-	export let channelSuggestions = false;
-
-	export let replyToMessage = null;
-
-	export let typingUsersClassName = 'from-white dark:from-gray-900';
-
+	export let typingUsersClassName: any = 'from-white dark:from-gray-900';
 	let loaded = false;
 	let draggedOver = false;
 
@@ -81,7 +76,7 @@ import type { i18n as i18nType } from 'i18next';
 	let showInputVariablesModal = false;
 	let inputVariablesModalCallback: (variableValues: Record<string, any>) => void;
 	let inputVariables: Record<string, any> = {};
-	let inputVariableValues = {};
+	let inputVariableValues: Record<string, any> = {};
 
 	const inputVariableHandler = async (text: string): Promise<string> => {
 		inputVariables = extractInputVariables(text);
@@ -105,8 +100,8 @@ import type { i18n as i18nType } from 'i18next';
 
 	const textVariableHandler = async (text: string) => {
 		if (text.includes('{{CLIPBOARD}}')) {
-			const clipboardText = await navigator.clipboard.readText().catch((err) => {
-				toast.error($i18n.t('Failed to read clipboard contents'));
+			const clipboardText = await navigator.clipboard.readText().catch(async (err)=> {
+				toast.error(i18n.t('Failed to read clipboard contents'));
 				return '{{CLIPBOARD}}';
 			});
 
@@ -134,7 +129,7 @@ import type { i18n as i18nType } from 'i18next';
 			try {
 				location = await getUserPosition();
 			} catch (error) {
-				toast.error($i18n.t('Location access not allowed'));
+				toast.error(i18n.t('Location access not allowed'));
 				location = 'LOCATION_UNKNOWN';
 			}
 			text = text.replaceAll('{{USER_LOCATION}}', String(location));
@@ -310,9 +305,9 @@ import type { i18n as i18nType } from 'i18next';
 
 	let command = '';
 
-	export let showCommands = false;
+	export let showCommands: any = false;
 	$: showCommands = ['/'].includes(command?.charAt(0));
-	let suggestions = null;
+	let suggestions: any = null;
 
 	const screenCaptureHandler = async () => {
 		try {
@@ -352,8 +347,8 @@ import type { i18n as i18nType } from 'i18next';
 		}
 	};
 
-	const inputFilesHandler = async (inputFiles) => {
-		inputFiles.forEach(async (file) => {
+	const inputFilesHandler = (inputFiles: any) => {
+		inputFiles.forEach(async (file: any) => {
 			console.info('Processing file:', {
 				name: file.name,
 				type: file.type,
@@ -370,7 +365,7 @@ import type { i18n as i18nType } from 'i18next';
 					maxSize: ($config?.file?.max_size ?? 0) * 1024 * 1024
 				});
 				toast.error(
-					$i18n.t(`File size should not exceed {{maxSize}} MB.`, {
+					i18n.t(`File size should not exceed {{maxSize}} MB.`, {
 						maxSize: $config?.file?.max_size
 					})
 				);
@@ -378,7 +373,7 @@ import type { i18n as i18nType } from 'i18next';
 			}
 
 			if (file['type'].startsWith('image/')) {
-				const compressImageHandler = async (imageUrl, settings = {}, config = {}) => {
+				const compressImageHandler = (imageUrl: any, settings: any = {}, config: any = {}) => {
 					// Quick shortcut so we don’t do unnecessary work.
 					const settingsCompression =
 						(settings?.imageCompression && settings?.imageCompressionInChannels) ?? false;
@@ -391,8 +386,8 @@ import type { i18n as i18nType } from 'i18next';
 					}
 
 					// Default to null (no compression unless set)
-					let width = null;
-					let height = null;
+					let width: any = null;
+					let height: any = null;
 
 					// If user/settings want compression, pick their preferred size.
 					if (settingsCompression) {
@@ -417,7 +412,7 @@ import type { i18n as i18nType } from 'i18next';
 
 				let reader = new FileReader();
 
-				reader.onload = async (event) => {
+				reader.onload = (event: any) {
 					let imageUrl = event.target.result;
 
 					// Compress the image if settings or config require it
@@ -436,7 +431,7 @@ import type { i18n as i18nType } from 'i18next';
 		});
 	};
 
-	const uploadFileHandler = async (file, process = true) => {
+	const uploadFileHandler = (file: any, process: any = true) => {
 		const tempItemId = uuidv4();
 		const fileItem = {
 			type: 'file',
@@ -452,7 +447,7 @@ import type { i18n as i18nType } from 'i18next';
 		};
 
 		if (fileItem.size == 0) {
-			toast.error($i18n.t('You cannot upload an empty file.'));
+			toast.error(i18n.t('You cannot upload an empty file.'));
 			return null;
 		}
 
@@ -572,7 +567,7 @@ import type { i18n as i18nType } from 'i18next';
 			{
 				char: '@',
 				render: getSuggestionRenderer(MentionList, {
-					i18n,
+					i18n: _,
 					triggerChar: '@',
 					modelSuggestions: true,
 					userSuggestions
@@ -583,7 +578,7 @@ import type { i18n as i18nType } from 'i18next';
 						{
 							char: '#',
 							render: getSuggestionRenderer(MentionList, {
-								i18n,
+								i18n: _,
 								triggerChar: '#',
 								channelSuggestions
 							})
@@ -593,7 +588,7 @@ import type { i18n as i18nType } from 'i18next';
 			{
 				char: '/',
 				render: getSuggestionRenderer(CommandSuggestionList, {
-					i18n,
+					i18n: _,
 					onSelect: (e) => {
 						const { type, data } = e;
 
@@ -633,7 +628,7 @@ import type { i18n as i18nType } from 'i18next';
 					editor.chain().focus().deleteRange(range).insertContent(emoji).run();
 				},
 				render: getSuggestionRenderer(CommandSuggestionList, {
-					i18n,
+					i18n: _,
 					onSelect: (e) => {
 						document.getElementById('chat-input')?.focus();
 					},
@@ -696,7 +691,7 @@ import type { i18n as i18nType } from 'i18next';
 				if (inputFiles && inputFiles.length > 0) {
 					inputFilesHandler(Array.from(inputFiles));
 				} else {
-					toast.error($i18n.t(`File not found.`));
+					toast.error(i18n.t(`File not found.`));
 				}
 
 				filesInputElement.value = '';
@@ -721,7 +716,7 @@ import type { i18n as i18nType } from 'i18next';
 								class=" absolute -top-12 left-0 right-0 flex justify-center z-30 pointer-events-none"
 							>
 								<button
-									aria-label={$i18n.t('Scroll to bottom')}
+									aria-label={i18n.t('Scroll to bottom')}
 									class=" bg-white border border-gray-100 dark:border-none dark:bg-white/20 p-1.5 rounded-full pointer-events-auto"
 									on:click={() => {
 										scrollEnd = true;
@@ -753,7 +748,7 @@ import type { i18n as i18nType } from 'i18next';
 									<span class=" font-normal text-black dark:text-white">
 										{typingUsers.map((user) => user.name).join(', ')}
 									</span>
-									{$i18n.t('is typing...')}
+									{i18n.t('is typing...')}
 
 			<div
 				class="{disabled ? 'opacity-50 pointer-events-none cursor-not-allowed' : ''} relative z-20"
@@ -770,7 +765,7 @@ import type { i18n as i18nType } from 'i18next';
 								chatInputElement.focus();
 							}
 						}}
-						onConfirm={async (data) => {
+						onConfirm={async (data: any) => {
 							const { text, filename } = data;
 							recording = false;
 
@@ -802,7 +797,7 @@ import type { i18n as i18nType } from 'i18next';
 										<div class="pl-[1px] flex items-center gap-2 text-sm">
 											<div class="translate-y-[0.5px]">
 												<span class=""
-													>{$i18n.t('Replying to {{NAME}}', {
+													>{i18n.t('Replying to {{NAME}}', {
 														NAME: replyToMessage?.meta?.model_name ?? replyToMessage.user.name
 													})}</span
 												>
@@ -833,7 +828,7 @@ import type { i18n as i18nType } from 'i18next';
 													/>
 												<div class=" absolute -top-1 -right-1">
 													<button
-														aria-label={$i18n.t('Remove File')}
+														aria-label={i18n.t('Remove File')}
 														class=" bg-white text-black border border-white rounded-full group-hover:visible invisible transition"
 														type="button"
 														on:click={() => {
@@ -901,7 +896,7 @@ import type { i18n as i18nType } from 'i18next';
 												content = md;
 												command = getCommand();
 											}}
-											on:keydown={async (e) => {
+											on:keydown={(e: any) => {
 												e = e.detail.event;
 												const isCtrlPressed = e.ctrlKey || e.metaKey; // metaKey is for Cmd key on Mac
 
@@ -939,7 +934,7 @@ import type { i18n as i18nType } from 'i18next';
 													replyToMessage = null;
 												}
 											}}
-											on:paste={async (e) => {
+											on:paste={async (e: any) => {
 												e = e.detail.event;
 												console.log(e);
 
@@ -989,7 +984,7 @@ import type { i18n as i18nType } from 'i18next';
 
 								<div class="self-end flex space-x-1 mr-1">
 									{#if content === ''}
-										<Tooltip content={$i18n.t('Record voice')}>
+										<Tooltip content={i18n.t('Record voice')}>
 											<button
 												id="voice-input-button"
 												class=" text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 transition rounded-full p-1.5 mr-0.5 self-center"
@@ -998,9 +993,9 @@ import type { i18n as i18nType } from 'i18next';
 													try {
 														let stream = await navigator.mediaDevices
 															.getUserMedia({ audio: true })
-															.catch(function (err) {
+															.catch((err: any) => {
 																toast.error(
-																	$i18n.t(
+																	i18n.t(
 																		`Permission denied when accessing microphone: {{error}}`,
 																		{
 																			error: err
@@ -1017,7 +1012,7 @@ import type { i18n as i18nType } from 'i18next';
 														}
 														stream = null;
 													} catch {
-														toast.error($i18n.t('Permission denied when accessing microphone'));
+														toast.error(i18n.t('Permission denied when accessing microphone'));
 													}
 												}}
 												aria-label="Voice Input"
@@ -1039,9 +1034,9 @@ import type { i18n as i18nType } from 'i18next';
 									<div class=" flex items-center">
 										{#if inputLoading && onStop}
 											<div class=" flex items-center">
-												<Tooltip content={$i18n.t('Stop')}>
+												<Tooltip content={i18n.t('Stop')}>
 													<button
-														aria-label={$i18n.t('Stop')}
+														aria-label={i18n.t('Stop')}
 														class="bg-white hover:bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-800 transition rounded-full p-1.5"
 														on:click={() => {
 															onStop();
@@ -1063,9 +1058,416 @@ import type { i18n as i18nType } from 'i18next';
 												</Tooltip>
 										{:else}
 											<div class=" flex items-center">
-												<Tooltip content={$i18n.t('Send message')}>
+												<Tooltip content={i18n.t('Send message')}>
 													<button
-														aria-label={$i18n.t('Send message')}
+														aria-label={i18n.t('Send message')}
+														id="send-message-button"
+														class="{content !== '' || files.length !== 0
+															? 'bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 '
+															: 'text-white bg-gray-200 dark:text-gray-900 dark:bg-gray-700 disabled'} transition rounded-full p-1.5 self-center"
+														type="submit"
+														disabled={content === '' && files.length === 0}
+													>
+														<svg
+															xmlns="http://www.w3.org/2000/svg"
+															viewBox="0 0 16 16"
+															fill="currentColor"
+															class="size-5"
+														>
+															<path
+																fill-rule="evenodd"
+																d="M8 14a.75.75 0 0 1-.75-.75V4.56L4.03 7.78a.75.75 0 0 1-1.06-1.06l4.5-4.5a.75.75 0 0 1 1.06 0l4.5 4.5a.75.75 0 0 1-1.06 1.06L8.75 4.56v8.69A.75.75 0 0 1 8 14Z"
+																clip-rule="evenodd"
+															/>
+														</svg>
+													</button>
+												</Tooltip>
+					</form>
+
+{#if loaded}
+	<FilesOverlay show={draggedOver} />
+
+	{#if acceptFiles}
+		<input
+			bind:this={filesInputElement}
+			bind:files={inputFiles}
+			type="file"
+			hidden
+			multiple
+			on:change={async () => {
+				if (inputFiles && inputFiles.length > 0) {
+					inputFilesHandler(Array.from(inputFiles));
+				} else {
+					toast.error(i18n.t(`File not found.`));
+				}
+
+				filesInputElement.value = '';
+			}}
+		/>
+
+	<InputVariablesModal
+		bind:show={showInputVariablesModal}
+		variables={inputVariables}
+		onSave={inputVariablesModalCallback}
+	/>
+
+	<div class="bg-transparent">
+		<div class="max-w-full mx-auto inset-x-0 relative">
+			<div
+				class="absolute top-0 left-0 right-0 mx-auto inset-x-0 bg-transparent flex justify-center"
+			>
+				<div class="flex flex-col px-3 w-full">
+					<div class="relative">
+						{#if scrollEnd === false}
+							<div
+								class=" absolute -top-12 left-0 right-0 flex justify-center z-30 pointer-events-none"
+							>
+								<button
+									aria-label={i18n.t('Scroll to bottom')}
+									class=" bg-white border border-gray-100 dark:border-none dark:bg-white/20 p-1.5 rounded-full pointer-events-auto"
+									on:click={() => {
+										scrollEnd = true;
+										scrollToBottom();
+									}}
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 20 20"
+										fill="currentColor"
+										class="w-5 h-5"
+									>
+										<path
+											fill-rule="evenodd"
+											d="M10 3a.75.75 0 01.75.75v10.638l3.96-4.158a.75.75 0 111.08 1.04l-5.25 5.5a.75.75 0 01-1.08 0l-5.25-5.5a.75.75 0 111.08-1.04l3.96 4.158V3.75A.75.75 0 0110 3z"
+											clip-rule="evenodd"
+										/>
+									</svg>
+								</button>
+
+					{#if typingUsers.length > 0}
+						<div
+							class=" -mt-7 pb-2.5 bg-gradient-to-t to-transparent {typingUsersClassName} pointer-events-none select-none"
+						>
+							<div class=" text-xs px-1 mt-1.5 flex items-center gap-1.5">
+								<Skeleton size="xs" />
+
+								<div>
+									<span class=" font-normal text-black dark:text-white">
+										{typingUsers.map((user) => user.name).join(', ')}
+									</span>
+									{i18n.t('is typing...')}
+
+			<div
+				class="{disabled ? 'opacity-50 pointer-events-none cursor-not-allowed' : ''} relative z-20"
+			>
+				{#if recording}
+					<VoiceRecording
+						bind:recording
+						onCancel={async () => {
+							recording = false;
+
+							await tick();
+
+							if (chatInputElement) {
+								chatInputElement.focus();
+							}
+						}}
+						onConfirm={async (data: any) => {
+							const { text, filename } = data;
+							recording = false;
+
+							await tick();
+							insertTextAtCursor(text);
+
+							await tick();
+
+							if (chatInputElement) {
+								chatInputElement.focus();
+							}
+						}}
+					/>
+				{:else}
+					<form
+						class="w-full flex gap-1.5"
+						on:submit|preventDefault={() => {
+							submitHandler();
+						}}
+					>
+						<div
+							id="message-input-container"
+							class="flex-1 flex flex-col relative w-full shadow-lg rounded-3xl border border-gray-50 dark:border-gray-850/30 hover:border-gray-100 focus-within:border-gray-100 hover:dark:border-gray-800 focus-within:dark:border-gray-800 transition px-1 bg-white/90 dark:bg-gray-400/5 dark:text-gray-100"
+							dir={$settings?.chatDirection ?? 'auto'}
+						>
+							{#if replyToMessage !== null}
+								<div class="px-3 pt-3 text-left w-full flex flex-col z-10">
+									<div class="flex items-center justify-between w-full">
+										<div class="pl-[1px] flex items-center gap-2 text-sm">
+											<div class="translate-y-[0.5px]">
+												<span class=""
+													>{i18n.t('Replying to {{NAME}}', {
+														NAME: replyToMessage?.meta?.model_name ?? replyToMessage.user.name
+													})}</span
+												>
+										<div>
+											<button
+												class="flex items-center dark:text-gray-500"
+												on:click={() => {
+													replyToMessage = null;
+												}}
+											>
+												<XMark />
+											</button>
+
+							{#if files.length > 0}
+								<div class="mx-2 mt-2.5 -mb-1 flex flex-wrap gap-2">
+									{#each files as file, fileIdx}
+										{#if file.type === 'image' || (file?.content_type ?? '').startsWith('image/')}
+											{@const fileUrl =
+												file.url.startsWith('data') || file.url.startsWith('http')
+													? file.url
+													: `${WEBUI_API_BASE_URL}/files/${file.url}${file?.content_type ? '/content' : ''}`}
+											<div class=" relative group">
+												<div class="relative">
+													<Image
+														src={fileUrl}
+														alt=""
+														imageClassName=" size-10 rounded-xl object-cover"
+													/>
+												<div class=" absolute -top-1 -right-1">
+													<button
+														aria-label={i18n.t('Remove File')}
+														class=" bg-white text-black border border-white rounded-full group-hover:visible invisible transition"
+														type="button"
+														on:click={() => {
+															files.splice(fileIdx, 1);
+															files = files;
+														}}
+													>
+														<svg
+															xmlns="http://www.w3.org/2000/svg"
+															viewBox="0 0 20 20"
+															fill="currentColor"
+															class="w-4 h-4"
+														>
+															<path
+																d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"
+															/>
+														</svg>
+													</button>
+										{:else}
+											<FileItem
+												item={file}
+												name={file.name}
+												type={file.type}
+												size={file?.size}
+												small={true}
+												loading={file.status === 'uploading'}
+												dismissible={true}
+												edit={true}
+												on:dismiss={() => {
+													files.splice(fileIdx, 1);
+													files = files;
+												}}
+												on:click={() => {
+													console.log(file);
+												}}
+											/>
+									{/each}
+
+							<div class="px-2.5">
+								<div
+									class="scrollbar-hidden rtl:text-right ltr:text-left bg-transparent dark:text-gray-100 outline-hidden w-full pt-2.5 pb-[5px] px-1 resize-none h-fit max-h-96 overflow-auto"
+								>
+									{#if showRichTextToolbar}
+										<RichTextInput
+											id="chat-input"
+											bind:this={chatInputElement}
+											json={true}
+											messageInput={true}
+											editable={!disabled}
+											{placeholder}
+											richText={$settings?.richTextInput ?? true}
+											showFormattingToolbar={$settings?.showFormattingToolbar}
+											shiftEnter={!($settings?.ctrlEnterToSend ?? false) &&
+												!$mobile &&
+												!(
+													'ontouchstart' in window ||
+													navigator.maxTouchPoints > 0 ||
+													navigator.maxTouchPoints > 0
+												)}
+											largeTextAsFile={$settings?.largeTextAsFile ?? false}
+											floatingMenuPlacement={'top-start'}
+											{suggestions}
+											onChange={(e) => {
+												const { md } = e;
+												content = md;
+												command = getCommand();
+											}}
+											on:keydown={(e: any) => {
+												e = e.detail.event;
+												const isCtrlPressed = e.ctrlKey || e.metaKey; // metaKey is for Cmd key on Mac
+
+												const suggestionsContainerElement =
+													document.getElementById('suggestions-container');
+
+												if (!suggestionsContainerElement) {
+													if (
+														!$mobile ||
+														!(
+															'ontouchstart' in window ||
+															navigator.maxTouchPoints > 0 ||
+															navigator.maxTouchPoints > 0
+														)
+													) {
+														// Prevent Enter key from creating a new line
+														// Uses keyCode '13' for Enter key for chinese/japanese keyboards
+														if (e.keyCode === 13 && !e.shiftKey) {
+															e.preventDefault();
+														}
+
+														// Submit the content when Enter key is pressed
+														if (
+															(content !== '' || files.length > 0) &&
+															e.keyCode === 13 &&
+															!e.shiftKey
+														) {
+															submitHandler();
+														}
+													}
+												}
+
+												if (e.key === 'Escape') {
+													console.info('Escape');
+													replyToMessage = null;
+												}
+											}}
+											on:paste={async (e: any) => {
+												e = e.detail.event;
+												console.log(e);
+
+												const clipboardData = e.clipboardData || window.clipboardData;
+
+												if (clipboardData && clipboardData.items) {
+													for (const item of clipboardData.items) {
+														const file = item.getAsFile();
+														if (file) {
+															await inputFilesHandler([file]);
+															e.preventDefault();
+														}
+													}
+												}
+											}}
+										/>
+
+							<div class=" flex justify-between mb-2.5 mx-0.5">
+								<div class="ml-1 self-end flex space-x-1 flex-1">
+									<slot name="menu">
+										{#if acceptFiles}
+											<InputMenu
+												{screenCaptureHandler}
+												uploadFilesHandler={() => {
+													filesInputElement.click();
+												}}
+											>
+												<button
+													id="input-menu-button"
+													class="bg-transparent hover:bg-white/80 text-gray-800 dark:text-white dark:hover:bg-gray-800 transition rounded-full p-1.5 outline-hidden focus:outline-hidden"
+													type="button"
+													aria-label="More"
+												>
+													<svg
+														xmlns="http://www.w3.org/2000/svg"
+														viewBox="0 0 20 20"
+														fill="currentColor"
+														class="size-5"
+													>
+														<path
+															d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z"
+														/>
+													</svg>
+												</button>
+											</InputMenu>
+									</slot>
+
+								<div class="self-end flex space-x-1 mr-1">
+									{#if content === ''}
+										<Tooltip content={i18n.t('Record voice')}>
+											<button
+												id="voice-input-button"
+												class=" text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 transition rounded-full p-1.5 mr-0.5 self-center"
+												type="button"
+												on:click={async () => {
+													try {
+														let stream = await navigator.mediaDevices
+															.getUserMedia({ audio: true })
+															.catch((err: any) => {
+																toast.error(
+																	i18n.t(
+																		`Permission denied when accessing microphone: {{error}}`,
+																		{
+																			error: err
+																		}
+																	)
+																);
+																return null;
+															});
+
+														if (stream) {
+															recording = true;
+															const tracks = stream.getTracks();
+															tracks.forEach((track) => track.stop());
+														}
+														stream = null;
+													} catch {
+														toast.error(i18n.t('Permission denied when accessing microphone'));
+													}
+												}}
+												aria-label="Voice Input"
+											>
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													viewBox="0 0 20 20"
+													fill="currentColor"
+													class="w-5 h-5 translate-y-[0.5px]"
+												>
+													<path d="M7 4a3 3 0 016 0v6a3 3 0 11-6 0V4z" />
+													<path
+														d="M5.5 9.643a.75.75 0 00-1.5 0V10c0 3.06 2.29 5.585 5.25 5.954V17.5h-1.5a.75.75 0 000 1.5h4.5a.75.75 0 000-1.5h-1.5v-1.546A6.001 6.001 0 0016 10v-.357a.75.75 0 00-1.5 0V10a4.5 4.5 0 01-9 0v-.357z"
+													/>
+												</svg>
+											</button>
+										</Tooltip>
+
+									<div class=" flex items-center">
+										{#if inputLoading && onStop}
+											<div class=" flex items-center">
+												<Tooltip content={i18n.t('Stop')}>
+													<button
+														aria-label={i18n.t('Stop')}
+														class="bg-white hover:bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-800 transition rounded-full p-1.5"
+														on:click={() => {
+															onStop();
+														}}
+													>
+														<svg
+															xmlns="http://www.w3.org/2000/svg"
+															viewBox="0 0 24 24"
+															fill="currentColor"
+															class="size-5"
+														>
+															<path
+																fill-rule="evenodd"
+																d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm6-2.438c0-.724.588-1.312 1.313-1.312h4.874c.725 0 1.313.588 1.313 1.313v4.874c0 .725-.588 1.313-1.313 1.313H9.564a1.312 1.312 0 01-1.313-1.313V9.564z"
+																clip-rule="evenodd"
+															/>
+														</svg>
+													</button>
+												</Tooltip>
+										{:else}
+											<div class=" flex items-center">
+												<Tooltip content={i18n.t('Send message')}>
+													<button
+														aria-label={i18n.t('Send message')}
 														id="send-message-button"
 														class="{content !== '' || files.length !== 0
 															? 'bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 '

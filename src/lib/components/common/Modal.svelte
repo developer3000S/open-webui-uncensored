@@ -4,19 +4,18 @@
 
 	import { flyAndScale } from '$lib/utils/transitions';
 	import * as FocusTrap from 'focus-trap';
-	export let show = true;
-	export let size = 'md';
-	export let containerClassName = 'p-3';
-	export let className = 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-4xl';
-
-	let modalElement = null;
+	export let show: any = true;
+	export let size: any = 'md';
+	export let containerClassName: any = 'p-3';
+	export let className: any = 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-4xl';
+	let modalElement: any = null;
 	let mounted = false;
 	// Create focus trap to trap user tabs inside modal
 	// https://www.w3.org/WAI/WCAG21/Understanding/focus-order.html
 	// https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html
 	let focusTrap: FocusTrap.FocusTrap | null = null;
 
-	const sizeToWidth = (size) => {
+	const sizeToWidth = (size: any) => {
 		if (size === 'full') {
 			return 'w-full';
 		}
@@ -71,7 +70,7 @@
 		focusTrap.activate();
 
 		// Auto-pause focus trap when interacting with portaled content (e.g. Dropdown)
-		handleOutsidePointerDown = (e) => {
+		handleOutsidePointerDown = (e: any) => {
 			if (focusTrap && modalElement && !modalElement.contains(e.target)) {
 				focusTrap.pause();
 			}
@@ -134,7 +133,7 @@
 				? 'mx-2'
 				: ''} shadow-3xl min-h-fit scrollbar-hidden {className} border border-white dark:border-gray-850"
 			in:flyAndScale
-			on:mousedown={(e) => {
+			on:mousedown={(e: any) => {
 				e.stopPropagation();
 			}}
 		>

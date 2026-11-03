@@ -1,5 +1,8 @@
 <script lang="ts">
-	import { getContext, createEventDispatcher } from 'svelte';
+	import type i18nType from 'i18next';
+	import { createEventDispatcher, getContext } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	const dispatch = createEventDispatcher();
 
 	import Dropdown from '$lib/components/common/Dropdown.svelte';
@@ -14,13 +17,11 @@
 	import ArrowUturnLeft from '$lib/components/icons/ArrowUturnLeft.svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	export let onClose: Function = () => {};
 
 	export let onSync: Function = () => {};
-	export let onUpload: Function = (data) => {};
+	export let onUpload: Function = (data: any) => {};
 	export let onReset: Function = () => {};
 
 	let show = false;
@@ -35,9 +36,9 @@
 	}}
 	align="end"
 >
-	<Tooltip content={$i18n.t('Add Content')}>
+	<Tooltip content={i18n.t('Add Content')}>
 		<button
-			aria-label={$i18n.t('Add Content')}
+			aria-label={i18n.t('Add Content')}
 			class=" p-1.5 rounded-xl hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 transition font-medium text-sm flex items-center space-x-1"
 			on:click={(e) => {
 				e.stopPropagation();
@@ -69,7 +70,7 @@
 				}}
 			>
 				<NewFolderAlt />
-				<div class="flex items-center">{$i18n.t('New directory')}</div>
+				<div class="flex items-center">{i18n.t('New directory')}</div>
 			</button>
 
 			<hr class="my-1 border-gray-100 dark:border-gray-800" />
@@ -81,7 +82,7 @@
 				}}
 			>
 				<ArrowUpCircle strokeWidth="2" />
-				<div class="flex items-center">{$i18n.t('Upload files')}</div>
+				<div class="flex items-center">{i18n.t('Upload files')}</div>
 			</button>
 
 			<button
@@ -91,11 +92,11 @@
 				}}
 			>
 				<FolderOpen strokeWidth="2" />
-				<div class="flex items-center">{$i18n.t('Upload directory')}</div>
+				<div class="flex items-center">{i18n.t('Upload directory')}</div>
 			</button>
 
 			<Tooltip
-				content={$i18n.t(
+				content={i18n.t(
 					'Sync a local directory with this knowledge base. Only new and modified files will be uploaded. The directory structure will be mirrored.'
 				)}
 				className="w-full"
@@ -107,7 +108,7 @@
 					}}
 				>
 					<ArrowPath strokeWidth="2" />
-					<div class="flex items-center">{$i18n.t('Sync directory')}</div>
+					<div class="flex items-center">{i18n.t('Sync directory')}</div>
 				</button>
 			</Tooltip>
 
@@ -118,7 +119,7 @@
 				}}
 			>
 				<GlobeAlt strokeWidth="2" />
-				<div class="flex items-center">{$i18n.t('Add webpage')}</div>
+				<div class="flex items-center">{i18n.t('Add webpage')}</div>
 			</button>
 
 			<button
@@ -128,7 +129,7 @@
 				}}
 			>
 				<BarsArrowUp strokeWidth="2" />
-				<div class="flex items-center">{$i18n.t('Add text content')}</div>
+				<div class="flex items-center">{i18n.t('Add text content')}</div>
 			</button>
 
 			<hr class="my-1 border-gray-100 dark:border-gray-800" />
@@ -141,7 +142,128 @@
 				}}
 			>
 				<ArrowUturnLeft strokeWidth="2" />
-				<div class="flex items-center">{$i18n.t('Reset')}</div>
+				<div class="flex items-center">{i18n.t('Reset')}</div>
+			</button>
+		</div>
+	</div>
+</Dropdown>
+
+<Dropdown
+	bind:show
+	onOpenChange={(state) => {
+		if (state === false) {
+			onClose();
+		}
+	}}
+	align="end"
+>
+	<Tooltip content={i18n.t('Add Content')}>
+		<button
+			aria-label={i18n.t('Add Content')}
+			class=" p-1.5 rounded-xl hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 transition font-medium text-sm flex items-center space-x-1"
+			on:click={(e) => {
+				e.stopPropagation();
+				show = true;
+			}}
+		>
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				viewBox="0 0 16 16"
+				fill="currentColor"
+				class="w-4 h-4"
+			>
+				<path
+					d="M8.75 3.75a.75.75 0 0 0-1.5 0v3.5h-3.5a.75.75 0 0 0 0 1.5h3.5v3.5a.75.75 0 0 0 1.5 0v-3.5h3.5a.75.75 0 0 0 0-1.5h-3.5v-3.5Z"
+				/>
+			</svg>
+		</button>
+	</Tooltip>
+
+	<div slot="content">
+		<div
+			class="min-w-[200px] rounded-2xl px-1 py-1 border border-gray-100 dark:border-gray-800 z-50 bg-white dark:bg-gray-850 dark:text-white shadow-lg transition"
+		>
+			<button
+				class="select-none flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl w-full"
+				on:click={() => {
+					onUpload({ type: 'new_directory' });
+					show = false;
+				}}
+			>
+				<NewFolderAlt />
+				<div class="flex items-center">{i18n.t('New directory')}</div>
+			</button>
+
+			<hr class="my-1 border-gray-100 dark:border-gray-800" />
+
+			<button
+				class="select-none flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl w-full"
+				on:click={() => {
+					onUpload({ type: 'files' });
+				}}
+			>
+				<ArrowUpCircle strokeWidth="2" />
+				<div class="flex items-center">{i18n.t('Upload files')}</div>
+			</button>
+
+			<button
+				class="select-none flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl w-full"
+				on:click={() => {
+					onUpload({ type: 'directory' });
+				}}
+			>
+				<FolderOpen strokeWidth="2" />
+				<div class="flex items-center">{i18n.t('Upload directory')}</div>
+			</button>
+
+			<Tooltip
+				content={i18n.t(
+					'Sync a local directory with this knowledge base. Only new and modified files will be uploaded. The directory structure will be mirrored.'
+				)}
+				className="w-full"
+			>
+				<button
+					class="select-none flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl w-full"
+					on:click={() => {
+						onSync();
+					}}
+				>
+					<ArrowPath strokeWidth="2" />
+					<div class="flex items-center">{i18n.t('Sync directory')}</div>
+				</button>
+			</Tooltip>
+
+			<button
+				class="select-none flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl w-full"
+				on:click={() => {
+					onUpload({ type: 'web' });
+				}}
+			>
+				<GlobeAlt strokeWidth="2" />
+				<div class="flex items-center">{i18n.t('Add webpage')}</div>
+			</button>
+
+			<button
+				class="select-none flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl w-full"
+				on:click={() => {
+					onUpload({ type: 'text' });
+				}}
+			>
+				<BarsArrowUp strokeWidth="2" />
+				<div class="flex items-center">{i18n.t('Add text content')}</div>
+			</button>
+
+			<hr class="my-1 border-gray-100 dark:border-gray-800" />
+
+			<button
+				class="select-none flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl w-full"
+				on:click={() => {
+					onReset();
+					show = false;
+				}}
+			>
+				<ArrowUturnLeft strokeWidth="2" />
+				<div class="flex items-center">{i18n.t('Reset')}</div>
 			</button>
 		</div>
 	</div>

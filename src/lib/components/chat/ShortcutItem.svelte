@@ -1,5 +1,8 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
 	import { getContext, onMount } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import Tooltip from '../common/Tooltip.svelte';
 	import type { Shortcut } from '$lib/shortcuts';
 
@@ -7,8 +10,6 @@
 	export let isMac: boolean;
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 	let keyboardLayoutMap: Map<string, string> | undefined;
 
 	onMount(async () => {
@@ -77,13 +78,36 @@
 <div class="w-full flex justify-between">
 	<div class="text-sm whitespace-pre-line">
 		{#if shortcut.tooltip}
-			<Tooltip content={$i18n.t(shortcut.tooltip)}>
+			<Tooltip content={i18n.t(shortcut.tooltip)}>
 				<span class="whitespace-nowrap">
-					{$i18n.t(shortcut.name)}<span class="text-xs">&nbsp;*</span>
+					{i18n.t(shortcut.name)}<span class="text-xs">&nbsp;*</span>
 				</span>
 			</Tooltip>
 		{:else}
-			{$i18n.t(shortcut.name)}
+			{i18n.t(shortcut.name)}
+		{/if}
+	</div>
+	<div class="flex-shrink-0 flex justify-end self-start h-full space-x-1 text-xs">
+		{#each shortcut.keys.filter((key) => !(key.toLowerCase() === 'delete' && shortcut.keys.includes('Backspace'))) as key}
+			<div
+				class="h-fit px-1 py-0.5 flex items-start justify-center rounded-sm border border-black/10 capitalize text-gray-600 dark:border-white/10 dark:text-gray-300"
+			>
+				{formatKey(key)}
+			</div>
+		{/each}
+	</div>
+</div>
+
+<div class="w-full flex justify-between">
+	<div class="text-sm whitespace-pre-line">
+		{#if shortcut.tooltip}
+			<Tooltip content={i18n.t(shortcut.tooltip)}>
+				<span class="whitespace-nowrap">
+					{i18n.t(shortcut.name)}<span class="text-xs">&nbsp;*</span>
+				</span>
+			</Tooltip>
+		{:else}
+			{i18n.t(shortcut.name)}
 		{/if}
 	</div>
 	<div class="flex-shrink-0 flex justify-end self-start h-full space-x-1 text-xs">

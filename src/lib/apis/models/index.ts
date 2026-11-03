@@ -1,15 +1,15 @@
 import { WEBUI_API_BASE_URL } from '$lib/constants';
 
 export const getModelItems = async (
-	token: string = '',
-	query,
-	viewOption,
-	selectedTag,
-	orderBy,
-	direction,
-	page
+	token: string = ''
+	query: any
+	viewOption: any
+	selectedTag: any
+	orderBy: any
+	direction: any
+	page: any
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const searchParams = new URLSearchParams();
 	if (query) {
@@ -60,7 +60,7 @@ export const getModelItems = async (
 };
 
 export const getModelTags = async (token: string = '') => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/models/tags`, {
 		method: 'GET',
@@ -91,7 +91,7 @@ export const getModelTags = async (token: string = '') => {
 };
 
 export const getBaseModelTags = async (token: string = '') => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/models/base/tags`, {
 		method: 'GET',
@@ -122,7 +122,7 @@ export const getBaseModelTags = async (token: string = '') => {
 };
 
 export const importModels = async (token: string, models: object[]) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/models/import`, {
 		method: 'POST',
@@ -150,7 +150,7 @@ export const importModels = async (token: string, models: object[]) => {
 };
 
 export const getBaseModels = async (token: string = '', tag: string = '') => {
-	let error = null;
+	let error: any = null;
 
 	const searchParams = new URLSearchParams();
 	if (tag) {
@@ -186,7 +186,7 @@ export const getBaseModels = async (token: string = '', tag: string = '') => {
 };
 
 export const createNewModel = async (token: string, model: object) => {
-	let error = null;
+	let error: any = null;
 
 	const { id, base_model_id, name, meta, params, access_grants, is_active } = model as any;
 	const payload = { id, base_model_id, name, meta, params, access_grants, is_active };
@@ -218,7 +218,7 @@ export const createNewModel = async (token: string, model: object) => {
 };
 
 export const getModelById = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const searchParams = new URLSearchParams();
 	searchParams.append('id', id);
@@ -253,7 +253,7 @@ export const getModelById = async (token: string, id: string) => {
 };
 
 export const toggleModelById = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const searchParams = new URLSearchParams();
 	searchParams.append('id', id);
@@ -288,7 +288,7 @@ export const toggleModelById = async (token: string, id: string) => {
 };
 
 export const updateModelById = async (token: string, id: string, model: object) => {
-	let error = null;
+	let error: any = null;
 
 	const { base_model_id, name, meta, params, access_grants, is_active } = model as any;
 	const payload = { id, base_model_id, name, meta, params, access_grants, is_active };
@@ -329,7 +329,7 @@ export const updateModelAccessGrants = async (
 	name: string,
 	accessGrants: any[]
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/models/model/access/update`, {
 		method: 'POST',
@@ -358,7 +358,7 @@ export const updateModelAccessGrants = async (
 };
 
 export const deleteModelById = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/models/model/delete`, {
 		method: 'POST',
@@ -391,7 +391,7 @@ export const deleteModelById = async (token: string, id: string) => {
 };
 
 export const deleteAllModels = async (token: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/models/delete/all`, {
 		method: 'DELETE',

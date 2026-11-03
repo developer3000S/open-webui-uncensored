@@ -1,22 +1,22 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
+	import { getContext, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import Fuse from 'fuse.js';
 
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-	import { tick, getContext } from 'svelte';
 
 	import { models } from '$lib/stores';
 	import { WEBUI_API_BASE_URL, WEBUI_BASE_URL } from '$lib/constants';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
-
-	export let query = '';
-	export let onSelect = (e) => {};
+	export let query: any = '';
+	export let onSelect = (e: any) => {};
 
 	let selectedIdx = 0;
-	export let filteredItems = [];
+	let filteredItems: any[] = [];
 
 	let fuse = new Fuse(
 		$models
@@ -63,7 +63,7 @@
 </script>
 
 <div class="px-2 text-xs text-gray-500 py-1">
-	{$i18n.t('Models')}
+	{i18n.t('Models')}
 </div>
 
 {#if filteredItems.length > 0}
@@ -85,10 +85,10 @@
 			>
 				<div class="flex text-black dark:text-gray-100 line-clamp-1">
 					<img
-						src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${model.id}&lang=${$i18n.language}`}
+						src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${model.id}&lang=${$language}`}
 						alt={model?.name ?? model.id}
 						class="rounded-full size-5 items-center mr-2"
-						on:error={(e) => {
+						on:error={(e: any) => {
 							e.currentTarget.src = '/favicon.png';
 						}}
 					/>

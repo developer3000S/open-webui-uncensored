@@ -1,4 +1,8 @@
-<script>
+<script lang="ts">
+	import type i18nType from 'i18next';
+	import { getContext, onMount } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { getToolById, getTools, updateToolById } from '$lib/apis/tools';
@@ -7,23 +11,20 @@
 	import { WEBUI_VERSION } from '$lib/constants';
 	import { tools } from '$lib/stores';
 	import { compareVersion, extractFrontmatter } from '$lib/utils';
-	import { onMount, getContext } from 'svelte';
 	import { toast } from 'svelte-sonner';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
-	let tool = null;
+	let tool: any = null;
 
-	const saveHandler = async (data) => {
+	const saveHandler = async (data: any) => {
 		console.log(data);
 
 		const manifest = extractFrontmatter(data.content);
 		if (compareVersion(manifest?.required_open_webui_version ?? '0.0.0', WEBUI_VERSION)) {
 			console.log('Version is lower than required');
 			toast.error(
-				$i18n.t(
+				i18n.t(
 					'Open WebUI version (v{{OPEN_WEBUI_VERSION}}) is lower than required version (v{{REQUIRED_VERSION}})',
 					{
 						OPEN_WEBUI_VERSION: WEBUI_VERSION,
@@ -40,13 +41,13 @@
 			meta: data.meta,
 			content: data.content,
 			access_grants: data.access_grants
-		}).catch((error) => {
+		}).catch(async (error)=> {
 			toast.error(`${error}`);
 			return null;
 		});
 
 		if (res) {
-			toast.success($i18n.t('Tool updated successfully'));
+			toast.success(i18n.t('Tool updated successfully'));
 			tools.set(await getTools(localStorage.token));
 
 			// await goto('/workspace/tools');
@@ -65,7 +66,7 @@
 			});
 
 			if (res && !res.write_access) {
-				toast.error($i18n.t('You do not have permission to edit this tool'));
+				toast.error(i18n.t('You do not have permission to edit this tool'));
 				goto('/workspace/tools');
 				return;
 			}
@@ -86,7 +87,27 @@
 		meta={tool.meta}
 		content={tool.content}
 		accessGrants={tool.access_grants ?? []}
-		onSave={(value) => {
+		onSave={(value: any) => {
+			saveHandler(value);
+		}}
+	/>
+{:else}
+	<div class="flex items-center justify-center h-full">
+		<div class=" pb-16">
+			<Spinner className="size-5" />
+		</div>
+	</div>
+{/if}
+
+{#if tool}
+	<ToolkitEditor
+		edit={true}
+		id={tool.id}
+		name={tool.name}
+		meta={tool.meta}
+		content={tool.content}
+		accessGrants={tool.access_grants ?? []}
+		onSave={(value: any) => {
 			saveHandler(value);
 		}}
 	/>

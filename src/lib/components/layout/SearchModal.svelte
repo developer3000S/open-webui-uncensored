@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { toast } from 'svelte-sonner';
+	import type i18nType from 'i18next';
 	import { getContext, onDestroy, onMount, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
+	import { toast } from 'svelte-sonner';
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Modal from '$lib/components/common/Modal.svelte';
 	import SearchInput from './Sidebar/SearchInput.svelte';
@@ -52,7 +53,7 @@
 	dayjs.extend(calendar);
 	dayjs.extend(localizedFormat);
 
-	export let show = false;
+	export let show: any = false;
 	export let onClose = () => {};
 
 	let showShareChatModal = false;
@@ -60,16 +61,16 @@
 	let menuChatId = '';
 	let menuChatTitle = '';
 
-	let editingChatId = null;
+	let editingChatId: any = null;
 	let editingChatTitle = '';
 
 	let shiftKey = false;
 
-	const onShiftKeyDown = (e) => {
+	const onShiftKeyDown = (e: any) => {
 		if (e.key === 'Shift') shiftKey = true;
 	};
 
-	const onShiftKeyUp = (e) => {
+	const onShiftKeyUp = (e: any) => {
 		if (e.key === 'Shift') shiftKey = false;
 	};
 	let generating = false;
@@ -80,15 +81,15 @@
 		await pinnedChats.set(await getPinnedChatList(localStorage.token));
 	};
 
-	const cloneChatHandler = async (id) => {
+	const cloneChatHandler = async (id: any) => {
 		const chat = chatList?.find((c) => c.id === id);
 		const res = await cloneChatById(
 			localStorage.token,
 			id,
-			$i18n.t('Clone of {{TITLE}}', {
+			i18n.t('Clone of {{TITLE}}', {
 				TITLE: chat?.title ?? 'Chat'
 			})
-		).catch((error) => {
+		).catch(async (error)=> {
 			toast.error(`${error}`);
 			return null;
 		});
@@ -99,7 +100,7 @@
 		}
 	};
 
-	const archiveChatHandler = async (id) => {
+	const archiveChatHandler = async (id: any) => {
 		try {
 			await archiveChatById(localStorage.token, id);
 
@@ -111,14 +112,14 @@
 			}
 
 			await refreshSidebar();
-			toast.success($i18n.t('Chat archived.'));
+			toast.success(i18n.t('Chat archived.'));
 		} catch (error) {
-			toast.error($i18n.t('Failed to archive chat.'));
+			toast.error(i18n.t('Failed to archive chat.'));
 		}
 	};
 
-	const deleteChatHandler = async (id) => {
-		const res = await deleteChatById(localStorage.token, id).catch((error) => {
+	const deleteChatHandler = async (id: any) => {
+		const res = await deleteChatById(localStorage.token, id).catch(async (error)=> {
 			toast.error(`${error}`);
 			return null;
 		});
@@ -136,10 +137,9 @@
 		}
 	};
 
-	const moveChatHandler = async (chatId, folderId) => {
+	const moveChatHandler = async (chatId: any, folderId: any) => {
 		if (chatId && folderId) {
-			const res = await updateChatFolderIdById(localStorage.token, chatId, folderId).catch(
-				(error) => {
+			const res = await updateChatFolderIdById(localStorage.token, chatId, folderId).catch(async (error)=> {
 					toast.error(`${error}`);
 					return null;
 				}
@@ -148,12 +148,12 @@
 			if (res) {
 				chatList = chatList?.filter((c) => c.id !== chatId) ?? null;
 				await refreshSidebar();
-				toast.success($i18n.t('Chat moved successfully'));
+				toast.success(i18n.t('Chat moved successfully'));
 			}
 		}
 	};
 
-	const renameHandler = async (id) => {
+	const renameHandler = async (id: any) => {
 		editingChatId = id;
 		editingChatTitle = chatList?.find((c) => c.id === id)?.title ?? '';
 
@@ -170,7 +170,7 @@
 
 		const trimmed = editingChatTitle.trim();
 		if (trimmed === '') {
-			toast.error($i18n.t('Title cannot be an empty string.'));
+			toast.error(i18n.t('Title cannot be an empty string.'));
 			return;
 		}
 
@@ -197,14 +197,14 @@
 		const chat = await getChatById(localStorage.token, editingChatId).catch(() => null);
 
 		if (!chat) {
-			toast.error($i18n.t('Failed to load chat'));
+			toast.error(i18n.t('Failed to load chat'));
 			generating = false;
 			return;
 		}
 
 		const chatContent = chat.chat;
 		const history = chatContent?.history;
-		let msgList = [];
+		let msgList: any[] = [];
 
 		if (history?.messages && history?.currentId) {
 			msgList = createMessagesList(history, history.currentId).map((m: any) => ({
@@ -237,8 +237,7 @@
 
 		editingChatTitle = '';
 
-		const generatedTitle = await generateTitle(localStorage.token, model, msgList).catch(
-			(error) => {
+		const generatedTitle = await generateTitle(localStorage.token, model, msgList).catch(async (error)=> {
 				toast.error(`${error}`);
 				return null;
 			}
@@ -257,7 +256,7 @@
 
 	let actions = [
 		{
-			label: $i18n.t('Start a new conversation'),
+			label: i18n.t('Start a new conversation'),
 			onClick: async () => {
 				await goto(`/${query ? `?q=${query}` : ''}`);
 				show = false;
@@ -270,19 +269,19 @@
 	let query = '';
 	let page = 1;
 
-	let chatList = null;
+	let chatList: any = null;
 
 	let chatListLoading = false;
 	let allChatsLoaded = false;
 
 	let searchDebounceTimeout;
 
-	let selectedIdx = null;
-	let selectedChat = null;
+	let selectedIdx: any = null;
+	let selectedChat: any = null;
 
 	let selectedModels = [''];
-	let history = null;
-	let messages = null;
+	let history: any = null;
+	let messages: any = null;
 
 	const searchFilterPrefixes = ['tag:', 'folder:', 'pinned:', 'archived:', 'shared:'];
 
@@ -323,7 +322,7 @@
 		loadChatPreview(selectedIdx);
 	}
 
-	const loadChatPreview = async (selectedIdx) => {
+	const loadChatPreview = async (selectedIdx: any) => {
 		if (!chatList || chatList.length === 0 || selectedIdx === null) {
 			selectedChat = null;
 			messages = null;
@@ -343,7 +342,7 @@
 
 		const chatId = chatList[selectedChatIdx].id;
 
-		const chat = await getChatById(localStorage.token, chatId).catch(async (error) => {
+		const chat = await getChatById(localStorage.token, chatId).catch(async (error: any)=> {
 			return null;
 		});
 
@@ -367,7 +366,7 @@
 				messages = [];
 			}
 		} else {
-			toast.error($i18n.t('Failed to load chat preview'));
+			toast.error(i18n.t('Failed to load chat preview'));
 			selectedChat = null;
 			messages = null;
 			history = null;
@@ -400,7 +399,7 @@
 						allChatsLoaded = false;
 					}
 				} catch (error) {
-					toast.error($i18n.t('Failed to load search results'));
+					toast.error(i18n.t('Failed to load search results'));
 				} finally {
 					chatListLoading = false;
 				}
@@ -423,7 +422,7 @@
 		chatListLoading = true;
 		page += 1;
 
-		let newChatList = [];
+		let newChatList: any[] = [];
 
 		if (query) {
 			newChatList = await getChatListBySearchText(localStorage.token, query, page);
@@ -451,7 +450,7 @@
 		generating = false;
 	}
 
-	const onKeyDown = (e) => {
+	const onKeyDown = (e: any) => {
 		// Ignore keydown fired while confirming an IME composition (e.g. Japanese/Chinese/Korean)
 		// so confirming the composition with Enter doesn't trigger search actions (#26172).
 		if (e.isComposing || e.keyCode === 229) {
@@ -520,7 +519,7 @@
 			($user?.role === 'admin' || ($user?.permissions?.features?.notes ?? true))
 				? [
 						{
-							label: $i18n.t('Create a new note'),
+							label: i18n.t('Create a new note'),
 							onClick: async () => {
 								await goto(`/notes?content=${query}`);
 								show = false;
@@ -551,13 +550,13 @@
 
 <DeleteConfirmDialog
 	bind:show={showDeleteConfirm}
-	title={$i18n.t('Delete chat?')}
+	title={i18n.t('Delete chat?')}
 	on:confirm={() => {
 		deleteChatHandler(menuChatId);
 	}}
 >
 	<div class="text-sm text-gray-500 flex-1 line-clamp-3">
-		{$i18n.t('This will delete')} <span class="font-semibold">{menuChatTitle}</span>.
+		{i18n.t('This will delete')} <span class="font-semibold">{menuChatTitle}</span>.
 	</div>
 </DeleteConfirmDialog>
 
@@ -567,13 +566,13 @@
 			<SearchInput
 				bind:value={query}
 				on:input={searchHandler}
-				placeholder={$i18n.t('Search')}
+				placeholder={i18n.t('Search')}
 				showClearButton={true}
 				onFocus={() => {
 					selectedIdx = null;
 					messages = null;
 				}}
-				onKeydown={(e) => {
+				onKeydown={(e: any) => {
 					console.log('e', e);
 
 					if (e.code === 'Enter' && (chatList ?? []).length > 0) {
@@ -605,7 +604,7 @@
 				class="flex flex-col overflow-y-auto h-96 md:h-[40rem] max-h-full scrollbar-hidden w-full flex-1 pr-2"
 			>
 				<div class="w-full text-xs text-gray-500 dark:text-gray-500 font-medium pb-2 px-2">
-					{$i18n.t('Actions')}
+					{i18n.t('Actions')}
 				</div>
 
 				{#each actions as action, idx (action.label)}
@@ -628,7 +627,7 @@
 						</div>
 						<div class=" flex-1 text-left">
 							<div class="text-ellipsis line-clamp-1 w-full">
-								{$i18n.t(action.label)}
+								{i18n.t(action.label)}
 							</div>
 						</div>
 					</button>
@@ -639,7 +638,7 @@
 
 					{#if chatList.length === 0}
 						<div class="text-xs text-gray-500 dark:text-gray-400 text-center px-5 py-4">
-							{$i18n.t('No results found')}
+							{i18n.t('No results found')}
 						</div>
 					{/if}
 
@@ -650,24 +649,24 @@
 									? ''
 									: 'pt-5'} pb-2 px-2"
 							>
-								{$i18n.t(chat.time_range)}
+								{i18n.t(chat.time_range)}
 								<!-- localisation keys for time_range to be recognized from the i18next parser (so they don't get automatically removed):
-							{$i18n.t('Today')}
-							{$i18n.t('Yesterday')}
-							{$i18n.t('Previous 7 days')}
-							{$i18n.t('Previous 30 days')}
-							{$i18n.t('January')}
-							{$i18n.t('February')}
-							{$i18n.t('March')}
-							{$i18n.t('April')}
-							{$i18n.t('May')}
-							{$i18n.t('June')}
-							{$i18n.t('July')}
-							{$i18n.t('August')}
-							{$i18n.t('September')}
-							{$i18n.t('October')}
-							{$i18n.t('November')}
-							{$i18n.t('December')}
+							{i18n.t('Today')}
+							{i18n.t('Yesterday')}
+							{i18n.t('Previous 7 days')}
+							{i18n.t('Previous 30 days')}
+							{i18n.t('January')}
+							{i18n.t('February')}
+							{i18n.t('March')}
+							{i18n.t('April')}
+							{i18n.t('May')}
+							{i18n.t('June')}
+							{i18n.t('July')}
+							{i18n.t('August')}
+							{i18n.t('September')}
+							{i18n.t('October')}
+							{i18n.t('November')}
+							{i18n.t('December')}
 							-->
 							</div>
 						{/if}
@@ -689,7 +688,7 @@
 										id="search-chat-title-input-{chat.id}"
 										bind:value={editingChatTitle}
 										class="bg-transparent w-full outline-none"
-										placeholder={generating ? $i18n.t('Generating...') : ''}
+										placeholder={generating ? i18n.t('Generating...') : ''}
 										disabled={generating}
 										on:keydown={(e) => {
 											e.stopPropagation();
@@ -710,7 +709,7 @@
 								</div>
 
 								<div class="flex items-center shrink-0 pl-1">
-									<Tooltip content={$i18n.t('Generate')}>
+									<Tooltip content={i18n.t('Generate')}>
 										<button
 											class="self-center dark:hover:text-white transition disabled:cursor-not-allowed"
 											disabled={generating}
@@ -763,7 +762,7 @@
 								class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-3 pl-6 shrink-0"
 							>
 								<div class="text-gray-500 dark:text-gray-400 text-xs">
-									{$i18n.t(
+									{i18n.t(
 										dayjs(chat?.updated_at * 1000).calendar(null, {
 											sameDay: '[Today]',
 											nextDay: '[Tomorrow]',
@@ -778,7 +777,7 @@
 								{#if editingChatId !== chat.id}
 									{#if shiftKey}
 										<div class="flex items-center space-x-1.5">
-											<Tooltip content={$i18n.t('Archive')} className="flex items-center">
+											<Tooltip content={i18n.t('Archive')} className="flex items-center">
 												<button
 													class="self-center dark:hover:text-white transition"
 													on:click|stopPropagation={() => {
@@ -790,7 +789,7 @@
 												</button>
 											</Tooltip>
 
-											<Tooltip content={$i18n.t('Delete')}>
+											<Tooltip content={i18n.t('Delete')}>
 												<button
 													class="self-center dark:hover:text-white transition"
 													on:click|stopPropagation={() => {
@@ -864,7 +863,7 @@
 						>
 							<div class="w-full flex justify-center py-4 text-xs animate-pulse items-center gap-2">
 								<Spinner className=" size-4" />
-								<div class=" ">{$i18n.t('Loading...')}</div>
+								<div class=" ">{i18n.t('Loading...')}</div>
 							</div>
 						</Loader>
 					{/if}
@@ -882,7 +881,366 @@
 					<div
 						class="w-full h-full flex justify-center items-center text-gray-500 dark:text-gray-400 text-sm"
 					>
-						{$i18n.t('Select a conversation to preview')}
+						{i18n.t('Select a conversation to preview')}
+					</div>
+				{:else}
+					<div class="w-full h-full flex flex-col">
+						<Messages
+							className="h-full flex pt-4 pb-8 w-full"
+							chatId={`chat-preview-${selectedChat?.id ?? ''}`}
+							user={$user}
+							readOnly={true}
+							{selectedModels}
+							bind:history
+							bind:messages
+							autoScroll={true}
+							sendMessage={() => {}}
+							continueResponse={() => {}}
+							regenerateResponse={() => {}}
+						/>
+					</div>
+				{/if}
+			</div>
+		</div>
+	</div>
+</Modal>
+
+<ShareChatModal bind:show={showShareChatModal} chatId={menuChatId} />
+
+<DeleteConfirmDialog
+	bind:show={showDeleteConfirm}
+	title={i18n.t('Delete chat?')}
+	on:confirm={() => {
+		deleteChatHandler(menuChatId);
+	}}
+>
+	<div class="text-sm text-gray-500 flex-1 line-clamp-3">
+		{i18n.t('This will delete')} <span class="font-semibold">{menuChatTitle}</span>.
+	</div>
+</DeleteConfirmDialog>
+
+<Modal size="xl" bind:show>
+	<div class="py-3 dark:text-gray-300 text-gray-700">
+		<div class="px-4 pb-1.5">
+			<SearchInput
+				bind:value={query}
+				on:input={searchHandler}
+				placeholder={i18n.t('Search')}
+				showClearButton={true}
+				onFocus={() => {
+					selectedIdx = null;
+					messages = null;
+				}}
+				onKeydown={(e: any) => {
+					console.log('e', e);
+
+					if (e.code === 'Enter' && (chatList ?? []).length > 0) {
+						const item = document.querySelector(`[data-arrow-selected="true"]`);
+						if (item) {
+							item?.click();
+						}
+
+						show = false;
+						return;
+					} else if (e.code === 'ArrowDown') {
+						selectedIdx = Math.min(selectedIdx + 1, (chatList ?? []).length - 1 + actions.length);
+					} else if (e.code === 'ArrowUp') {
+						selectedIdx = Math.max(selectedIdx - 1, 0);
+					} else {
+						selectedIdx = 0;
+					}
+
+					const item = document.querySelector(`[data-arrow-selected="true"]`);
+					item?.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' });
+				}}
+			/>
+		</div>
+
+		<!-- <hr class="border-gray-50 dark:border-gray-850/30 my-1" /> -->
+
+		<div class="flex px-4 pb-1">
+			<div
+				class="flex flex-col overflow-y-auto h-96 md:h-[40rem] max-h-full scrollbar-hidden w-full flex-1 pr-2"
+			>
+				<div class="w-full text-xs text-gray-500 dark:text-gray-500 font-medium pb-2 px-2">
+					{i18n.t('Actions')}
+				</div>
+
+				{#each actions as action, idx (action.label)}
+					<button
+						class=" w-full flex items-center rounded-xl text-sm py-2 px-3 hover:bg-gray-50 dark:hover:bg-gray-850 {selectedIdx ===
+						idx
+							? 'bg-gray-50 dark:bg-gray-850'
+							: ''}"
+						data-arrow-selected={selectedIdx === idx ? 'true' : undefined}
+						dragabble="false"
+						on:mouseenter={() => {
+							selectedIdx = idx;
+						}}
+						on:click={async () => {
+							await action.onClick();
+						}}
+					>
+						<div class="pr-2">
+							<svelte:component this={action.icon} />
+						</div>
+						<div class=" flex-1 text-left">
+							<div class="text-ellipsis line-clamp-1 w-full">
+								{i18n.t(action.label)}
+							</div>
+						</div>
+					</button>
+				{/each}
+
+				{#if chatList}
+					<hr class="border-gray-50 dark:border-gray-850/30 my-3" />
+
+					{#if chatList.length === 0}
+						<div class="text-xs text-gray-500 dark:text-gray-400 text-center px-5 py-4">
+							{i18n.t('No results found')}
+						</div>
+					{/if}
+
+					{#each chatList as chat, idx (chat.id)}
+						{#if idx === 0 || (idx > 0 && chat.time_range !== chatList[idx - 1].time_range)}
+							<div
+								class="w-full text-xs text-gray-500 dark:text-gray-500 font-medium {idx === 0
+									? ''
+									: 'pt-5'} pb-2 px-2"
+							>
+								{i18n.t(chat.time_range)}
+								<!-- localisation keys for time_range to be recognized from the i18next parser (so they don't get automatically removed):
+							{i18n.t('Today')}
+							{i18n.t('Yesterday')}
+							{i18n.t('Previous 7 days')}
+							{i18n.t('Previous 30 days')}
+							{i18n.t('January')}
+							{i18n.t('February')}
+							{i18n.t('March')}
+							{i18n.t('April')}
+							{i18n.t('May')}
+							{i18n.t('June')}
+							{i18n.t('July')}
+							{i18n.t('August')}
+							{i18n.t('September')}
+							{i18n.t('October')}
+							{i18n.t('November')}
+							{i18n.t('December')}
+							-->
+							</div>
+						{/if}
+
+						<!-- svelte-ignore a11y-no-static-element-interactions -->
+						<div
+							class="w-full flex justify-between items-center rounded-xl text-sm py-2 pl-3 pr-32 hover:bg-gray-50 dark:hover:bg-gray-850 group/item relative {selectedIdx ===
+							idx + actions.length
+								? 'bg-gray-50 dark:bg-gray-850'
+								: ''}"
+							data-arrow-selected={selectedIdx === idx + actions.length ? 'true' : undefined}
+							on:mouseenter={() => {
+								selectedIdx = idx + actions.length;
+							}}
+						>
+							{#if editingChatId === chat.id}
+								<div class="flex-1 min-w-0">
+									<input
+										id="search-chat-title-input-{chat.id}"
+										bind:value={editingChatTitle}
+										class="bg-transparent w-full outline-none"
+										placeholder={generating ? i18n.t('Generating...') : ''}
+										disabled={generating}
+										on:keydown={(e) => {
+											e.stopPropagation();
+											if (e.key === 'Enter') {
+												e.preventDefault();
+												confirmRename();
+											} else if (e.key === 'Escape') {
+												e.preventDefault();
+												cancelRename();
+											}
+										}}
+										on:blur={() => {
+											if (!generating) {
+												confirmRename();
+											}
+										}}
+									/>
+								</div>
+
+								<div class="flex items-center shrink-0 pl-1">
+									<Tooltip content={i18n.t('Generate')}>
+										<button
+											class="self-center dark:hover:text-white transition disabled:cursor-not-allowed"
+											disabled={generating}
+											on:mousedown|preventDefault={() => {}}
+											on:click|preventDefault|stopPropagation={() => {
+												generateTitleHandler();
+											}}
+										>
+											{#if generating}
+												<Spinner className="size-4" />
+											{:else}
+												<Sparkles strokeWidth="2" />
+											{/if}
+										</button>
+									</Tooltip>
+								</div>
+							{:else}
+								<a
+									class="flex-1 min-w-0"
+									href="/c/{chat.id}"
+									draggable="false"
+									on:click={async () => {
+										await goto(`/c/${chat.id}`);
+										show = false;
+										onClose();
+									}}
+								>
+									<div class="text-ellipsis line-clamp-1 w-full">
+										{chat?.title}
+									</div>
+									{#if chat?.snippet}
+										<div class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5">
+											{#each getHighlightedSnippet(chat.snippet, query) as part}
+												{#if part.highlight}
+													<mark
+														class="rounded bg-yellow-200/70 px-0.5 text-inherit dark:bg-yellow-500/30"
+													>
+														{part.text}
+													</mark>
+												{:else}
+													{part.text}
+												{/if}
+											{/each}
+										</div>
+									{/if}
+								</a>
+							{/if}
+
+							<div
+								class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-3 pl-6 shrink-0"
+							>
+								<div class="text-gray-500 dark:text-gray-400 text-xs">
+									{i18n.t(
+										dayjs(chat?.updated_at * 1000).calendar(null, {
+											sameDay: '[Today]',
+											nextDay: '[Tomorrow]',
+											nextWeek: 'dddd',
+											lastDay: '[Yesterday]',
+											lastWeek: '[Last] dddd',
+											sameElse: 'L'
+										})
+									)}
+								</div>
+
+								{#if editingChatId !== chat.id}
+									{#if shiftKey}
+										<div class="flex items-center space-x-1.5">
+											<Tooltip content={i18n.t('Archive')} className="flex items-center">
+												<button
+													class="self-center dark:hover:text-white transition"
+													on:click|stopPropagation={() => {
+														archiveChatHandler(chat.id);
+													}}
+													type="button"
+												>
+													<ArchiveBox className="size-4 translate-y-[0.5px]" strokeWidth="2" />
+												</button>
+											</Tooltip>
+
+											<Tooltip content={i18n.t('Delete')}>
+												<button
+													class="self-center dark:hover:text-white transition"
+													on:click|stopPropagation={() => {
+														deleteChatHandler(chat.id);
+													}}
+													type="button"
+												>
+													<GarbageBin strokeWidth="2" />
+												</button>
+											</Tooltip>
+										</div>
+									{:else}
+										<div class="flex items-center">
+											<ChatMenu
+												chatId={chat.id}
+												shareHandler={() => {
+													menuChatId = chat.id;
+													showShareChatModal = true;
+												}}
+												{moveChatHandler}
+												cloneChatHandler={() => {
+													cloneChatHandler(chat.id);
+												}}
+												archiveChatHandler={() => {
+													archiveChatHandler(chat.id);
+												}}
+												renameHandler={() => {
+													renameHandler(chat.id);
+												}}
+												deleteHandler={() => {
+													menuChatId = chat.id;
+													menuChatTitle = chat.title;
+													showDeleteConfirm = true;
+												}}
+												onClose={() => {}}
+												onPinChange={async () => {
+													await refreshSidebar();
+													await searchHandler();
+												}}
+											>
+												<button
+													aria-label="Chat Menu"
+													class="self-center dark:hover:text-white transition"
+												>
+													<svg
+														xmlns="http://www.w3.org/2000/svg"
+														viewBox="0 0 16 16"
+														fill="currentColor"
+														class="w-4 h-4"
+													>
+														<path
+															d="M2 8a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0ZM6.5 8a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0ZM12.5 6.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"
+														/>
+													</svg>
+												</button>
+											</ChatMenu>
+										</div>
+									{/if}
+								{/if}
+							</div>
+						</div>
+					{/each}
+
+					{#if !allChatsLoaded}
+						<Loader
+							on:visible={(e) => {
+								if (!chatListLoading) {
+									loadMoreChats();
+								}
+							}}
+						>
+							<div class="w-full flex justify-center py-4 text-xs animate-pulse items-center gap-2">
+								<Spinner className=" size-4" />
+								<div class=" ">{i18n.t('Loading...')}</div>
+							</div>
+						</Loader>
+					{/if}
+				{:else}
+					<div class="w-full h-full flex justify-center items-center">
+						<Spinner className="size-5" />
+					</div>
+				{/if}
+			</div>
+			<div
+				id="chat-preview"
+				class="hidden md:flex md:flex-1 w-full overflow-y-auto h-96 md:h-[40rem] scrollbar-hidden @container"
+			>
+				{#if messages === null}
+					<div
+						class="w-full h-full flex justify-center items-center text-gray-500 dark:text-gray-400 text-sm"
+					>
+						{i18n.t('Select a conversation to preview')}
 					</div>
 				{:else}
 					<div class="w-full h-full flex flex-col">

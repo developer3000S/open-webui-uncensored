@@ -12,10 +12,9 @@
 	};
 
 	export let items: Item[] = [];
-	export let placeholder = '';
-	export let id = 'typeahead-selector';
-	export let className = 'w-full';
-
+	export let placeholder: any = '';
+	export let id: any = 'typeahead-selector';
+	export let className: any = 'w-full';
 	const dispatch = createEventDispatcher<{ select: Item }>();
 	let value = '';
 </script>

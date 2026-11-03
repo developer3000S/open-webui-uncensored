@@ -1,19 +1,19 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
 	import { getContext } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
 
 	import { WEBUI_BASE_URL } from '$lib/constants';
 	import emojiShortCodes from '$lib/emoji-shortcodes.json';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
-	export let query = '';
-	export let onSelect = (e) => {};
+	export let query: any = '';
+	export let onSelect = (e: any) => {};
 
 	let selectedIdx = 0;
-	export let filteredItems = [];
+	export let filteredItems: any = [];
 
 	// Build a flat list of { name, shortCodes } for searching
 	const allEmojis = Object.entries(emojiShortCodes).map(([key, value]) => ({
@@ -67,7 +67,42 @@
 
 {#if filteredItems.length > 0}
 	<div class="px-2 text-xs text-gray-500 py-1">
-		{$i18n.t('Emojis')}
+		{i18n.t('Emojis')}
+	</div>
+
+	{#each filteredItems as emoji, emojiIdx}
+		<button
+			class="px-2.5 py-1.5 rounded-xl w-full text-left {emojiIdx === selectedIdx
+				? 'bg-gray-50 dark:bg-gray-800 selected-command-option-button'
+				: ''}"
+			type="button"
+			on:click={() => {
+				onSelect({ type: 'emoji', data: emoji });
+			}}
+			on:mousemove={() => {
+				selectedIdx = emojiIdx;
+			}}
+			on:focus={() => {}}
+			data-selected={emojiIdx === selectedIdx}
+		>
+			<div class="flex items-center gap-2 text-black dark:text-gray-100">
+				<img
+					src="{WEBUI_BASE_URL}/assets/emojis/{emoji.name.toLowerCase()}.svg"
+					alt={emoji.name}
+					class="size-5 flex-shrink-0"
+					loading="lazy"
+				/>
+				<div class="truncate text-sm">
+					:{emoji.shortCodes[0]}:
+				</div>
+			</div>
+		</button>
+	{/each}
+{/if}
+
+{#if filteredItems.length > 0}
+	<div class="px-2 text-xs text-gray-500 py-1">
+		{i18n.t('Emojis')}
 	</div>
 
 	{#each filteredItems as emoji, emojiIdx}

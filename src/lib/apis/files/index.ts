@@ -44,7 +44,7 @@ export const uploadFile = async (
 		searchParams.append('process', String(process));
 	}
 
-	let error = null;
+	let error: any = null;
 
 	// `fetch` exposes no request-body progress hook, so the byte-transfer phase needs XHR.
 	const uploadFileRequest = (
@@ -68,7 +68,7 @@ export const uploadFile = async (
 			}
 
 			xhr.onload = () => {
-				let parsed = null;
+				let parsed: any = null;
 				try {
 					parsed = xhr.responseText ? JSON.parse(xhr.responseText) : null;
 				} catch {
@@ -144,7 +144,7 @@ export const uploadFile = async (
 			file_id: res.id
 		});
 
-		let status = null;
+		let status: any = null;
 		try {
 			status = await getFileProcessStatus(token, res.id);
 		} catch {
@@ -208,7 +208,7 @@ export const getFileProcessStatus = async (token: string, id: string) => {
 	const queryParams = new URLSearchParams();
 	queryParams.append('stream', 'true');
 
-	let error = null;
+	let error: any = null;
 	const res = await fetch(`${WEBUI_API_BASE_URL}/files/${id}/process/status?${queryParams}`, {
 		method: 'GET',
 		headers: {
@@ -229,7 +229,7 @@ export const getFileProcessStatus = async (token: string, id: string) => {
 };
 
 export const uploadDir = async (token: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/files/upload/dir`, {
 		method: 'POST',
@@ -255,7 +255,7 @@ export const uploadDir = async (token: string) => {
 };
 
 export const getFiles = async (token: string = '', content: boolean = false) => {
-	let error = null;
+	let error: any = null;
 
 	const searchParams = new URLSearchParams();
 	searchParams.append('content', String(content));
@@ -295,7 +295,7 @@ export const searchFiles = async (
 	limit: number = 50,
 	content: boolean = false
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const searchParams = new URLSearchParams();
 	searchParams.append('filename', filename);
@@ -329,7 +329,7 @@ export const searchFiles = async (
 };
 
 export const getFileCount = async (token: string = '') => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/files/count`, {
 		method: 'GET',
@@ -357,7 +357,7 @@ export const getFileCount = async (token: string = '') => {
 };
 
 export const getFileById = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/files/${id}`, {
 		method: 'GET',
@@ -388,7 +388,7 @@ export const getFileById = async (token: string, id: string) => {
 };
 
 export const updateFileDataContentById = async (token: string, id: string, content: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/files/${id}/data/content/update`, {
 		method: 'POST',
@@ -422,7 +422,7 @@ export const updateFileDataContentById = async (token: string, id: string, conte
 };
 
 export const getFileContentById = async (id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/files/${id}/content`, {
 		method: 'GET',
@@ -450,7 +450,7 @@ export const getFileContentById = async (id: string) => {
 };
 
 export const renameFileById = async (token: string, id: string, filename: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/files/${id}/rename`, {
 		method: 'POST',
@@ -479,7 +479,7 @@ export const renameFileById = async (token: string, id: string, filename: string
 };
 
 export const deleteFileById = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/files/${id}`, {
 		method: 'DELETE',
@@ -510,7 +510,7 @@ export const deleteFileById = async (token: string, id: string) => {
 };
 
 export const deleteAllFiles = async (token: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/files/all`, {
 		method: 'DELETE',

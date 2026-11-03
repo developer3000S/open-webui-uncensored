@@ -7,9 +7,7 @@
 	import { goto } from '$app/navigation';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
-
+	
 	import { WEBUI_BASE_URL } from '$lib/constants';
 	import { copyToClipboard, unescapeHtml } from '$lib/utils';
 
@@ -24,9 +22,9 @@
 	import SourceToken from './SourceToken.svelte';
 
 	export let id: string;
-	export let done = true;
+	export let done: any = true;
 	export let tokens: Token[];
-	export let sourceIds = [];
+	export let sourceIds: any = [];
 	export let onSourceClick: Function = () => {};
 
 	/**

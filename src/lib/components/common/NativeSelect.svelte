@@ -3,11 +3,11 @@
 
 	const dispatch = createEventDispatcher();
 
-	export let value = '';
+	export let value: any = '';
 	export let options: ({ label?: string; value: string } | string)[] = [];
-	export let placeholder = '';
-	export let className = '';
-	export let required = false;
+	export let placeholder: any = '';
+	export let className: any = '';
+	export let required: any = false;
 </script>
 
 <select

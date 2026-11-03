@@ -1,7 +1,10 @@
 <script lang="ts">
-	export let show = false;
-	export let selectedModelId = '';
+	import type i18nType from 'i18next';
+	import { getContext, onMount, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
 
+	export let show: any = false;
+	export let selectedModelId: any = '';
 	import { marked } from 'marked';
 	// Configure marked with extensions
 	marked.use({
@@ -33,7 +36,6 @@
 	import { toast } from 'svelte-sonner';
 
 	import { goto } from '$app/navigation';
-	import { onMount, tick, getContext } from 'svelte';
 
 	import { WEBUI_BASE_URL } from '$lib/constants';
 	import { WEBUI_NAME, config, user, models, settings } from '$lib/stores';
@@ -50,22 +52,19 @@
 	import PencilSquare from '$lib/components/icons/PencilSquare.svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
-	export let editor = null;
+	let editor: any = null;
 
-	export let editing = false;
-	export let streaming = false;
-	export let stopResponseFlag = false;
+	export let editing: any = false;
+	export let streaming: any = false;
+	export let stopResponseFlag: any = false;
+	let note: any = null;
+	export let selectedContent: any = null;
 
-	export let note = null;
-	export let selectedContent = null;
+	export let files: any = [];
+	export let messages: any = [];
 
-	export let files = [];
-	export let messages = [];
-
-	export let onInsert = (content) => {};
+	export let onInsert = (content: any) => {};
 	export let onStop = () => {};
 	export let onEdited = () => {};
 
@@ -79,7 +78,7 @@
 
 	let system = '';
 	let editEnabled = false;
-	let chatInputElement = null;
+	let chatInputElement: any = null;
 
 	const DEFAULT_DOCUMENT_EDITOR_PROMPT = `You are an expert document editor.
 
@@ -122,7 +121,7 @@ Based on the user's instruction, update and enhance the existing notes or select
 
 	const chatCompletionHandler = async () => {
 		if (selectedModelId === '') {
-			toast.error($i18n.t('Please select a model.'));
+			toast.error(i18n.t('Please select a model.'));
 			return;
 		}
 
@@ -234,7 +233,7 @@ Based on the user's instruction, update and enhance the existing notes or select
 							console.log(line);
 							if (line === 'data: [DONE]') {
 								if (editEnabled) {
-									responseMessage.content = `<status title="${$i18n.t('Edited')}" done="true" />`;
+									responseMessage.content = `<status title="${i18n.t('Edited')}" done="true" />`;
 
 									if (selectedContent && selectedContent?.text && editor) {
 										editor.commands.insertContentAt(
@@ -274,7 +273,7 @@ Based on the user's instruction, update and enhance the existing notes or select
 
 										scrollToBottomHandler();
 
-										responseMessage.content = `<status title="${$i18n.t('Editing')}" done="false" />`;
+										responseMessage.content = `<status title="${i18n.t('Editing')}" done="false" />`;
 										messages = messages;
 									} else {
 										messageContent += deltaContent;
@@ -297,7 +296,7 @@ Based on the user's instruction, update and enhance the existing notes or select
 		}
 	};
 
-	const submitHandler = async (e) => {
+	const submitHandler = async (e: any) => {
 		const { content, data } = e;
 		if (selectedModelId && content) {
 			messages.push({
@@ -345,18 +344,18 @@ Based on the user's instruction, update and enhance the existing notes or select
 
 	<div class=" font-medium text-base flex items-center gap-1">
 		<div>
-			{$i18n.t('Chat')}
+			{i18n.t('Chat')}
 		</div>
 
 		<div>
 			<Tooltip
-				content={$i18n.t(
+				content={i18n.t(
 					'This feature is experimental and may be modified or discontinued without notice.'
 				)}
 				position="top"
 				className="inline-block"
 			>
-				<span class="text-gray-500 text-sm">({$i18n.t('Experimental')})</span>
+				<span class="text-gray-500 text-sm">({i18n.t('Experimental')})</span>
 			</Tooltip>
 		</div>
 	</div>
@@ -400,7 +399,7 @@ Based on the user's instruction, update and enhance the existing notes or select
 					>
 						<div slot="menu" class="flex items-center justify-between gap-2 w-full pr-1">
 							<div>
-								<Tooltip content={$i18n.t('Edit')} placement="top">
+								<Tooltip content={i18n.t('Edit')} placement="top">
 									<button
 										on:click|preventDefault={() => {
 											editEnabled = !editEnabled;
@@ -416,7 +415,118 @@ Based on the user's instruction, update and enhance the existing notes or select
 										<PencilSquare className="size-4" strokeWidth="1.75" />
 										<span
 											class="block whitespace-nowrap overflow-hidden text-ellipsis leading-none pr-0.5"
-											>{$i18n.t('Edit')}</span
+											>{i18n.t('Edit')}</span
+										>
+									</button>
+								</Tooltip>
+							</div>
+
+							<Tooltip content={selectedModelId}>
+								<select
+									class=" bg-transparent rounded-lg py-1 px-2 -mx-0.5 text-sm outline-hidden w-full text-right pr-5"
+									bind:value={selectedModelId}
+								>
+									{#each $models.filter((model) => !(model?.info?.meta?.hidden ?? false)) as model}
+										<option value={model.id} class="bg-gray-50 dark:bg-gray-700"
+											>{model.name}</option
+										>
+									{/each}
+								</select>
+							</Tooltip>
+						</div>
+					</MessageInput>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="flex items-center mb-1.5 pt-1.5">
+	<div class="flex items-center mr-1">
+		<button
+			class="p-0.5 bg-transparent transition rounded-lg"
+			on:click={() => {
+				show = !show;
+			}}
+		>
+			<XMark className="size-5" strokeWidth="2.5" />
+		</button>
+	</div>
+
+	<div class=" font-medium text-base flex items-center gap-1">
+		<div>
+			{i18n.t('Chat')}
+		</div>
+
+		<div>
+			<Tooltip
+				content={i18n.t(
+					'This feature is experimental and may be modified or discontinued without notice.'
+				)}
+				position="top"
+				className="inline-block"
+			>
+				<span class="text-gray-500 text-sm">({i18n.t('Experimental')})</span>
+			</Tooltip>
+		</div>
+	</div>
+</div>
+
+<div class="flex flex-col items-center flex-1 @container">
+	<div class=" flex flex-col justify-between w-full overflow-y-auto h-full">
+		<div class="mx-auto w-full md:px-0 h-full relative">
+			<div class=" flex flex-col h-full">
+				<div
+					class=" pb-2.5 flex flex-col justify-between w-full flex-auto overflow-auto h-0 scrollbar-hidden"
+					id="messages-container"
+					bind:this={messagesContainerElement}
+					on:scroll={onScroll}
+				>
+					<div class=" h-full w-full flex flex-col">
+						<div class="flex-1 p-1">
+							<Messages bind:messages {onInsert} />
+						</div>
+					</div>
+				</div>
+
+				<div class=" pb-[1rem]">
+					{#if selectedContent}
+						<div class="text-xs rounded-xl px-2.5 py-3 w-full markdown-prose-xs">
+							<blockquote>
+								<div class=" line-clamp-3">
+									{selectedContent?.text}
+								</div>
+							</blockquote>
+						</div>
+					{/if}
+
+					<MessageInput
+						bind:chatInputElement
+						acceptFiles={false}
+						inputLoading={loading}
+						showFormattingToolbar={false}
+						onSubmit={submitHandler}
+						{onStop}
+					>
+						<div slot="menu" class="flex items-center justify-between gap-2 w-full pr-1">
+							<div>
+								<Tooltip content={i18n.t('Edit')} placement="top">
+									<button
+										on:click|preventDefault={() => {
+											editEnabled = !editEnabled;
+
+											localStorage.setItem('noteEditEnabled', editEnabled ? 'true' : 'false');
+										}}
+										disabled={streaming || loading}
+										type="button"
+										class="px-2 @xl:px-2.5 py-2 flex gap-1.5 items-center text-sm rounded-full transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden hover:bg-gray-50 dark:hover:bg-gray-800 {editEnabled
+											? ' text-sky-500 dark:text-sky-300 bg-sky-50 dark:bg-sky-200/5'
+											: 'bg-transparent text-gray-600 dark:text-gray-300 '} disabled:opacity-50 disabled:pointer-events-none"
+									>
+										<PencilSquare className="size-4" strokeWidth="1.75" />
+										<span
+											class="block whitespace-nowrap overflow-hidden text-ellipsis leading-none pr-0.5"
+											>{i18n.t('Edit')}</span
 										>
 									</button>
 								</Tooltip>

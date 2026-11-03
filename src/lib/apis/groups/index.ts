@@ -1,7 +1,7 @@
 import { WEBUI_API_BASE_URL } from '$lib/constants';
 
 export const createNewGroup = async (token: string, group: object) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/groups/create`, {
 		method: 'POST',
@@ -32,7 +32,7 @@ export const createNewGroup = async (token: string, group: object) => {
 };
 
 export const getGroups = async (token: string = '', share?: boolean) => {
-	let error = null;
+	let error: any = null;
 
 	const searchParams = new URLSearchParams();
 	if (share !== undefined) {
@@ -68,7 +68,7 @@ export const getGroups = async (token: string = '', share?: boolean) => {
 };
 
 export const getGroupById = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/groups/id/${id}`, {
 		method: 'GET',
@@ -100,7 +100,7 @@ export const getGroupById = async (token: string, id: string) => {
 };
 
 export const getGroupInfoById = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/groups/id/${id}/info`, {
 		method: 'GET',
@@ -132,7 +132,7 @@ export const getGroupInfoById = async (token: string, id: string) => {
 };
 
 export const updateGroupById = async (token: string, id: string, group: object) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/groups/id/${id}/update`, {
 		method: 'POST',
@@ -167,7 +167,7 @@ export const updateGroupById = async (token: string, id: string, group: object) 
 };
 
 export const deleteGroupById = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/groups/id/${id}/delete`, {
 		method: 'DELETE',
@@ -199,7 +199,7 @@ export const deleteGroupById = async (token: string, id: string) => {
 };
 
 export const addUserToGroup = async (token: string, id: string, userIds: string[]) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/groups/id/${id}/users/add`, {
 		method: 'POST',
@@ -234,7 +234,7 @@ export const addUserToGroup = async (token: string, id: string, userIds: string[
 };
 
 export const removeUserFromGroup = async (token: string, id: string, userIds: string[]) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/groups/id/${id}/users/remove`, {
 		method: 'POST',
@@ -269,7 +269,7 @@ export const removeUserFromGroup = async (token: string, id: string, userIds: st
 };
 
 export const getGroupPreview = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/groups/id/${id}/preview`, {
 		method: 'GET',

@@ -1,11 +1,12 @@
-<script>
+<script lang="ts">
+	import type i18nType from 'i18next';
+	import { getContext, onMount } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
 
-	import { onMount, getContext } from 'svelte';
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { page } from '$app/stores';
 	import { config, models, settings } from '$lib/stores';
@@ -15,12 +16,12 @@
 	import { getModels } from '$lib/apis';
 	import ModelEditor from '$lib/components/workspace/Models/ModelEditor.svelte';
 
-	let model = null;
+	let model: any = null;
 
 	onMount(async () => {
 		const _id = $page.url.searchParams.get('id');
 		if (_id) {
-			model = await getModelById(localStorage.token, _id).catch((e) => {
+			model = await getModelById(localStorage.token, _id).catch(async (e)=> {
 				return null;
 			});
 
@@ -29,7 +30,7 @@
 			}
 
 			if (!model?.write_access) {
-				toast.error($i18n.t('You do not have permission to edit this model'));
+				toast.error(i18n.t('You do not have permission to edit this model'));
 				goto('/workspace/models');
 			}
 		} else {
@@ -37,7 +38,7 @@
 		}
 	});
 
-	const onSubmit = async (modelInfo) => {
+	const onSubmit = async (modelInfo: any) => {
 		const res = await updateModelById(localStorage.token, modelInfo.id, modelInfo);
 
 		if (res) {
@@ -47,11 +48,15 @@
 					$config?.features?.enable_direct_connections && ($settings?.directConnections ?? null)
 				)
 			);
-			toast.success($i18n.t('Model updated successfully'));
+			toast.success(i18n.t('Model updated successfully'));
 			await goto('/workspace/models');
 		}
 	};
 </script>
+
+{#if model}
+	<ModelEditor edit={true} {model} {onSubmit} />
+{/if}
 
 {#if model}
 	<ModelEditor edit={true} {model} {onSubmit} />

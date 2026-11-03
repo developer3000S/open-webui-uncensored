@@ -1,4 +1,8 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
+	import { getContext, onDestroy, onMount, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { goto } from '$app/navigation';
 
 	import { socket, user } from '$lib/stores';
@@ -8,30 +12,27 @@
 	import XMark from '$lib/components/icons/XMark.svelte';
 	import MessageInput from './MessageInput.svelte';
 	import Messages from './Messages.svelte';
-	import { onDestroy, onMount, tick, getContext } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import Spinner from '../common/Spinner.svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
-	export let threadId = null;
-	export let channel = null;
+	let threadId: any = null;
+	let channel: any = null;
 
 	export let onClose = () => {};
 	export let onPin = () => {};
 
-	let messages = null;
+	let messages: any = null;
 	let top = false;
 
-	let messagesContainerElement = null;
-	let chatInputElement = null;
+	let messagesContainerElement: any = null;
+	let chatInputElement: any = null;
 
-	let replyToMessage = null;
+	let replyToMessage: any = null;
 
-	let typingUsers = [];
-	let typingUsersTimeout = {};
+	let typingUsers: any = [];
+	let typingUsersTimeout: Record<string, any> = {};
 
 	$: if (threadId) {
 		initHandler();
@@ -64,7 +65,7 @@
 		}
 	};
 
-	const channelEventHandler = async (event) => {
+	const channelEventHandler = async (event: any) => {
 		console.debug(event);
 		if (event.channel_id === channel.id) {
 			const type = event?.data?.type ?? null;
@@ -176,7 +177,7 @@
 {#if channel}
 	<div class="flex flex-col w-full h-full bg-gray-50 dark:bg-gray-850">
 		<div class="sticky top-0 flex items-center justify-between px-3.5 py-3">
-			<div class=" font-medium text-lg">{$i18n.t('Thread')}</div>
+			<div class=" font-medium text-lg">{i18n.t('Thread')}</div>
 
 			<div>
 				<button
@@ -200,7 +201,7 @@
 					{replyToMessage}
 					thread={true}
 					{onPin}
-					onReply={async (message) => {
+					onReply={async (message: any) => {
 						replyToMessage = message;
 
 						await tick();
@@ -236,8 +237,85 @@
 					{channel}
 					disabled={!channel?.write_access}
 					placeholder={!channel?.write_access
-						? $i18n.t('You do not have permission to send messages in this thread.')
-						: $i18n.t('Reply to thread...')}
+						? i18n.t('You do not have permission to send messages in this thread.')
+						: i18n.t('Reply to thread...')}
+					typingUsersClassName="from-gray-50 dark:from-gray-850"
+					{typingUsers}
+					userSuggestions={true}
+					channelSuggestions={true}
+					{onChange}
+					onSubmit={submitHandler}
+				/>
+			</div>
+		</div>
+	</div>
+{/if}
+
+{#if channel}
+	<div class="flex flex-col w-full h-full bg-gray-50 dark:bg-gray-850">
+		<div class="sticky top-0 flex items-center justify-between px-3.5 py-3">
+			<div class=" font-medium text-lg">{i18n.t('Thread')}</div>
+
+			<div>
+				<button
+					class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 p-2"
+					on:click={() => {
+						onClose();
+					}}
+				>
+					<XMark />
+				</button>
+			</div>
+		</div>
+
+		<div class=" max-h-full w-full overflow-y-auto" bind:this={messagesContainerElement}>
+			{#if messages !== null}
+				<Messages
+					id={threadId}
+					{channel}
+					{top}
+					{messages}
+					{replyToMessage}
+					thread={true}
+					{onPin}
+					onReply={async (message: any) => {
+						replyToMessage = message;
+
+						await tick();
+						chatInputElement?.focus();
+					}}
+					onLoad={async () => {
+						const newMessages = await getChannelThreadMessages(
+							localStorage.token,
+							channel.id,
+							threadId,
+							messages.length
+						);
+
+						messages = [...messages, ...newMessages];
+
+						if (newMessages.length < 50) {
+							top = true;
+							return;
+						}
+					}}
+				/>
+			{:else}
+				<div class="w-full flex justify-center pt-5 pb-10">
+					<Spinner />
+				</div>
+			{/if}
+
+			<div class=" pb-[1rem] px-2.5 w-full">
+				<MessageInput
+					bind:replyToMessage
+					bind:chatInputElement
+					id={threadId}
+					{channel}
+					disabled={!channel?.write_access}
+					placeholder={!channel?.write_access
+						? i18n.t('You do not have permission to send messages in this thread.')
+						: i18n.t('Reply to thread...')}
 					typingUsersClassName="from-gray-50 dark:from-gray-850"
 					{typingUsers}
 					userSuggestions={true}

@@ -9,7 +9,7 @@ type NoteItem = {
 };
 
 export const createNewNote = async (token: string, note: NoteItem) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/notes/create`, {
 		method: 'POST',
@@ -40,7 +40,7 @@ export const createNewNote = async (token: string, note: NoteItem) => {
 };
 
 export const getNotes = async (token: string = '', raw: boolean = false) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/notes/`, {
 		method: 'GET',
@@ -99,7 +99,7 @@ export const searchNotes = async (
 	sortKey: string | null = null,
 	page: number | null = null
 ) => {
-	let error = null;
+	let error: any = null;
 	const searchParams = new URLSearchParams();
 
 	if (query !== null) {
@@ -151,7 +151,7 @@ export const searchNotes = async (
 };
 
 export const getNoteList = async (token: string = '', page: number | null = null) => {
-	let error = null;
+	let error: any = null;
 	const searchParams = new URLSearchParams();
 
 	if (page !== null) {
@@ -187,7 +187,7 @@ export const getNoteList = async (token: string = '', page: number | null = null
 };
 
 export const getNoteById = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/notes/${id}`, {
 		method: 'GET',
@@ -219,7 +219,7 @@ export const getNoteById = async (token: string, id: string) => {
 };
 
 export const updateNoteById = async (token: string, id: string, note: NoteItem) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/notes/${id}/update`, {
 		method: 'POST',
@@ -254,7 +254,7 @@ export const updateNoteById = async (token: string, id: string, note: NoteItem) 
 };
 
 export const updateNoteAccessGrants = async (token: string, id: string, accessGrants: any[]) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/notes/${id}/access/update`, {
 		method: 'POST',
@@ -283,7 +283,7 @@ export const updateNoteAccessGrants = async (token: string, id: string, accessGr
 };
 
 export const deleteNoteById = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/notes/${id}/delete`, {
 		method: 'DELETE',
@@ -315,7 +315,7 @@ export const deleteNoteById = async (token: string, id: string) => {
 };
 
 export const getPinnedNoteList = async (token: string = '') => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/notes/pinned`, {
 		method: 'GET',
@@ -346,7 +346,7 @@ export const getPinnedNoteList = async (token: string = '') => {
 };
 
 export const toggleNotePinnedStatusById = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/notes/${id}/pin`, {
 		method: 'POST',

@@ -1,7 +1,7 @@
 import { OPENAI_API_BASE_URL, WEBUI_API_BASE_URL, WEBUI_BASE_URL } from '$lib/constants';
 
 export const getOpenAIConfig = async (token: string = '') => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${OPENAI_API_BASE_URL}/config`, {
 		method: 'GET',
@@ -40,7 +40,7 @@ type OpenAIConfig = {
 };
 
 export const updateOpenAIConfig = async (token: string = '', config: OpenAIConfig) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${OPENAI_API_BASE_URL}/config/update`, {
 		method: 'POST',
@@ -75,7 +75,7 @@ export const updateOpenAIConfig = async (token: string = '', config: OpenAIConfi
 };
 
 export const getOpenAIModelsDirect = async (url: string, key: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${url}/models`, {
 		method: 'GET',
@@ -102,7 +102,7 @@ export const getOpenAIModelsDirect = async (url: string, key: string) => {
 };
 
 export const getOpenAIModels = async (token: string, urlIdx?: number) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(
 		`${OPENAI_API_BASE_URL}/models${typeof urlIdx === 'number' ? `/${urlIdx}` : ''}`,
@@ -141,8 +141,8 @@ export const verifyOpenAIConnection = async (
 		throw 'OpenAI: URL is required';
 	}
 
-	let error = null;
-	let res = null;
+	let error: any = null;
+	let res: any = null;
 
 	if (direct) {
 		res = await fetch(`${url}/models`, {
@@ -202,7 +202,7 @@ export const chatCompletion = async (
 	url: string = `${WEBUI_BASE_URL}/api`
 ): Promise<[Response | null, AbortController]> => {
 	const controller = new AbortController();
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${url}/chat/completions`, {
 		signal: controller.signal,
@@ -230,7 +230,7 @@ export const generateOpenAIChatCompletion = async (
 	body: object,
 	url: string = `${WEBUI_BASE_URL}/api`
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${url}/chat/completions`, {
 		method: 'POST',
@@ -263,7 +263,7 @@ export const synthesizeOpenAISpeech = async (
 	text: string = '',
 	model: string = 'tts-1'
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${OPENAI_API_BASE_URL}/audio/speech`, {
 		method: 'POST',

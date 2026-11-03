@@ -1,13 +1,13 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
 	import { getContext } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { decodeString } from '$lib/utils';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
-	export let id;
-
+	export let id: any;
 	export let title: string = 'N/A';
 
 	export let onClick: Function = () => {};
@@ -42,7 +42,21 @@
 
 {#if title !== 'N/A'}
 	<button
-		aria-label={$i18n.t('View source: {{title}}', { title: formattedTitle(decodeString(title)) })}
+		aria-label={i18n.t('View source: {{title}}', { title: formattedTitle(decodeString(title)) })}
+		class="text-[10px] w-fit translate-y-[2px] px-2 py-0.5 dark:bg-white/5 dark:text-white/80 dark:hover:text-white bg-gray-50 text-black/80 hover:text-black transition rounded-xl"
+		on:click={() => {
+			onClick(id);
+		}}
+	>
+		<span class="line-clamp-1">
+			{getDisplayTitle(formattedTitle(decodeString(title)))}
+		</span>
+	</button>
+{/if}
+
+{#if title !== 'N/A'}
+	<button
+		aria-label={i18n.t('View source: {{title}}', { title: formattedTitle(decodeString(title)) })}
 		class="text-[10px] w-fit translate-y-[2px] px-2 py-0.5 dark:bg-white/5 dark:text-white/80 dark:hover:text-white bg-gray-50 text-black/80 hover:text-black transition rounded-xl"
 		on:click={() => {
 			onClick(id);

@@ -5,16 +5,16 @@
 	import Skills from './Commands/Skills.svelte';
 	import Emojis from './Commands/Emojis.svelte';
 
-	export let char = '';
-	export let query = '';
+	export let char: any = '';
+	export let query: any = '';
 	export let command: (payload: { id: string; label: string }) => void;
 
-	export let onSelect = (e) => {};
-	export let onUpload = (e) => {};
-	export let insertTextHandler = (text) => {};
+	export let onSelect = (e: any) => {};
+	export let onUpload = (e: any) => {};
+	export let insertTextHandler = (text: any) => {};
 
-	let suggestionElement = null;
-	let filteredItems = [];
+	let suggestionElement: any = null;
+	let filteredItems: any = [];
 
 	const onKeyDown = (event: KeyboardEvent) => {
 		if (!['ArrowUp', 'ArrowDown', 'Enter', 'Tab', 'Escape'].includes(event.key)) return false;
@@ -64,7 +64,7 @@
 				bind:this={suggestionElement}
 				{query}
 				bind:filteredItems
-				onSelect={(e) => {
+				onSelect={(e: any) => {
 					const { type, data } = e;
 
 					if (type === 'prompt') {
@@ -77,7 +77,7 @@
 				bind:this={suggestionElement}
 				{query}
 				bind:filteredItems
-				onSelect={(e) => {
+				onSelect={(e: any) => {
 					const { type, data } = e;
 
 					if (type === 'knowledge') {
@@ -102,7 +102,7 @@
 				bind:this={suggestionElement}
 				{query}
 				bind:filteredItems
-				onSelect={(e) => {
+				onSelect={(e: any) => {
 					const { type, data } = e;
 
 					if (type === 'model') {
@@ -120,7 +120,7 @@
 				bind:this={suggestionElement}
 				{query}
 				bind:filteredItems
-				onSelect={(e) => {
+				onSelect={(e: any) => {
 					const { type, data } = e;
 
 					if (type === 'skill') {
@@ -141,7 +141,7 @@
 				bind:this={suggestionElement}
 				{query}
 				bind:filteredItems
-				onSelect={(e) => {
+				onSelect={(e: any) => {
 					const { type, data } = e;
 
 					if (type === 'emoji') {

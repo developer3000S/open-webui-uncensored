@@ -1,9 +1,9 @@
-<script>
+<script lang="ts">
 	import { WEBUI_BASE_URL } from '$lib/constants';
 	import { shortCodesToEmojis } from '$lib/stores';
 
-	export let shortCode;
-	export let className = 'size-4';
+	export let shortCode: any;
+	export let className: any = 'size-4';
 </script>
 
 {#if $shortCodesToEmojis[shortCode]}

@@ -1,8 +1,9 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
 	import { getContext, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { settings } from '$lib/stores';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
@@ -14,11 +15,10 @@
 	export let onDelete = () => {};
 	export let onSubmit = () => {};
 
-	export let pipeline = false;
-
-	export let url = '';
-	export let key = '';
-	export let config = {};
+	export let pipeline: any = false;
+	export let url: any = '';
+	export let key: any = '';
+	let config: Record<string, any> = {};
 
 	let showConfigModal = false;
 </script>
@@ -36,7 +36,7 @@
 		onDelete();
 		showConfigModal = false;
 	}}
-	onSubmit={(connection) => {
+	onSubmit={(connection: any) => {
 		url = connection.url;
 		key = connection.key;
 		config = connection.config;
@@ -47,7 +47,7 @@
 <div class="flex w-full gap-2 items-center">
 	<Tooltip
 		className="w-full relative"
-		content={$i18n.t(`WebUI will make requests to "{{url}}/chat/completions"`, {
+		content={i18n.t(`WebUI will make requests to "{{url}}/chat/completions"`, {
 			url
 		})}
 		placement="top-start"
@@ -61,7 +61,7 @@
 			<div class="flex-1 relative">
 				<input
 					class={`w-full bg-transparent ${($settings?.highContrastMode ?? false) ? '' : 'outline-hidden'} ${pipeline ? 'pr-8' : ''}`}
-					placeholder={$i18n.t('API Base URL')}
+					placeholder={i18n.t('API Base URL')}
 					bind:value={url}
 					autocomplete="off"
 				/>
@@ -70,9 +70,9 @@
 	</Tooltip>
 
 	<div class="flex gap-1 items-center">
-		<Tooltip content={$i18n.t('Configure')} className="self-start">
+		<Tooltip content={i18n.t('Configure')} className="self-start">
 			<button
-				aria-label={$i18n.t('Open modal to configure connection')}
+				aria-label={i18n.t('Open modal to configure connection')}
 				class="self-center p-1 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition"
 				on:click={() => {
 					showConfigModal = true;
@@ -83,7 +83,79 @@
 			</button>
 		</Tooltip>
 
-		<Tooltip content={(config?.enable ?? true) ? $i18n.t('Enabled') : $i18n.t('Disabled')}>
+		<Tooltip content={(config?.enable ?? true) ? i18n.t('Enabled') : i18n.t('Disabled')}>
+			<Switch
+				bind:state={config.enable}
+				on:change={() => {
+					config.enable = config.enable ?? false;
+					onSubmit({ url, key, config });
+				}}
+			/>
+		</Tooltip>
+	</div>
+</div>
+
+<AddConnectionModal
+	edit
+	direct
+	bind:show={showConfigModal}
+	connection={{
+		url,
+		key,
+		config
+	}}
+	onDelete={() => {
+		onDelete();
+		showConfigModal = false;
+	}}
+	onSubmit={(connection: any) => {
+		url = connection.url;
+		key = connection.key;
+		config = connection.config;
+		onSubmit(connection);
+	}}
+/>
+
+<div class="flex w-full gap-2 items-center">
+	<Tooltip
+		className="w-full relative"
+		content={i18n.t(`WebUI will make requests to "{{url}}/chat/completions"`, {
+			url
+		})}
+		placement="top-start"
+	>
+		{#if !(config?.enable ?? true)}
+			<div
+				class="absolute top-0 bottom-0 left-0 right-0 opacity-60 bg-white dark:bg-gray-900 z-10"
+			></div>
+		{/if}
+		<div class="flex w-full gap-2">
+			<div class="flex-1 relative">
+				<input
+					class={`w-full bg-transparent ${($settings?.highContrastMode ?? false) ? '' : 'outline-hidden'} ${pipeline ? 'pr-8' : ''}`}
+					placeholder={i18n.t('API Base URL')}
+					bind:value={url}
+					autocomplete="off"
+				/>
+			</div>
+		</div>
+	</Tooltip>
+
+	<div class="flex gap-1 items-center">
+		<Tooltip content={i18n.t('Configure')} className="self-start">
+			<button
+				aria-label={i18n.t('Open modal to configure connection')}
+				class="self-center p-1 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition"
+				on:click={() => {
+					showConfigModal = true;
+				}}
+				type="button"
+			>
+				<Cog6 />
+			</button>
+		</Tooltip>
+
+		<Tooltip content={(config?.enable ?? true) ? i18n.t('Enabled') : i18n.t('Disabled')}>
 			<Switch
 				bind:state={config.enable}
 				on:change={() => {

@@ -1,9 +1,9 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
 	import { getContext, onMount } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { getGroups, getGroupById, getGroupInfoById } from '$lib/apis/groups';
 	import { getUserInfoById } from '$lib/apis/users';
@@ -34,10 +34,9 @@
 	export let accessGrants: AccessGrant[] | any = [];
 	export let accessControl: any = undefined;
 
-	export let share = true;
-	export let sharePublic = true;
-	export let shareUsers = true;
-
+	export let share: any = true;
+	export let sharePublic: any = true;
+	export let shareUsers: any = true;
 	let groups: any[] = [];
 	const resolvingGroupIds = new Set<string>();
 	let userById: Record<string, any> = {};
@@ -305,7 +304,7 @@
 		}
 
 		const fetched = await Promise.all(
-			pendingIds.map(async (id) => {
+			pendingIds.map(async (id: any) => {
 				const user = await getUserInfoById(localStorage.token, id).catch((error) => {
 					console.error(error);
 					return null;
@@ -349,7 +348,7 @@
 		}
 
 		const fetched = await Promise.all(
-			pendingIds.map(async (id) => {
+			pendingIds.map(async (id: any) => {
 				const group = await getGroupInfoById(localStorage.token, id).catch((error) => {
 					console.error(error);
 					return null;
@@ -488,7 +487,7 @@
 			<div>
 				<Tooltip
 					content={!(share && sharePublic) && !hasPublicReadGrant(accessGrants ?? [])
-						? $i18n.t('You do not have permission to make this public')
+						? i18n.t('You do not have permission to make this public')
 						: ''}
 				>
 					<select
@@ -499,18 +498,18 @@
 							setPublic((e.target as HTMLSelectElement).value === 'public');
 						}}
 					>
-						<option class=" text-gray-700" value="private">{$i18n.t('Private')}</option>
+						<option class=" text-gray-700" value="private">{i18n.t('Private')}</option>
 						{#if (share && sharePublic) || hasPublicReadGrant(accessGrants ?? [])}
-							<option class=" text-gray-700" value="public">{$i18n.t('Public')}</option>
+							<option class=" text-gray-700" value="public">{i18n.t('Public')}</option>
 						{/if}
 					</select>
 				</Tooltip>
 
 				<div class=" text-xs text-gray-400 font-medium">
 					{#if !hasPublicReadGrant(accessGrants ?? [])}
-						{$i18n.t('Only select users and groups with permission can access')}
+						{i18n.t('Only select users and groups with permission can access')}
 					{:else}
-						{$i18n.t('Accessible to all users')}
+						{i18n.t('Accessible to all users')}
 					{/if}
 				</div>
 			</div>
@@ -519,7 +518,7 @@
 		{#if hasPublicReadGrant(accessGrants ?? []) && accessRoles.includes('write')}
 			<div class="flex w-full justify-between mt-2 ml-0.5">
 				<div class="self-center text-xs">
-					{$i18n.t('Allow public write access')}
+					{i18n.t('Allow public write access')}
 				</div>
 				<Switch
 					state={hasPublicWriteGrant(accessGrants ?? [])}
@@ -534,7 +533,7 @@
 	{#if share}
 		<div class="flex items-center justify-between text-xs font-medium text-gray-500 my-1">
 			<div>
-				{$i18n.t('Access List')}
+				{i18n.t('Access List')}
 			</div>
 			<div class="flex gap-1">
 				<button
@@ -545,7 +544,7 @@
 					}}
 				>
 					<Plus className="size-3" />
-					{$i18n.t('Add Access')}
+					{i18n.t('Add Access')}
 				</button>
 			</div>
 		</div>
@@ -566,7 +565,7 @@
 						<div class="truncate text-sm flex items-center gap-2">
 							{group.name}
 							<span class="text-xs text-gray-400 font-normal"
-								>{group?.member_count} {$i18n.t('members')}</span
+								>{group?.member_count} {i18n.t('members')}</span
 							>
 						</div>
 					</div>
@@ -581,9 +580,9 @@
 							}}
 						>
 							{#if writeGroupIds.includes(group.id)}
-								<Badge type={'success'} content={$i18n.t('Write')} />
+								<Badge type={'success'} content={i18n.t('Write')} />
 							{:else}
-								<Badge type={'info'} content={$i18n.t('Read')} />
+								<Badge type={'info'} content={i18n.t('Read')} />
 							{/if}
 						</button>
 
@@ -629,9 +628,9 @@
 								}}
 							>
 								{#if writeUserIds.includes(user.id)}
-									<Badge type={'success'} content={$i18n.t('Write')} />
+									<Badge type={'success'} content={i18n.t('Write')} />
 								{:else}
-									<Badge type={'info'} content={$i18n.t('Read')} />
+									<Badge type={'info'} content={i18n.t('Read')} />
 								{/if}
 							</button>
 
@@ -651,7 +650,221 @@
 
 			{#if !hasPublicReadGrant(accessGrants ?? []) && accessGroups.length === 0 && selectedUsers.length === 0}
 				<div class="text-xs text-gray-500 text-center py-4">
-					{$i18n.t('No access grants. Private to you.')}
+					{i18n.t('No access grants. Private to you.')}
+				</div>
+			{/if}
+		</div>
+	{/if}
+</div>
+
+<AddAccessModal bind:show={showAddAccessModal} {shareUsers} onAdd={handleAddAccess} />
+
+<div class=" rounded-lg flex flex-col gap-1">
+	<div class="py-2">
+		<div class="flex gap-2.5 items-center">
+			<div>
+				<div class=" p-2 bg-black/5 dark:bg-white/5 rounded-full">
+					{#if !hasPublicReadGrant(accessGrants ?? [])}
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke-width="1.5"
+							stroke="currentColor"
+							class="w-5 h-5"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+							/>
+						</svg>
+					{:else}
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke-width="1.5"
+							stroke="currentColor"
+							class="w-5 h-5"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								d="M6.115 5.19l.319 1.913A6 6 0 008.11 10.36L9.75 12l-.387.775c-.217.433-.132.956.21 1.298l1.348 1.348c.21.21.329.497.329.795v1.089c0 .426.24.815.622 1.006l.153.076c.433.217.956.132 1.298-.21l.723-.723a8.7 8.7 0 002.288-4.042 1.087 1.087 0 00-.358-1.099l-1.33-1.108c-.251-.21-.582-.299-.905-.245l-1.17.195a1.125 1.125 0 01-.98-.314l-.295-.295a1.125 1.125 0 010-1.591l.13-.132a1.125 1.125 0 011.3-.21l.603.302a.809.809 0 001.086-1.086L14.25 7.5l1.256-.837a4.5 4.5 0 001.528-1.732l.146-.292M6.115 5.19A9 9 0 1017.18 4.64M6.115 5.19A8.965 8.965 0 0112 3c1.929 0 3.716.607 5.18 1.64"
+							/>
+						</svg>
+					{/if}
+				</div>
+			</div>
+
+			<div>
+				<Tooltip
+					content={!(share && sharePublic) && !hasPublicReadGrant(accessGrants ?? [])
+						? i18n.t('You do not have permission to make this public')
+						: ''}
+				>
+					<select
+						id="models"
+						class="outline-none bg-transparent text-sm font-medium block w-fit pr-10 max-w-full placeholder-gray-400"
+						value={!hasPublicReadGrant(accessGrants ?? []) ? 'private' : 'public'}
+						on:change={(e) => {
+							setPublic((e.target as HTMLSelectElement).value === 'public');
+						}}
+					>
+						<option class=" text-gray-700" value="private">{i18n.t('Private')}</option>
+						{#if (share && sharePublic) || hasPublicReadGrant(accessGrants ?? [])}
+							<option class=" text-gray-700" value="public">{i18n.t('Public')}</option>
+						{/if}
+					</select>
+				</Tooltip>
+
+				<div class=" text-xs text-gray-400 font-medium">
+					{#if !hasPublicReadGrant(accessGrants ?? [])}
+						{i18n.t('Only select users and groups with permission can access')}
+					{:else}
+						{i18n.t('Accessible to all users')}
+					{/if}
+				</div>
+			</div>
+		</div>
+
+		{#if hasPublicReadGrant(accessGrants ?? []) && accessRoles.includes('write')}
+			<div class="flex w-full justify-between mt-2 ml-0.5">
+				<div class="self-center text-xs">
+					{i18n.t('Allow public write access')}
+				</div>
+				<Switch
+					state={hasPublicWriteGrant(accessGrants ?? [])}
+					on:change={() => {
+						togglePublicWrite();
+					}}
+				/>
+			</div>
+		{/if}
+	</div>
+
+	{#if share}
+		<div class="flex items-center justify-between text-xs font-medium text-gray-500 my-1">
+			<div>
+				{i18n.t('Access List')}
+			</div>
+			<div class="flex gap-1">
+				<button
+					class="px-2 py-1 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition text-xs font-medium flex items-center gap-1"
+					type="button"
+					on:click={() => {
+						showAddAccessModal = true;
+					}}
+				>
+					<Plus className="size-3" />
+					{i18n.t('Add Access')}
+				</button>
+			</div>
+		</div>
+
+		<!-- List -->
+		<div class="flex flex-col gap-2">
+			<!-- Groups -->
+			{#each accessGroups as group}
+				<div class="flex items-center gap-3 justify-between text-sm w-full transition pb-1">
+					<div class="flex items-center gap-2 w-full flex-1">
+						<!-- Placeholder for group icon vs user icon -->
+						<div
+							class="size-5 rounded-full bg-gray-100 dark:bg-gray-850 flex items-center justify-center text-xs"
+						>
+							{group.name.charAt(0).toUpperCase()}
+						</div>
+
+						<div class="truncate text-sm flex items-center gap-2">
+							{group.name}
+							<span class="text-xs text-gray-400 font-normal"
+								>{group?.member_count} {i18n.t('members')}</span
+							>
+						</div>
+					</div>
+
+					<div class="w-full flex justify-end items-center gap-2">
+						<button
+							type="button"
+							on:click={() => {
+								if (accessRoles.includes('write')) {
+									togglePrincipalWrite('group', group.id);
+								}
+							}}
+						>
+							{#if writeGroupIds.includes(group.id)}
+								<Badge type={'success'} content={i18n.t('Write')} />
+							{:else}
+								<Badge type={'info'} content={i18n.t('Read')} />
+							{/if}
+						</button>
+
+						<button
+							class=" rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-850 transition"
+							type="button"
+							on:click={() => {
+								removePrincipal('group', group.id);
+							}}
+						>
+							<XMark className="size-4" />
+						</button>
+					</div>
+				</div>
+			{/each}
+
+			<!-- Users -->
+			{#if shareUsers}
+				{#each selectedUsers as user}
+					<div
+						class="flex items-center gap-3 justify-between text-sm w-full transition border-b border-gray-50 dark:border-gray-850 pb-2 last:border-0"
+					>
+						<div class="flex items-center gap-2 w-full flex-1">
+							<img
+								class="rounded-full size-5 object-cover"
+								src={`${WEBUI_API_BASE_URL}/users/${user.id}/profile/image`}
+								alt={user.name ?? user.id}
+							/>
+							<div class="w-full">
+								<Tooltip content={user.email} placement="top-start">
+									<div class="truncate text-sm">{user.name ?? user.id}</div>
+								</Tooltip>
+							</div>
+						</div>
+
+						<div class="w-full flex justify-end items-center gap-2">
+							<button
+								type="button"
+								on:click={() => {
+									if (accessRoles.includes('write')) {
+										togglePrincipalWrite('user', user.id);
+									}
+								}}
+							>
+								{#if writeUserIds.includes(user.id)}
+									<Badge type={'success'} content={i18n.t('Write')} />
+								{:else}
+									<Badge type={'info'} content={i18n.t('Read')} />
+								{/if}
+							</button>
+
+							<button
+								class=" rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-850 transition"
+								type="button"
+								on:click={() => {
+									removePrincipal('user', user.id);
+								}}
+							>
+								<XMark className="size-4" />
+							</button>
+						</div>
+					</div>
+				{/each}
+			{/if}
+
+			{#if !hasPublicReadGrant(accessGrants ?? []) && accessGroups.length === 0 && selectedUsers.length === 0}
+				<div class="text-xs text-gray-500 text-center py-4">
+					{i18n.t('No access grants. Private to you.')}
 				</div>
 			{/if}
 		</div>

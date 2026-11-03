@@ -1,7 +1,7 @@
 import { AUDIO_API_BASE_URL } from '$lib/constants';
 
 export const getAudioConfig = async (token: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${AUDIO_API_BASE_URL}/config`, {
 		method: 'GET',
@@ -35,7 +35,7 @@ type OpenAIConfigForm = {
 };
 
 export const updateAudioConfig = async (token: string, payload: OpenAIConfigForm) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${AUDIO_API_BASE_URL}/config/update`, {
 		method: 'POST',
@@ -71,7 +71,7 @@ export const transcribeAudio = async (token: string, file: File, language?: stri
 		data.append('language', language);
 	}
 
-	let error = null;
+	let error: any = null;
 	const res = await fetch(`${AUDIO_API_BASE_URL}/transcriptions`, {
 		method: 'POST',
 		headers: {
@@ -103,7 +103,7 @@ export const synthesizeOpenAISpeech = async (
 	text: string = '',
 	model?: string
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${AUDIO_API_BASE_URL}/speech`, {
 		method: 'POST',
@@ -140,7 +140,7 @@ interface AvailableModelsResponse {
 }
 
 export const getModels = async (token: string = ''): Promise<AvailableModelsResponse> => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${AUDIO_API_BASE_URL}/models`, {
 		method: 'GET',
@@ -168,7 +168,7 @@ export const getModels = async (token: string = ''): Promise<AvailableModelsResp
 };
 
 export const getVoices = async (token: string = '') => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${AUDIO_API_BASE_URL}/voices`, {
 		method: 'GET',

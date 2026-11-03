@@ -1,5 +1,8 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
 	import { getContext, onMount } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { config, knowledge, settings, user } from '$lib/stores';
 
 	import KnowledgeSelector from './Knowledge/KnowledgeSelector.svelte';
@@ -12,23 +15,21 @@
 	import { v4 as uuidv4 } from 'uuid';
 	import { WEBUI_API_BASE_URL } from '$lib/constants';
 
-	export let selectedItems = [];
+	export let selectedItems: any = [];
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	let loaded = false;
 
-	let filesInputElement = null;
-	let inputFiles = null;
+	let filesInputElement: any = null;
+	let inputFiles: any = null;
 
 	$: if (selectedItems === null) {
 		selectedItems = [];
 	}
 
-	const uploadFileHandler = async (file, fullContext: boolean = false) => {
+	const uploadFileHandler = async (file: any, fullContext: boolean = false) => {
 		if ($user?.role !== 'admin' && !($user?.permissions?.chat?.file_upload ?? true)) {
-			toast.error($i18n.t('You do not have permission to upload files.'));
+			toast.error(i18n.t('You do not have permission to upload files.'));
 			return null;
 		}
 
@@ -48,7 +49,7 @@
 		};
 
 		if (fileItem.size == 0) {
-			toast.error($i18n.t('You cannot upload an empty file.'));
+			toast.error(i18n.t('You cannot upload an empty file.'));
 			return null;
 		}
 
@@ -56,7 +57,7 @@
 
 		try {
 			// If the file is an audio file, provide the language for STT.
-			let metadata = null;
+			let metadata: any = null;
 			if (
 				(file.type.startsWith('audio/') || file.type.startsWith('video/')) &&
 				$settings?.audio?.stt?.language
@@ -98,10 +99,10 @@
 		}
 	};
 
-	const inputFilesHandler = async (inputFiles) => {
+	const inputFilesHandler = async (inputFiles: any) => {
 		console.log('Input files handler called with:', inputFiles);
 
-		inputFiles.forEach(async (file) => {
+		inputFiles.forEach(async (file: any) => {
 			console.log('Processing file:', {
 				name: file.name,
 				type: file.type,
@@ -118,7 +119,7 @@
 					maxSize: ($config?.file?.max_size ?? 0) * 1024 * 1024
 				});
 				toast.error(
-					$i18n.t(`File size should not exceed {{maxSize}} MB.`, {
+					i18n.t(`File size should not exceed {{maxSize}} MB.`, {
 						maxSize: $config?.file?.max_size
 					})
 				);
@@ -128,7 +129,7 @@
 			if (!file['type'].startsWith('image/')) {
 				uploadFileHandler(file);
 			} else {
-				toast.error($i18n.t(`Unsupported file type.`));
+				toast.error(i18n.t(`Unsupported file type.`));
 			}
 		});
 	};
@@ -149,7 +150,7 @@
 			const _inputFiles = Array.from(inputFiles);
 			inputFilesHandler(_inputFiles);
 		} else {
-			toast.error($i18n.t(`File not found.`));
+			toast.error(i18n.t(`File not found.`));
 		}
 
 		filesInputElement.value = '';
@@ -161,7 +162,7 @@
 		<div class="mb-2">
 			<div class="flex w-full justify-between mb-1">
 				<div class=" self-center text-xs text-gray-500">
-					{$i18n.t('Knowledge')}
+					{i18n.t('Knowledge')}
 				</div>
 			</div>
 		</div>
@@ -211,7 +212,7 @@
 						<div
 							class="flex min-w-0 items-center bg-transparent text-xs text-gray-500 outline-hidden hover:underline dark:text-gray-400"
 						>
-							<span class="truncate">{$i18n.t('Select Knowledge')}</span>
+							<span class="truncate">{i18n.t('Select Knowledge')}</span>
 						</div>
 					</KnowledgeSelector>
 				</div>
@@ -220,12 +221,12 @@
 					<button
 						class="self-center bg-transparent text-xs text-gray-500 hover:underline dark:text-gray-400"
 						type="button"
-						aria-label={$i18n.t('Upload Files')}
+						aria-label={i18n.t('Upload Files')}
 						on:click={() => {
 							filesInputElement.click();
 						}}
 					>
-						{$i18n.t('Upload')}
+						{i18n.t('Upload')}
 					</button>
 				{/if}
 			</div>
@@ -234,6 +235,106 @@
 	</div>
 
 	<div class=" text-xs dark:text-gray-700">
-		{$i18n.t('To attach knowledge base here, add them to the "Knowledge" workspace first.')}
+		{i18n.t('To attach knowledge base here, add them to the "Knowledge" workspace first.')}
+	</div>
+</div>
+
+<input
+	bind:this={filesInputElement}
+	bind:files={inputFiles}
+	type="file"
+	hidden
+	multiple
+	on:change={async () => {
+		if (inputFiles && inputFiles.length > 0) {
+			const _inputFiles = Array.from(inputFiles);
+			inputFilesHandler(_inputFiles);
+		} else {
+			toast.error(i18n.t(`File not found.`));
+		}
+
+		filesInputElement.value = '';
+	}}
+/>
+
+<div>
+	<slot name="label">
+		<div class="mb-2">
+			<div class="flex w-full justify-between mb-1">
+				<div class=" self-center text-xs text-gray-500">
+					{i18n.t('Knowledge')}
+				</div>
+			</div>
+		</div>
+	</slot>
+
+	<div class="flex flex-col mb-1">
+		{#if selectedItems?.length > 0}
+			<div class=" flex flex-wrap items-center gap-2 mb-2.5">
+				{#each selectedItems as file, fileIdx}
+					<FileItem
+						{file}
+						small={true}
+						item={file}
+						name={file.name}
+						modal={true}
+						edit={true}
+						loading={file.status === 'uploading'}
+						type={file?.legacy
+							? `Legacy${file.type ? ` ${file.type}` : ''}`
+							: (file?.type ?? 'collection')}
+						dismissible
+						on:dismiss={(e) => {
+							selectedItems = selectedItems.filter((_, idx) => idx !== fileIdx);
+						}}
+					/>
+				{/each}
+			</div>
+		{/if}
+
+		{#if loaded}
+			<div class="flex items-center gap-2">
+				<div class="min-w-0">
+					<KnowledgeSelector
+						on:select={(e) => {
+							const item = e.detail;
+
+							if (!selectedItems.find((k) => k.id === item.id)) {
+								selectedItems = [
+									...selectedItems,
+									{
+										...item
+									}
+								];
+							}
+						}}
+					>
+						<div
+							class="flex min-w-0 items-center bg-transparent text-xs text-gray-500 outline-hidden hover:underline dark:text-gray-400"
+						>
+							<span class="truncate">{i18n.t('Select Knowledge')}</span>
+						</div>
+					</KnowledgeSelector>
+				</div>
+
+				{#if $user?.role === 'admin' || $user?.permissions?.chat?.file_upload}
+					<button
+						class="self-center bg-transparent text-xs text-gray-500 hover:underline dark:text-gray-400"
+						type="button"
+						aria-label={i18n.t('Upload Files')}
+						on:click={() => {
+							filesInputElement.click();
+						}}
+					>
+						{i18n.t('Upload')}
+					</button>
+				{/if}
+			</div>
+		{/if}
+		<!-- {knowledge} -->
+	</div>
+
+	<div class=" text-xs dark:text-gray-700">
+		{i18n.t('To attach knowledge base here, add them to the "Knowledge" workspace first.')}
 	</div>
 </div>

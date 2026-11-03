@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import Sortable from 'sortablejs';
 
 	import { onDestroy, onMount, tick } from 'svelte';
@@ -8,17 +8,16 @@
 	import { updateUserSettings } from '$lib/apis/users';
 	import PinnedModelItem from './PinnedModelItem.svelte';
 
-	export let selectedChatId = null;
-	export let shiftKey = false;
-
-	let pinnedModels = [];
+	let selectedChatId: any = null;
+	export let shiftKey: any = false;
+	let pinnedModels: any[] = [];
 
 	const initPinnedModelsSortable = () => {
 		const pinnedModelsList = document.getElementById('pinned-models-list');
 		if (pinnedModelsList && !$mobile) {
 			new Sortable(pinnedModelsList, {
 				animation: 150,
-				setData: function (dataTransfer, dragEl) {
+				setData: (dataTransfer: any, dragEl: any)  => {
 					dataTransfer.setData(
 						'text/plain',
 						JSON.stringify({
@@ -27,7 +26,7 @@
 						})
 					);
 				},
-				onUpdate: async (event) => {
+				onUpdate: async (event: any)  => {
 					const modelId = event.item.dataset.id;
 					const newIndex = event.newIndex;
 
@@ -46,7 +45,7 @@
 
 	let unsubscribeSettings;
 
-	const cleanupStalePinnedModels = async (modelIds) => {
+	const cleanupStalePinnedModels = async (modelIds: any) => {
 		const validModels = modelIds.filter((id) => {
 			const model = $models.find((m) => m.id === id);
 			// Remove if model not found (deleted) or if hidden

@@ -1,9 +1,7 @@
-<script>
+<script lang="ts">
 	import { onDestroy, onMount, tick, getContext } from 'svelte';
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
-
+	
 	import Markdown from './Markdown.svelte';
 	import StructuredOutputRenderer from './StructuredOutputRenderer.svelte';
 	import {
@@ -23,8 +21,8 @@
 	 * handling nested <details> via depth tracking.
 	 * Returns { detailsContent, plainContent }.
 	 */
-	const extractDetailsBlocks = (text) => {
-		const blocks = [];
+	const extractDetailsBlocks = (text: any) => {
+		const blocks: any[] = [];
 		let remaining = text;
 		let result = '';
 		const openTag = '<details';
@@ -69,35 +67,33 @@
 		};
 	};
 
-	export let id;
-	export let content;
+	export let id: any;
+	export let content: any;
 	/** @type {import('./structuredOutput').OutputItem[]} */
-	export let output = [];
+	let output: any[] = [];
 
-	export let done = true;
-	export let model = null;
-	export let sources = null;
+	export let done: any = true;
+	let model: any = null;
+	let sources: any = null;
 
-	export let save = false;
-	export let preview = false;
-	export let floatingButtons = true;
-
-	export let editCodeBlock = true;
-	export let topPadding = false;
-
-	export let onSave = (e) => {};
-	export let onSourceClick = (e) => {};
-	export let onTaskClick = (e) => {};
-	export let onSetInputText = (text) => {};
+	export let save: any = false;
+	export let preview: any = false;
+	export let floatingButtons: any = true;
+	export let editCodeBlock: any = true;
+	export let topPadding: any = false;
+	export let onSave = (e: any) => {};
+	export let onSourceClick = (e: any) => {};
+	export let onTaskClick = (e: any) => {};
+	export let onSetInputText = (text: any) => {};
 
 	let contentContainerElement;
 	let floatingButtonsElement;
 
-	let sourceIds = [];
+	let sourceIds: any = [];
 	$: getSourceIds(sources);
 
-	const getSourceIds = (sources) => {
-		const result = [];
+	const getSourceIds = (sources: any) => {
+		const result: any[] = [];
 		for (const source of sources ?? []) {
 			for (let index = 0; index < (source.document ?? []).length; index++) {
 				if (model?.info?.meta?.capabilities?.citations == false) {
@@ -153,7 +149,7 @@
 		}
 	);
 
-	const updateButtonPosition = (event) => {
+	const updateButtonPosition = (event: any) => {
 		const buttonsContainerElement = document.getElementById(`floating-buttons-${id}`);
 		if (
 			!contentContainerElement?.contains(event.target) &&
@@ -220,7 +216,7 @@
 		}
 	};
 
-	const keydownHandler = (e) => {
+	const keydownHandler = (e: any) => {
 		if (e.key === 'Escape') {
 			closeFloatingButtons();
 		}
@@ -314,7 +310,7 @@
 		bind:this={floatingButtonsElement}
 		{id}
 		actions={$settings?.floatingActionButtons ?? []}
-		onSetInputText={(text) => {
+		onSetInputText={(text: any) => {
 			onSetInputText(text);
 			closeFloatingButtons();
 		}}

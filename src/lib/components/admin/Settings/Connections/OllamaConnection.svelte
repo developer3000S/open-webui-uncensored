@@ -1,8 +1,9 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
 	import { getContext, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import Switch from '$lib/components/common/Switch.svelte';
@@ -17,9 +18,9 @@
 	export let onDelete = () => {};
 	export let onSubmit = () => {};
 
-	export let url = '';
-	export let idx = 0;
-	export let config = {};
+	export let url: any = '';
+	export let idx: any = 0;
+	let config: Record<string, any> = {};
 
 	let showManageModal = false;
 	let showConfigModal = false;
@@ -38,7 +39,7 @@
 		onDelete();
 		showConfigModal = false;
 	}}
-	onSubmit={(connection) => {
+	onSubmit={(connection: any) => {
 		url = connection.url;
 		config = { ...connection.config, key: connection.key };
 		onSubmit(connection);
@@ -50,7 +51,7 @@
 <div class="flex gap-1.5">
 	<Tooltip
 		className="w-full relative"
-		content={$i18n.t(`WebUI will make requests to "{{url}}/api/chat"`, {
+		content={i18n.t(`WebUI will make requests to "{{url}}/api/chat"`, {
 			url
 		})}
 		placement="top-start"
@@ -63,14 +64,14 @@
 
 		<input
 			class="w-full text-sm bg-transparent outline-hidden"
-			placeholder={$i18n.t('Enter URL (e.g. http://localhost:11434)')}
+			placeholder={i18n.t('Enter URL (e.g. http://localhost:11434)')}
 			bind:value={url}
 			readonly={true}
 		/>
 	</Tooltip>
 
 	<div class="flex gap-1 items-center">
-		<Tooltip content={$i18n.t('Manage')} className="self-start">
+		<Tooltip content={i18n.t('Manage')} className="self-start">
 			<button
 				class="self-center p-1 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition"
 				on:click={() => {
@@ -82,7 +83,7 @@
 			</button>
 		</Tooltip>
 
-		<Tooltip content={$i18n.t('Configure')} className="self-start">
+		<Tooltip content={i18n.t('Configure')} className="self-start">
 			<button
 				class="self-center p-1 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition"
 				on:click={() => {
@@ -94,7 +95,88 @@
 			</button>
 		</Tooltip>
 
-		<Tooltip content={(config?.enable ?? true) ? $i18n.t('Enabled') : $i18n.t('Disabled')}>
+		<Tooltip content={(config?.enable ?? true) ? i18n.t('Enabled') : i18n.t('Disabled')}>
+			<Switch
+				bind:state={config.enable}
+				on:change={() => {
+					config.enable = config.enable ?? false;
+					onSubmit({ url, key: config?.key ?? '', config });
+				}}
+			/>
+		</Tooltip>
+	</div>
+</div>
+
+<AddConnectionModal
+	ollama
+	edit
+	bind:show={showConfigModal}
+	connection={{
+		url,
+		key: config?.key ?? '',
+		config: config
+	}}
+	onDelete={() => {
+		onDelete();
+		showConfigModal = false;
+	}}
+	onSubmit={(connection: any) => {
+		url = connection.url;
+		config = { ...connection.config, key: connection.key };
+		onSubmit(connection);
+	}}
+/>
+
+<ManageOllamaModal bind:show={showManageModal} urlIdx={idx} />
+
+<div class="flex gap-1.5">
+	<Tooltip
+		className="w-full relative"
+		content={i18n.t(`WebUI will make requests to "{{url}}/api/chat"`, {
+			url
+		})}
+		placement="top-start"
+	>
+		{#if !(config?.enable ?? true)}
+			<div
+				class="absolute top-0 bottom-0 left-0 right-0 opacity-60 bg-white dark:bg-gray-900 z-10"
+			></div>
+		{/if}
+
+		<input
+			class="w-full text-sm bg-transparent outline-hidden"
+			placeholder={i18n.t('Enter URL (e.g. http://localhost:11434)')}
+			bind:value={url}
+			readonly={true}
+		/>
+	</Tooltip>
+
+	<div class="flex gap-1 items-center">
+		<Tooltip content={i18n.t('Manage')} className="self-start">
+			<button
+				class="self-center p-1 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition"
+				on:click={() => {
+					showManageModal = true;
+				}}
+				type="button"
+			>
+				<Download />
+			</button>
+		</Tooltip>
+
+		<Tooltip content={i18n.t('Configure')} className="self-start">
+			<button
+				class="self-center p-1 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition"
+				on:click={() => {
+					showConfigModal = true;
+				}}
+				type="button"
+			>
+				<Cog6 />
+			</button>
+		</Tooltip>
+
+		<Tooltip content={(config?.enable ?? true) ? i18n.t('Enabled') : i18n.t('Disabled')}>
 			<Switch
 				bind:state={config.enable}
 				on:change={() => {

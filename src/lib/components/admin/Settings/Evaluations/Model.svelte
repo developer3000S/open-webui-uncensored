@@ -2,14 +2,11 @@
 	import { getContext, createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
-
+	
 	import Cog6 from '$lib/components/icons/Cog6.svelte';
 	import ArenaModelModal from './ArenaModelModal.svelte';
 	import { WEBUI_API_BASE_URL } from '$lib/constants';
-	export let model;
-
+	export let model: any;
 	let showModel = false;
 </script>
 
@@ -17,7 +14,7 @@
 	bind:show={showModel}
 	edit={true}
 	{model}
-	on:submit={async (e) => {
+	on:submit={(e: any) => {
 		dispatch('edit', e.detail);
 	}}
 	on:delete={async () => {

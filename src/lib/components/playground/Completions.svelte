@@ -1,8 +1,11 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
+	import { getContext, onMount, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { toast } from 'svelte-sonner';
 
 	import { goto } from '$app/navigation';
-	import { onMount, tick, getContext } from 'svelte';
 
 	import { WEBUI_BASE_URL } from '$lib/constants';
 	import { WEBUI_NAME, config, user, models, settings, showSidebar } from '$lib/stores';
@@ -12,8 +15,6 @@
 	import Spinner from '$lib/components/common/Spinner.svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	let loaded = false;
 	let text = '';
@@ -135,7 +136,7 @@
 							bind:this={textCompletionAreaElement}
 							class="w-full h-full p-3 bg-transparent border border-gray-100/30 dark:border-gray-850/30 outline-hidden resize-none rounded-lg text-sm"
 							bind:value={text}
-							placeholder={$i18n.t("You're a helpful assistant.")}
+							placeholder={i18n.t("You're a helpful assistant.")}
 						></textarea>
 					</div>
 				</div>
@@ -161,7 +162,7 @@
 								submitHandler();
 							}}
 						>
-							{$i18n.t('Run')}
+							{i18n.t('Run')}
 						</button>
 					{:else}
 						<button
@@ -171,7 +172,7 @@
 							}}
 						>
 							<Spinner className="size-4" />
-							{$i18n.t('Cancel')}
+							{i18n.t('Cancel')}
 						</button>
 					{/if}
 				</div>
@@ -181,4 +182,66 @@
 </div>
 
 <style>
+
 </style>
+
+<div class=" flex flex-col justify-between w-full overflow-y-auto h-full">
+	<div class="mx-auto w-full md:px-0 h-full">
+		<div class=" flex flex-col h-full px-4">
+			<div
+				class=" pt-0.5 pb-2.5 flex flex-col justify-between w-full flex-auto overflow-auto h-0"
+				id="messages-container"
+			>
+				<div class=" h-full w-full flex flex-col">
+					<div class="flex-1">
+						<textarea
+							id="text-completion-textarea"
+							bind:this={textCompletionAreaElement}
+							class="w-full h-full p-3 bg-transparent border border-gray-100/30 dark:border-gray-850/30 outline-hidden resize-none rounded-lg text-sm"
+							bind:value={text}
+							placeholder={i18n.t("You're a helpful assistant.")}
+						></textarea>
+					</div>
+				</div>
+			</div>
+
+			<div class="pb-3 flex justify-between items-center">
+				<div class="flex-1">
+					<select
+						class="bg-transparent border border-gray-100/30 dark:border-gray-850/30 rounded-lg py-1 px-2 -mx-0.5 text-sm outline-hidden w-full"
+						bind:value={selectedModelId}
+					>
+						{#each $models as model}
+							<option value={model.id} class="bg-gray-50 dark:bg-gray-700">{model.name}</option>
+						{/each}
+					</select>
+				</div>
+
+				<div class="flex gap-2 shrink-0 ml-2">
+					{#if !loading}
+						<button
+							class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-lg"
+							on:click={() => {
+								submitHandler();
+							}}
+						>
+							{i18n.t('Run')}
+						</button>
+					{:else}
+						<button
+							class="px-3.5 py-1.5 text-sm font-medium bg-gray-300 text-black transition rounded-lg flex items-center gap-2"
+							on:click={() => {
+								stopResponse();
+							}}
+						>
+							<Spinner className="size-4" />
+							{i18n.t('Cancel')}
+						</button>
+					{/if}
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+

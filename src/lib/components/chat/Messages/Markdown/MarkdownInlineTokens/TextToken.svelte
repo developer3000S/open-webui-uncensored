@@ -1,7 +1,6 @@
 <script lang="ts">
-	export let token;
-	export let done = true;
-
+	export let token: any;
+	export let done: any = true;
 	$: raw = token?.raw ?? '';
 </script>
 

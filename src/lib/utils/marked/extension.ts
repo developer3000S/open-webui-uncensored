@@ -87,7 +87,7 @@ function detailsExtension() {
 	};
 }
 
-export default function (options = {}) {
+export default (options: any = {})  => {
 	return {
 		extensions: [detailsExtension(options)]
 	};

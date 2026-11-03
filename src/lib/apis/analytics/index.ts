@@ -6,7 +6,7 @@ export const getModelAnalytics = async (
 	endDate: number | null = null,
 	groupId: string | null = null
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const searchParams = new URLSearchParams();
 	if (startDate) searchParams.append('start_date', startDate.toString());
@@ -45,7 +45,7 @@ export const getUserAnalytics = async (
 	limit: number = 50,
 	groupId: string | null = null
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const searchParams = new URLSearchParams();
 	if (startDate) searchParams.append('start_date', startDate.toString());
@@ -88,7 +88,7 @@ export const getMessages = async (
 	skip: number = 0,
 	limit: number = 50
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const searchParams = new URLSearchParams();
 	if (modelId) searchParams.append('model_id', modelId);
@@ -130,7 +130,7 @@ export const getSummary = async (
 	endDate: number | null = null,
 	groupId: string | null = null
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const searchParams = new URLSearchParams();
 	if (startDate) searchParams.append('start_date', startDate.toString());
@@ -169,7 +169,7 @@ export const getDailyStats = async (
 	granularity: 'hourly' | 'daily' = 'daily',
 	groupId: string | null = null
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const searchParams = new URLSearchParams();
 	if (startDate) searchParams.append('start_date', startDate.toString());
@@ -208,7 +208,7 @@ export const getTokenUsage = async (
 	endDate: number | null = null,
 	groupId: string | null = null
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const searchParams = new URLSearchParams();
 	if (startDate) searchParams.append('start_date', startDate.toString());
@@ -250,7 +250,7 @@ export const getModelChats = async (
 	orderBy: string | null = null,
 	direction: string | null = null
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const searchParams = new URLSearchParams();
 	if (startDate) searchParams.append('start_date', startDate.toString());
@@ -289,7 +289,7 @@ export const getModelChats = async (
 };
 
 export const getModelOverview = async (token: string = '', modelId: string, days: number = 30) => {
-	let error = null;
+	let error: any = null;
 
 	const searchParams = new URLSearchParams();
 	searchParams.append('days', days.toString());

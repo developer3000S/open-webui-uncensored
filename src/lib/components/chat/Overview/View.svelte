@@ -4,9 +4,7 @@
 
 	const dispatch = createEventDispatcher();
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
-
+	
 	import { onMount, tick } from 'svelte';
 
 	import { writable } from 'svelte/store';
@@ -24,10 +22,9 @@
 	const { fitView, getViewport } = useSvelteFlow();
 	const nodesInitialized = useNodesInitialized();
 
-	export let history;
-	export let onNodeClick;
-
-	let selectedMessageId = null;
+	export let history: { messages?: Record<string, any>; currentId?: string | null; [key: string]: any } = {};
+	export let onNodeClick: any;
+	let selectedMessageId: any = null;
 
 	const nodes = writable([]);
 	const edges = writable([]);
@@ -56,9 +53,9 @@
 		selectedMessageId = null;
 	};
 
-	const drawFlow = async (direction) => {
-		const nodeList = [];
-		const edgeList = [];
+	const drawFlow = async (direction: any) => {
+		const nodeList: any = [];
+		const edgeList: any = [];
 		const levelOffset = direction === 'vertical' ? 150 : 300;
 		const siblingOffset = direction === 'vertical' ? 250 : 150;
 
@@ -66,7 +63,7 @@
 		let positionMap = new Map();
 
 		// Helper function to truncate labels
-		function createLabel(content) {
+		function createLabel(content: any) {
 			const maxLength = 100;
 			return content.length > maxLength ? content.substr(0, maxLength) + '...' : content;
 		}
@@ -126,7 +123,7 @@
 		await nodes.set([...nodeList]);
 	};
 
-	const recurseCheckChild = (nodeId, currentId) => {
+	const recurseCheckChild = (nodeId: any, currentId: any) => {
 		const node = history.messages[nodeId];
 		return (
 			node.childrenIds &&
@@ -134,7 +131,7 @@
 		);
 	};
 
-	const setLayoutDirection = (direction) => {
+	const setLayoutDirection = (direction: any) => {
 		layoutDirection = direction;
 		drawFlow(layoutDirection);
 	};
@@ -142,7 +139,7 @@
 	onMount(() => {
 		drawFlow(layoutDirection);
 
-		nodesInitialized.subscribe(async (initialized) => {
+		nodesInitialized.subscribe(async (initialized: any)  => {
 			if (initialized) {
 				await tick();
 				const res = await fitView({ nodes: [{ id: history.currentId }] });

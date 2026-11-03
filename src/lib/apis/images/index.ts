@@ -1,7 +1,7 @@
 import { IMAGES_API_BASE_URL } from '$lib/constants';
 
 export const getConfig = async (token: string = '') => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${IMAGES_API_BASE_URL}/config`, {
 		method: 'GET',
@@ -33,7 +33,7 @@ export const getConfig = async (token: string = '') => {
 };
 
 export const updateConfig = async (token: string = '', config: object) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${IMAGES_API_BASE_URL}/config/update`, {
 		method: 'POST',
@@ -68,7 +68,7 @@ export const updateConfig = async (token: string = '', config: object) => {
 };
 
 export const verifyConfigUrl = async (token: string = '') => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${IMAGES_API_BASE_URL}/config/url/verify`, {
 		method: 'GET',
@@ -100,7 +100,7 @@ export const verifyConfigUrl = async (token: string = '') => {
 };
 
 export const getImageGenerationConfig = async (token: string = '') => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${IMAGES_API_BASE_URL}/image/config`, {
 		method: 'GET',
@@ -132,7 +132,7 @@ export const getImageGenerationConfig = async (token: string = '') => {
 };
 
 export const updateImageGenerationConfig = async (token: string = '', config: object) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${IMAGES_API_BASE_URL}/image/config/update`, {
 		method: 'POST',
@@ -165,7 +165,7 @@ export const updateImageGenerationConfig = async (token: string = '', config: ob
 };
 
 export const getImageGenerationModels = async (token: string = '') => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${IMAGES_API_BASE_URL}/models`, {
 		method: 'GET',
@@ -197,7 +197,7 @@ export const getImageGenerationModels = async (token: string = '') => {
 };
 
 export const imageGenerations = async (token: string = '', prompt: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${IMAGES_API_BASE_URL}/generations`, {
 		method: 'POST',
@@ -244,7 +244,7 @@ export const imageEdits = async (
 	n?: number,
 	background?: string
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${IMAGES_API_BASE_URL}/edit`, {
 		method: 'POST',

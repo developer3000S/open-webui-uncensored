@@ -8,7 +8,7 @@
 		zoomSpeed: 0.065
 	};
 
-	export let className = '';
+	export let className: any = '';
 	export let options: Partial<PanZoomOptions> = {};
 
 	let containerElement: HTMLElement;

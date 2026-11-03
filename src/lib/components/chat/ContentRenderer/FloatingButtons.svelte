@@ -1,19 +1,19 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
 	import { getContext, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import ChatBubble from '$lib/components/icons/ChatBubble.svelte';
 	import LightBulb from '$lib/components/icons/LightBulb.svelte';
 
-	export let id = '';
-
-	export let actions = [];
-	export let onSetInputText = (text) => {};
+	export let id: any = '';
+	export let actions: any = [];
+	export let onSetInputText = (text: any) => {};
 
 	let floatingInput = false;
-	let selectedAction = null;
+	let selectedAction: any = null;
 
 	let selectedText = '';
 	let floatingInputValue = '';
@@ -25,26 +25,26 @@
 	const DEFAULT_ACTIONS = [
 		{
 			id: 'ask',
-			label: $i18n.t('Ask'),
+			label: i18n.t('Ask'),
 			icon: ChatBubble,
 			input: true,
 			prompt: `{{SELECTED_CONTENT}}\n\n\n{{INPUT_CONTENT}}`
 		},
 		{
 			id: 'explain',
-			label: $i18n.t('Explain'),
+			label: i18n.t('Explain'),
 			icon: LightBulb,
-			prompt: `{{SELECTED_CONTENT}}\n\n\n${$i18n.t('Explain')}`
+			prompt: `{{SELECTED_CONTENT}}\n\n\n${i18n.t('Explain')}`
 		}
 	];
 
-	const actionHandler = (actionId) => {
+	const actionHandler = (actionId: any) => {
 		let selectedContent = selectedText
 			.split('\n')
 			.map((line) => `> ${line}`)
 			.join('\n');
 
-		let selectedAction = actions.find((action) => action.id === actionId);
+		let selectedAction: any = actions.find((action) => action.id === actionId);
 		if (!selectedAction) {
 			return;
 		}
@@ -133,8 +133,8 @@
 				type="text"
 				id="floating-message-input"
 				class="ml-5 bg-transparent outline-hidden w-full flex-1 text-sm"
-				placeholder={$i18n.t('Ask a question')}
-				aria-label={$i18n.t('Ask a question')}
+				placeholder={i18n.t('Ask a question')}
+				aria-label={i18n.t('Ask a question')}
 				bind:value={floatingInputValue}
 				on:keydown={(e) => {
 					if (e.key === 'Enter') {
@@ -145,7 +145,93 @@
 
 			<div class="ml-1 mr-1">
 				<button
-					aria-label={$i18n.t('Submit question')}
+					aria-label={i18n.t('Submit question')}
+					class="{floatingInputValue !== ''
+						? 'bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 '
+						: 'text-white bg-gray-200 dark:text-gray-900 dark:bg-gray-700 disabled'} transition rounded-full p-1.5 m-0.5 self-center"
+					on:click={() => {
+						actionHandler(selectedAction?.id);
+					}}
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						viewBox="0 0 16 16"
+						fill="currentColor"
+						class="size-4"
+					>
+						<path
+							fill-rule="evenodd"
+							d="M8 14a.75.75 0 0 1-.75-.75V4.56L4.03 7.78a.75.75 0 0 1-1.06-1.06l4.5-4.5a.75.75 0 0 1 1.06 0l4.5 4.5a.75.75 0 0 1-1.06 1.06L8.75 4.56v8.69A.75.75 0 0 1 8 14Z"
+							clip-rule="evenodd"
+						/>
+					</svg>
+				</button>
+			</div>
+		</div>
+	{/if}
+</div>
+
+<div
+	id={`floating-buttons-${id}`}
+	class="absolute rounded-lg mt-1 text-xs z-9999"
+	style="display: none"
+>
+	{#if !floatingInput}
+		<div
+			class="flex flex-row shrink-0 p-0.5 bg-white dark:bg-gray-850 dark:text-gray-100 text-medium rounded-xl shadow-xl border border-gray-100 dark:border-gray-800"
+		>
+			{#each actions as action}
+				<button
+					aria-label={action.label}
+					class="px-1.5 py-[1px] hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl flex items-center gap-1 min-w-fit transition"
+					on:click={async () => {
+						selectedText = window.getSelection().toString();
+						selectedAction = action;
+
+						if (action.prompt.includes('{{INPUT_CONTENT}}')) {
+							floatingInput = true;
+							floatingInputValue = '';
+
+							await tick();
+							setTimeout(() => {
+								const input = document.getElementById('floating-message-input');
+								if (input) {
+									input.focus();
+								}
+							}, 0);
+						} else {
+							actionHandler(action.id);
+						}
+					}}
+				>
+					{#if action.icon}
+						<svelte:component this={action.icon} className="size-3 shrink-0" />
+					{/if}
+					<div class="shrink-0">{action.label}</div>
+				</button>
+			{/each}
+		</div>
+	{:else}
+		<div
+			class="py-1 flex dark:text-gray-100 bg-white dark:bg-gray-850 border border-gray-100 dark:border-gray-800 w-72 rounded-full shadow-xl"
+		>
+			<input
+				type="text"
+				id="floating-message-input"
+				class="ml-5 bg-transparent outline-hidden w-full flex-1 text-sm"
+				placeholder={i18n.t('Ask a question')}
+				aria-label={i18n.t('Ask a question')}
+				bind:value={floatingInputValue}
+				on:keydown={(e) => {
+					if (e.key === 'Enter') {
+						actionHandler(selectedAction?.id);
+					}
+				}}
+			/>
+
+			<div class="ml-1 mr-1">
+				<button
+					aria-label={i18n.t('Submit question')}
 					class="{floatingInputValue !== ''
 						? 'bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 '
 						: 'text-white bg-gray-200 dark:text-gray-900 dark:bg-gray-700 disabled'} transition rounded-full p-1.5 m-0.5 self-center"

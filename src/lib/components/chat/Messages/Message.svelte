@@ -4,9 +4,7 @@
 	import { tick, getContext, onMount, createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
-
+	
 	import { settings } from '$lib/stores';
 	import { copyToClipboard } from '$lib/utils';
 
@@ -14,37 +12,31 @@
 	import ResponseMessage from './ResponseMessage.svelte';
 	import UserMessage from './UserMessage.svelte';
 
-	export let chatId;
-	export let selectedModels = [];
-	export let idx = 0;
-
-	export let history;
-	export let messageId;
-
-	export let user;
-
+	export let chatId: any;
+	export let selectedModels: any = [];
+	export let idx: any = 0;
+	export let history: { messages?: Record<string, any>; currentId?: string | null; [key: string]: any } = {};
+	export let messageId: any;
+	export let user: any;
 	export let setInputText: Function = () => {};
-	export let gotoMessage;
-	export let showPreviousMessage;
-	export let showNextMessage;
-	export let updateChat;
-
-	export let editMessage;
-	export let saveMessage;
-	export let deleteMessage;
-	export let rateMessage;
-	export let actionMessage;
-	export let submitMessage;
-
-	export let regenerateResponse;
-	export let continueResponse;
-	export let mergeResponses;
-
-	export let addMessages;
-	export let triggerScroll;
-	export let readOnly = false;
-	export let editCodeBlock = true;
-	export let topPadding = false;
+	export let gotoMessage: any;
+	export let showPreviousMessage: any;
+	export let showNextMessage: any;
+	export let updateChat: any;
+	export let editMessage: any;
+	export let saveMessage: any;
+	export let deleteMessage: any;
+	export let rateMessage: any;
+	export let actionMessage: any;
+	export let submitMessage: any;
+	export let regenerateResponse: any;
+	export let continueResponse: any;
+	export let mergeResponses: any;
+	export let addMessages: any;
+	export let triggerScroll: any;
+	export let readOnly: any = false;
+	export let editCodeBlock: any = true;
+	export let topPadding: any = false;
 </script>
 
 <div

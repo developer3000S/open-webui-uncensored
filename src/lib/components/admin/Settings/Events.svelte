@@ -1,8 +1,10 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
 	import { getContext, onDestroy, onMount } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { toast } from 'svelte-sonner';
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
 
 	import {
 		createEventWebhook,
@@ -24,8 +26,6 @@
 	import Cog6 from '$lib/components/icons/Cog6.svelte';
 	import XMark from '$lib/components/icons/XMark.svelte';
 	import { settings } from '$lib/stores';
-
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	let webhooks: EventWebhook[] = [];
 	let eventItems: EventCatalogItem[] = [];
@@ -140,34 +140,34 @@
 	const eventSummary = (webhook: EventWebhook) => {
 		const filters = webhook.events?.length ? webhook.events : ['*'];
 		if (filters.includes('*')) {
-			return $i18n.t('All events');
+			return i18n.t('All events');
 		}
 		if (filters.length <= 2) {
 			return filters.join(' + ');
 		}
-		return $i18n.t('{{count}} filters', { count: filters.length });
+		return i18n.t('{{count}} filters', { count: filters.length });
 	};
 
 	const targetSummary = (webhook: EventWebhook) => {
 		const targets = webhook.targets;
 		if (targets === null || targets === undefined) {
-			return $i18n.t('All users and system events');
+			return i18n.t('All users and system events');
 		}
 		if (targets.length === 0) {
-			return $i18n.t('System events only');
+			return i18n.t('System events only');
 		}
 
 		const userCount = targets.filter((target) => target.type === 'user').length;
 		const groupCount = targets.filter((target) => target.type === 'group').length;
-		const parts = [];
+		const parts: any[] = [];
 		if (userCount > 0) {
 			parts.push(
-				userCount === 1 ? $i18n.t('1 user') : $i18n.t('{{count}} users', { count: userCount })
+				userCount === 1 ? i18n.t('1 user') : i18n.t('{{count}} users', { count: userCount })
 			);
 		}
 		if (groupCount > 0) {
 			parts.push(
-				groupCount === 1 ? $i18n.t('1 group') : $i18n.t('{{count}} groups', { count: groupCount })
+				groupCount === 1 ? i18n.t('1 group') : i18n.t('{{count}} groups', { count: groupCount })
 			);
 		}
 		return parts.join(' + ');
@@ -177,7 +177,7 @@
 		try {
 			return new URL(url).host;
 		} catch {
-			return url || $i18n.t('Not configured');
+			return url || i18n.t('Not configured');
 		}
 	};
 
@@ -221,7 +221,7 @@
 			return;
 		}
 		if (!isValidPattern(value)) {
-			toast.error($i18n.t('Use a valid event name or pattern like user.*'));
+			toast.error(i18n.t('Use a valid event name or pattern like user.*'));
 			return;
 		}
 
@@ -251,8 +251,8 @@
 		selectedGroups = {};
 
 		await Promise.all(
-			targetUserIds.map(async (id) => {
-				const user = await getUserInfoById(localStorage.token, id).catch(() => null);
+			targetUserIds.map(async (id: any) => {
+				const user = await getUserInfoById(localStorage.token, id).catch(async ()=> null);
 				if (user) {
 					selectedUsers = { ...selectedUsers, [id]: user };
 				}
@@ -260,7 +260,7 @@
 		);
 
 		await Promise.all(
-			targetGroupIds.map(async (id) => {
+			targetGroupIds.map(async (id: any) => {
 				const group =
 					groups.find((group) => group.id === id) ??
 					(await getGroupInfoById(localStorage.token, id).catch(() => null));
@@ -348,9 +348,9 @@
 			}
 			await load();
 			resetForm();
-			toast.success($i18n.t('Webhook saved'));
+			toast.success(i18n.t('Webhook saved'));
 		} catch (error) {
-			toast.error(typeof error === 'string' ? error : $i18n.t('Failed to save webhook'));
+			toast.error(typeof error === 'string' ? error : i18n.t('Failed to save webhook'));
 		}
 	};
 
@@ -363,9 +363,9 @@
 			await deleteEventWebhook(localStorage.token, webhook.id);
 			await load();
 			resetForm();
-			toast.success($i18n.t('Webhook deleted'));
+			toast.success(i18n.t('Webhook deleted'));
 		} catch (error) {
-			toast.error(typeof error === 'string' ? error : $i18n.t('Failed to delete webhook'));
+			toast.error(typeof error === 'string' ? error : i18n.t('Failed to delete webhook'));
 		}
 	};
 
@@ -379,7 +379,7 @@
 			webhooks = webhooks.map((item) =>
 				item.id === webhook.id ? { ...item, enabled: previous } : item
 			);
-			toast.error(typeof error === 'string' ? error : $i18n.t('Failed to update webhook'));
+			toast.error(typeof error === 'string' ? error : i18n.t('Failed to update webhook'));
 		}
 	};
 
@@ -393,10 +393,10 @@
 	<div>
 		<div class="flex justify-between dark:text-gray-100 px-5 pt-4 pb-2">
 			<h1 class="text-lg font-medium self-center font-primary">
-				{editing ? $i18n.t('Edit webhook') : $i18n.t('Add webhook')}
+				{editing ? i18n.t('Edit webhook') : i18n.t('Add webhook')}
 			</h1>
 
-			<button class="self-center" aria-label={$i18n.t('Close')} type="button" on:click={resetForm}>
+			<button class="self-center" aria-label={i18n.t('Close')} type="button" on:click={resetForm}>
 				<XMark className="size-5" />
 			</button>
 		</div>
@@ -408,13 +408,13 @@
 						<label
 							for="event-webhook-name"
 							class={`text-xs mb-0.5 ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
-							>{$i18n.t('Name')}</label
+							>{i18n.t('Name')}</label
 						>
 						<input
 							id="event-webhook-name"
 							class={`w-full text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 							type="text"
-							placeholder={$i18n.t('Identity audit')}
+							placeholder={i18n.t('Identity audit')}
 							autocomplete="off"
 							bind:value={form.name}
 						/>
@@ -426,7 +426,7 @@
 						<label
 							for="event-webhook-url"
 							class={`text-xs mb-0.5 ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
-							>{$i18n.t('URL')}</label
+							>{i18n.t('URL')}</label
 						>
 						<div class="flex items-center gap-2">
 							<input
@@ -438,7 +438,7 @@
 								required
 								bind:value={form.url}
 							/>
-							<Tooltip content={form.enabled ? $i18n.t('Enabled') : $i18n.t('Disabled')}>
+							<Tooltip content={form.enabled ? i18n.t('Enabled') : i18n.t('Disabled')}>
 								<Switch bind:state={form.enabled} />
 							</Tooltip>
 						</div>
@@ -450,27 +450,27 @@
 						<div
 							class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 						>
-							{$i18n.t('Send events for')}
+							{i18n.t('Send events for')}
 						</div>
 						<select
 							class="text-xs bg-transparent outline-hidden text-gray-700 dark:text-gray-300"
 							bind:value={targetMode}
 						>
-							<option value="all">{$i18n.t('All users and system events')}</option>
-							<option value="system">{$i18n.t('System events only')}</option>
-							<option value="selected">{$i18n.t('Specific users or groups')}</option>
+							<option value="all">{i18n.t('All users and system events')}</option>
+							<option value="system">{i18n.t('System events only')}</option>
+							<option value="selected">{i18n.t('Specific users or groups')}</option>
 						</select>
 					</div>
 
 					<div class="mt-1 text-xs text-gray-500">
 						{#if targetMode === 'all'}
-							{$i18n.t(
+							{i18n.t(
 								'Receives matching events across the instance, including system/config events and events associated with any user.'
 							)}
 						{:else if targetMode === 'system'}
-							{$i18n.t('Receives matching events that are not associated with a user.')}
+							{i18n.t('Receives matching events that are not associated with a user.')}
 						{:else}
-							{$i18n.t(
+							{i18n.t(
 								'Receives matching user-associated events only when the actor, user subject, or user data matches these users or current group members. System/config events are not sent.'
 							)}
 						{/if}
@@ -485,10 +485,10 @@
 											class="flex items-center gap-1 rounded-full bg-gray-100 dark:bg-gray-850 px-2 py-1 text-xs"
 										>
 											<span class="truncate max-w-36">{selectedGroups[id]?.name ?? id}</span>
-											<span class="text-gray-500">{$i18n.t('group')}</span>
+											<span class="text-gray-500">{i18n.t('group')}</span>
 											<button
 												type="button"
-												aria-label={$i18n.t('Remove')}
+												aria-label={i18n.t('Remove')}
 												on:click={() => removeTargetGroup(id)}
 											>
 												<XMark className="size-3" strokeWidth="2" />
@@ -501,10 +501,10 @@
 											class="flex items-center gap-1 rounded-full bg-gray-100 dark:bg-gray-850 px-2 py-1 text-xs"
 										>
 											<span class="truncate max-w-36">{selectedUsers[id]?.name ?? id}</span>
-											<span class="text-gray-500">{$i18n.t('user')}</span>
+											<span class="text-gray-500">{i18n.t('user')}</span>
 											<button
 												type="button"
-												aria-label={$i18n.t('Remove')}
+												aria-label={i18n.t('Remove')}
 												on:click={() => removeTargetUser(id)}
 											>
 												<XMark className="size-3" strokeWidth="2" />
@@ -518,7 +518,7 @@
 								<input
 									class={`w-full text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 									type="text"
-									placeholder={$i18n.t('Search users or groups')}
+									placeholder={i18n.t('Search users or groups')}
 									autocomplete="off"
 									bind:value={targetQuery}
 									on:input={handleTargetSearch}
@@ -535,7 +535,7 @@
 												on:click={() => addTargetGroup(group)}
 											>
 												<span class="truncate">{group.name}</span>
-												<span class="text-gray-500">{$i18n.t('Group')}</span>
+												<span class="text-gray-500">{i18n.t('Group')}</span>
 											</button>
 										{/each}
 
@@ -551,7 +551,7 @@
 														<span class="text-gray-500">({user.email})</span>
 													{/if}
 												</span>
-												<span class="text-gray-500">{$i18n.t('User')}</span>
+												<span class="text-gray-500">{i18n.t('User')}</span>
 											</button>
 										{/each}
 									</div>
@@ -566,7 +566,7 @@
 						<label
 							for="event-webhook-all-events"
 							class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
-							>{$i18n.t('Events')}</label
+							>{i18n.t('Events')}</label
 						>
 						<label class="flex items-center gap-1.5 text-xs text-gray-700 dark:text-gray-300">
 							<input
@@ -575,7 +575,7 @@
 								checked={allEvents}
 								on:change={(event) => setAllEvents(event.currentTarget.checked)}
 							/>
-							<span>{$i18n.t('All events')}</span>
+							<span>{i18n.t('All events')}</span>
 						</label>
 					</div>
 
@@ -590,7 +590,7 @@
 											<span class="font-mono break-all">{event}</span>
 											<button
 												type="button"
-												aria-label={$i18n.t('Remove')}
+												aria-label={i18n.t('Remove')}
 												on:click={() => removeFilter(event)}
 											>
 												<XMark className="size-3" strokeWidth="2" />
@@ -604,7 +604,7 @@
 								<input
 									class={`w-full flex-1 text-sm bg-transparent font-mono ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 									type="text"
-									placeholder={$i18n.t('Search or add pattern')}
+									placeholder={i18n.t('Search or add pattern')}
 									autocomplete="off"
 									bind:value={pattern}
 									on:keydown={(event) => {
@@ -619,7 +619,7 @@
 									class="text-xs text-gray-700 dark:text-gray-300 hover:underline"
 									on:click={addPattern}
 								>
-									{$i18n.t('Add')}
+									{i18n.t('Add')}
 								</button>
 							</div>
 
@@ -643,7 +643,7 @@
 							</div>
 
 							<div class="text-xs text-gray-500">
-								{$i18n.t(
+								{i18n.t(
 									'Event names may change as Open WebUI evolves. Use broad patterns like user.* for integrations that should continue across new related events.'
 								)}
 							</div>
@@ -661,7 +661,7 @@
 									showDeleteConfirmDialog = true;
 								}}
 							>
-								{$i18n.t('Delete')}
+								{i18n.t('Delete')}
 							</button>
 						{/if}
 					</div>
@@ -670,7 +670,7 @@
 						type="submit"
 						class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full flex flex-row space-x-1 items-center"
 					>
-						{$i18n.t('Save')}
+						{i18n.t('Save')}
 					</button>
 				</div>
 			</form>
@@ -680,22 +680,22 @@
 
 <ConfirmDialog
 	bind:show={showDeleteConfirmDialog}
-	message={$i18n.t('Are you sure you want to delete this webhook? This action cannot be undone.')}
-	confirmLabel={$i18n.t('Delete')}
+	message={i18n.t('Are you sure you want to delete this webhook? This action cannot be undone.')}
+	confirmLabel={i18n.t('Delete')}
 	on:confirm={() => {
 		deleteWebhook();
 	}}
 />
 
 <div class="mb-3">
-	<div class="mt-0.5 mb-2.5 text-base font-medium">{$i18n.t('Events')}</div>
+	<div class="mt-0.5 mb-2.5 text-base font-medium">{i18n.t('Events')}</div>
 	<hr class="border-gray-100/30 dark:border-gray-850/30 my-2" />
 
 	<div class="mb-2.5 flex flex-col w-full justify-between">
 		<div class="flex justify-between items-center mb-1">
-			<div class="font-medium text-xs">{$i18n.t('Webhooks')}</div>
+			<div class="font-medium text-xs">{i18n.t('Webhooks')}</div>
 
-			<Tooltip content={$i18n.t('Add webhook')}>
+			<Tooltip content={i18n.t('Add webhook')}>
 				<button class="px-1" on:click={newWebhook} type="button">
 					<Plus />
 				</button>
@@ -710,7 +710,7 @@
 					>
 						<div class="outline-hidden w-full bg-transparent text-sm truncate">
 							<span class="font-medium">
-								{webhook.id === 'default' ? $i18n.t('Default webhook') : webhook.name}
+								{webhook.id === 'default' ? i18n.t('Default webhook') : webhook.name}
 							</span>
 							<span class="text-xs text-gray-500">
 								- {urlHost(webhook.url)} - {eventSummary(webhook)} - {targetSummary(webhook)}
@@ -719,7 +719,7 @@
 					</div>
 
 					<div class="flex gap-1 items-center">
-						<Tooltip content={$i18n.t('Configure')}>
+						<Tooltip content={i18n.t('Configure')}>
 							<button
 								class="self-center p-1 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition"
 								on:click={() => editWebhook(webhook)}
@@ -729,7 +729,7 @@
 							</button>
 						</Tooltip>
 
-						<Tooltip content={webhook.enabled ? $i18n.t('Enabled') : $i18n.t('Disabled')}>
+						<Tooltip content={webhook.enabled ? i18n.t('Enabled') : i18n.t('Disabled')}>
 							<Switch
 								state={webhook.enabled}
 								on:change={(event) => {
@@ -744,13 +744,382 @@
 
 		{#if webhooks.length === 0}
 			<div class="text-xs text-gray-400 dark:text-gray-500">
-				{$i18n.t('No event webhooks configured.')}
+				{i18n.t('No event webhooks configured.')}
 			</div>
 		{/if}
 
 		<div class="mt-1.5">
 			<div class="text-xs text-gray-500">
-				{$i18n.t(
+				{i18n.t(
+					'Send product events as JSON to external services. Chat destinations receive readable messages.'
+				)}
+			</div>
+		</div>
+	</div>
+</div>
+
+<Modal bind:show={showWebhookModal} size="sm">
+	<div>
+		<div class="flex justify-between dark:text-gray-100 px-5 pt-4 pb-2">
+			<h1 class="text-lg font-medium self-center font-primary">
+				{editing ? i18n.t('Edit webhook') : i18n.t('Add webhook')}
+			</h1>
+
+			<button class="self-center" aria-label={i18n.t('Close')} type="button" on:click={resetForm}>
+				<XMark className="size-5" />
+			</button>
+		</div>
+
+		<div class="flex flex-col w-full px-5 pb-4 dark:text-gray-200">
+			<form class="flex flex-col w-full" on:submit|preventDefault={saveWebhook}>
+				<div class="flex gap-3">
+					<div class="flex flex-col w-full">
+						<label
+							for="event-webhook-name"
+							class={`text-xs mb-0.5 ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
+							>{i18n.t('Name')}</label
+						>
+						<input
+							id="event-webhook-name"
+							class={`w-full text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
+							type="text"
+							placeholder={i18n.t('Identity audit')}
+							autocomplete="off"
+							bind:value={form.name}
+						/>
+					</div>
+				</div>
+
+				<div class="flex gap-3 mt-2">
+					<div class="flex flex-col w-full">
+						<label
+							for="event-webhook-url"
+							class={`text-xs mb-0.5 ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
+							>{i18n.t('URL')}</label
+						>
+						<div class="flex items-center gap-2">
+							<input
+								id="event-webhook-url"
+								class={`w-full text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
+								type="url"
+								placeholder="https://example.com/events"
+								autocomplete="off"
+								required
+								bind:value={form.url}
+							/>
+							<Tooltip content={form.enabled ? i18n.t('Enabled') : i18n.t('Disabled')}>
+								<Switch bind:state={form.enabled} />
+							</Tooltip>
+						</div>
+					</div>
+				</div>
+
+				<div class="mt-3">
+					<div class="flex justify-between items-center gap-3">
+						<div
+							class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
+						>
+							{i18n.t('Send events for')}
+						</div>
+						<select
+							class="text-xs bg-transparent outline-hidden text-gray-700 dark:text-gray-300"
+							bind:value={targetMode}
+						>
+							<option value="all">{i18n.t('All users and system events')}</option>
+							<option value="system">{i18n.t('System events only')}</option>
+							<option value="selected">{i18n.t('Specific users or groups')}</option>
+						</select>
+					</div>
+
+					<div class="mt-1 text-xs text-gray-500">
+						{#if targetMode === 'all'}
+							{i18n.t(
+								'Receives matching events across the instance, including system/config events and events associated with any user.'
+							)}
+						{:else if targetMode === 'system'}
+							{i18n.t('Receives matching events that are not associated with a user.')}
+						{:else}
+							{i18n.t(
+								'Receives matching user-associated events only when the actor, user subject, or user data matches these users or current group members. System/config events are not sent.'
+							)}
+						{/if}
+					</div>
+
+					{#if targetMode === 'selected'}
+						<div class="mt-2">
+							{#if targetUserIds.length > 0 || targetGroupIds.length > 0}
+								<div class="flex flex-wrap gap-1 mb-2">
+									{#each targetGroupIds as id}
+										<div
+											class="flex items-center gap-1 rounded-full bg-gray-100 dark:bg-gray-850 px-2 py-1 text-xs"
+										>
+											<span class="truncate max-w-36">{selectedGroups[id]?.name ?? id}</span>
+											<span class="text-gray-500">{i18n.t('group')}</span>
+											<button
+												type="button"
+												aria-label={i18n.t('Remove')}
+												on:click={() => removeTargetGroup(id)}
+											>
+												<XMark className="size-3" strokeWidth="2" />
+											</button>
+										</div>
+									{/each}
+
+									{#each targetUserIds as id}
+										<div
+											class="flex items-center gap-1 rounded-full bg-gray-100 dark:bg-gray-850 px-2 py-1 text-xs"
+										>
+											<span class="truncate max-w-36">{selectedUsers[id]?.name ?? id}</span>
+											<span class="text-gray-500">{i18n.t('user')}</span>
+											<button
+												type="button"
+												aria-label={i18n.t('Remove')}
+												on:click={() => removeTargetUser(id)}
+											>
+												<XMark className="size-3" strokeWidth="2" />
+											</button>
+										</div>
+									{/each}
+								</div>
+							{/if}
+
+							<div class="relative">
+								<input
+									class={`w-full text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
+									type="text"
+									placeholder={i18n.t('Search users or groups')}
+									autocomplete="off"
+									bind:value={targetQuery}
+									on:input={handleTargetSearch}
+								/>
+
+								{#if targetQuery.trim() && (targetGroupResults.length > 0 || targetUserResults.length > 0)}
+									<div
+										class="absolute z-10 mt-1 w-full rounded-lg bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-850 shadow-lg py-1 max-h-48 overflow-y-auto"
+									>
+										{#each targetGroupResults as group}
+											<button
+												type="button"
+												class="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-xs text-left hover:bg-gray-50 dark:hover:bg-gray-850"
+												on:click={() => addTargetGroup(group)}
+											>
+												<span class="truncate">{group.name}</span>
+												<span class="text-gray-500">{i18n.t('Group')}</span>
+											</button>
+										{/each}
+
+										{#each targetUserResults as user}
+											<button
+												type="button"
+												class="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-xs text-left hover:bg-gray-50 dark:hover:bg-gray-850"
+												on:click={() => addTargetUser(user)}
+											>
+												<span class="truncate">
+													{user.name}
+													{#if user.email}
+														<span class="text-gray-500">({user.email})</span>
+													{/if}
+												</span>
+												<span class="text-gray-500">{i18n.t('User')}</span>
+											</button>
+										{/each}
+									</div>
+								{/if}
+							</div>
+						</div>
+					{/if}
+				</div>
+
+				<div class="mt-3">
+					<div class="flex justify-between items-center">
+						<label
+							for="event-webhook-all-events"
+							class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
+							>{i18n.t('Events')}</label
+						>
+						<label class="flex items-center gap-1.5 text-xs text-gray-700 dark:text-gray-300">
+							<input
+								id="event-webhook-all-events"
+								type="checkbox"
+								checked={allEvents}
+								on:change={(event) => setAllEvents(event.currentTarget.checked)}
+							/>
+							<span>{i18n.t('All events')}</span>
+						</label>
+					</div>
+
+					{#if !allEvents}
+						<div class="flex flex-col gap-2 mt-2">
+							{#if form.events.length > 0}
+								<div class="flex flex-wrap gap-1">
+									{#each form.events as event}
+										<div
+											class="flex items-center gap-1 rounded-full bg-gray-100 dark:bg-gray-850 px-2 py-1 text-xs"
+										>
+											<span class="font-mono break-all">{event}</span>
+											<button
+												type="button"
+												aria-label={i18n.t('Remove')}
+												on:click={() => removeFilter(event)}
+											>
+												<XMark className="size-3" strokeWidth="2" />
+											</button>
+										</div>
+									{/each}
+								</div>
+							{/if}
+
+							<div class="flex gap-2">
+								<input
+									class={`w-full flex-1 text-sm bg-transparent font-mono ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
+									type="text"
+									placeholder={i18n.t('Search or add pattern')}
+									autocomplete="off"
+									bind:value={pattern}
+									on:keydown={(event) => {
+										if (event.key === 'Enter') {
+											event.preventDefault();
+											addPattern();
+										}
+									}}
+								/>
+								<button
+									type="button"
+									class="text-xs text-gray-700 dark:text-gray-300 hover:underline"
+									on:click={addPattern}
+								>
+									{i18n.t('Add')}
+								</button>
+							</div>
+
+							<div class="max-h-36 overflow-y-auto pb-0.5">
+								{#each filteredEvents as event}
+									<label
+										class="flex items-start gap-2 py-0.5 text-xs text-gray-700 dark:text-gray-300"
+									>
+										<input
+											class="mt-0.5"
+											type="checkbox"
+											checked={selectedExactEvents.includes(event)}
+											on:change={() => toggleEvent(event)}
+										/>
+										<span class="min-w-0">
+											<span class="font-mono break-all">{event}</span>
+											<span class="ml-1 text-gray-500">{eventDetails[event]?.message}</span>
+										</span>
+									</label>
+								{/each}
+							</div>
+
+							<div class="text-xs text-gray-500">
+								{i18n.t(
+									'Event names may change as Open WebUI evolves. Use broad patterns like user.* for integrations that should continue across new related events.'
+								)}
+							</div>
+						</div>
+					{/if}
+				</div>
+
+				<div class="flex justify-between items-center pt-4 text-sm font-medium">
+					<div>
+						{#if editing}
+							<button
+								class="px-1 py-1.5 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:underline transition"
+								type="button"
+								on:click={() => {
+									showDeleteConfirmDialog = true;
+								}}
+							>
+								{i18n.t('Delete')}
+							</button>
+						{/if}
+					</div>
+
+					<button
+						type="submit"
+						class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full flex flex-row space-x-1 items-center"
+					>
+						{i18n.t('Save')}
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</Modal>
+
+<ConfirmDialog
+	bind:show={showDeleteConfirmDialog}
+	message={i18n.t('Are you sure you want to delete this webhook? This action cannot be undone.')}
+	confirmLabel={i18n.t('Delete')}
+	on:confirm={() => {
+		deleteWebhook();
+	}}
+/>
+
+<div class="mb-3">
+	<div class="mt-0.5 mb-2.5 text-base font-medium">{i18n.t('Events')}</div>
+	<hr class="border-gray-100/30 dark:border-gray-850/30 my-2" />
+
+	<div class="mb-2.5 flex flex-col w-full justify-between">
+		<div class="flex justify-between items-center mb-1">
+			<div class="font-medium text-xs">{i18n.t('Webhooks')}</div>
+
+			<Tooltip content={i18n.t('Add webhook')}>
+				<button class="px-1" on:click={newWebhook} type="button">
+					<Plus />
+				</button>
+			</Tooltip>
+		</div>
+
+		<div class="flex flex-col gap-1">
+			{#each webhooks as webhook}
+				<div class="flex w-full gap-2 items-center">
+					<div
+						class="flex-1 min-w-0 flex gap-1.5 items-center {webhook.enabled ? '' : 'opacity-50'}"
+					>
+						<div class="outline-hidden w-full bg-transparent text-sm truncate">
+							<span class="font-medium">
+								{webhook.id === 'default' ? i18n.t('Default webhook') : webhook.name}
+							</span>
+							<span class="text-xs text-gray-500">
+								- {urlHost(webhook.url)} - {eventSummary(webhook)} - {targetSummary(webhook)}
+							</span>
+						</div>
+					</div>
+
+					<div class="flex gap-1 items-center">
+						<Tooltip content={i18n.t('Configure')}>
+							<button
+								class="self-center p-1 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition"
+								on:click={() => editWebhook(webhook)}
+								type="button"
+							>
+								<Cog6 />
+							</button>
+						</Tooltip>
+
+						<Tooltip content={webhook.enabled ? i18n.t('Enabled') : i18n.t('Disabled')}>
+							<Switch
+								state={webhook.enabled}
+								on:change={(event) => {
+									toggleWebhook(webhook, event.detail);
+								}}
+							/>
+						</Tooltip>
+					</div>
+				</div>
+			{/each}
+		</div>
+
+		{#if webhooks.length === 0}
+			<div class="text-xs text-gray-400 dark:text-gray-500">
+				{i18n.t('No event webhooks configured.')}
+			</div>
+		{/if}
+
+		<div class="mt-1.5">
+			<div class="text-xs text-gray-500">
+				{i18n.t(
 					'Send product events as JSON to external services. Chat destinations receive readable messages.'
 				)}
 			</div>

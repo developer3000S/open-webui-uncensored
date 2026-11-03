@@ -55,7 +55,7 @@ export const getAutomationItems = async (
 	status: string | null,
 	page: number
 ): Promise<{ items: AutomationResponse[]; total: number }> => {
-	let error = null;
+	let error: any = null;
 
 	const searchParams = new URLSearchParams();
 	if (query) {
@@ -94,7 +94,7 @@ export const getAutomationItems = async (
 };
 
 export const createAutomation = async (token: string, form: AutomationForm) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/automations/create`, {
 		method: 'POST',
@@ -123,7 +123,7 @@ export const createAutomation = async (token: string, form: AutomationForm) => {
 };
 
 export const getAutomationById = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/automations/${id}`, {
 		method: 'GET',
@@ -151,7 +151,7 @@ export const getAutomationById = async (token: string, id: string) => {
 };
 
 export const updateAutomationById = async (token: string, id: string, form: AutomationForm) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/automations/${id}/update`, {
 		method: 'POST',
@@ -180,7 +180,7 @@ export const updateAutomationById = async (token: string, id: string, form: Auto
 };
 
 export const toggleAutomationById = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/automations/${id}/toggle`, {
 		method: 'POST',
@@ -208,7 +208,7 @@ export const toggleAutomationById = async (token: string, id: string) => {
 };
 
 export const runAutomationById = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/automations/${id}/run`, {
 		method: 'POST',
@@ -236,7 +236,7 @@ export const runAutomationById = async (token: string, id: string) => {
 };
 
 export const deleteAutomationById = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/automations/${id}/delete`, {
 		method: 'DELETE',
@@ -269,7 +269,7 @@ export const getAutomationRuns = async (
 	skip: number = 0,
 	limit: number = 50
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(
 		`${WEBUI_API_BASE_URL}/automations/${id}/runs?skip=${skip}&limit=${limit}`,

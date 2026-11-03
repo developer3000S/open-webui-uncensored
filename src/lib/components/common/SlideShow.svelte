@@ -8,7 +8,7 @@
 		`${WEBUI_BASE_URL}/assets/images/earth.jpg`,
 		`${WEBUI_BASE_URL}/assets/images/space.jpg`
 	];
-	export let duration = 5000;
+	export let duration: any = 5000;
 	let selectedImageIdx = 0;
 
 	onMount(() => {

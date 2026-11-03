@@ -12,7 +12,7 @@ type ChannelForm = {
 };
 
 export const createNewChannel = async (token: string = '', channel: ChannelForm) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/channels/create`, {
 		method: 'POST',
@@ -44,7 +44,7 @@ export const createNewChannel = async (token: string = '', channel: ChannelForm)
 };
 
 export const getChannels = async (token: string = '') => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/channels/`, {
 		method: 'GET',
@@ -75,7 +75,7 @@ export const getChannels = async (token: string = '') => {
 };
 
 export const getChannelById = async (token: string = '', channel_id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/channels/${channel_id}`, {
 		method: 'GET',
@@ -106,7 +106,7 @@ export const getChannelById = async (token: string = '', channel_id: string) => 
 };
 
 export const getDMChannelByUserId = async (token: string = '', user_id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/channels/users/${user_id}`, {
 		method: 'GET',
@@ -144,8 +144,8 @@ export const getChannelMembersById = async (
 	direction?: string,
 	page = 1
 ) => {
-	let error = null;
-	let res = null;
+	let error: any = null;
+	let res: any = null;
 
 	const searchParams = new URLSearchParams();
 
@@ -195,7 +195,7 @@ export const updateChannelMemberActiveStatusById = async (
 	channel_id: string,
 	is_active: boolean
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/channels/${channel_id}/members/active`, {
 		method: 'POST',
@@ -236,7 +236,7 @@ export const addMembersById = async (
 	channel_id: string,
 	formData: UpdateMembersForm
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/channels/${channel_id}/update/members/add`, {
 		method: 'POST',
@@ -277,7 +277,7 @@ export const removeMembersById = async (
 	channel_id: string,
 	formData: RemoveMembersForm
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/channels/${channel_id}/update/members/remove`, {
 		method: 'POST',
@@ -313,7 +313,7 @@ export const updateChannelById = async (
 	channel_id: string,
 	channel: ChannelForm
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/channels/${channel_id}/update`, {
 		method: 'POST',
@@ -345,7 +345,7 @@ export const updateChannelById = async (
 };
 
 export const deleteChannelById = async (token: string = '', channel_id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/channels/${channel_id}/delete`, {
 		method: 'DELETE',
@@ -381,7 +381,7 @@ export const getChannelMessages = async (
 	skip: number = 0,
 	limit: number = 50
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(
 		`${WEBUI_API_BASE_URL}/channels/${channel_id}/messages?skip=${skip}&limit=${limit}`,
@@ -419,7 +419,7 @@ export const getChannelPinnedMessages = async (
 	channel_id: string,
 	page: number = 1
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(
 		`${WEBUI_API_BASE_URL}/channels/${channel_id}/messages/pinned?page=${page}`,
@@ -459,7 +459,7 @@ export const getChannelThreadMessages = async (
 	skip: number = 0,
 	limit: number = 50
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(
 		`${WEBUI_API_BASE_URL}/channels/${channel_id}/messages/${message_id}/thread?skip=${skip}&limit=${limit}`,
@@ -497,7 +497,7 @@ export const getMessageData = async (
 	channel_id: string,
 	message_id: string
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(
 		`${WEBUI_API_BASE_URL}/channels/${channel_id}/messages/${message_id}/data`,
@@ -540,7 +540,7 @@ type MessageForm = {
 };
 
 export const sendMessage = async (token: string = '', channel_id: string, message: MessageForm) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/channels/${channel_id}/messages/post`, {
 		method: 'POST',
@@ -577,7 +577,7 @@ export const pinMessage = async (
 	message_id: string,
 	is_pinned: boolean
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(
 		`${WEBUI_API_BASE_URL}/channels/${channel_id}/messages/${message_id}/pin`,
@@ -617,7 +617,7 @@ export const updateMessage = async (
 	message_id: string,
 	message: MessageForm
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(
 		`${WEBUI_API_BASE_URL}/channels/${channel_id}/messages/${message_id}/update`,
@@ -657,7 +657,7 @@ export const addReaction = async (
 	message_id: string,
 	name: string
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(
 		`${WEBUI_API_BASE_URL}/channels/${channel_id}/messages/${message_id}/reactions/add`,
@@ -697,7 +697,7 @@ export const removeReaction = async (
 	message_id: string,
 	name: string
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(
 		`${WEBUI_API_BASE_URL}/channels/${channel_id}/messages/${message_id}/reactions/remove`,
@@ -732,7 +732,7 @@ export const removeReaction = async (
 };
 
 export const deleteMessage = async (token: string = '', channel_id: string, message_id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(
 		`${WEBUI_API_BASE_URL}/channels/${channel_id}/messages/${message_id}/delete`,
@@ -773,7 +773,7 @@ type WebhookForm = {
 };
 
 export const getChannelWebhooks = async (token: string = '', channel_id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/channels/${channel_id}/webhooks`, {
 		method: 'GET',
@@ -808,7 +808,7 @@ export const createChannelWebhook = async (
 	channel_id: string,
 	formData: WebhookForm
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/channels/${channel_id}/webhooks/create`, {
 		method: 'POST',
@@ -845,7 +845,7 @@ export const updateChannelWebhook = async (
 	webhook_id: string,
 	formData: WebhookForm
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(
 		`${WEBUI_API_BASE_URL}/channels/${channel_id}/webhooks/${webhook_id}/update`,
@@ -884,7 +884,7 @@ export const deleteChannelWebhook = async (
 	channel_id: string,
 	webhook_id: string
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(
 		`${WEBUI_API_BASE_URL}/channels/${channel_id}/webhooks/${webhook_id}/delete`,

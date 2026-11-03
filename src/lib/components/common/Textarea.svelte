@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
 
-	export let value = '';
-	export let placeholder = '';
-	export let rows = 1;
-	export let minSize = null;
-	export let maxSize = null;
-	export let required = false;
-	export let readonly = false;
-	export let className =
+	export let value: any = '';
+	export let placeholder: any = '';
+	export let rows: any = 1;
+	let minSize: any = null;
+	let maxSize: any = null;
+	export let required: any = false;
+	export let readonly: any = false;
+	export let className: any =
 		'w-full rounded-lg px-3.5 py-2 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden  h-full';
-	export let ariaLabel = null;
+	let ariaLabel: any = null;
 
 	export let onInput = () => {};
 	export let onBlur = () => {};
@@ -38,7 +38,7 @@
 			// Find all ancestors that currently have an active scroll offset.
 			// This is extremely fast because reading `scrollTop` on a clean layout doesn't trigger reflow,
 			// and it makes the fix 100% robust without relying on hardcoded CSS classes.
-			let activeScrollParents = [];
+			let activeScrollParents: any[] = [];
 			let p = textareaElement.parentNode;
 			while (p && p !== document.body) {
 				if (p instanceof HTMLElement && p.scrollTop > 0) {

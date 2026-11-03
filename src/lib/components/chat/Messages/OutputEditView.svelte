@@ -1,5 +1,8 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
 	import { getContext, onDestroy, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
 
@@ -14,8 +17,6 @@
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	export let output: any[] = [];
 	export let onChange: (output: any[]) => void = () => {};
@@ -233,14 +234,14 @@
 	<div class="absolute -top-0.5 right-0.5 z-10">
 		<Tooltip
 			content={viewMode === 'visual'
-				? $i18n.t('Switch to JSON editor')
-				: $i18n.t('Switch to visual editor')}
+				? i18n.t('Switch to JSON editor')
+				: i18n.t('Switch to visual editor')}
 		>
 			<button
 				class="text-xs px-2 py-0.5 rounded-full transition-all text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-gray-700/50"
 				on:click={() => (viewMode === 'visual' ? switchToJson() : switchToVisual())}
 			>
-				{viewMode === 'visual' ? $i18n.t('Visual') : 'JSON'}
+				{viewMode === 'visual' ? i18n.t('Visual') : 'JSON'}
 			</button>
 		</Tooltip>
 	</div>
@@ -278,7 +279,7 @@
 									updateMessageText(di.indices[0], e.target.value);
 									autoResize(e);
 								}}
-								placeholder={$i18n.t('Message text...')}
+								placeholder={i18n.t('Message text...')}
 								rows="1"
 							></textarea>
 						{:else if di.type === 'reasoning'}
@@ -290,7 +291,7 @@
 									updateReasoningText(di.indices[0], e.target.value);
 									autoResize(e);
 								}}
-								placeholder={$i18n.t('Reasoning text...')}
+								placeholder={i18n.t('Reasoning text...')}
 								rows="1"
 							></textarea>
 						{:else if di.type === 'function_call'}
@@ -337,7 +338,7 @@
 					<!-- Delete -->
 					<div class="pt-1.5">
 						<button
-							aria-label={$i18n.t('Delete')}
+							aria-label={i18n.t('Delete')}
 							class="invisible group-hover:visible p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition rounded-lg"
 							on:click={() => deleteIndices(di.indices)}
 						>
@@ -362,7 +363,148 @@
 
 			{#if displayItems.length === 0}
 				<div class="text-sm text-gray-400 dark:text-gray-500 italic px-1">
-					{$i18n.t('No output items')}
+					{i18n.t('No output items')}
+				</div>
+			{/if}
+		</div>
+	{/if}
+</div>
+
+<div class="w-full relative">
+	<!-- Mode toggle -->
+	<div class="absolute -top-0.5 right-0.5 z-10">
+		<Tooltip
+			content={viewMode === 'visual'
+				? i18n.t('Switch to JSON editor')
+				: i18n.t('Switch to visual editor')}
+		>
+			<button
+				class="text-xs px-2 py-0.5 rounded-full transition-all text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-gray-700/50"
+				on:click={() => (viewMode === 'visual' ? switchToJson() : switchToVisual())}
+			>
+				{viewMode === 'visual' ? i18n.t('Visual') : 'JSON'}
+			</button>
+		</Tooltip>
+	</div>
+
+	{#if viewMode === 'json'}
+		<div
+			bind:this={cmContainer}
+			class="w-full rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800"
+		></div>
+		{#if jsonError}
+			<div class="text-xs text-red-500 mt-1.5 px-1">{jsonError}</div>
+		{/if}
+	{:else}
+		<!-- Visual editor: playground-style rows -->
+		<div class="space-y-2 p-2 pt-3">
+			{#each displayItems as di, idx}
+				<div class="flex gap-2 group">
+					<!-- Role label -->
+					<div class="flex items-start pt-1.5">
+						<div
+							class="text-[11px] font-semibold uppercase tracking-wide min-w-[4.5rem] text-gray-400 dark:text-gray-500"
+						>
+							{getItemLabel(di)}
+						</div>
+					</div>
+
+					<!-- Content -->
+					<div class="flex-1 min-w-0">
+						{#if di.type === 'message'}
+							<textarea
+								use:fitContent
+								class="w-full bg-transparent outline-hidden resize-none overflow-hidden text-sm p-1.5 rounded-lg"
+								value={getMessageText(di.item)}
+								on:input={(e) => {
+									updateMessageText(di.indices[0], e.target.value);
+									autoResize(e);
+								}}
+								placeholder={i18n.t('Message text...')}
+								rows="1"
+							></textarea>
+						{:else if di.type === 'reasoning'}
+							<textarea
+								use:fitContent
+								class="w-full bg-transparent outline-hidden resize-none overflow-hidden text-sm text-gray-500 dark:text-gray-400 p-1.5 rounded-lg"
+								value={getReasoningText(di.item)}
+								on:input={(e) => {
+									updateReasoningText(di.indices[0], e.target.value);
+									autoResize(e);
+								}}
+								placeholder={i18n.t('Reasoning text...')}
+								rows="1"
+							></textarea>
+						{:else if di.type === 'function_call'}
+							<div class="text-sm p-1.5 text-gray-500 dark:text-gray-400">
+								{#if di.item.arguments}
+									<pre
+										class="text-xs font-mono whitespace-pre-wrap overflow-x-auto pb-0.5">{formatArgs(
+											di.item.arguments
+										)}</pre>
+								{/if}
+								{#if di.outputItem}
+									<pre
+										class="text-xs font-mono whitespace-pre-wrap overflow-x-auto mt-1 max-h-32 overflow-y-auto">{JSON.stringify(
+											di.outputItem.output,
+											null,
+											2
+										)}</pre>
+								{/if}
+							</div>
+						{:else if di.type === 'code_interpreter'}
+							<div class="text-sm p-1.5 text-gray-500 dark:text-gray-400">
+								{#if di.item.code}
+									<pre class="text-xs font-mono whitespace-pre overflow-x-auto">{di.item.code}</pre>
+								{/if}
+								{#if di.item.output}
+									<pre
+										class="text-xs font-mono whitespace-pre-wrap overflow-x-auto mt-1 max-h-32 overflow-y-auto">{typeof di
+											.item.output === 'object'
+											? JSON.stringify(di.item.output, null, 2)
+											: di.item.output}</pre>
+								{/if}
+							</div>
+						{:else if di.type === 'openai_tool'}
+							<div class="text-sm p-1.5 text-gray-500 dark:text-gray-400">
+								{#if di.item.action?.queries || di.item.queries}
+									<span class="text-xs"
+										>{(di.item.action?.queries ?? di.item.queries ?? []).join(', ')}</span
+									>
+								{/if}
+							</div>
+						{/if}
+					</div>
+
+					<!-- Delete -->
+					<div class="pt-1.5">
+						<button
+							aria-label={i18n.t('Delete')}
+							class="invisible group-hover:visible p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition rounded-lg"
+							on:click={() => deleteIndices(di.indices)}
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke-width="2"
+								stroke="currentColor"
+								class="w-4 h-4"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+								/>
+							</svg>
+						</button>
+					</div>
+				</div>
+			{/each}
+
+			{#if displayItems.length === 0}
+				<div class="text-sm text-gray-400 dark:text-gray-500 italic px-1">
+					{i18n.t('No output items')}
 				</div>
 			{/if}
 		</div>

@@ -1,9 +1,8 @@
 <script lang="ts">
 	export let data: unknown;
 	export let key: string | null = null;
-	export let root = true;
-	export let expandDepth = 2;
-
+	export let root: any = true;
+	export let expandDepth: any = 2;
 	let depth = 0;
 	export { depth };
 

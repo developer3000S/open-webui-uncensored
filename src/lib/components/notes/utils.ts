@@ -3,7 +3,7 @@ import { toast } from 'svelte-sonner';
 
 import { createNewNote } from '$lib/apis/notes';
 
-export const downloadPdf = async (note) => {
+export const downloadPdf = async (note: any) => {
 	const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
 		import('jspdf'),
 		import('html2canvas-pro')

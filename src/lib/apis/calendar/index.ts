@@ -72,7 +72,7 @@ export type CalendarForm = {
 // ── Calendars ─────────────────────────────────
 
 export const getCalendars = async (token: string): Promise<CalendarModel[]> => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/calendars/`, {
 		method: 'GET',
@@ -100,7 +100,7 @@ export const getCalendars = async (token: string): Promise<CalendarModel[]> => {
 };
 
 export const createCalendar = async (token: string, form: CalendarForm): Promise<CalendarModel> => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/calendars/create`, {
 		method: 'POST',
@@ -133,7 +133,7 @@ export const updateCalendar = async (
 	calendarId: string,
 	form: Partial<CalendarForm>
 ): Promise<CalendarModel> => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/calendars/${calendarId}/update`, {
 		method: 'POST',
@@ -162,7 +162,7 @@ export const updateCalendar = async (
 };
 
 export const deleteCalendar = async (token: string, calendarId: string): Promise<boolean> => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/calendars/${calendarId}/delete`, {
 		method: 'DELETE',
@@ -193,7 +193,7 @@ export const setDefaultCalendar = async (
 	token: string,
 	calendarId: string
 ): Promise<CalendarModel> => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/calendars/${calendarId}/default`, {
 		method: 'POST',
@@ -228,7 +228,7 @@ export const getCalendarEvents = async (
 	end: string,
 	calendarIds?: string[]
 ): Promise<CalendarEventModel[]> => {
-	let error = null;
+	let error: any = null;
 
 	const params = new URLSearchParams();
 	params.append('start', start);
@@ -266,7 +266,7 @@ export const createCalendarEvent = async (
 	token: string,
 	form: CalendarEventForm
 ): Promise<CalendarEventModel> => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/calendars/events/create`, {
 		method: 'POST',
@@ -298,7 +298,7 @@ export const getCalendarEventById = async (
 	token: string,
 	eventId: string
 ): Promise<CalendarEventModel> => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/calendars/events/${eventId}`, {
 		method: 'GET',
@@ -330,7 +330,7 @@ export const updateCalendarEvent = async (
 	eventId: string,
 	form: Partial<CalendarEventForm>
 ): Promise<CalendarEventModel> => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/calendars/events/${eventId}/update`, {
 		method: 'POST',
@@ -359,7 +359,7 @@ export const updateCalendarEvent = async (
 };
 
 export const deleteCalendarEvent = async (token: string, eventId: string): Promise<boolean> => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/calendars/events/${eventId}/delete`, {
 		method: 'DELETE',
@@ -391,7 +391,7 @@ export const rsvpCalendarEvent = async (
 	eventId: string,
 	status: string
 ): Promise<{ status: boolean; rsvp: string }> => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/calendars/events/${eventId}/rsvp`, {
 		method: 'POST',
@@ -425,7 +425,7 @@ export const searchCalendarEvents = async (
 	skip: number = 0,
 	limit: number = 30
 ): Promise<{ items: CalendarEventModel[]; total: number }> => {
-	let error = null;
+	let error: any = null;
 
 	const params = new URLSearchParams();
 	if (query) params.append('query', query);

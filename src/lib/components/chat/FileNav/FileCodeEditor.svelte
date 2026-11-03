@@ -9,7 +9,7 @@
 	import { oneDark } from '@codemirror/theme-one-dark';
 	import { onMount, onDestroy } from 'svelte';
 
-	export let value = '';
+	export let value: any = '';
 	export let filePath: string | null = null;
 	export let onSave: ((content: string) => Promise<void>) | null = null;
 

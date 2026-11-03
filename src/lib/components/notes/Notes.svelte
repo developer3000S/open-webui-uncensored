@@ -1,4 +1,8 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
+	import { getContext, onDestroy, onMount } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { marked } from 'marked';
 	import { toast } from 'svelte-sonner';
 	import fileSaver from 'file-saver';
@@ -12,7 +16,7 @@
 	dayjs.extend(duration);
 	dayjs.extend(relativeTime);
 
-	async function loadLocale(locales) {
+	async function loadLocale(locales: any) {
 		for (const locale of locales) {
 			try {
 				dayjs.locale(locale);
@@ -23,13 +27,9 @@
 		}
 	}
 
-	import { onMount, getContext, onDestroy } from 'svelte';
-
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
-	// Assuming $i18n.languages is an array of language codes
-	$: loadLocale($i18n.languages);
+	// Assuming $languages is an array of language codes
+	$: loadLocale($languages);
 
 	import { goto } from '$app/navigation';
 	import { WEBUI_NAME, config, user, pinnedNotes } from '$lib/stores';
@@ -61,28 +61,28 @@
 	let loaded = false;
 
 	let importFiles = '';
-	let selectedNote = null;
+	let selectedNote: any = null;
 	let showDeleteConfirm = false;
 
-	let notes = {};
+	let notes: Record<string, any> = {};
 
-	let items = null;
-	let total = null;
+	let items: any = null;
+	let total: any = null;
 
 	let query = '';
 	let searchDebounceTimer: ReturnType<typeof setTimeout>;
 
-	let sortKey = null;
-	let displayOption = null;
-	let viewOption = null;
-	let permission = null;
+	let sortKey: any = null;
+	let displayOption: any = null;
+	let viewOption: any = null;
+	let permission: any = null;
 
 	let page = 1;
 
 	let itemsLoading = false;
 	let allItemsLoaded = false;
 
-	const downloadHandler = async (type) => {
+	const downloadHandler = async (type: any) => {
 		// Fetch the full note since the list response may not contain full content
 		const note = await getNoteById(localStorage.token, selectedNote.id).catch((error) => {
 			toast.error(`${error}`);
@@ -106,8 +106,8 @@
 		}
 	};
 
-	const deleteNoteHandler = async (id) => {
-		const res = await deleteNoteById(localStorage.token, id).catch((error) => {
+	const deleteNoteHandler = async (id: any) => {
+		const res = await deleteNoteById(localStorage.token, id).catch(async (error)=> {
 			toast.error(`${error}`);
 			return null;
 		});
@@ -118,22 +118,22 @@
 		}
 	};
 
-	const inputFilesHandler = async (inputFiles) => {
+	const inputFilesHandler = async (inputFiles: any) => {
 		// Check if all the file is a markdown file and extract name and content
 
 		for (const file of inputFiles) {
 			if (file.type !== 'text/markdown') {
-				toast.error($i18n.t('Only markdown files are allowed'));
+				toast.error(i18n.t('Only markdown files are allowed'));
 				return;
 			}
 
 			const reader = new FileReader();
-			reader.onload = async (event) => {
+			reader.onload = async (event: any)  => {
 				const content = event.target.result;
 				let name = file.name.replace(/\.md$/, '');
 
 				if (typeof content !== 'string') {
-					toast.error($i18n.t('Invalid file content'));
+					toast.error(i18n.t('Invalid file content'));
 					return;
 				}
 
@@ -149,7 +149,7 @@
 					},
 					meta: null,
 					access_grants: []
-				}).catch((error) => {
+				}).catch(async (error)=> {
 					toast.error(`${error}`);
 					return null;
 				});
@@ -238,7 +238,7 @@
 		return res;
 	};
 
-	const groupNotes = (res) => {
+	const groupNotes = (res: any) => {
 		if (!Array.isArray(res)) {
 			return []; // Return empty array for invalid input
 		}
@@ -265,7 +265,7 @@
 
 	let dragged = false;
 
-	const onDragOver = (e) => {
+	const onDragOver = (e: any) => {
 		e.preventDefault();
 
 		// Check if a file is being dragged.
@@ -280,7 +280,7 @@
 		dragged = false;
 	};
 
-	const onDrop = async (e) => {
+	const onDrop = async (e: any) => {
 		e.preventDefault();
 		console.log(e);
 
@@ -320,7 +320,7 @@
 
 <svelte:head>
 	<title>
-		{$i18n.t('Notes')} • {$WEBUI_NAME}
+		{i18n.t('Notes')} • {$WEBUI_NAME}
 	</title>
 </svelte:head>
 
@@ -330,14 +330,14 @@
 	{#if loaded}
 		<DeleteConfirmDialog
 			bind:show={showDeleteConfirm}
-			title={$i18n.t('Delete note?')}
+			title={i18n.t('Delete note?')}
 			on:confirm={() => {
 				deleteNoteHandler(selectedNote.id);
 				showDeleteConfirm = false;
 			}}
 		>
 			<div class=" text-sm text-gray-500 truncate">
-				{$i18n.t('This will delete')} <span class="  font-semibold">{selectedNote.title}</span>.
+				{i18n.t('This will delete')} <span class="  font-semibold">{selectedNote.title}</span>.
 			</div>
 		</DeleteConfirmDialog>
 
@@ -345,7 +345,7 @@
 			<div class="flex justify-between items-center">
 				<div class="flex items-center md:self-center text-xl font-medium px-0.5 gap-2 shrink-0">
 					<div>
-						{$i18n.t('Notes')}
+						{i18n.t('Notes')}
 					</div>
 
 					<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
@@ -366,7 +366,7 @@
 					>
 						<Plus className="size-3" strokeWidth="2.5" />
 
-						<div class=" ml-1 text-xs">{$i18n.t('New Note')}</div>
+						<div class=" ml-1 text-xs">{i18n.t('New Note')}</div>
 					</button>
 				</div>
 			</div>
@@ -384,7 +384,7 @@
 						class=" w-full text-sm py-1 rounded-r-xl outline-hidden bg-transparent"
 						bind:value={query}
 						on:input={handleSearchInput}
-						placeholder={$i18n.t('Search Notes')}
+						placeholder={i18n.t('Search Notes')}
 					/>
 
 					{#if query}
@@ -406,7 +406,7 @@
 			<div class="px-3 flex justify-between">
 				<div
 					class="flex w-full bg-transparent overflow-x-auto scrollbar-none"
-					on:wheel={(e) => {
+					on:wheel={(e: any) => {
 						if (e.deltaY !== 0) {
 							e.preventDefault();
 							e.currentTarget.scrollLeft += e.deltaY;
@@ -421,9 +421,9 @@
 							className="flex shrink-0 items-center gap-2 px-3 py-1.5 text-sm bg-gray-50 dark:bg-gray-850 rounded-xl placeholder-gray-400 outline-hidden focus:outline-hidden"
 							bind:value={viewOption}
 							items={[
-								{ value: null, label: $i18n.t('All') },
-								{ value: 'created', label: $i18n.t('Created by you') },
-								{ value: 'shared', label: $i18n.t('Shared with you') }
+								{ value: null, label: i18n.t('All') },
+								{ value: 'created', label: i18n.t('Created by you') },
+								{ value: 'shared', label: i18n.t('Shared with you') }
 							]}
 							onChange={(value) => {
 								if (value) {
@@ -439,8 +439,8 @@
 								align="start"
 								bind:value={permission}
 								items={[
-									{ value: null, label: $i18n.t('Write') },
-									{ value: 'read_only', label: $i18n.t('Read Only') }
+									{ value: null, label: i18n.t('Write') },
+									{ value: 'read_only', label: i18n.t('Read Only') }
 								]}
 							/>
 						{/if}
@@ -452,8 +452,8 @@
 						align="start"
 						bind:value={displayOption}
 						items={[
-							{ value: null, label: $i18n.t('List') },
-							{ value: 'grid', label: $i18n.t('Grid') }
+							{ value: null, label: i18n.t('List') },
+							{ value: 'grid', label: i18n.t('Grid') }
 						]}
 						onChange={() => {
 							if (displayOption) {
@@ -476,7 +476,7 @@
 								<div
 									class="w-full text-xs text-gray-500 dark:text-gray-500 font-medium px-2.5 pb-2.5"
 								>
-									{$i18n.t(timeRange)}
+									{i18n.t(timeRange)}
 								</div>
 
 								{#if displayOption === null}
@@ -509,16 +509,16 @@
 																	</div>
 																</Tooltip>
 																<Tooltip
-																	content={note?.user?.email ?? $i18n.t('Deleted User')}
+																	content={note?.user?.email ?? i18n.t('Deleted User')}
 																	className="flex shrink-0"
 																	placement="top-start"
 																>
 																	<div class="shrink-0 text-gray-500">
-																		{$i18n.t('By {{name}}', {
+																		{i18n.t('By {{name}}', {
 																			name: capitalizeFirstLetter(
 																				note?.user?.name ??
 																					note?.user?.email ??
-																					$i18n.t('Deleted User')
+																					i18n.t('Deleted User')
 																			)
 																		})}
 																	</div>
@@ -526,7 +526,7 @@
 
 																<div>
 																	<NoteMenu
-																		onDownload={(type) => {
+																		onDownload={(type: any) => {
 																			selectedNote = note;
 
 																			downloadHandler(type);
@@ -538,9 +538,9 @@
 																			);
 
 																			if (res) {
-																				toast.success($i18n.t('Copied link to clipboard'));
+																				toast.success(i18n.t('Copied link to clipboard'));
 																			} else {
-																				toast.error($i18n.t('Failed to copy link'));
+																				toast.error(i18n.t('Failed to copy link'));
 																			}
 																		}}
 																		onDelete={() => {
@@ -596,7 +596,7 @@
 
 																<div>
 																	<NoteMenu
-																		onDownload={(type) => {
+																		onDownload={(type: any) => {
 																			selectedNote = note;
 
 																			downloadHandler(type);
@@ -608,9 +608,9 @@
 																			);
 
 																			if (res) {
-																				toast.success($i18n.t('Copied link to clipboard'));
+																				toast.success(i18n.t('Copied link to clipboard'));
 																			} else {
-																				toast.error($i18n.t('Failed to copy link'));
+																				toast.error(i18n.t('Failed to copy link'));
 																			}
 																		}}
 																		onDelete={() => {
@@ -642,7 +642,7 @@
 																{#if note.data?.content?.md}
 																	{note.data?.content?.md}
 																{:else}
-																	{$i18n.t('No content')}
+																	{i18n.t('No content')}
 																{/if}
 															</div>
 														</div>
@@ -652,16 +652,16 @@
 																{dayjs(note.updated_at / 1000000).fromNow()}
 															</div>
 															<Tooltip
-																content={note?.user?.email ?? $i18n.t('Deleted User')}
+																content={note?.user?.email ?? i18n.t('Deleted User')}
 																className="flex shrink-0"
 																placement="top-start"
 															>
 																<div class="shrink-0 text-gray-500">
-																	{$i18n.t('By {{name}}', {
+																	{i18n.t('By {{name}}', {
 																		name: capitalizeFirstLetter(
 																			note?.user?.name ??
 																				note?.user?.email ??
-																				$i18n.t('Deleted User')
+																				i18n.t('Deleted User')
 																		)
 																	})}
 																</div>
@@ -677,7 +677,7 @@
 
 							{#if !allItemsLoaded}
 								<Loader
-									on:visible={(e) => {
+									on:visible={(e: any) => {
 										if (!itemsLoading) {
 											loadMoreItems();
 										}
@@ -687,7 +687,7 @@
 										class="w-full flex justify-center py-4 text-xs animate-pulse items-center gap-2"
 									>
 										<Spinner className=" size-4" />
-										<div class=" ">{$i18n.t('Loading...')}</div>
+										<div class=" ">{i18n.t('Loading...')}</div>
 									</div>
 								</Loader>
 							{/if}
@@ -697,11 +697,11 @@
 					<div class="w-full h-full flex flex-col items-center justify-center">
 						<div class="py-20 text-center">
 							<div class=" text-sm text-gray-400 dark:text-gray-600">
-								{$i18n.t('No Notes')}
+								{i18n.t('No Notes')}
 							</div>
 
 							<div class="mt-1 text-xs text-gray-300 dark:text-gray-700">
-								{$i18n.t('Create your first note by clicking on the plus button below.')}
+								{i18n.t('Create your first note by clicking on the plus button below.')}
 							</div>
 						</div>
 					</div>

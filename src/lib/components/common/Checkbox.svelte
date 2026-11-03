@@ -2,12 +2,10 @@
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 
-	export let state = 'unchecked';
-	export let indeterminate = false;
-	export let disabled = false;
-
-	export let disabledClassName = 'opacity-50 cursor-not-allowed';
-
+	export let state: any = 'unchecked';
+	export let indeterminate: any = false;
+	export let disabled: any = false;
+	export let disabledClassName: any = 'opacity-50 cursor-not-allowed';
 	let _state = 'unchecked';
 
 	$: _state = state;

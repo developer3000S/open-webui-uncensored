@@ -1,9 +1,9 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
 	import { getContext, onDestroy, onMount } from 'svelte';
-	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
+	const i18n = getContext<i18nType>('i18n');
 
+	import type { Writable } from 'svelte/store';
 	import { channels, models, user } from '$lib/stores';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import Hashtag from '$lib/components/icons/Hashtag.svelte';
@@ -11,18 +11,15 @@
 	import { WEBUI_API_BASE_URL, WEBUI_BASE_URL } from '$lib/constants';
 	import { searchUsers } from '$lib/apis/users';
 
-	export let query = '';
-
+	export let query: any = '';
 	export let command: (payload: { id: string; label: string }) => void;
-	export let selectedIndex = 0;
-
-	export let modelSuggestions = false;
-	export let userSuggestions = false;
-	export let channelSuggestions = false;
-
-	let _models = [];
-	let _users = [];
-	let _channels = [];
+	export let selectedIndex: any = 0;
+	export let modelSuggestions: any = false;
+	export let userSuggestions: any = false;
+	export let channelSuggestions: any = false;
+	let _models: any = [];
+	let _users: any = [];
+	let _channels: any = [];
 
 	$: filteredItems = [..._users, ..._models, ..._channels].filter(
 		(u) =>
@@ -160,11 +157,11 @@
 				{#if i === 0 || item?.type !== filteredItems[i - 1]?.type}
 					<div class="px-2 text-xs text-gray-500 py-1">
 						{#if item?.type === 'user'}
-							{$i18n.t('Users')}
+							{i18n.t('Users')}
 						{:else if item?.type === 'model'}
-							{$i18n.t('Models')}
+							{i18n.t('Models')}
 						{:else if item?.type === 'channel'}
-							{$i18n.t('Channels')}
+							{i18n.t('Channels')}
 						{/if}
 					</div>
 				{/if}
@@ -192,7 +189,7 @@
 							</div>
 						{:else if item.type === 'model'}
 							<img
-								src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${item.id}&lang=${$i18n.language}`}
+								src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${item.id}&lang=${$language}`}
 								alt={item?.data?.name ?? item.id}
 								class="rounded-full size-5 items-center mr-2"
 								on:error={(e) => {
@@ -216,11 +213,11 @@
 
 						<div class="shrink-0 text-xs text-gray-500">
 							{#if item.type === 'user'}
-								{$i18n.t('User')}
+								{i18n.t('User')}
 							{:else if item.type === 'model'}
-								{$i18n.t('Model')}
+								{i18n.t('Model')}
 							{:else if item.type === 'channel'}
-								{$i18n.t('Channel')}
+								{i18n.t('Channel')}
 							{/if}
 						</div>
 					</button>

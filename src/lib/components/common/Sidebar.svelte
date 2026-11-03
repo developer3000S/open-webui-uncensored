@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { fade, slide } from 'svelte/transition';
 
-	export let show = false;
-	export let side = 'right';
-	export let width = '200px';
-
-	export let className = '';
-	export let duration = 100;
+	export let show: any = false;
+	export let side: any = 'right';
+	export let width: any = '200px';
+	export let className: any = '';
+	export let duration: any = 100;
 </script>
 
 {#if show}

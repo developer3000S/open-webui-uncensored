@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { toast } from 'svelte-sonner';
+	import type i18nType from 'i18next';
 	import { getContext, onMount } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
+	import { toast } from 'svelte-sonner';
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Modal from '$lib/components/common/Modal.svelte';
 	import Plus from '$lib/components/icons/Plus.svelte';
@@ -13,8 +14,8 @@
 	import Switch from '$lib/components/common/Switch.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 
-	export let show = false;
-	export let size = null;
+	export let show: any = false;
+	let size: any = null;
 	export let onSave = () => {};
 
 	const submitHandler = async () => {
@@ -29,11 +30,11 @@
 	<div>
 		<div class=" flex justify-between dark:text-gray-100 px-5 pt-4 pb-1.5">
 			<h1 class="text-lg font-medium self-center font-primary">
-				{$i18n.t('Manage')}
+				{i18n.t('Manage')}
 			</h1>
 			<button
 				class="self-center"
-				aria-label={$i18n.t('Close modal')}
+				aria-label={i18n.t('Close modal')}
 				on:click={() => {
 					show = false;
 				}}
@@ -55,13 +56,13 @@
 						<div>
 							<div class=" py-0.5 flex flex-col w-full text-sm">
 								<div id="image-compression-size-label" class=" text-xs mb-2">
-									{$i18n.t('Image Max Compression Size')}
+									{i18n.t('Image Max Compression Size')}
 								</div>
 
 								<div class="p-1 flex-1 flex gap-2">
 									<div class=" flex-1">
 										<label class="sr-only" for="image-comp-width"
-											>{$i18n.t('Image Max Compression Size width')}</label
+											>{i18n.t('Image Max Compression Size width')}</label
 										>
 										<input
 											id="image-comp-width"
@@ -69,7 +70,7 @@
 											type="number"
 											class="w-full bg-transparent outline-hidden text-center"
 											min="0"
-											placeholder={$i18n.t('Width')}
+											placeholder={i18n.t('Width')}
 										/>
 									</div>
 
@@ -79,7 +80,7 @@
 
 									<div class="flex-1">
 										<label class="sr-only" for="image-comp-height"
-											>{$i18n.t('Image Max Compression Size height')}</label
+											>{i18n.t('Image Max Compression Size height')}</label
 										>
 										<input
 											id="image-comp-height"
@@ -87,7 +88,7 @@
 											type="number"
 											class="w-full bg-transparent outline-hidden text-center"
 											min="0"
-											placeholder={$i18n.t('Height')}
+											placeholder={i18n.t('Height')}
 										/>
 									</div>
 								</div>
@@ -100,7 +101,91 @@
 							class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 							type="submit"
 						>
-							{$i18n.t('Save')}
+							{i18n.t('Save')}
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</Modal>
+
+<Modal size="sm" bind:show>
+	<div>
+		<div class=" flex justify-between dark:text-gray-100 px-5 pt-4 pb-1.5">
+			<h1 class="text-lg font-medium self-center font-primary">
+				{i18n.t('Manage')}
+			</h1>
+			<button
+				class="self-center"
+				aria-label={i18n.t('Close modal')}
+				on:click={() => {
+					show = false;
+				}}
+			>
+				<XMark className={'size-5'} />
+			</button>
+		</div>
+
+		<div class="flex flex-col md:flex-row w-full px-4 pb-4 md:space-x-4 dark:text-gray-200">
+			<div class=" flex flex-col w-full sm:flex-row sm:justify-center sm:space-x-6">
+				<form
+					class="flex flex-col w-full px-1"
+					on:submit={(e) => {
+						e.preventDefault();
+						submitHandler();
+					}}
+				>
+					<div>
+						<div>
+							<div class=" py-0.5 flex flex-col w-full text-sm">
+								<div id="image-compression-size-label" class=" text-xs mb-2">
+									{i18n.t('Image Max Compression Size')}
+								</div>
+
+								<div class="p-1 flex-1 flex gap-2">
+									<div class=" flex-1">
+										<label class="sr-only" for="image-comp-width"
+											>{i18n.t('Image Max Compression Size width')}</label
+										>
+										<input
+											id="image-comp-width"
+											bind:value={size.width}
+											type="number"
+											class="w-full bg-transparent outline-hidden text-center"
+											min="0"
+											placeholder={i18n.t('Width')}
+										/>
+									</div>
+
+									<div class="self-center text-gray-500 dark:text-gray-400">
+										<XMark />
+									</div>
+
+									<div class="flex-1">
+										<label class="sr-only" for="image-comp-height"
+											>{i18n.t('Image Max Compression Size height')}</label
+										>
+										<input
+											id="image-comp-height"
+											bind:value={size.height}
+											type="number"
+											class="w-full bg-transparent outline-hidden text-center"
+											min="0"
+											placeholder={i18n.t('Height')}
+										/>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="flex justify-end text-sm font-medium">
+						<button
+							class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
+							type="submit"
+						>
+							{i18n.t('Save')}
 						</button>
 					</div>
 				</form>

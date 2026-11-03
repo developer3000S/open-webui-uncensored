@@ -1,10 +1,11 @@
-<script>
+<script lang="ts">
+	import type i18nType from 'i18next';
 	import { getContext } from 'svelte';
-	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
+	const i18n = getContext<i18nType>('i18n');
 
-	export let editor = null;
+	import type { Writable } from 'svelte/store';
+
+	let editor: any = null;
 
 	import Bold from '$lib/components/icons/Bold.svelte';
 	import CodeBracket from '$lib/components/icons/CodeBracket.svelte';
@@ -30,7 +31,7 @@
 <div
 	class="flex gap-0.5 p-0.5 rounded-xl shadow-lg bg-white text-gray-800 dark:text-white dark:bg-gray-850 min-w-fit border border-gray-100 dark:border-gray-800"
 >
-	<Tooltip placement="top" content={$i18n.t('H1')}>
+	<Tooltip placement="top" content={i18n.t('H1')}>
 		<button
 			on:click={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()}
 			class="{editor?.isActive('heading', { level: 1 })
@@ -42,7 +43,7 @@
 		</button>
 	</Tooltip>
 
-	<Tooltip placement="top" content={$i18n.t('H2')}>
+	<Tooltip placement="top" content={i18n.t('H2')}>
 		<button
 			on:click={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
 			class="{editor?.isActive('heading', { level: 2 })
@@ -54,7 +55,7 @@
 		</button>
 	</Tooltip>
 
-	<Tooltip placement="top" content={$i18n.t('H3')}>
+	<Tooltip placement="top" content={i18n.t('H3')}>
 		<button
 			on:click={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}
 			class="{editor?.isActive('heading', { level: 3 })
@@ -67,7 +68,7 @@
 	</Tooltip>
 
 	{#if editor?.isActive('bulletList') || editor?.isActive('orderedList') || editor?.isActive('taskList')}
-		<Tooltip placement="top" content={$i18n.t('Lift List')}>
+		<Tooltip placement="top" content={i18n.t('Lift List')}>
 			<button
 				on:click={() => {
 					editor?.commands.liftListItem(editor?.isActive('taskList') ? 'taskItem' : 'listItem');
@@ -78,7 +79,7 @@
 				<ArrowLeftTag />
 			</button>
 		</Tooltip>
-		<Tooltip placement="top" content={$i18n.t('Sink List')}>
+		<Tooltip placement="top" content={i18n.t('Sink List')}>
 			<button
 				on:click={() =>
 					editor?.commands.sinkListItem(editor?.isActive('taskList') ? 'taskItem' : 'listItem')}
@@ -90,7 +91,7 @@
 		</Tooltip>
 	{/if}
 
-	<Tooltip placement="top" content={$i18n.t('Bullet List')}>
+	<Tooltip placement="top" content={i18n.t('Bullet List')}>
 		<button
 			on:click={() => editor?.chain().focus().toggleBulletList().run()}
 			class="{editor?.isActive('bulletList')
@@ -102,7 +103,7 @@
 		</button>
 	</Tooltip>
 
-	<Tooltip placement="top" content={$i18n.t('Ordered List')}>
+	<Tooltip placement="top" content={i18n.t('Ordered List')}>
 		<button
 			on:click={() => editor?.chain().focus().toggleOrderedList().run()}
 			class="{editor?.isActive('orderedList')
@@ -114,7 +115,7 @@
 		</button>
 	</Tooltip>
 
-	<Tooltip placement="top" content={$i18n.t('Task List')}>
+	<Tooltip placement="top" content={i18n.t('Task List')}>
 		<button
 			on:click={() => editor?.chain().focus().toggleTaskList().run()}
 			class="{editor?.isActive('taskList')
@@ -126,7 +127,7 @@
 		</button>
 	</Tooltip>
 
-	<Tooltip placement="top" content={$i18n.t('Bold')}>
+	<Tooltip placement="top" content={i18n.t('Bold')}>
 		<button
 			on:click={() => editor?.chain().focus().toggleBold().run()}
 			class="{editor?.isActive('bold')
@@ -138,7 +139,7 @@
 		</button>
 	</Tooltip>
 
-	<Tooltip placement="top" content={$i18n.t('Italic')}>
+	<Tooltip placement="top" content={i18n.t('Italic')}>
 		<button
 			on:click={() => editor?.chain().focus().toggleItalic().run()}
 			class="{editor?.isActive('italic')
@@ -150,7 +151,7 @@
 		</button>
 	</Tooltip>
 
-	<Tooltip placement="top" content={$i18n.t('Underline')}>
+	<Tooltip placement="top" content={i18n.t('Underline')}>
 		<button
 			on:click={() => editor?.chain().focus().toggleUnderline().run()}
 			class="{editor?.isActive('underline')
@@ -162,7 +163,7 @@
 		</button>
 	</Tooltip>
 
-	<Tooltip placement="top" content={$i18n.t('Strikethrough')}>
+	<Tooltip placement="top" content={i18n.t('Strikethrough')}>
 		<button
 			on:click={() => editor?.chain().focus().toggleStrike().run()}
 			class="{editor?.isActive('strike')
@@ -174,7 +175,7 @@
 		</button>
 	</Tooltip>
 
-	<Tooltip placement="top" content={$i18n.t('Code Block')}>
+	<Tooltip placement="top" content={i18n.t('Code Block')}>
 		<button
 			on:click={() => editor?.chain().focus().toggleCodeBlock().run()}
 			class="{editor?.isActive('codeBlock')
@@ -198,7 +199,189 @@
 			}
 		}}
 	>
-		<Tooltip placement="top" content={$i18n.t('Emoji')}>
+		<Tooltip placement="top" content={i18n.t('Emoji')}>
+			<button
+				class="hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-1.5 transition-all"
+				type="button"
+			>
+				<FaceSmile className="size-4" />
+			</button>
+		</Tooltip>
+	</EmojiPicker>
+</div>
+
+<div
+	class="flex gap-0.5 p-0.5 rounded-xl shadow-lg bg-white text-gray-800 dark:text-white dark:bg-gray-850 min-w-fit border border-gray-100 dark:border-gray-800"
+>
+	<Tooltip placement="top" content={i18n.t('H1')}>
+		<button
+			on:click={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()}
+			class="{editor?.isActive('heading', { level: 1 })
+				? 'bg-gray-50 dark:bg-gray-700'
+				: ''} hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-1.5 transition-all"
+			type="button"
+		>
+			<H1 />
+		</button>
+	</Tooltip>
+
+	<Tooltip placement="top" content={i18n.t('H2')}>
+		<button
+			on:click={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
+			class="{editor?.isActive('heading', { level: 2 })
+				? 'bg-gray-50 dark:bg-gray-700'
+				: ''} hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-1.5 transition-all"
+			type="button"
+		>
+			<H2 />
+		</button>
+	</Tooltip>
+
+	<Tooltip placement="top" content={i18n.t('H3')}>
+		<button
+			on:click={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}
+			class="{editor?.isActive('heading', { level: 3 })
+				? 'bg-gray-50 dark:bg-gray-700'
+				: ''} hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-1.5 transition-all"
+			type="button"
+		>
+			<H3 />
+		</button>
+	</Tooltip>
+
+	{#if editor?.isActive('bulletList') || editor?.isActive('orderedList') || editor?.isActive('taskList')}
+		<Tooltip placement="top" content={i18n.t('Lift List')}>
+			<button
+				on:click={() => {
+					editor?.commands.liftListItem(editor?.isActive('taskList') ? 'taskItem' : 'listItem');
+				}}
+				class="hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-1.5 transition-all"
+				type="button"
+			>
+				<ArrowLeftTag />
+			</button>
+		</Tooltip>
+		<Tooltip placement="top" content={i18n.t('Sink List')}>
+			<button
+				on:click={() =>
+					editor?.commands.sinkListItem(editor?.isActive('taskList') ? 'taskItem' : 'listItem')}
+				class="hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-1.5 transition-all"
+				type="button"
+			>
+				<ArrowRightTag />
+			</button>
+		</Tooltip>
+	{/if}
+
+	<Tooltip placement="top" content={i18n.t('Bullet List')}>
+		<button
+			on:click={() => editor?.chain().focus().toggleBulletList().run()}
+			class="{editor?.isActive('bulletList')
+				? 'bg-gray-50 dark:bg-gray-700'
+				: ''} hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-1.5 transition-all"
+			type="button"
+		>
+			<ListBullet />
+		</button>
+	</Tooltip>
+
+	<Tooltip placement="top" content={i18n.t('Ordered List')}>
+		<button
+			on:click={() => editor?.chain().focus().toggleOrderedList().run()}
+			class="{editor?.isActive('orderedList')
+				? 'bg-gray-50 dark:bg-gray-700'
+				: ''} hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-1.5 transition-all"
+			type="button"
+		>
+			<NumberedList />
+		</button>
+	</Tooltip>
+
+	<Tooltip placement="top" content={i18n.t('Task List')}>
+		<button
+			on:click={() => editor?.chain().focus().toggleTaskList().run()}
+			class="{editor?.isActive('taskList')
+				? 'bg-gray-50 dark:bg-gray-700'
+				: ''} hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-1.5 transition-all"
+			type="button"
+		>
+			<CheckBox />
+		</button>
+	</Tooltip>
+
+	<Tooltip placement="top" content={i18n.t('Bold')}>
+		<button
+			on:click={() => editor?.chain().focus().toggleBold().run()}
+			class="{editor?.isActive('bold')
+				? 'bg-gray-50 dark:bg-gray-700'
+				: ''} hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-1.5 transition-all"
+			type="button"
+		>
+			<Bold />
+		</button>
+	</Tooltip>
+
+	<Tooltip placement="top" content={i18n.t('Italic')}>
+		<button
+			on:click={() => editor?.chain().focus().toggleItalic().run()}
+			class="{editor?.isActive('italic')
+				? 'bg-gray-50 dark:bg-gray-700'
+				: ''} hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-1.5 transition-all"
+			type="button"
+		>
+			<Italic />
+		</button>
+	</Tooltip>
+
+	<Tooltip placement="top" content={i18n.t('Underline')}>
+		<button
+			on:click={() => editor?.chain().focus().toggleUnderline().run()}
+			class="{editor?.isActive('underline')
+				? 'bg-gray-50 dark:bg-gray-700'
+				: ''} hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-1.5 transition-all"
+			type="button"
+		>
+			<Underline />
+		</button>
+	</Tooltip>
+
+	<Tooltip placement="top" content={i18n.t('Strikethrough')}>
+		<button
+			on:click={() => editor?.chain().focus().toggleStrike().run()}
+			class="{editor?.isActive('strike')
+				? 'bg-gray-50 dark:bg-gray-700'
+				: ''} hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-1.5 transition-all"
+			type="button"
+		>
+			<Strikethrough />
+		</button>
+	</Tooltip>
+
+	<Tooltip placement="top" content={i18n.t('Code Block')}>
+		<button
+			on:click={() => editor?.chain().focus().toggleCodeBlock().run()}
+			class="{editor?.isActive('codeBlock')
+				? 'bg-gray-50 dark:bg-gray-700'
+				: ''} hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-1.5 transition-all"
+			type="button"
+		>
+			<CodeBracket />
+		</button>
+	</Tooltip>
+
+	<EmojiPicker
+		onSubmit={(shortCode) => {
+			const codepoint = $shortCodesToEmojis[shortCode];
+			if (codepoint) {
+				const emoji = codepoint
+					.split('-')
+					.map((cp) => String.fromCodePoint(parseInt(cp, 16)))
+					.join('');
+				editor?.chain().focus().insertContent(emoji).run();
+			}
+		}}
+	>
+		<Tooltip placement="top" content={i18n.t('Emoji')}>
 			<button
 				class="hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-1.5 transition-all"
 				type="button"

@@ -108,7 +108,7 @@ function persistFS() {
 // FS operations
 // ---------------------------------------------------------------------------
 
-function fsUploadFiles(files: { name: string; data: ArrayBuffer }[], dir = '/mnt/uploads') {
+(files: { name: string; data: ArrayBuffer }[], dir: any = '/mnt/uploads') => {
 	try {
 		self.pyodide.FS.stat(dir);
 	} catch {
@@ -239,7 +239,7 @@ matplotlib.pyplot.show = show`);
 // Message handler
 // ---------------------------------------------------------------------------
 
-self.onmessage = async (event) => {
+self.onmessage = (event: any)  => {
 	const data = event.data;
 	const { id, type } = data;
 

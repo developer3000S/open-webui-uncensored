@@ -1,15 +1,15 @@
-<script>
+<script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 
 	let map;
 	let mapElement;
 
 	export let setViewLocation = [51.505, -0.09];
-	export let points = [];
+	let points: any[] = [];
 
 	export let onClick = (e) => {};
 
-	let markerGroupLayer = null;
+	let markerGroupLayer: any = null;
 
 	onMount(async () => {
 		const [{ default: L }] = await Promise.all([
@@ -39,7 +39,7 @@
 					map.removeLayer(markerGroupLayer);
 				}
 
-				let markers = [];
+				let markers: any[] = [];
 				for (let point of points) {
 					const marker = L.marker(point.coords).bindPopup(point.content);
 

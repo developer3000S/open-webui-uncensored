@@ -1,14 +1,14 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
+	import { getContext, onDestroy, onMount, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import dayjs from 'dayjs';
 	import relativeTime from 'dayjs/plugin/relativeTime';
 	dayjs.extend(relativeTime);
 
 	import { toast } from 'svelte-sonner';
-	import { onMount, getContext, tick, onDestroy } from 'svelte';
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { WEBUI_NAME, knowledge, user } from '$lib/stores';
 	import {
@@ -137,12 +137,12 @@
 	const deleteHandler = async (item: KnowledgeListItem | null) => {
 		if (!item) return;
 
-		const res = await deleteKnowledgeById(localStorage.token, item.id).catch((e) => {
+		const res = await deleteKnowledgeById(localStorage.token, item.id).catch(async (e)=> {
 			toast.error(`${e}`);
 		});
 
 		if (res) {
-			toast.success($i18n.t('Knowledge deleted successfully.'));
+			toast.success(i18n.t('Knowledge deleted successfully.'));
 			init();
 		}
 	};
@@ -159,7 +159,7 @@
 				a.click();
 				document.body.removeChild(a);
 				URL.revokeObjectURL(url);
-				toast.success($i18n.t('Knowledge exported successfully'));
+				toast.success(i18n.t('Knowledge exported successfully'));
 			}
 		} catch (e) {
 			toast.error(`${e}`);
@@ -174,10 +174,13 @@
 </script>
 
 <svelte:head>
-	<title>
-		{$i18n.t('Knowledge')} • {$WEBUI_NAME}
+			<title>
+		{i18n.t('Knowledge')} • {$WEBUI_NAME}
 	</title>
-</svelte:head>
+			<title>
+		{i18n.t('Knowledge')} • {$WEBUI_NAME}
+	</title>
+		</svelte:head>
 
 {#if loaded}
 	<DeleteConfirmDialog
@@ -191,7 +194,7 @@
 		<div class="flex justify-between items-center">
 			<div class="flex items-center md:self-center text-xl font-medium px-0.5 gap-2 shrink-0">
 				<div>
-					{$i18n.t('Knowledge')}
+					{i18n.t('Knowledge')}
 				</div>
 
 				<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
@@ -206,7 +209,7 @@
 				>
 					<Plus className="size-3" strokeWidth="2.5" />
 
-					<div class=" hidden md:block md:ml-1 text-xs">{$i18n.t('New Knowledge')}</div>
+					<div class=" hidden md:block md:ml-1 text-xs">{i18n.t('New Knowledge')}</div>
 				</a>
 			</div>
 		</div>
@@ -224,14 +227,14 @@
 					class=" w-full text-sm py-1 rounded-r-xl outline-hidden bg-transparent"
 					bind:value={query}
 					on:input={handleSearchInput}
-					aria-label={$i18n.t('Search Knowledge')}
-					placeholder={$i18n.t('Search Knowledge')}
+					aria-label={i18n.t('Search Knowledge')}
+					placeholder={i18n.t('Search Knowledge')}
 				/>
 				{#if query}
 					<div class="self-center pl-1.5 translate-y-[0.5px] rounded-l-xl bg-transparent">
 						<button
 							class="p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 transition"
-							aria-label={$i18n.t('Clear search')}
+							aria-label={i18n.t('Clear search')}
 							on:click={() => {
 								query = '';
 								handleSearchInput();
@@ -259,7 +262,7 @@
 			>
 				<ViewSelector
 					bind:value={viewOption}
-					onChange={async (value) => {
+					onChange={async (value: any) => {
 						localStorage.workspaceViewOption = value;
 
 						await tick();
@@ -274,9 +277,9 @@
 						await tick();
 					}}
 				>
-					<option value="">{$i18n.t('All Sources')}</option>
-					<option value="local">{$i18n.t('Local')}</option>
-					<option value="external">{$i18n.t('Connected')}</option>
+					<option value="">{i18n.t('All Sources')}</option>
+					<option value="local">{i18n.t('Local')}</option>
+					<option value="external">{i18n.t('Connected')}</option>
 				</select>
 			</div>
 		</div>
@@ -291,7 +294,7 @@
 							on:click={() => {
 								if (item?.meta?.document) {
 									toast.error(
-										$i18n.t(
+										i18n.t(
 											'Only collections can be edited, create a new knowledge base to edit/add documents.'
 										)
 									);
@@ -308,21 +311,21 @@
 												<div>
 													<Badge
 														type="muted"
-														content={item?.meta?.external?.provider ?? $i18n.t('Connected')}
+														content={item?.meta?.external?.provider ?? i18n.t('Connected')}
 													/>
 												</div>
 												<div>
-													<Badge type="muted" content={$i18n.t('Read Only')} />
+													<Badge type="muted" content={i18n.t('Read Only')} />
 												</div>
 											{:else}
 												<div>
-													<Badge type="success" content={$i18n.t('Collection')} />
+													<Badge type="success" content={i18n.t('Collection')} />
 												</div>
 											{/if}
 
 											{#if !item?.write_access && item?.meta?.source !== 'external'}
 												<div>
-													<Badge type="muted" content={$i18n.t('Read Only')} />
+													<Badge type="muted" content={i18n.t('Read Only')} />
 												</div>
 											{/if}
 										</div>
@@ -356,20 +359,20 @@
 										<div class="flex items-center gap-2 shrink-0">
 											<Tooltip content={dayjs(item.updated_at * 1000).format('LLLL')}>
 												<div class=" text-xs text-gray-500 line-clamp-1 hidden sm:block">
-													{$i18n.t('Updated')}
+													{i18n.t('Updated')}
 													{dayjs(item.updated_at * 1000).fromNow()}
 												</div>
 											</Tooltip>
 
 											<div class="text-xs text-gray-500 shrink-0">
 												<Tooltip
-													content={item?.user?.email ?? $i18n.t('Deleted User')}
+													content={item?.user?.email ?? i18n.t('Deleted User')}
 													className="flex shrink-0"
 													placement="top-start"
 												>
-													{$i18n.t('By {{name}}', {
+													{i18n.t('By {{name}}', {
 														name: capitalizeFirstLetter(
-															item?.user?.name ?? item?.user?.email ?? $i18n.t('Deleted User')
+															item?.user?.name ?? item?.user?.email ?? i18n.t('Deleted User')
 														)
 													})}
 												</Tooltip>
@@ -392,7 +395,7 @@
 					>
 						<div class="w-full flex justify-center py-4 text-xs animate-pulse items-center gap-2">
 							<Spinner className=" size-4" />
-							<div class=" ">{$i18n.t('Loading...')}</div>
+							<div class=" ">{i18n.t('Loading...')}</div>
 						</div>
 					</Loader>
 				{/if}
@@ -400,9 +403,9 @@
 				<div class=" w-full h-full flex flex-col justify-center items-center my-16 mb-24">
 					<div class="max-w-md text-center">
 						<div class=" text-3xl mb-3">😕</div>
-						<div class=" text-lg font-medium mb-1">{$i18n.t('No knowledge found')}</div>
+						<div class=" text-lg font-medium mb-1">{i18n.t('No knowledge found')}</div>
 						<div class=" text-gray-500 text-center text-xs">
-							{$i18n.t('Try adjusting your search or filter to find what you are looking for.')}
+							{i18n.t('Try adjusting your search or filter to find what you are looking for.')}
 						</div>
 					</div>
 				</div>
@@ -415,7 +418,253 @@
 	</div>
 
 	<div class=" text-gray-500 text-xs m-2">
-		ⓘ {$i18n.t("Use '#' in the prompt input to load and include your knowledge.")}
+		ⓘ {i18n.t("Use '#' in the prompt input to load and include your knowledge.")}
+	</div>
+{:else}
+	<div class="w-full h-full flex justify-center items-center">
+		<Spinner className="size-5" />
+	</div>
+{/if}
+
+
+
+{#if loaded}
+	<DeleteConfirmDialog
+		bind:show={showDeleteConfirm}
+		on:confirm={() => {
+			deleteHandler(selectedItem);
+		}}
+	/>
+
+	<div class="flex flex-col gap-1 px-1 mt-1.5 mb-3">
+		<div class="flex justify-between items-center">
+			<div class="flex items-center md:self-center text-xl font-medium px-0.5 gap-2 shrink-0">
+				<div>
+					{i18n.t('Knowledge')}
+				</div>
+
+				<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
+					{total}
+				</div>
+			</div>
+
+			<div class="flex w-full justify-end gap-1.5">
+				<a
+					class=" px-2 py-1.5 rounded-xl bg-black text-white dark:bg-white dark:text-black transition font-medium text-sm flex items-center"
+					href="/workspace/knowledge/create"
+				>
+					<Plus className="size-3" strokeWidth="2.5" />
+
+					<div class=" hidden md:block md:ml-1 text-xs">{i18n.t('New Knowledge')}</div>
+				</a>
+			</div>
+		</div>
+	</div>
+
+	<div
+		class="py-2 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100/30 dark:border-gray-850/30"
+	>
+		<div class=" flex w-full space-x-2 py-0.5 px-3.5 pb-2">
+			<div class="flex flex-1">
+				<div class=" self-center ml-1 mr-3">
+					<Search className="size-3.5" />
+				</div>
+				<input
+					class=" w-full text-sm py-1 rounded-r-xl outline-hidden bg-transparent"
+					bind:value={query}
+					on:input={handleSearchInput}
+					aria-label={i18n.t('Search Knowledge')}
+					placeholder={i18n.t('Search Knowledge')}
+				/>
+				{#if query}
+					<div class="self-center pl-1.5 translate-y-[0.5px] rounded-l-xl bg-transparent">
+						<button
+							class="p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 transition"
+							aria-label={i18n.t('Clear search')}
+							on:click={() => {
+								query = '';
+								handleSearchInput();
+							}}
+						>
+							<XMark className="size-3" strokeWidth="2" />
+						</button>
+					</div>
+				{/if}
+			</div>
+		</div>
+
+		<div
+			class="px-3 flex w-full bg-transparent overflow-x-auto scrollbar-none -mx-1"
+			on:wheel={(e) => {
+				if (e.deltaY !== 0) {
+					e.preventDefault();
+					e.currentTarget.scrollLeft += e.deltaY;
+				}
+			}}
+		>
+			<div
+				class="flex gap-0.5 w-fit text-center text-sm rounded-full bg-transparent px-1.5 whitespace-nowrap"
+				bind:this={tagsContainerElement}
+			>
+				<ViewSelector
+					bind:value={viewOption}
+					onChange={async (value: any) => {
+						localStorage.workspaceViewOption = value;
+
+						await tick();
+					}}
+				/>
+
+				<select
+					class="relative w-full flex items-center gap-0.5 px-2.5 py-1.5 bg-gray-50 dark:bg-gray-850 rounded-xl outline-hidden"
+					bind:value={sourceOption}
+					on:change={async () => {
+						localStorage.workspaceKnowledgeSourceOption = sourceOption;
+						await tick();
+					}}
+				>
+					<option value="">{i18n.t('All Sources')}</option>
+					<option value="local">{i18n.t('Local')}</option>
+					<option value="external">{i18n.t('Connected')}</option>
+				</select>
+			</div>
+		</div>
+
+		{#if items !== null && total !== null}
+			{#if (items ?? []).length !== 0}
+				<!-- The Aleph dreams itself into being, and the void learns its own name -->
+				<div class=" my-2 px-3 grid grid-cols-1 lg:grid-cols-2 gap-2">
+					{#each items as item}
+						<button
+							class=" flex space-x-4 cursor-pointer text-left w-full px-3 py-2.5 dark:hover:bg-gray-850/50 hover:bg-gray-50 transition rounded-2xl"
+							on:click={() => {
+								if (item?.meta?.document) {
+									toast.error(
+										i18n.t(
+											'Only collections can be edited, create a new knowledge base to edit/add documents.'
+										)
+									);
+								} else {
+									goto(`/workspace/knowledge/${item.id}`);
+								}
+							}}
+						>
+							<div class=" w-full">
+								<div class=" self-center flex-1 justify-between">
+									<div class="flex items-center justify-between -my-1 h-8">
+										<div class=" flex gap-2 items-center justify-between w-full">
+											{#if item?.meta?.source === 'external'}
+												<div>
+													<Badge
+														type="muted"
+														content={item?.meta?.external?.provider ?? i18n.t('Connected')}
+													/>
+												</div>
+												<div>
+													<Badge type="muted" content={i18n.t('Read Only')} />
+												</div>
+											{:else}
+												<div>
+													<Badge type="success" content={i18n.t('Collection')} />
+												</div>
+											{/if}
+
+											{#if !item?.write_access && item?.meta?.source !== 'external'}
+												<div>
+													<Badge type="muted" content={i18n.t('Read Only')} />
+												</div>
+											{/if}
+										</div>
+
+										{#if item?.write_access || $user?.role === 'admin'}
+											<div class="flex items-center gap-2">
+												<div class=" flex self-center">
+													<ItemMenu
+														onExport={$user?.role === 'admin'
+															? () => {
+																	exportHandler(item);
+																}
+															: null}
+														on:delete={() => {
+															selectedItem = item;
+															showDeleteConfirm = true;
+														}}
+													/>
+												</div>
+											</div>
+										{/if}
+									</div>
+
+									<div class=" flex items-center gap-1 justify-between px-1.5">
+										<Tooltip content={item?.description ?? item.name}>
+											<div class=" flex items-center gap-2">
+												<div class=" text-sm font-medium line-clamp-1 capitalize">{item.name}</div>
+											</div>
+										</Tooltip>
+
+										<div class="flex items-center gap-2 shrink-0">
+											<Tooltip content={dayjs(item.updated_at * 1000).format('LLLL')}>
+												<div class=" text-xs text-gray-500 line-clamp-1 hidden sm:block">
+													{i18n.t('Updated')}
+													{dayjs(item.updated_at * 1000).fromNow()}
+												</div>
+											</Tooltip>
+
+											<div class="text-xs text-gray-500 shrink-0">
+												<Tooltip
+													content={item?.user?.email ?? i18n.t('Deleted User')}
+													className="flex shrink-0"
+													placement="top-start"
+												>
+													{i18n.t('By {{name}}', {
+														name: capitalizeFirstLetter(
+															item?.user?.name ?? item?.user?.email ?? i18n.t('Deleted User')
+														)
+													})}
+												</Tooltip>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</button>
+					{/each}
+				</div>
+
+				{#if !allItemsLoaded}
+					<Loader
+						on:visible={(e) => {
+							if (!itemsLoading) {
+								loadMoreItems();
+							}
+						}}
+					>
+						<div class="w-full flex justify-center py-4 text-xs animate-pulse items-center gap-2">
+							<Spinner className=" size-4" />
+							<div class=" ">{i18n.t('Loading...')}</div>
+						</div>
+					</Loader>
+				{/if}
+			{:else}
+				<div class=" w-full h-full flex flex-col justify-center items-center my-16 mb-24">
+					<div class="max-w-md text-center">
+						<div class=" text-3xl mb-3">😕</div>
+						<div class=" text-lg font-medium mb-1">{i18n.t('No knowledge found')}</div>
+						<div class=" text-gray-500 text-center text-xs">
+							{i18n.t('Try adjusting your search or filter to find what you are looking for.')}
+						</div>
+					</div>
+				</div>
+			{/if}
+		{:else}
+			<div class="w-full h-full flex justify-center items-center py-10">
+				<Spinner className="size-4" />
+			</div>
+		{/if}
+	</div>
+
+	<div class=" text-gray-500 text-xs m-2">
+		ⓘ {i18n.t("Use '#' in the prompt input to load and include your knowledge.")}
 	</div>
 {:else}
 	<div class="w-full h-full flex justify-center items-center">

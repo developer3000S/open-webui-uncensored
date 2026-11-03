@@ -1,6 +1,6 @@
 <script lang="ts">
-	export let className = 'w-4 h-4';
-	export let strokeWidth = '0';
+	export let className: any = 'w-4 h-4';
+	export let strokeWidth: any = '0';
 </script>
 
 <svg

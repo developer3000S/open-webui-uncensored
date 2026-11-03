@@ -9,7 +9,7 @@ let tts;
 let isInitialized = false; // Flag to track initialization status
 const DEFAULT_MODEL_ID = 'onnx-community/Kokoro-82M-v1.0-ONNX'; // Default model
 
-self.onmessage = async (event) => {
+self.onmessage = (event: any)  => {
 	const { type, payload } = event.data;
 
 	if (type === 'init') {

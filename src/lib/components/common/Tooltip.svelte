@@ -9,20 +9,17 @@
 		type Props as TippyProps
 	} from 'tippy.js';
 
-	export let elementId = '';
-
-	export let as = 'div';
-	export let className = 'flex';
-
+	export let elementId: any = '';
+	export let as: any = 'div';
+	export let className: any = 'flex';
 	export let placement: TippyPlacement = 'top';
 	export let content = `I'm a tooltip!`;
-	export let touch = true;
-	export let theme = '';
+	export let touch: any = true;
+	export let theme: any = '';
 	export let offset: TippyProps['offset'] = [0, 4];
-	export let allowHTML = true;
+	export let allowHTML: any = true;
 	export let tippyOptions: Partial<TippyProps> = {};
-	export let interactive = false;
-
+	export let interactive: any = false;
 	export let onClick = () => {};
 
 	let tooltipElement: HTMLElement | null = null;

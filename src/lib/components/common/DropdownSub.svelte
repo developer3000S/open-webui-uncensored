@@ -3,15 +3,12 @@
 	import { tick } from 'svelte';
 
 	/** CSS classes for the sub-content container */
-	export let contentClass =
+	export let contentClass: any =
 		'select-none rounded-2xl p-1 z-50 bg-white dark:bg-gray-850 dark:text-white shadow-lg border border-gray-100 dark:border-gray-800';
-
 	/** Max width in px, enforced at the component level */
-	export let maxWidth = 200;
-
+	export let maxWidth: any = 200;
 	/** Side offset from the trigger in px (visual gap, bridged by invisible padding) */
-	export let sideOffset = 8;
-
+	export let sideOffset: any = 8;
 	let open = false;
 	let triggerEl;
 	let contentEl;
@@ -78,20 +75,20 @@
 		setTimeout(positionContent, 50);
 	}
 
-	function handleMouseLeave(event) {
+	function handleMouseLeave(event: any) {
 		// Don't close if moving to the sub-content (including its bridge padding)
 		if (contentEl?.contains(event.relatedTarget)) return;
 		if (triggerEl?.contains(event.relatedTarget)) return;
 		open = false;
 	}
 
-	function handleContentMouseLeave(event) {
+	function handleContentMouseLeave(event: any) {
 		if (triggerEl?.contains(event.relatedTarget)) return;
 		if (contentEl?.contains(event.relatedTarget)) return;
 		open = false;
 	}
 
-	function portal(node) {
+	function portal(node: any) {
 		document.body.appendChild(node);
 		return {
 			destroy() {

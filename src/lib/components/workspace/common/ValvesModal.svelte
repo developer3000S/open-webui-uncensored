@@ -1,7 +1,10 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
+	import { getContext, onMount } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { toast } from 'svelte-sonner';
 	import { createEventDispatcher } from 'svelte';
-	import { onMount, getContext } from 'svelte';
 	import { addUser } from '$lib/apis/auths';
 
 	import Modal from '../../common/Modal.svelte';
@@ -31,21 +34,17 @@
 	import XMark from '$lib/components/icons/XMark.svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 	const dispatch = createEventDispatcher();
 
-	export let show = false;
-
-	export let type = 'tool';
-	export let id = null;
-	export let userValves = false;
-
+	export let show: any = false;
+	export let type: any = 'tool';
+	let id: any = null;
+	export let userValves: any = false;
 	let saving = false;
 	let loading = false;
 
-	let valvesSpec = null;
-	let valves = {};
+	let valvesSpec: any = null;
+	let valves: Record<string, any> = {};
 
 	const submitHandler = async () => {
 		saving = true;
@@ -65,34 +64,33 @@
 				}
 			}
 
-			let res = null;
+			let res: any = null;
 
 			if (userValves) {
 				if (type === 'tool') {
-					res = await updateToolUserValvesById(localStorage.token, id, valves).catch((error) => {
+					res = await updateToolUserValvesById(localStorage.token, id, valves).catch(async (error)=> {
 						toast.error(`${error}`);
 					});
 				} else if (type === 'function') {
-					res = await updateFunctionUserValvesById(localStorage.token, id, valves).catch(
-						(error) => {
+					res = await updateFunctionUserValvesById(localStorage.token, id, valves).catch(async (error)=> {
 							toast.error(`${error}`);
 						}
 					);
 				}
 			} else {
 				if (type === 'tool') {
-					res = await updateToolValvesById(localStorage.token, id, valves).catch((error) => {
+					res = await updateToolValvesById(localStorage.token, id, valves).catch(async (error)=> {
 						toast.error(`${error}`);
 					});
 				} else if (type === 'function') {
-					res = await updateFunctionValvesById(localStorage.token, id, valves).catch((error) => {
+					res = await updateFunctionValvesById(localStorage.token, id, valves).catch(async (error)=> {
 						toast.error(`${error}`);
 					});
 				}
 			}
 
 			if (res) {
-				toast.success($i18n.t('Valves updated successfully'));
+				toast.success(i18n.t('Valves updated successfully'));
 				dispatch('save');
 			}
 		}
@@ -157,7 +155,7 @@
 <Modal size="sm" bind:show>
 	<div>
 		<div class=" flex justify-between dark:text-gray-300 px-5 pt-4 pb-2">
-			<div class=" text-lg font-medium self-center">{$i18n.t('Valves')}</div>
+			<div class=" text-lg font-medium self-center">{i18n.t('Valves')}</div>
 			<button
 				class="self-center"
 				on:click={() => {
@@ -192,7 +190,7 @@
 							type="submit"
 							disabled={saving}
 						>
-							{$i18n.t('Save')}
+							{i18n.t('Save')}
 
 							{#if saving}
 								<span class="shrink-0">
@@ -208,4 +206,60 @@
 </Modal>
 
 <style>
+
 </style>
+
+<Modal size="sm" bind:show>
+	<div>
+		<div class=" flex justify-between dark:text-gray-300 px-5 pt-4 pb-2">
+			<div class=" text-lg font-medium self-center">{i18n.t('Valves')}</div>
+			<button
+				class="self-center"
+				on:click={() => {
+					show = false;
+				}}
+			>
+				<XMark className={'size-5'} />
+			</button>
+		</div>
+
+		<div class="flex flex-col md:flex-row w-full px-5 pb-4 md:space-x-4 dark:text-gray-200">
+			<div class=" flex flex-col w-full sm:flex-row sm:justify-center sm:space-x-6">
+				<form
+					class="flex flex-col w-full"
+					on:submit|preventDefault={() => {
+						submitHandler();
+					}}
+				>
+					<div class="px-1">
+						{#if !loading}
+							<Valves {valvesSpec} bind:valves />
+						{:else}
+							<Spinner className="size-5" />
+						{/if}
+					</div>
+
+					<div class="flex justify-end pt-3 text-sm font-medium">
+						<button
+							class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full flex items-center gap-2 whitespace-nowrap {saving
+								? ' cursor-not-allowed'
+								: ''}"
+							type="submit"
+							disabled={saving}
+						>
+							{i18n.t('Save')}
+
+							{#if saving}
+								<span class="shrink-0">
+									<Spinner />
+								</span>
+							{/if}
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</Modal>
+
+

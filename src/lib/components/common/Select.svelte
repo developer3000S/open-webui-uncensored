@@ -3,49 +3,40 @@
 	import { tick } from 'svelte';
 
 	/** Currently selected value */
-	export let value = '';
-
+	export let value: any = '';
 	/** Items array: { value: string, label: string }[] */
-	export let items = [];
+	export let items: any = [];
 
 	/** Placeholder text when no value is selected */
-	export let placeholder = '';
-
+	export let placeholder: any = '';
 	/** Callback when value changes */
 	export let onChange: (value: string) => void = () => {};
 
 	/** CSS classes for the trigger button */
-	export let triggerClass = '';
-
+	export let triggerClass: any = '';
 	/** CSS classes for the label inside the trigger */
-	export let labelClass = '';
-
+	export let labelClass: any = '';
 	/** CSS classes for the dropdown content container */
-	export let contentClass =
+	export let contentClass: any =
 		'rounded-2xl min-w-[170px] p-1 border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-850 dark:text-white shadow-lg';
-
 	/** Max height for the dropdown content */
-	export let maxHeight = '18rem';
-
+	export let maxHeight: any = '18rem';
 	/** CSS classes for each item button */
-	export let itemClass =
+	export let itemClass: any =
 		'flex w-full gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl';
-
 	/** Alignment of the dropdown: 'start' | 'end' */
-	export let align = 'start';
-
+	export let align: any = 'start';
 	/** Callback when dropdown closes */
 	export let onClose: () => void = () => {};
 
-	export let open = false;
-
+	export let open: any = false;
 	let triggerEl;
 	let contentEl;
 
 	$: selectedLabel = items.find((i) => i.value === value)?.label ?? placeholder;
 
 	/** Svelte action: moves the node to document.body (portal) */
-	function portal(node) {
+	function portal(node: any) {
 		document.body.appendChild(node);
 		return {
 			destroy() {
@@ -82,7 +73,7 @@
 		}
 	}
 
-	function handleWindowClick(event) {
+	function handleWindowClick(event: any) {
 		if (!open) return;
 		if (triggerEl?.contains(event.target)) return;
 		if (contentEl?.contains(event.target)) return;
@@ -90,14 +81,14 @@
 		onClose();
 	}
 
-	function handleKeydown(event) {
+	function handleKeydown(event: any) {
 		if (event.key === 'Escape' && open) {
 			open = false;
 			onClose();
 		}
 	}
 
-	export function selectItem(item) {
+	export function selectItem(item: any) {
 		value = item.value;
 		open = false;
 		onChange(value);

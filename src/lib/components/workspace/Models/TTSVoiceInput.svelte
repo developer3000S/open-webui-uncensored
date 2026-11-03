@@ -10,12 +10,11 @@
 		};
 	};
 
-	export let id = 'tts-voice';
-	export let value = '';
+	export let id: any = 'tts-voice';
+	export let value: any = '';
 	export let voices: Voice[] = [];
-	export let placeholder = '';
-	export let className = 'w-full';
-
+	export let placeholder: any = '';
+	export let className: any = 'w-full';
 	const dispatch = createEventDispatcher<{ select: Voice }>();
 	const listboxId = `${id}-options`;
 

@@ -11,9 +11,8 @@
 
 	const dispatch = createEventDispatcher();
 
-	export let value = '';
-	export let lang = 'python';
-
+	export let value: any = '';
+	export let lang: any = 'python';
 	let container: HTMLDivElement;
 	let editor: EditorView | null = null;
 	let editorTheme = new Compartment();

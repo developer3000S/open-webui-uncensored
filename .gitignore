@@ -1,18 +1,30 @@
+# Large binaries excluded from GitHub push
+*.whl
+*.ttf
+*.so
+*.node
+*.zip
+*.log
+
+# Large binaries excluded from GitHub push
+*.whl
+*.ttf
+*.so
+*.node
+*.zip
+*.log
+
+
 .github
 .DS_Store
 docs
 kubernetes
 node_modules
-node_modules/
 /.svelte-kit
 build/
 /package
 openwebui_offline_packages
-openwebui_offline_packages/
 static
-static/
-docker
-docker/
 .env
 .env.*
 vite.config.js.timestamp-*
@@ -37,6 +49,7 @@ studio/app/speech-models/
 studio/app/tts-models
 studio/app/tts-models/
 
-docker/
 # Исключаем большие файлы Docker
+docker
 docker/*.tar
+*.tar.gz

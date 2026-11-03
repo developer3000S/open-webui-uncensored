@@ -72,8 +72,8 @@
 	import type { ComponentType } from 'svelte';
 
 	export let alert: AlertData;
-	export let id = '';
-	export let tokenIdx = 0;
+	export let id: any = '';
+	export let tokenIdx: any = 0;
 	export let onTaskClick: ((event: MouseEvent) => void) | undefined = undefined;
 	export let onSourceClick: ((event: MouseEvent) => void) | undefined = undefined;
 </script>

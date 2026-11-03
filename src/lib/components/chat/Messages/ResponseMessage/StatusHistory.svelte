@@ -1,14 +1,14 @@
-<script>
+<script lang="ts">
+	import type i18nType from 'i18next';
 	import { getContext } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import StatusItem from './StatusHistory/StatusItem.svelte';
 	import equal from 'fast-deep-equal';
-	export let statusHistory = [];
-	export let expand = false;
-
+	export let statusHistory: any = [];
+	export let expand: any = false;
 	let showHistory = true;
 
 	$: if (expand) {
@@ -17,8 +17,8 @@
 		showHistory = false;
 	}
 
-	let history = [];
-	let status = null;
+	let history: any = [];
+	let status: any = null;
 
 	$: if (history && history.length > 0) {
 		status = history.at(-1);
@@ -34,7 +34,55 @@
 		<div class="text-sm flex flex-col w-full">
 			<button
 				class="w-full"
-				aria-label={$i18n.t('Toggle status history')}
+				aria-label={i18n.t('Toggle status history')}
+				aria-expanded={showHistory}
+				on:click={() => {
+					showHistory = !showHistory;
+				}}
+			>
+				<div class="flex items-start gap-2">
+					<StatusItem {status} />
+				</div>
+			</button>
+
+			{#if showHistory}
+				<div class="flex flex-row">
+					{#if history.length > 1}
+						<div class="w-full">
+							{#each history as status, idx}
+								<div class="flex items-stretch gap-2 mb-1">
+									<div class=" ">
+										<div class="pt-3 px-1 mb-1.5">
+											<span class="relative flex size-1.5 rounded-full justify-center items-center">
+												<span
+													class="relative inline-flex size-1.5 rounded-full bg-gray-500 dark:bg-gray-400"
+												></span>
+											</span>
+										</div>
+										{#if idx !== history.length - 1}
+											<div
+												class="w-[0.5px] ml-[6.5px] h-[calc(100%-14px)] bg-gray-300 dark:bg-gray-700"
+											></div>
+										{/if}
+									</div>
+
+									<StatusItem {status} done={true} />
+								</div>
+							{/each}
+						</div>
+					{/if}
+				</div>
+			{/if}
+		</div>
+	{/if}
+{/if}
+
+{#if history && history.length > 0}
+	{#if status?.hidden !== true}
+		<div class="text-sm flex flex-col w-full">
+			<button
+				class="w-full"
+				aria-label={i18n.t('Toggle status history')}
 				aria-expanded={showHistory}
 				on:click={() => {
 					showHistory = !showHistory;

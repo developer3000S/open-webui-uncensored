@@ -1,5 +1,8 @@
 <script lang="ts">
-	import { onMount, tick, getContext } from 'svelte';
+	import type i18nType from 'i18next';
+	import { getContext, onMount, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import type { PageData } from '$app/stores';
@@ -17,10 +20,8 @@
 	import { getModels } from '$lib/apis';
 	import { toast } from 'svelte-sonner';
 	import localizedFormat from 'dayjs/plugin/localizedFormat';
-	import type { i18n as i18nType } from 'i18next';
 	import type { Writable } from 'svelte/store';
 
-	const i18n = getContext<Writable<i18nType>>('i18n');
 	dayjs.extend(localizedFormat);
 
 	interface SessionUser {
@@ -58,7 +59,7 @@
 	$: messages = createMessagesList(history, history.currentId);
 
 	$: if ($page.params.id) {
-		(async () => {
+		async (async () => {
 			if (await loadSharedChat()) {
 				await tick();
 				loaded = true;
@@ -95,7 +96,7 @@
 			)
 		);
 		await chatId.set($page.params.id);
-		chat = await getChatByShareId(localStorage.token, $chatId).catch(async (error) => {
+		chat = await getChatByShareId(localStorage.token, $chatId).catch(async (error: any)=> {
 			await goto('/');
 			return null;
 		});
@@ -156,12 +157,85 @@
 </script>
 
 <svelte:head>
-	<title>
+			<title>
 		{title
 			? `${title.length > 30 ? `${title.slice(0, 30)}...` : title} • ${WEBUI_NAME}`
 			: `${WEBUI_NAME}`}
 	</title>
-</svelte:head>
+			<title>
+		{title
+			? `${title.length > 30 ? `${title.slice(0, 30)}...` : title} • ${WEBUI_NAME}`
+			: `${WEBUI_NAME}`}
+	</title>
+		</svelte:head>
+
+{#if loaded}
+	<div
+		class="h-screen max-h-[100dvh] w-full flex flex-col text-gray-700 dark:text-gray-100 bg-white dark:bg-gray-900"
+	>
+		<div class="flex flex-col flex-auto justify-center relative">
+			<div class="flex flex-col w-full flex-auto overflow-auto h-0" id="messages-container">
+				<div
+					class="pt-5 px-2 w-full {($settings?.widescreenMode ?? null)
+						? 'max-w-full'
+						: 'max-w-5xl'} mx-auto"
+				>
+					<div class="px-3">
+						<h1 class="text-2xl font-medium line-clamp-1 m-0">
+							{title}
+						</h1>
+
+						<div class="flex text-sm justify-between items-center mt-1">
+							<time
+								class="text-gray-400"
+								datetime={new Date(chat?.chat?.timestamp || Date.now()).toISOString()}
+							>
+								{dayjs(chat?.chat?.timestamp || Date.now()).format('LLL')}
+							</time>
+						</div>
+					</div>
+				</div>
+
+				<div class="h-full w-full flex flex-col py-2" role="main">
+					<div class="w-full">
+						<Messages
+							className="h-full flex pt-4 pb-8"
+							{user}
+							chatId={$chatId}
+							readOnly={true}
+							{selectedModels}
+							{processing}
+							bind:history
+							bind:messages
+							bind:autoScroll
+							bottomPadding={files.length > 0}
+							sendMessage={() => {}}
+							continueResponse={() => {}}
+							regenerateResponse={() => {}}
+						/>
+					</div>
+				</div>
+			</div>
+
+			{#if $sessionUser?.role === 'admin' || ($sessionUser?.permissions?.chat?.import ?? true)}
+				<div
+					class="absolute bottom-0 right-0 left-0 flex justify-center w-full bg-linear-to-b from-transparent to-white dark:to-gray-900"
+				>
+					<div class="pb-5">
+						<button
+							class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
+							on:click={cloneSharedChat}
+						>
+							{i18n.t('Clone Chat')}
+						</button>
+					</div>
+				</div>
+			{/if}
+		</div>
+	</div>
+{/if}
+
+
 
 {#if loaded}
 	<div

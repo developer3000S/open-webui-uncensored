@@ -1,21 +1,22 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
+	import { createEventDispatcher, getContext, onDestroy, onMount, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import Sortable from 'sortablejs';
 
-	import { createEventDispatcher, getContext, onMount, onDestroy, tick } from 'svelte';
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { models } from '$lib/stores';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import EllipsisVertical from '$lib/components/icons/EllipsisVertical.svelte';
 
-	export let modelIds = [];
+	export let modelIds: any = [];
 
-	let sortable = null;
-	let modelListElement = null;
+	let sortable: any = null;
+	let modelListElement: any = null;
 
-	const positionChangeHandler = (event) => {
+	const positionChangeHandler = (event: any) => {
 		const { oldIndex, newIndex, item } = event;
 
 		// Revert SortableJS's DOM manipulation so Svelte doesn't get out of sync.
@@ -89,6 +90,32 @@
 	</div>
 {:else}
 	<div class="text-gray-500 text-xs text-center py-2">
-		{$i18n.t('No models found')}
+		{i18n.t('No models found')}
+	</div>
+{/if}
+
+{#if modelIds.length > 0}
+	<div class="flex flex-col -translate-x-1" bind:this={modelListElement}>
+		{#each modelIds as modelId (modelId)}
+			<div class=" flex gap-2 w-full justify-between items-center" id="model-item-{modelId}">
+				<Tooltip content={modelId} placement="top-start">
+					<div class="flex items-center gap-1">
+						<EllipsisVertical className="size-4 cursor-move model-item-handle" />
+
+						<div class=" text-sm flex-1 py-1 rounded-lg line-clamp-1">
+							{#if $models.find((model) => model.id === modelId)}
+								{$models.find((model) => model.id === modelId).name}
+							{:else}
+								{modelId}
+							{/if}
+						</div>
+					</div>
+				</Tooltip>
+			</div>
+		{/each}
+	</div>
+{:else}
+	<div class="text-gray-500 text-xs text-center py-2">
+		{i18n.t('No models found')}
 	</div>
 {/if}

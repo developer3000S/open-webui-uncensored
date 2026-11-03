@@ -1,7 +1,9 @@
-<script>
-	import Sortable from 'sortablejs';
+<script lang="ts">
+	import type i18nType from 'i18next';
+	import { getContext, onMount, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
 
-	import { onMount, getContext, tick } from 'svelte';
+	import Sortable from 'sortablejs';
 
 	import { chatId, mobile, pinnedNotes, settings, showSidebar } from '$lib/stores';
 	import { updateUserSettings } from '$lib/apis/users';
@@ -9,10 +11,8 @@
 	import Note from '$lib/components/icons/Note.svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
-	export let selectedChatId = null;
+	let selectedChatId: any = null;
 
 	$: sortedPinnedNotes = (() => {
 		const order = $settings?.pinnedNotesOrder;
@@ -30,7 +30,7 @@
 		if (pinnedNotesList && !$mobile) {
 			new Sortable(pinnedNotesList, {
 				animation: 150,
-				setData: function (dataTransfer, dragEl) {
+				setData: (dataTransfer: any, dragEl: any)  => {
 					dataTransfer.setData(
 						'text/plain',
 						JSON.stringify({
@@ -40,7 +40,7 @@
 					);
 					dataTransfer.setData('application/x-open-webui-drag', '');
 				},
-				onUpdate: async (event) => {
+				onUpdate: async (event: any)  => {
 					const noteId = event.item.dataset.id;
 					const newIndex = event.newIndex;
 					const current = sortedPinnedNotes.map((n) => n.id);
@@ -93,7 +93,57 @@
 					const _pinnedNotes = await getPinnedNoteList(localStorage.token).catch(() => []);
 					pinnedNotes.set(_pinnedNotes);
 				}}
-				aria-label={$i18n.t('Unpin')}
+				aria-label={i18n.t('Unpin')}
+			>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke-width="2"
+					stroke="currentColor"
+					class="size-3.5"
+				>
+					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+				</svg>
+			</button>
+		</div>
+	{/each}
+</div>
+
+<div class="mt-0.5 pb-1.5" id="pinned-notes-list">
+	{#each sortedPinnedNotes as note (note.id)}
+		<!-- svelte-ignore a11y-no-static-element-interactions -->
+		<div
+			class="flex items-center text-gray-800 dark:text-gray-200 cursor-grab relative group rounded-xl px-2.5 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-900 transition"
+			data-id={note.id}
+		>
+			<a
+				class="grow flex items-center gap-2.5 text-sm"
+				href={`/notes/${note.id}`}
+				on:click={() => {
+					selectedChatId = null;
+					chatId.set('');
+					if ($mobile) {
+						showSidebar.set(false);
+					}
+				}}
+				draggable="false"
+			>
+				<div class="self-center">
+					<Note className="size-4" strokeWidth="2" />
+				</div>
+				<div class="flex-1 text-ellipsis line-clamp-1">
+					{note.title}
+				</div>
+			</a>
+			<button
+				class="invisible group-hover:visible self-center p-0.5 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-lg transition"
+				on:click|preventDefault|stopPropagation={async () => {
+					await toggleNotePinnedStatusById(localStorage.token, note.id);
+					const _pinnedNotes = await getPinnedNoteList(localStorage.token).catch(() => []);
+					pinnedNotes.set(_pinnedNotes);
+				}}
+				aria-label={i18n.t('Unpin')}
 			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"

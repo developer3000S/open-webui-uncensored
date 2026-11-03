@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import {
 		addTagById,
 		deleteTagById,
@@ -22,18 +22,18 @@
 	import Tags from '../common/Tags.svelte';
 	import { toast } from 'svelte-sonner';
 
-	export let chatId = '';
-	export let disabled = false;
-	let tags = [];
+	export let chatId: any = '';
+	export let disabled: any = false;
+	let tags: any[] = [];
 
 	const getTags = async () => {
-		return await getTagsById(localStorage.token, chatId).catch(async (error) => {
+		return await getTagsById(localStorage.token, chatId).catch(async (error: any)=> {
 			return [];
 		});
 	};
 
-	const addTag = async (tagName) => {
-		const res = await addTagById(localStorage.token, chatId, tagName).catch(async (error) => {
+	const addTag = async (tagName: any) => {
+		const res = await addTagById(localStorage.token, chatId, tagName).catch(async (error: any)=> {
 			toast.error(`${error}`);
 			return null;
 		});
@@ -52,7 +52,7 @@
 		});
 	};
 
-	const deleteTag = async (tagName) => {
+	const deleteTag = async (tagName: any) => {
 		const res = await deleteTagById(localStorage.token, chatId, tagName);
 		tags = await getTags();
 		await updateChatById(localStorage.token, chatId, {

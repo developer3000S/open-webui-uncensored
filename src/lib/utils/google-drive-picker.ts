@@ -105,7 +105,7 @@ const initialize = async () => {
 };
 
 export const createPicker = () => {
-	return new Promise(async (resolve, reject) => {
+	return new Promise((resolve: any, reject: any)  => {
 		try {
 			console.log('Initializing Google Drive Picker...');
 			await initialize();

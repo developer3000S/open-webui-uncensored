@@ -1,33 +1,32 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
 	import { getContext } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { embed, showControls, showEmbeds } from '$lib/stores';
 
 	import CitationModal from './Citations/CitationModal.svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
-	export let id = '';
-	export let chatId = '';
-
-	export let sources = [];
-	export let readOnly = false;
-
-	let citations = [];
+	export let id: any = '';
+	export let chatId: any = '';
+	export let sources: any = [];
+	export let readOnly: any = false;
+	let citations: any = [];
 	let showPercentage = false;
 	let showRelevance = true;
 
-	let citationModal = null;
+	let citationModal: any = null;
 
 	let showCitations = false;
 	let showCitationModal = false;
 
 	let selectedCitation: any = null;
 
-	export const showSourceModal = (sourceId) => {
+	export const showSourceModal = (sourceId: any) => {
 		let index;
-		let suffix = null;
+		let suffix: any = null;
 
 		if (typeof sourceId === 'string') {
 			const output = sourceId.split('#');
@@ -166,8 +165,8 @@
 		<button
 			class="text-xs font-medium text-gray-600 dark:text-gray-300 px-3.5 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition flex items-center gap-1 border border-gray-50 dark:border-gray-850/30"
 			aria-label={citations.length === 1
-				? $i18n.t('Toggle 1 source')
-				: $i18n.t('Toggle {{COUNT}} sources', { COUNT: citations.length })}
+				? i18n.t('Toggle 1 source')
+				: i18n.t('Toggle {{COUNT}} sources', { COUNT: citations.length })}
 			aria-expanded={showCitations}
 			on:click={() => {
 				showCitations = !showCitations;
@@ -197,9 +196,9 @@
 			{/if}
 			<div>
 				{#if citations.length === 1}
-					{$i18n.t('1 Source')}
+					{i18n.t('1 Source')}
 				{:else}
-					{$i18n.t('{{COUNT}} Sources', {
+					{i18n.t('{{COUNT}} Sources', {
 						COUNT: citations.length
 					})}
 				{/if}
@@ -214,7 +213,91 @@
 			{#each citations as citation, idx}
 				<button
 					id={`source-${id}-${idx + 1}`}
-					aria-label={$i18n.t('View source: {{name}}', {
+					aria-label={i18n.t('View source: {{name}}', {
+						name: decodeString(citation.source.name)
+					})}
+					class="no-toggle outline-hidden flex dark:text-gray-300 bg-transparent text-gray-600 rounded-xl gap-1.5 items-center"
+					on:click={() => {
+						showCitationModal = true;
+						selectedCitation = citation;
+					}}
+				>
+					<div class=" font-medium bg-gray-50 dark:bg-gray-850 rounded-md px-1">
+						{idx + 1}
+					</div>
+					<div
+						class="flex-1 truncate hover:text-black dark:text-white/60 dark:hover:text-white transition text-left"
+					>
+						{decodeString(citation.source.name)}
+					</div>
+				</button>
+			{/each}
+		</div>
+	</div>
+{/if}
+
+<CitationModal
+	bind:show={showCitationModal}
+	citation={selectedCitation}
+	{showPercentage}
+	{showRelevance}
+/>
+
+{#if citations.length > 0}
+	{@const urlCitations = citations.filter((c) => c?.source?.name?.startsWith('http'))}
+	<div class=" py-1 -mx-0.5 w-full flex gap-1 items-center flex-wrap">
+		<button
+			class="text-xs font-medium text-gray-600 dark:text-gray-300 px-3.5 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition flex items-center gap-1 border border-gray-50 dark:border-gray-850/30"
+			aria-label={citations.length === 1
+				? i18n.t('Toggle 1 source')
+				: i18n.t('Toggle {{COUNT}} sources', { COUNT: citations.length })}
+			aria-expanded={showCitations}
+			on:click={() => {
+				showCitations = !showCitations;
+			}}
+		>
+			{#if urlCitations.length > 0}
+				<div class="flex -space-x-1 items-center">
+					{#each urlCitations.slice(0, 3) as citation, idx}
+						<img
+							src="https://www.google.com/s2/favicons?sz=32&domain={citation.source.name}"
+							alt="favicon"
+							class="size-4 rounded-full shrink-0 border border-white dark:border-gray-850 bg-white dark:bg-gray-900"
+							on:error={(e) => {
+								e.target.src = '/favicon.png';
+							}}
+						/>
+					{/each}
+					{#if citations.length > 3}
+						<div
+							class="size-4 rounded-full shrink-0 border border-white dark:border-gray-850 bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[8px] font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap tracking-tighter"
+							aria-hidden="true"
+						>
+							+{citations.length - Math.min(urlCitations.length, 3)}
+						</div>
+					{/if}
+				</div>
+			{/if}
+			<div>
+				{#if citations.length === 1}
+					{i18n.t('1 Source')}
+				{:else}
+					{i18n.t('{{COUNT}} Sources', {
+						COUNT: citations.length
+					})}
+				{/if}
+			</div>
+		</button>
+	</div>
+{/if}
+
+{#if showCitations}
+	<div class="py-1.5">
+		<div class="text-xs gap-2 flex flex-col">
+			{#each citations as citation, idx}
+				<button
+					id={`source-${id}-${idx + 1}`}
+					aria-label={i18n.t('View source: {{name}}', {
 						name: decodeString(citation.source.name)
 					})}
 					class="no-toggle outline-hidden flex dark:text-gray-300 bg-transparent text-gray-600 rounded-xl gap-1.5 items-center"

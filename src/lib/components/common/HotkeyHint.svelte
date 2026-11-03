@@ -4,8 +4,7 @@
 	import { settings } from '$lib/stores';
 
 	export let name: string;
-	export let className = '';
-
+	export let className: any = '';
 	let isMac = false;
 	let mounted = false;
 	let keys: string[] = [];

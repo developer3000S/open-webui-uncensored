@@ -35,8 +35,8 @@
 	import { onMount, getContext, tick, onDestroy } from 'svelte';
 
 import type { Writable } from 'svelte/store';
-import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
+import type i18nType from 'i18next';
+	const i18n = getContext<i18nType>('i18n');
 
 	// Coder is a standalone application: when the user is on /coder (or opened it
 	// via window.open('/coder?standalone=1')) the main sidebar must stay hidden.
@@ -311,7 +311,7 @@ import type { i18n as i18nType } from 'i18next';
 	const createFolder = async ({ name, data, parent_id }) => {
 		name = name?.trim();
 		if (!name) {
-			toast.error($i18n.t('Folder name cannot be empty.'));
+			toast.error(i18n.t('Folder name cannot be empty.'));
 			return;
 		}
 
@@ -435,7 +435,7 @@ import type { i18n as i18nType } from 'i18next';
 
 	const importChatHandler = async (items, pinned = false, folderId = null) => {
 		if (!canImportChats) {
-			toast.error($i18n.t('Access prohibited'));
+			toast.error(i18n.t('Access prohibited'));
 			return;
 		}
 
@@ -471,7 +471,7 @@ import type { i18n as i18nType } from 'i18next';
 					const chatItems = JSON.parse(content);
 					importChatHandler(chatItems);
 				} catch {
-					toast.error($i18n.t(`Invalid file format.`));
+					toast.error(i18n.t(`Invalid file format.`));
 				}
 			};
 
@@ -824,12 +824,12 @@ import type { i18n as i18nType } from 'i18next';
 
 		if (type === 'dm') {
 			if (!user_ids || user_ids.length === 0) {
-				toast.error($i18n.t('Please select at least one user for Direct Message channel.'));
+				toast.error(i18n.t('Please select at least one user for Direct Message channel.'));
 				return;
 			}
 		} else {
 			if (!name) {
-				toast.error($i18n.t('Channel name cannot be empty.'));
+				toast.error(i18n.t('Channel name cannot be empty.'));
 				return;
 			}
 		}
@@ -886,7 +886,7 @@ import type { i18n as i18nType } from 'i18next';
 />
 
 <button
-	aria-label={$i18n.t('New Chat')}
+	aria-label={i18n.t('New Chat')}
 	id="sidebar-new-chat-button"
 	class="hidden"
 	on:click={() => {
@@ -918,14 +918,14 @@ import type { i18n as i18nType } from 'i18next';
 		>
 			<div class="pb-1.5">
 				<Tooltip
-					content={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
+					content={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
 					placement="right"
 				>
 					<button
 						class="flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-850 transition group {isWindows
 							? 'cursor-pointer'
 							: 'cursor-[e-resize]'}"
-						aria-label={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
+						aria-label={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
 					>
 						<div class=" self-center flex items-center justify-center size-9">
 							<img
@@ -940,7 +940,7 @@ import type { i18n as i18nType } from 'i18next';
 
 			<div class="-mt-[0.5px]">
 				<div class="">
-					<Tooltip content={$i18n.t('New Chat')} placement="right">
+					<Tooltip content={i18n.t('New Chat')} placement="right">
 						<a
 							class=" cursor-pointer flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-850 transition group"
 							href="/"
@@ -952,7 +952,7 @@ import type { i18n as i18nType } from 'i18next';
 								goto('/');
 								newChatHandler();
 							}}
-							aria-label={$i18n.t('New Chat')}
+							aria-label={i18n.t('New Chat')}
 						>
 							<div class=" self-center flex items-center justify-center size-9">
 								<PencilSquare className="size-4.5" />
@@ -960,7 +960,7 @@ import type { i18n as i18nType } from 'i18next';
 					</Tooltip>
 
 				<div>
-					<Tooltip content={$i18n.t('Search')} placement="right">
+					<Tooltip content={i18n.t('Search')} placement="right">
 						<button
 							class=" cursor-pointer flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-850 transition group"
 							on:click={(e) => {
@@ -970,7 +970,7 @@ import type { i18n as i18nType } from 'i18next';
 								showSearch.set(true);
 							}}
 							draggable="false"
-							aria-label={$i18n.t('Search')}
+							aria-label={i18n.t('Search')}
 						>
 							<div class=" self-center flex items-center justify-center size-9">
 								<Search className="size-4.5" />
@@ -981,7 +981,7 @@ import type { i18n as i18nType } from 'i18next';
 					{@const meta = getMenuItemMeta(itemId)}
 					{#if meta && isMenuItemVisible(itemId)}
 						<div class="">
-							<Tooltip content={$i18n.t(meta.label)} placement="right">
+							<Tooltip content={i18n.t(meta.label)} placement="right">
 								<a
 									class=" cursor-pointer flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-850 transition group"
 									href={meta.href}
@@ -996,7 +996,7 @@ import type { i18n as i18nType } from 'i18next';
 										itemClickHandler();
 									}}
 									draggable="false"
-									aria-label={$i18n.t(meta.label)}
+									aria-label={i18n.t(meta.label)}
 								>
 									<div class=" self-center flex items-center justify-center size-9">
 										{#if itemId === 'notes'}
@@ -1143,14 +1143,14 @@ import type { i18n as i18nType } from 'i18next';
 							<button
 								type="button"
 								class=" cursor-pointer flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-850 transition group"
-								aria-label={$i18n.t('User menu')}
+								aria-label={i18n.t('User menu')}
 							>
 								<div class="self-center relative">
 									<img
 										src={`${WEBUI_API_BASE_URL}/users/${$user?.id}/profile/image`}
 										class=" size-7 object-cover rounded-full"
-										alt={$i18n.t('Open User Profile Menu')}
-										aria-label={$i18n.t('Open User Profile Menu')}
+										alt={i18n.t('Open User Profile Menu')}
+										aria-label={i18n.t('Open User Profile Menu')}
 									/>
 
 									{#if $config?.features?.enable_user_status}
@@ -1170,8 +1170,8 @@ import type { i18n as i18nType } from 'i18next';
 		</div>
 	</div>
 
-<!-- {$i18n.t('New Folder')} -->
-<!-- {$i18n.t('Pinned')} -->
+<!-- {i18n.t('New Folder')} -->
+<!-- {i18n.t('Pinned')} -->
 
 {#if $showSidebar}
 	<div
@@ -1217,7 +1217,7 @@ import type { i18n as i18nType } from 'i18next';
 					</div>
 				</a>
 				<Tooltip
-					content={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
+					content={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
 					placement="bottom"
 				>
 					<button
@@ -1227,7 +1227,7 @@ import type { i18n as i18nType } from 'i18next';
 						on:click={() => {
 							showSidebar.set(!$showSidebar);
 						}}
-						aria-label={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
+						aria-label={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
 					>
 						<div class=" self-center p-1.5">
 							<Sidebar />
@@ -1258,7 +1258,7 @@ import type { i18n as i18nType } from 'i18next';
 							href="/"
 							draggable="false"
 							on:click={newChatHandler}
-							aria-label={$i18n.t('New Chat')}
+							aria-label={i18n.t('New Chat')}
 						>
 							<div class="self-center">
 								<PencilSquare className=" size-4.5" strokeWidth="2" />
@@ -1276,7 +1276,7 @@ import type { i18n as i18nType } from 'i18next';
 								showSearch.set(true);
 							}}
 							draggable="false"
-							aria-label={$i18n.t('Search')}
+							aria-label={i18n.t('Search')}
 						>
 							<div class="self-center">
 								<Search strokeWidth="2" className="size-4.5" />
@@ -1305,7 +1305,7 @@ import type { i18n as i18nType } from 'i18next';
 											itemClickHandler();
 										}}
 										draggable="false"
-										aria-label={$i18n.t(meta.label)}
+										aria-label={i18n.t(meta.label)}
 									>
 										<div class="self-center">
 											{#if itemId === 'notes'}
@@ -1375,7 +1375,7 @@ import type { i18n as i18nType } from 'i18next';
 										</div>
 
 										<div class="flex self-center translate-y-[0.5px]">
-											<div class=" self-center text-sm font-primary">{$i18n.t(meta.label)}</div>
+											<div class=" self-center text-sm font-primary">{i18n.t(meta.label)}</div>
 										</div>
 									</a>
 								</div>
@@ -1477,7 +1477,7 @@ import type { i18n as i18nType } from 'i18next';
 						id="sidebar-models"
 						bind:open={showPinnedModels}
 						className="px-2 mt-0.5"
-						name={$i18n.t('Models')}
+						name={i18n.t('Models')}
 						chevron={false}
 						dragAndDrop={false}
 					>
@@ -1489,7 +1489,7 @@ import type { i18n as i18nType } from 'i18next';
 						id="sidebar-pinned-notes"
 						bind:open={showPinnedNotes}
 						className="px-2 mt-0.5"
-						name={$i18n.t('Notes')}
+						name={i18n.t('Notes')}
 						chevron={false}
 						dragAndDrop={false}
 						onAdd={async () => {
@@ -1498,7 +1498,7 @@ import type { i18n as i18nType } from 'i18next';
 								goto(`/notes/${note.id}`);
 							}
 						}}
-						onAddLabel={$i18n.t('New Note')}
+						onAddLabel={i18n.t('New Note')}
 					>
 						<PinnedNoteList bind:selectedChatId />
 					</Folder>
@@ -1508,7 +1508,7 @@ import type { i18n as i18nType } from 'i18next';
 						id="sidebar-channels"
 						bind:open={showChannels}
 						className="px-2 mt-0.5"
-						name={$i18n.t('Channels')}
+						name={i18n.t('Channels')}
 						chevron={false}
 						dragAndDrop={false}
 						onAdd={$user?.role === 'admin' || ($user?.permissions?.features?.channels ?? true)
@@ -1520,7 +1520,7 @@ import type { i18n as i18nType } from 'i18next';
 									}, 0);
 								}
 							: null}
-						onAddLabel={$i18n.t('Create Channel')}
+						onAddLabel={i18n.t('Create Channel')}
 					>
 						{#each $channels as channel, channelIdx (`${channel?.id}`)}
 							<ChannelItem
@@ -1541,12 +1541,12 @@ import type { i18n as i18nType } from 'i18next';
 						id="sidebar-folders"
 						bind:open={showFolders}
 						className="px-2 mt-0.5"
-						name={$i18n.t('Folders')}
+						name={i18n.t('Folders')}
 						chevron={false}
 						onAdd={() => {
 							showCreateFolderModal = true;
 						}}
-						onAddLabel={$i18n.t('New Folder')}
+						onAddLabel={i18n.t('New Folder')}
 						on:drop={async (e) => {
 							const { type, id, item } = e.detail;
 
@@ -1592,7 +1592,7 @@ import type { i18n as i18nType } from 'i18next';
 				<Folder
 					id="sidebar-chats"
 					className="px-2 mt-0.5"
-					name={$i18n.t('Chats')}
+					name={i18n.t('Chats')}
 					chevron={false}
 					on:change={async (e) => {
 						selectedFolder.set(null);
@@ -1609,7 +1609,7 @@ import type { i18n as i18nType } from 'i18next';
 							});
 							if (!chat && item) {
 								if (!canImportChats) {
-									toast.error($i18n.t('Access prohibited'));
+									toast.error(i18n.t('Access prohibited'));
 									return;
 								}
 
@@ -1680,7 +1680,7 @@ import type { i18n as i18nType } from 'i18next';
 											});
 											if (!chat && item) {
 												if (!canImportChats) {
-													toast.error($i18n.t('Access prohibited'));
+													toast.error(i18n.t('Access prohibited'));
 													return;
 												}
 
@@ -1717,7 +1717,7 @@ import type { i18n as i18nType } from 'i18next';
 											}
 										}
 									}}
-									name={$i18n.t('Pinned')}
+									name={i18n.t('Pinned')}
 								>
 									<div
 										class="ml-3 pl-1 mt-[1px] flex flex-col overflow-y-auto scrollbar-hidden border-s border-gray-100 dark:border-gray-900 text-gray-900 dark:text-gray-200"
@@ -1763,24 +1763,24 @@ import type { i18n as i18nType } from 'i18next';
 												? ''
 												: 'pt-5'} pb-1.5"
 										>
-											{$i18n.t(chat.time_range)}
+											{i18n.t(chat.time_range)}
 											<!-- localisation keys for time_range to be recognized from the i18next parser (so they don't get automatically removed):
-							{$i18n.t('Today')}
-							{$i18n.t('Yesterday')}
-							{$i18n.t('Previous 7 days')}
-							{$i18n.t('Previous 30 days')}
-							{$i18n.t('January')}
-							{$i18n.t('February')}
-							{$i18n.t('March')}
-							{$i18n.t('April')}
-							{$i18n.t('May')}
-							{$i18n.t('June')}
-							{$i18n.t('July')}
-							{$i18n.t('August')}
-							{$i18n.t('September')}
-							{$i18n.t('October')}
-							{$i18n.t('November')}
-							{$i18n.t('December')}
+							{i18n.t('Today')}
+							{i18n.t('Yesterday')}
+							{i18n.t('Previous 7 days')}
+							{i18n.t('Previous 30 days')}
+							{i18n.t('January')}
+							{i18n.t('February')}
+							{i18n.t('March')}
+							{i18n.t('April')}
+							{i18n.t('May')}
+							{i18n.t('June')}
+							{i18n.t('July')}
+							{i18n.t('August')}
+							{i18n.t('September')}
+							{i18n.t('October')}
+							{i18n.t('November')}
+							{i18n.t('December')}
 							-->
 										</div>
 
@@ -1821,7 +1821,7 @@ import type { i18n as i18nType } from 'i18next';
 											class="w-full flex justify-center py-1 text-xs animate-pulse items-center gap-2"
 										>
 											<Spinner className=" size-4" />
-											<div class=" ">{$i18n.t('Loading...')}</div>
+											<div class=" ">{i18n.t('Loading...')}</div>
 										</div>
 									</Loader>
 							{:else}
@@ -1829,7 +1829,7 @@ import type { i18n as i18nType } from 'i18next';
 									class="w-full flex justify-center py-1 text-xs animate-pulse items-center gap-2"
 								>
 									<Spinner className=" size-4" />
-									<div class=" ">{$i18n.t('Loading...')}</div>
+									<div class=" ">{i18n.t('Loading...')}</div>
 								</div>
 						</div>
 					</div>
@@ -1856,14 +1856,14 @@ import type { i18n as i18nType } from 'i18next';
 							<button
 								type="button"
 								class=" flex items-center rounded-2xl py-2 px-1.5 w-full hover:bg-gray-100/50 dark:hover:bg-gray-900/50 transition"
-								aria-label={$i18n.t('User menu')}
+								aria-label={i18n.t('User menu')}
 							>
 								<div class=" self-center mr-3 relative flex-shrink-0">
 									<img
 										src={`${WEBUI_API_BASE_URL}/users/${$user?.id}/profile/image`}
 										class=" size-7 object-cover rounded-full"
-										alt={$i18n.t('Open User Profile Menu')}
-										aria-label={$i18n.t('Open User Profile Menu')}
+										alt={i18n.t('Open User Profile Menu')}
+										aria-label={i18n.t('Open User Profile Menu')}
 									/>
 
 									{#if $config?.features?.enable_user_status}

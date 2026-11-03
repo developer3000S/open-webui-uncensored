@@ -1,5 +1,7 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
 	import { getContext } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
 
 	import { toast } from 'svelte-sonner';
 
@@ -18,14 +20,12 @@
 	} from '$lib/apis/coder';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
-	export let show = false;
+	export let show: any = false;
 	export let token: string;
-	export let owner = '';
-	export let repo = '';
-	export let baseBranch = '';
+	export let owner: any = '';
+	export let repo: any = '';
+	export let baseBranch: any = '';
 	export let changeset: CoderChangeSet = { files: [] };
 
 	let branch = '';
@@ -67,31 +67,31 @@
 		const path = detail.path ? ` (${detail.path})` : '';
 		switch (code) {
 			case 'CODER_GITHUB_UNAUTHORIZED':
-				return $i18n.t(
+				return i18n.t(
 					'Your GitHub connection has expired. Reconnect your account in the Environment tab, then try again.'
 				);
 			case 'CODER_GITHUB_RATE_LIMIT':
-				return $i18n.t('GitHub API rate limit exceeded. Try again in a few minutes.');
+				return i18n.t('GitHub API rate limit exceeded. Try again in a few minutes.');
 			case 'CODER_FORBIDDEN':
-				return $i18n.t(
+				return i18n.t(
 					'Access denied by GitHub — your token may lack the required repository scopes (repo). Reconnect GitHub in the Environment tab.'
 				);
 			case 'CODER_BRANCH_PROTECTED':
-				return $i18n.t(
+				return i18n.t(
 					'The target branch is protected on GitHub. Export always pushes to a new branch and opens a pull request.'
 				);
 			case 'CODER_CONFLICT':
-				return $i18n.t(
+				return i18n.t(
 					'Conflict with the remote repository (the base branch moved). Run Preview again and retry.'
 				);
 			case 'CODER_VALIDATION_FAILED':
-				return `${$i18n.t('GitHub rejected the change set')}: ${msg}${path}`;
+				return `${i18n.t('GitHub rejected the change set')}: ${msg}${path}`;
 			case 'CODER_FILE_NOT_FOUND':
-				return `${$i18n.t('File does not exist in the base branch')}${path}`;
+				return `${i18n.t('File does not exist in the base branch')}${path}`;
 			case 'CODER_FILE_EXISTS':
-				return `${$i18n.t('File already exists in the base branch')}${path}`;
+				return `${i18n.t('File already exists in the base branch')}${path}`;
 			case 'CODER_GITHUB_UNAVAILABLE':
-				return $i18n.t('GitHub API is unreachable. Check server network connectivity and retry.');
+				return i18n.t('GitHub API is unreachable. Check server network connectivity and retry.');
 			default:
 				return msg ? `${code ? code + ': ' : ''}${msg}${path}` : 'Request failed';
 		}
@@ -122,11 +122,11 @@
 
 	const confirmExport = async () => {
 		if (!commitMessage.trim()) {
-			toast.error($i18n.t('Commit message is required'));
+			toast.error(i18n.t('Commit message is required'));
 			return;
 		}
 		if (!branch.trim()) {
-			toast.error($i18n.t('New branch name is required'));
+			toast.error(i18n.t('New branch name is required'));
 			return;
 		}
 		exporting = true;
@@ -141,7 +141,7 @@
 				idempotency_key: idempotencyKey
 			});
 			result = res;
-			toast.success($i18n.t('Changes exported successfully'));
+			toast.success(i18n.t('Changes exported successfully'));
 		} catch (e: any) {
 			const msg = describeError(e?.detail ?? e?.message ?? e);
 			exportError = msg;
@@ -160,7 +160,7 @@
 			if (typeof f.content === 'string') files[f.path] = f.content;
 		}
 		if (Object.keys(files).length === 0) {
-			toast.error($i18n.t('No file contents to export as a gist'));
+			toast.error(i18n.t('No file contents to export as a gist'));
 			return;
 		}
 		gistBusy = true;
@@ -173,7 +173,7 @@
 				files
 			});
 			gistUrl = res.gist?.html_url ?? null;
-			if (gistUrl) toast.success($i18n.t('Gist created'));
+			if (gistUrl) toast.success(i18n.t('Gist created'));
 		} catch (e: any) {
 			const msg = describeError(e?.detail ?? e?.message ?? e);
 			exportError = msg;
@@ -210,7 +210,7 @@
 					</svg>
 				</div>
 				<div class="text-base font-medium text-black dark:text-white">
-					{$i18n.t('Pull request created')}
+					{i18n.t('Pull request created')}
 				</div>
 				{#if result.commit_sha}
 					<div class="text-xs font-mono text-gray-500">commit {result.commit_sha.slice(0, 10)}</div>
@@ -228,20 +228,20 @@
 				<button
 					type="button"
 					class="mt-2 px-3.5 py-1.5 rounded-xl text-sm bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
-					on:click={close}>{$i18n.t('Close')}</button
+					on:click={close}>{i18n.t('Close')}</button
 				>
 			</div>
 		{:else}
 			<div class="flex items-center justify-between">
 				<div class="font-semibold text-black dark:text-white">
-					{$i18n.t('Export to GitHub')}
+					{i18n.t('Export to GitHub')}
 				</div>
 				<div class="text-xs text-gray-500">{owner}/{repo} ← {baseBranch}</div>
 			</div>
 
 			<div class="flex flex-col gap-2">
 				<label class="text-xs font-medium text-gray-600 dark:text-gray-400" for="coder-branch">
-					{$i18n.t('New branch name')}
+					{i18n.t('New branch name')}
 				</label>
 				<input
 					id="coder-branch"
@@ -252,7 +252,7 @@
 
 			<div class="flex flex-col gap-2">
 				<label class="text-xs font-medium text-gray-600 dark:text-gray-400" for="coder-commit">
-					{$i18n.t('Commit message')}
+					{i18n.t('Commit message')}
 				</label>
 				<textarea
 					id="coder-commit"
@@ -277,7 +277,7 @@
 						d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
 					/>
 				</svg>
-				{$i18n.t('Pull request is created automatically for every export.')}
+				{i18n.t('Pull request is created automatically for every export.')}
 			</div>
 
 			{#if preview}
@@ -321,11 +321,11 @@
 			<!-- Gist export (§22.2): share the change set without touching the repository -->
 			<div class="flex flex-col gap-2 rounded-xl border border-gray-200 dark:border-gray-700 p-3">
 				<div class="text-xs font-medium text-gray-600 dark:text-gray-400">
-					{$i18n.t('Export as Gist')}
+					{i18n.t('Export as Gist')}
 				</div>
 				<label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
 					<input type="checkbox" bind:checked={gistPublic} class="rounded" />
-					{$i18n.t('Public gist')}
+					{i18n.t('Public gist')}
 				</label>
 				{#if gistUrl}
 					<a
@@ -346,7 +346,7 @@
 						{#if gistBusy}
 							<Spinner className="size-3.5" />
 						{/if}
-						{$i18n.t('Create gist from changes')}
+						{i18n.t('Create gist from changes')}
 					</button>
 				{/if}
 			</div>
@@ -361,7 +361,7 @@
 					{#if loadingPreview}
 						<Spinner className="size-4" />
 					{:else}
-						{$i18n.t('Preview changes')}
+						{i18n.t('Preview changes')}
 					{/if}
 				</button>
 				<button
@@ -373,7 +373,196 @@
 					{#if exporting}
 						<Spinner className="size-4" />
 					{/if}
-					{$i18n.t('Export to GitHub')}
+					{i18n.t('Export to GitHub')}
+				</button>
+			</div>
+		{/if}
+	</div>
+</Modal>
+
+<Modal bind:show containerClassName="p-3 z-9999" size="md">
+	<div class="flex flex-col gap-3 max-h-[80dvh] overflow-y-auto scrollbar-thin p-1">
+		{#if result}
+			<div class="flex flex-col items-center gap-2 py-6 text-center">
+				<div
+					class="size-12 rounded-full bg-green-50 dark:bg-green-950/40 flex items-center justify-center"
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="1.5"
+						stroke="currentColor"
+						class="size-6 text-green-600"
+					>
+						<path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+					</svg>
+				</div>
+				<div class="text-base font-medium text-black dark:text-white">
+					{i18n.t('Pull request created')}
+				</div>
+				{#if result.commit_sha}
+					<div class="text-xs font-mono text-gray-500">commit {result.commit_sha.slice(0, 10)}</div>
+				{/if}
+				{#if result.pr_url}
+					<a
+						href={result.pr_url}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="text-sm text-blue-500 hover:underline"
+					>
+						PR #{result.pr_number} →
+					</a>
+				{/if}
+				<button
+					type="button"
+					class="mt-2 px-3.5 py-1.5 rounded-xl text-sm bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+					on:click={close}>{i18n.t('Close')}</button
+				>
+			</div>
+		{:else}
+			<div class="flex items-center justify-between">
+				<div class="font-semibold text-black dark:text-white">
+					{i18n.t('Export to GitHub')}
+				</div>
+				<div class="text-xs text-gray-500">{owner}/{repo} ← {baseBranch}</div>
+			</div>
+
+			<div class="flex flex-col gap-2">
+				<label class="text-xs font-medium text-gray-600 dark:text-gray-400" for="coder-branch">
+					{i18n.t('New branch name')}
+				</label>
+				<input
+					id="coder-branch"
+					bind:value={branch}
+					class="rounded-xl bg-gray-50 dark:bg-gray-850 px-3 py-2 text-sm font-mono outline-hidden ring-1 ring-transparent focus:ring-gray-300 dark:focus:ring-gray-700"
+				/>
+			</div>
+
+			<div class="flex flex-col gap-2">
+				<label class="text-xs font-medium text-gray-600 dark:text-gray-400" for="coder-commit">
+					{i18n.t('Commit message')}
+				</label>
+				<textarea
+					id="coder-commit"
+					bind:value={commitMessage}
+					rows="2"
+					class="rounded-xl bg-gray-50 dark:bg-gray-850 px-3 py-2 text-sm outline-hidden ring-1 ring-transparent focus:ring-gray-300 dark:focus:ring-gray-700 resize-none"
+				></textarea>
+			</div>
+
+			<div class="text-[11px] text-gray-500 flex items-center gap-1.5">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke-width="1.5"
+					stroke="currentColor"
+					class="size-3.5 shrink-0"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+					/>
+				</svg>
+				{i18n.t('Pull request is created automatically for every export.')}
+			</div>
+
+			{#if preview}
+				<div class="flex flex-col gap-2">
+					{#each preview.errors as err (err.path + err.code)}
+						<div
+							class="text-xs rounded-xl bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 px-3 py-2"
+						>
+							<span class="font-mono">{err.path}</span>: {err.message}
+						</div>
+					{/each}
+					{#each preview.diffs as d (d.path)}
+						<div class="flex flex-col gap-1">
+							<div
+								class="text-xs font-mono text-gray-600 dark:text-gray-400 flex items-center gap-1.5"
+							>
+								<span
+									class="px-1.5 py-0.5 rounded text-[10px] font-sans {d.action === 'create'
+										? 'bg-green-100 text-green-700 dark:bg-green-950/50 dark:text-green-400'
+										: d.action === 'delete'
+											? 'bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400'
+											: 'bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400'}"
+									>{d.action}</span
+								>
+								{d.path}
+							</div>
+							<DiffView diff={d.diff} action={d.action} />
+						</div>
+					{/each}
+				</div>
+			{/if}
+
+			{#if exportError}
+				<div
+					class="text-xs rounded-xl bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 px-3 py-2"
+				>
+					{exportError}
+				</div>
+			{/if}
+
+			<!-- Gist export (§22.2): share the change set without touching the repository -->
+			<div class="flex flex-col gap-2 rounded-xl border border-gray-200 dark:border-gray-700 p-3">
+				<div class="text-xs font-medium text-gray-600 dark:text-gray-400">
+					{i18n.t('Export as Gist')}
+				</div>
+				<label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+					<input type="checkbox" bind:checked={gistPublic} class="rounded" />
+					{i18n.t('Public gist')}
+				</label>
+				{#if gistUrl}
+					<a
+						href={gistUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="text-sm text-blue-500 hover:underline truncate"
+					>
+						{gistUrl}
+					</a>
+				{:else}
+					<button
+						type="button"
+						class="self-start px-3 py-1.5 rounded-xl text-xs bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 flex items-center gap-2"
+						disabled={gistBusy || changeset.files.length === 0}
+						on:click={exportAsGist}
+					>
+						{#if gistBusy}
+							<Spinner className="size-3.5" />
+						{/if}
+						{i18n.t('Create gist from changes')}
+					</button>
+				{/if}
+			</div>
+
+			<div class="flex justify-end gap-2 pt-1">
+				<button
+					type="button"
+					class="px-3.5 py-1.5 rounded-xl text-sm bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50"
+					disabled={loadingPreview || changeset.files.length === 0}
+					on:click={runPreview}
+				>
+					{#if loadingPreview}
+						<Spinner className="size-4" />
+					{:else}
+						{i18n.t('Preview changes')}
+					{/if}
+				</button>
+				<button
+					type="button"
+					class="px-3.5 py-1.5 rounded-xl text-sm bg-gray-900 text-white dark:bg-white dark:text-gray-900 hover:bg-gray-800 disabled:opacity-50 flex items-center gap-2"
+					disabled={exporting || !preview?.valid}
+					on:click={confirmExport}
+				>
+					{#if exporting}
+						<Spinner className="size-4" />
+					{/if}
+					{i18n.t('Export to GitHub')}
 				</button>
 			</div>
 		{/if}

@@ -1,23 +1,24 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
+	import { getContext, onMount, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
 	import { config, models, settings } from '$lib/stores';
 	import { WEBUI_BASE_URL } from '$lib/constants';
 
-	import { onMount, tick, getContext } from 'svelte';
 	import { createNewModel, getModelById } from '$lib/apis/models';
 	import { getModels } from '$lib/apis';
 
 	import ModelEditor from '$lib/components/workspace/Models/ModelEditor.svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
-	const onSubmit = async (modelInfo) => {
+	const onSubmit = async (modelInfo: any) => {
 		if ($models.find((m) => m.id === modelInfo.id)) {
 			toast.error(
-				$i18n.t(
+				i18n.t(
 					"Error: A model with the ID '{{modelId}}' already exists. Please select a different ID to proceed.",
 					{ modelId: modelInfo.id }
 				)
@@ -26,7 +27,7 @@
 		}
 
 		if (modelInfo.id === '') {
-			toast.error($i18n.t('Error: Model ID cannot be empty. Please enter a valid ID to proceed.'));
+			toast.error(i18n.t('Error: Model ID cannot be empty. Please enter a valid ID to proceed.'));
 			return;
 		}
 
@@ -42,7 +43,7 @@
 						: null
 				},
 				params: { ...modelInfo.params }
-			}).catch((error) => {
+			}).catch(async (error)=> {
 				toast.error(`${error}`);
 				return null;
 			});
@@ -54,13 +55,13 @@
 						$config?.features?.enable_direct_connections && ($settings?.directConnections ?? null)
 					)
 				);
-				toast.success($i18n.t('Model created successfully!'));
+				toast.success(i18n.t('Model created successfully!'));
 				await goto('/workspace/models');
 			}
 		}
 	};
 
-	let model = null;
+	let model: any = null;
 
 	onMount(() => {
 		const handleMessageEvent = async (event: MessageEvent) => {
@@ -100,6 +101,10 @@
 		};
 	});
 </script>
+
+{#key model}
+	<ModelEditor {model} {onSubmit} />
+{/key}
 
 {#key model}
 	<ModelEditor {model} {onSubmit} />

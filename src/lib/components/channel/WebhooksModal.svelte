@@ -1,6 +1,9 @@
 <script lang="ts">
-	import { toast } from 'svelte-sonner';
+	import type i18nType from 'i18next';
 	import { getContext } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
+	import { toast } from 'svelte-sonner';
 
 	import {
 		getChannelWebhooks,
@@ -17,18 +20,16 @@
 	import WebhookItem from './WebhookItem.svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
-	export let show = false;
-	export let channel = null;
+	export let show: any = false;
+	let channel: any = null;
 
-	let webhooks = [];
+	let webhooks: any = [];
 	let isLoading = false;
 	let isSaving = false;
 
 	let showDeleteConfirmDialog = false;
-	let selectedWebhookId = null;
+	let selectedWebhookId: any = null;
 
 	// Track pending changes from child components
 	let pendingChanges: { [webhookId: string]: { name: string; profile_image_url: string } } = {};
@@ -67,7 +68,7 @@
 			}
 			pendingChanges = {};
 			await loadWebhooks();
-			toast.success($i18n.t('Saved'));
+			toast.success(i18n.t('Saved'));
 		} catch (error) {
 			toast.error(`${error}`);
 		}
@@ -80,7 +81,7 @@
 		try {
 			await deleteChannelWebhook(localStorage.token, channel.id, selectedWebhookId);
 			webhooks = webhooks.filter((webhook) => webhook.id !== selectedWebhookId);
-			toast.success($i18n.t('Deleted'));
+			toast.success(i18n.t('Deleted'));
 		} catch (error) {
 			toast.error(`${error}`);
 		}
@@ -104,7 +105,7 @@
 			<div class="flex justify-between dark:text-gray-100 px-5 pt-4 mb-1.5">
 				<div class="flex w-full justify-between items-center mr-3">
 					<div class="self-center text-base flex gap-1.5 items-center">
-						<div>{$i18n.t('Webhooks')}</div>
+						<div>{i18n.t('Webhooks')}</div>
 						<span class="text-sm text-gray-500">{webhooks.length}</span>
 					</div>
 
@@ -115,7 +116,7 @@
 						disabled={isSaving}
 					>
 						<Plus className="size-3.5" />
-						<span>{$i18n.t('New Webhook')}</span>
+						<span>{i18n.t('New Webhook')}</span>
 					</button>
 				</div>
 
@@ -156,7 +157,7 @@
 						</div>
 					{:else}
 						<div class="text-gray-500 text-xs text-center py-8 px-10">
-							{$i18n.t('No webhooks yet')}
+							{i18n.t('No webhooks yet')}
 						</div>
 					{/if}
 
@@ -168,7 +169,93 @@
 							type="submit"
 							disabled={isSaving}
 						>
-							{$i18n.t('Save')}
+							{i18n.t('Save')}
+							{#if isSaving}
+								<span class="shrink-0">
+									<Spinner />
+								</span>
+							{/if}
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</Modal>
+{/if}
+
+<ConfirmDialog bind:show={showDeleteConfirmDialog} on:confirm={deleteHandler} />
+
+{#if channel}
+	<Modal size="sm" bind:show>
+		<div>
+			<div class="flex justify-between dark:text-gray-100 px-5 pt-4 mb-1.5">
+				<div class="flex w-full justify-between items-center mr-3">
+					<div class="self-center text-base flex gap-1.5 items-center">
+						<div>{i18n.t('Webhooks')}</div>
+						<span class="text-sm text-gray-500">{webhooks.length}</span>
+					</div>
+
+					<button
+						type="button"
+						class="px-3 py-1.5 gap-1 rounded-xl bg-gray-100/50 dark:bg-gray-850/50 text-black dark:text-white transition font-medium text-xs flex items-center justify-center"
+						on:click={createHandler}
+						disabled={isSaving}
+					>
+						<Plus className="size-3.5" />
+						<span>{i18n.t('New Webhook')}</span>
+					</button>
+				</div>
+
+				<button class="self-center" on:click={() => (show = false)}>
+					<XMark className="size-5" />
+				</button>
+			</div>
+
+			<div class="flex flex-col w-full px-4 pb-4 dark:text-gray-200">
+				<form
+					class="flex flex-col w-full"
+					on:submit={(e) => {
+						e.preventDefault();
+						saveHandler();
+					}}
+				>
+					{#if isLoading}
+						<div class="flex justify-center py-10">
+							<Spinner className="size-5" />
+						</div>
+					{:else if webhooks.length > 0}
+						<div class="w-full py-2">
+							{#each webhooks as webhook (webhook.id)}
+								<WebhookItem
+									{webhook}
+									expanded={selectedWebhookId === webhook.id}
+									onClick={() => {
+										selectedWebhookId = selectedWebhookId === webhook.id ? null : webhook.id;
+									}}
+									onDelete={() => {
+										showDeleteConfirmDialog = true;
+									}}
+									onUpdate={(changes) => {
+										pendingChanges[webhook.id] = changes;
+									}}
+								/>
+							{/each}
+						</div>
+					{:else}
+						<div class="text-gray-500 text-xs text-center py-8 px-10">
+							{i18n.t('No webhooks yet')}
+						</div>
+					{/if}
+
+					<div class="flex justify-end text-sm font-medium gap-1.5">
+						<button
+							class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full flex items-center gap-2 whitespace-nowrap {isSaving
+								? 'cursor-not-allowed'
+								: ''}"
+							type="submit"
+							disabled={isSaving}
+						>
+							{i18n.t('Save')}
 							{#if isSaving}
 								<span class="shrink-0">
 									<Spinner />

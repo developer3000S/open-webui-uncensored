@@ -1,8 +1,10 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
+	import { getContext } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import type { Token } from 'marked';
 	import { LinkPreview } from 'bits-ui';
-
-	import { getContext } from 'svelte';
 
 	import { goto } from '$app/navigation';
 	import { channels, models } from '$lib/stores';
@@ -10,15 +12,13 @@
 	import UserStatusLinkPreview from '$lib/components/channel/Messages/Message/UserStatusLinkPreview.svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	export let token: Token;
 
 	let triggerChar = '';
 	let label = '';
 
-	let idType = null;
+	let idType: any = null;
 	let id = '';
 
 	$: if (token) {
@@ -62,7 +62,7 @@
 				if (channel) {
 					label = channel.name;
 				} else {
-					label = $i18n.t('Unknown');
+					label = i18n.t('Unknown');
 				}
 			} else if (idType === 'T') {
 				// Thread
@@ -76,12 +76,52 @@
 				if (model) {
 					label = model.name;
 				} else {
-					label = $i18n.t('Unknown');
+					label = i18n.t('Unknown');
 				}
 			}
 		}
 	};
 </script>
+
+<LinkPreview.Root openDelay={0} closeDelay={0}>
+	<LinkPreview.Trigger class=" cursor-pointer no-underline! font-normal! ">
+		<!-- svelte-ignore a11y-click-events-have-key-events -->
+		<!-- svelte-ignore a11y-no-static-element-interactions -->
+
+		<span
+			class="mention"
+			on:click={async () => {
+				if (triggerChar === '@') {
+					if (idType === 'U') {
+						// Open user profile
+						console.log('Clicked user mention', id);
+					} else if (idType === 'M') {
+						console.log('Clicked model mention', id);
+						await goto(`/?model=${id}`);
+					}
+				} else if (triggerChar === '#') {
+					if (idType === 'C') {
+						// Open channel
+						if ($channels.find((c) => c.id === id)) {
+							await goto(`/channels/${id}`);
+						}
+					} else if (idType === 'T') {
+						// Open thread
+					}
+				} else {
+					// Unknown trigger char, just log
+					console.log('Clicked mention', id);
+				}
+			}}
+		>
+			{triggerChar}{label}
+		</span>
+	</LinkPreview.Trigger>
+
+	{#if triggerChar === '@' && idType === 'U'}
+		<UserStatusLinkPreview {id} />
+	{/if}
+</LinkPreview.Root>
 
 <LinkPreview.Root openDelay={0} closeDelay={0}>
 	<LinkPreview.Trigger class=" cursor-pointer no-underline! font-normal! ">

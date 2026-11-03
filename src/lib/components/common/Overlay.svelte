@@ -1,10 +1,9 @@
-<script>
+<script lang="ts">
 	import Spinner from './Spinner.svelte';
 
-	export let show = false;
-	export let content = '';
-
-	export let opacity = 1;
+	export let show: any = false;
+	export let content: any = '';
+	export let opacity: any = 1;
 </script>
 
 <div class="relative">

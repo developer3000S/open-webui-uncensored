@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { toast } from 'svelte-sonner';
-	import { onMount, getContext, tick, onDestroy } from 'svelte';
-	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
+	import type i18nType from 'i18next';
+	import { getContext, onDestroy, onMount, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
 
+	import { toast } from 'svelte-sonner';
+	import type { Writable } from 'svelte/store';
 	import { page } from '$app/stores';
 	import { channels, mobile, showSidebar, user } from '$lib/stores';
 	import { getUserActiveStatusById } from '$lib/apis/users';
@@ -21,9 +21,8 @@
 
 	export let onUpdate: Function = () => {};
 
-	export let className = '';
-	export let channel;
-
+	export let className: any = '';
+	export let channel: any;
 	let showEditChannelModal = false;
 
 	let itemElement;
@@ -66,7 +65,7 @@
 		});
 
 		if (res) {
-			toast.success($i18n.t('Channel updated successfully'));
+			toast.success(i18n.t('Channel updated successfully'));
 		}
 
 		onUpdate();
@@ -195,7 +194,7 @@
 				<div
 					class="text-xs py-[1px] px-2 rounded-xl bg-gray-100 text-black dark:bg-gray-800 dark:text-white font-medium whitespace-nowrap"
 				>
-					{new Intl.NumberFormat($i18n.locale, {
+					{new Intl.NumberFormat($locale, {
 						notation: 'compact',
 						compactDisplay: 'short'
 					}).format(channel.unread_count)}
@@ -211,7 +210,7 @@
 			<button
 				type="button"
 				class="p-0.5 dark:hover:bg-gray-850 rounded-lg touch-auto"
-				on:click={async (e) => {
+				on:click={async (e: any) => {
 					e.stopImmediatePropagation();
 					e.stopPropagation();
 

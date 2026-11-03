@@ -1,15 +1,16 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
 	import { getContext } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Plus from '$lib/components/icons/Plus.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import Connection from './Terminals/Connection.svelte';
 	import AddTerminalServerModal from '$lib/components/AddTerminalServerModal.svelte';
 
-	export let servers = [];
+	export let servers: any = [];
 	export let onChange: (servers: typeof servers) => void = () => {};
 
 	let showAddModal = false;
@@ -40,19 +41,19 @@
 	};
 </script>
 
-<AddTerminalServerModal direct bind:show={showAddModal} onSubmit={(server) => addServer(server)} />
+<AddTerminalServerModal direct bind:show={showAddModal} onSubmit={(server: any) => addServer(server)} />
 
 <div>
 	<div class="flex justify-between items-center mb-1">
 		<div class="flex items-center gap-2">
-			<div class="font-medium">{$i18n.t('Open Terminal')}</div>
+			<div class="font-medium">{i18n.t('Open Terminal')}</div>
 		</div>
-		<Tooltip content={$i18n.t('Add Connection')}>
+		<Tooltip content={i18n.t('Add Connection')}>
 			<button
 				class="px-1"
 				on:click={() => (showAddModal = true)}
 				type="button"
-				aria-label={$i18n.t('Add Connection')}
+				aria-label={i18n.t('Add Connection')}
 			>
 				<Plus />
 			</button>
@@ -73,14 +74,60 @@
 
 	{#if servers.length === 0}
 		<div class="text-xs text-gray-400 dark:text-gray-500">
-			{$i18n.t('No terminal connections configured.')}
+			{i18n.t('No terminal connections configured.')}
 			<a
 				href="https://github.com/open-webui/open-terminal"
 				target="_blank"
 				rel="noopener noreferrer"
 				class="underline hover:text-gray-700 dark:hover:text-gray-200"
 			>
-				{$i18n.t('Learn more')} ↗
+				{i18n.t('Learn more')} ↗
+			</a>
+		</div>
+	{/if}
+</div>
+
+<AddTerminalServerModal direct bind:show={showAddModal} onSubmit={(server: any) => addServer(server)} />
+
+<div>
+	<div class="flex justify-between items-center mb-1">
+		<div class="flex items-center gap-2">
+			<div class="font-medium">{i18n.t('Open Terminal')}</div>
+		</div>
+		<Tooltip content={i18n.t('Add Connection')}>
+			<button
+				class="px-1"
+				on:click={() => (showAddModal = true)}
+				type="button"
+				aria-label={i18n.t('Add Connection')}
+			>
+				<Plus />
+			</button>
+		</Tooltip>
+	</div>
+
+	<div class="flex flex-col gap-1.5">
+		{#each servers as server, idx}
+			<Connection
+				bind:connection={server}
+				onSubmit={(updated) => updateServer(idx, updated)}
+				onDelete={() => deleteServer(idx)}
+				onEnable={() => enableServer(idx)}
+				onDisable={() => disableServer(idx)}
+			/>
+		{/each}
+	</div>
+
+	{#if servers.length === 0}
+		<div class="text-xs text-gray-400 dark:text-gray-500">
+			{i18n.t('No terminal connections configured.')}
+			<a
+				href="https://github.com/open-webui/open-terminal"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="underline hover:text-gray-700 dark:hover:text-gray-200"
+			>
+				{i18n.t('Learn more')} ↗
 			</a>
 		</div>
 	{/if}

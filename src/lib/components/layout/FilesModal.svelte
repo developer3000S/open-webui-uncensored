@@ -1,6 +1,9 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
+	import { getContext, onDestroy, onMount } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { toast } from 'svelte-sonner';
-	import { getContext, onMount, onDestroy } from 'svelte';
 	import type { Writable } from 'svelte/store';
 	import dayjs from 'dayjs';
 
@@ -15,12 +18,8 @@
 	import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import FileItemModal from '$lib/components/common/FileItemModal.svelte';
-	import type { i18n as i18nType } from 'i18next';
 
-	const i18n = getContext<Writable<i18nType>>('i18n');
-
-	export let show = false;
-
+	export let show: any = false;
 	let files: any[] | null = null;
 	let fileCount: number | null = null;
 	let query = '';
@@ -127,7 +126,7 @@
 	const deleteHandler = async (fileId: string) => {
 		try {
 			await deleteFileById(localStorage.token, fileId);
-			toast.success($i18n.t('File deleted successfully.'));
+			toast.success(i18n.t('File deleted successfully.'));
 			// Remove from local array instead of re-fetching to allow rapid deletion
 			files = files?.filter((f) => f.id !== fileId) ?? null;
 			if (fileCount !== null) fileCount--;
@@ -205,7 +204,7 @@
 	<div>
 		<div class="flex justify-between dark:text-gray-300 px-5 pt-4 pb-1">
 			<div class="flex items-center gap-2 text-lg font-medium self-center">
-				<div>{$i18n.t('Files')}</div>
+				<div>{i18n.t('Files')}</div>
 				{#if query && files}
 					<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
 						{files.length}
@@ -217,7 +216,7 @@
 				{/if}
 			</div>
 			<button
-				aria-label={$i18n.t('Close')}
+				aria-label={i18n.t('Close')}
 				class="self-center"
 				on:click={() => {
 					show = false;
@@ -259,7 +258,7 @@
 					<input
 						class="w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
 						bind:value={query}
-						placeholder={$i18n.t('Search Files')}
+						placeholder={i18n.t('Search Files')}
 						maxlength="500"
 					/>
 
@@ -285,12 +284,12 @@
 						{#if files.length > 0}
 							<div class="flex text-xs font-medium mb-1.5">
 								<button
-									aria-label={$i18n.t('Filename')}
+									aria-label={i18n.t('Filename')}
 									class="px-1.5 py-1 cursor-pointer select-none basis-3/5"
 									on:click={() => setSortKey('filename')}
 								>
 									<div class="flex gap-1.5 items-center">
-										{$i18n.t('Filename')}
+										{i18n.t('Filename')}
 										{#if orderBy === 'filename'}
 											<span class="font-normal">
 												{#if direction === 'asc'}
@@ -307,12 +306,12 @@
 									</div>
 								</button>
 								<button
-									aria-label={$i18n.t('Created at')}
+									aria-label={i18n.t('Created at')}
 									class="px-1.5 py-1 cursor-pointer select-none hidden sm:flex sm:basis-2/5 justify-end"
 									on:click={() => setSortKey('created_at')}
 								>
 									<div class="flex gap-1.5 items-center">
-										{$i18n.t('Created at')}
+										{i18n.t('Created at')}
 										{#if orderBy === 'created_at'}
 											<span class="font-normal">
 												{#if direction === 'asc'}
@@ -336,7 +335,7 @@
 								<div
 									class="text-xs text-gray-500 dark:text-gray-400 text-center px-5 min-h-20 w-full h-full flex justify-center items-center"
 								>
-									{$i18n.t('No files found')}
+									{i18n.t('No files found')}
 								</div>
 							{/if}
 
@@ -359,7 +358,7 @@
 										</div>
 
 										<div class="flex justify-end pl-2.5 text-gray-600 dark:text-gray-300">
-											<Tooltip content={shiftKey ? $i18n.t('Delete File') : $i18n.t('Delete File')}>
+											<Tooltip content={shiftKey ? i18n.t('Delete File') : i18n.t('Delete File')}>
 												<button
 													class="self-center w-fit px-1 text-sm rounded-xl {shiftKey
 														? 'text-red-500'
@@ -393,7 +392,227 @@
 										class="w-full flex justify-center py-1 text-xs animate-pulse items-center gap-2"
 									>
 										<Spinner className="size-4" />
-										<div>{$i18n.t('Loading...')}</div>
+										<div>{i18n.t('Loading...')}</div>
+									</div>
+								</Loader>
+							{/if}
+						</div>
+					</div>
+				{:else}
+					<div class="w-full h-full flex justify-center items-center min-h-20">
+						<Spinner className="size-5" />
+					</div>
+				{/if}
+			</div>
+		</div>
+	</div>
+</Modal>
+
+<ConfirmDialog
+	bind:show={showDeleteConfirmDialog}
+	on:confirm={() => {
+		if (selectedFileId) {
+			deleteHandler(selectedFileId);
+			selectedFileId = null;
+		}
+	}}
+/>
+
+<FileItemModal bind:show={showFileItemModal} item={selectedFile} edit={false} />
+
+<Modal size="xl" bind:show>
+	<div>
+		<div class="flex justify-between dark:text-gray-300 px-5 pt-4 pb-1">
+			<div class="flex items-center gap-2 text-lg font-medium self-center">
+				<div>{i18n.t('Files')}</div>
+				{#if query && files}
+					<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
+						{files.length}
+					</div>
+				{:else if fileCount !== null}
+					<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
+						{fileCount}
+					</div>
+				{/if}
+			</div>
+			<button
+				aria-label={i18n.t('Close')}
+				class="self-center"
+				on:click={() => {
+					show = false;
+				}}
+			>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					viewBox="0 0 20 20"
+					fill="currentColor"
+					class="w-5 h-5"
+				>
+					<path
+						fill-rule="evenodd"
+						d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"
+						clip-rule="evenodd"
+					/>
+				</svg>
+			</button>
+		</div>
+
+		<div class="flex flex-col w-full px-5 pb-4 dark:text-gray-200">
+			<!-- Search -->
+			<div class="flex w-full space-x-2 mb-0.5">
+				<div class="flex flex-1">
+					<div class="self-center ml-1 mr-3">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 20 20"
+							fill="currentColor"
+							class="w-4 h-4"
+						>
+							<path
+								fill-rule="evenodd"
+								d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
+								clip-rule="evenodd"
+							/>
+						</svg>
+					</div>
+					<input
+						class="w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
+						bind:value={query}
+						placeholder={i18n.t('Search Files')}
+						maxlength="500"
+					/>
+
+					{#if query}
+						<div class="self-center pl-1.5 pr-1 translate-y-[0.5px] rounded-l-xl bg-transparent">
+							<button
+								class="p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 transition"
+								on:click={() => {
+									query = '';
+								}}
+							>
+								<XMark className="size-3" strokeWidth="2" />
+							</button>
+						</div>
+					{/if}
+				</div>
+			</div>
+
+			<!-- Files List -->
+			<div class="flex flex-col w-full">
+				{#if files !== null}
+					<div class="w-full">
+						{#if files.length > 0}
+							<div class="flex text-xs font-medium mb-1.5">
+								<button
+									aria-label={i18n.t('Filename')}
+									class="px-1.5 py-1 cursor-pointer select-none basis-3/5"
+									on:click={() => setSortKey('filename')}
+								>
+									<div class="flex gap-1.5 items-center">
+										{i18n.t('Filename')}
+										{#if orderBy === 'filename'}
+											<span class="font-normal">
+												{#if direction === 'asc'}
+													<ChevronUp className="size-2" />
+												{:else}
+													<ChevronDown className="size-2" />
+												{/if}
+											</span>
+										{:else}
+											<span class="invisible">
+												<ChevronUp className="size-2" />
+											</span>
+										{/if}
+									</div>
+								</button>
+								<button
+									aria-label={i18n.t('Created at')}
+									class="px-1.5 py-1 cursor-pointer select-none hidden sm:flex sm:basis-2/5 justify-end"
+									on:click={() => setSortKey('created_at')}
+								>
+									<div class="flex gap-1.5 items-center">
+										{i18n.t('Created at')}
+										{#if orderBy === 'created_at'}
+											<span class="font-normal">
+												{#if direction === 'asc'}
+													<ChevronUp className="size-2" />
+												{:else}
+													<ChevronDown className="size-2" />
+												{/if}
+											</span>
+										{:else}
+											<span class="invisible">
+												<ChevronUp className="size-2" />
+											</span>
+										{/if}
+									</div>
+								</button>
+							</div>
+						{/if}
+
+						<div class="text-left text-sm w-full mb-3 max-h-[32rem] overflow-y-scroll">
+							{#if files.length === 0}
+								<div
+									class="text-xs text-gray-500 dark:text-gray-400 text-center px-5 min-h-20 w-full h-full flex justify-center items-center"
+								>
+									{i18n.t('No files found')}
+								</div>
+							{/if}
+
+							{#each files as file (file.id)}
+								<button
+									type="button"
+									class="w-full flex justify-between items-center rounded-lg text-sm py-2 px-3 hover:bg-gray-50 dark:hover:bg-gray-850 cursor-pointer text-left"
+									on:click={() => openFileViewer(file)}
+								>
+									<div class="basis-3/5 min-w-0">
+										<div class="text-ellipsis line-clamp-1">{file.filename}</div>
+										<div class="text-xs text-gray-500">
+											{formatFileSize(file.meta?.size ?? 0)}
+										</div>
+									</div>
+
+									<div class="basis-2/5 flex items-center justify-end">
+										<div class="hidden sm:flex text-gray-500 dark:text-gray-400 text-xs">
+											{dayjs(file.created_at * 1000).format('MMM D, YYYY')}
+										</div>
+
+										<div class="flex justify-end pl-2.5 text-gray-600 dark:text-gray-300">
+											<Tooltip content={shiftKey ? i18n.t('Delete File') : i18n.t('Delete File')}>
+												<button
+													class="self-center w-fit px-1 text-sm rounded-xl {shiftKey
+														? 'text-red-500'
+														: ''}"
+													on:click|stopPropagation={() => {
+														if (shiftKey) {
+															deleteHandler(file.id);
+														} else {
+															selectedFileId = file.id;
+															showDeleteConfirmDialog = true;
+														}
+													}}
+												>
+													<GarbageBin class="size-4" strokeWidth="1.5" />
+												</button>
+											</Tooltip>
+										</div>
+									</div>
+								</button>
+							{/each}
+
+							{#if !allFilesLoaded}
+								<Loader
+									on:visible={() => {
+										if (!filesLoading) {
+											loadMoreFiles();
+										}
+									}}
+								>
+									<div
+										class="w-full flex justify-center py-1 text-xs animate-pulse items-center gap-2"
+									>
+										<Spinner className="size-4" />
+										<div>{i18n.t('Loading...')}</div>
 									</div>
 								</Loader>
 							{/if}

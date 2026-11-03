@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { onMount, onDestroy, getContext } from 'svelte';
+	import type i18nType from 'i18next';
+	import { getContext, onDestroy, onMount } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
@@ -33,8 +35,6 @@
 	import Minus from '$lib/components/icons/Minus.svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	let loaded = false;
 	let automations: AutomationResponse[] | null = null;
@@ -81,8 +81,7 @@
 
 		loading = true;
 		try {
-			const res = await getAutomationItems(localStorage.token, query, statusFilter, page).catch(
-				(error) => {
+			const res = await getAutomationItems(localStorage.token, query, statusFilter, page).catch(async (error)=> {
 					toast.error(`${error}`);
 					return null;
 				}
@@ -128,12 +127,12 @@
 	};
 
 	const runNowHandler = async (automation: AutomationResponse) => {
-		const res = await runAutomationById(localStorage.token, automation.id).catch((err) => {
+		const res = await runAutomationById(localStorage.token, automation.id).catch(async (err)=> {
 			toast.error(`${err}`);
 			return null;
 		});
 		if (res) {
-			toast.success($i18n.t('Automation triggered'));
+			toast.success(i18n.t('Automation triggered'));
 		}
 	};
 
@@ -143,7 +142,7 @@
 			return null;
 		});
 		if (res) {
-			toast.success($i18n.t(`Deleted {{name}}`, { name: automation.name }));
+			toast.success(i18n.t(`Deleted {{name}}`, { name: automation.name }));
 		}
 
 		page = 1;
@@ -226,18 +225,19 @@
 </script>
 
 <svelte:head>
-	<title>{$i18n.t('Automations')} • {$WEBUI_NAME}</title>
-</svelte:head>
+			<title>{i18n.t('Automations')} • {$WEBUI_NAME}</title>
+			<title>{i18n.t('Automations')} • {$WEBUI_NAME}</title>
+		</svelte:head>
 
 <DeleteConfirmDialog
 	bind:show={showDeleteConfirm}
-	title={$i18n.t('Delete automation?')}
+	title={i18n.t('Delete automation?')}
 	on:confirm={() => {
 		if (deleteTarget) deleteHandler(deleteTarget);
 	}}
 >
 	<div class="text-sm text-gray-500 truncate">
-		{$i18n.t('This will delete')} <span class="font-medium">{deleteTarget?.name}</span>.
+		{i18n.t('This will delete')} <span class="font-medium">{deleteTarget?.name}</span>.
 	</div>
 </DeleteConfirmDialog>
 
@@ -266,7 +266,7 @@
 						<div class="flex items-center md:self-center text-xl font-medium px-0.5 gap-2 shrink-0">
 							{#if $mobile}
 								<Tooltip
-									content={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
+									content={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
 								>
 									<button
 										id="sidebar-toggle-button"
@@ -281,7 +281,7 @@
 									</button>
 								</Tooltip>
 							{/if}
-							<div>{$i18n.t('Automations')}</div>
+							<div>{i18n.t('Automations')}</div>
 							<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
 								{total ?? ''}
 							</div>
@@ -297,7 +297,7 @@
 							>
 								<Plus className="size-3" strokeWidth="2.5" />
 								<div class="hidden md:block md:ml-1 text-xs">
-									{$i18n.t('New Automation')}
+									{i18n.t('New Automation')}
 								</div>
 							</button>
 						</div>
@@ -316,8 +316,8 @@
 								class="w-full text-sm py-1 rounded-r-xl outline-hidden bg-transparent"
 								bind:value={query}
 								on:input={handleSearchInput}
-								aria-label={$i18n.t('Search Automations')}
-								placeholder={$i18n.t('Search Automations')}
+								aria-label={i18n.t('Search Automations')}
+								placeholder={i18n.t('Search Automations')}
 								maxlength="500"
 							/>
 
@@ -325,7 +325,7 @@
 								<div class="self-center pl-1.5 translate-y-[0.5px] rounded-l-xl bg-transparent">
 									<button
 										class="p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 transition"
-										aria-label={$i18n.t('Clear search')}
+										aria-label={i18n.t('Clear search')}
 										on:click={() => {
 											query = '';
 											handleSearchInput();
@@ -345,9 +345,9 @@
 							<Select
 								bind:value={statusFilter}
 								items={[
-									{ value: 'all', label: $i18n.t('All') },
-									{ value: 'active', label: $i18n.t('Active') },
-									{ value: 'paused', label: $i18n.t('Paused') }
+									{ value: 'all', label: i18n.t('All') },
+									{ value: 'active', label: i18n.t('Active') },
+									{ value: 'paused', label: i18n.t('Paused') }
 								]}
 								onChange={() => {
 									page = 1;
@@ -375,11 +375,11 @@
 						<div class="flex-1"></div>
 
 						<Dropdown align="end">
-							<Tooltip content={$i18n.t('Actions')}>
+							<Tooltip content={i18n.t('Actions')}>
 								<button
 									class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
 									type="button"
-									aria-label={$i18n.t('Actions')}
+									aria-label={i18n.t('Actions')}
 								>
 									<EllipsisHorizontal className="size-4" />
 								</button>
@@ -395,7 +395,7 @@
 										on:click={() => bulkToggleHandler(true)}
 									>
 										<CheckCircle className="size-4" />
-										{$i18n.t('Enable All')}
+										{i18n.t('Enable All')}
 									</button>
 									<button
 										class="select-none flex w-full gap-2 items-center px-3 py-1.5 text-sm font-medium cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md"
@@ -403,7 +403,7 @@
 										on:click={() => bulkToggleHandler(false)}
 									>
 										<Minus className="size-4" />
-										{$i18n.t('Disable All')}
+										{i18n.t('Disable All')}
 									</button>
 								</div>
 							</div>
@@ -419,14 +419,14 @@
 							<div class="max-w-md text-center">
 								<div class="text-3xl mb-3">⚡</div>
 								<div class="text-lg font-medium mb-1">
-									{query ? $i18n.t('No results found') : $i18n.t('No automations found')}
+									{query ? i18n.t('No results found') : i18n.t('No automations found')}
 								</div>
 								<div class="text-gray-500 text-center text-xs">
 									{query
-										? $i18n.t(
+										? i18n.t(
 												'Try adjusting your search or filter to find what you are looking for.'
 											)
-										: $i18n.t(
+										: i18n.t(
 												'Create scheduled prompts that run automatically on a recurring basis.'
 											)}
 								</div>
@@ -477,7 +477,288 @@
 											}}
 										>
 											<Tooltip
-												content={automation.is_active ? $i18n.t('Enabled') : $i18n.t('Disabled')}
+												content={automation.is_active ? i18n.t('Enabled') : i18n.t('Disabled')}
+											>
+												<Switch
+													bind:state={automation.is_active}
+													on:change={() => {
+														toggleHandler(automation);
+													}}
+												/>
+											</Tooltip>
+										</button>
+									</div>
+								</a>
+							{/each}
+						</div>
+
+						{#if total > 30}
+							<div class="flex justify-center mt-4 mb-2">
+								<Pagination bind:page count={total} perPage={30} />
+							</div>
+						{/if}
+					{/if}
+				</div>
+			</div>
+		{:else}
+			<div class="w-full h-full flex justify-center items-center">
+				<Spinner className="size-5" />
+			</div>
+		{/if}
+	</div>
+</div>
+
+
+
+<DeleteConfirmDialog
+	bind:show={showDeleteConfirm}
+	title={i18n.t('Delete automation?')}
+	on:confirm={() => {
+		if (deleteTarget) deleteHandler(deleteTarget);
+	}}
+>
+	<div class="text-sm text-gray-500 truncate">
+		{i18n.t('This will delete')} <span class="font-medium">{deleteTarget?.name}</span>.
+	</div>
+</DeleteConfirmDialog>
+
+<AutomationModal
+	bind:show={showCreateModal}
+	automation={null}
+	{cloneFrom}
+	on:save={(e) => {
+		getAutomationList();
+		if (e.detail?.id) {
+			goto(`/automations/${e.detail.id}`);
+		}
+	}}
+/>
+
+<div
+	class="flex flex-col w-full h-screen max-h-[100dvh] transition-width duration-200 ease-in-out {$showSidebar
+		? 'md:max-w-[calc(100%-var(--sidebar-width))]'
+		: ''} max-w-full"
+>
+	<div class="flex-1 max-h-full overflow-y-auto">
+		{#if loaded}
+			<div class="pb-1 px-3 md:px-[18px] pt-2">
+				<div class="flex flex-col gap-1 px-1 mt-1.5 mb-3">
+					<div class="flex justify-between items-center">
+						<div class="flex items-center md:self-center text-xl font-medium px-0.5 gap-2 shrink-0">
+							{#if $mobile}
+								<Tooltip
+									content={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
+								>
+									<button
+										id="sidebar-toggle-button"
+										class="cursor-pointer flex rounded-lg hover:bg-gray-100 dark:hover:bg-gray-850 transition"
+										on:click={() => {
+											showSidebar.set(!$showSidebar);
+										}}
+									>
+										<div class="self-center p-1.5">
+											<SidebarIcon />
+										</div>
+									</button>
+								</Tooltip>
+							{/if}
+							<div>{i18n.t('Automations')}</div>
+							<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
+								{total ?? ''}
+							</div>
+						</div>
+
+						<div class="flex w-full justify-end gap-1.5">
+							<button
+								class="px-2 py-1.5 rounded-xl bg-black text-white dark:bg-white dark:text-black transition font-medium text-sm flex items-center"
+								on:click={() => {
+									cloneFrom = null;
+									showCreateModal = true;
+								}}
+							>
+								<Plus className="size-3" strokeWidth="2.5" />
+								<div class="hidden md:block md:ml-1 text-xs">
+									{i18n.t('New Automation')}
+								</div>
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<div
+					class="py-2 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100/30 dark:border-gray-850/30"
+				>
+					<div class="px-3.5 flex flex-1 items-center w-full space-x-2 py-0.5 pb-2">
+						<div class="flex flex-1 items-center">
+							<div class="self-center ml-1 mr-3">
+								<Search className="size-3.5" />
+							</div>
+							<input
+								class="w-full text-sm py-1 rounded-r-xl outline-hidden bg-transparent"
+								bind:value={query}
+								on:input={handleSearchInput}
+								aria-label={i18n.t('Search Automations')}
+								placeholder={i18n.t('Search Automations')}
+								maxlength="500"
+							/>
+
+							{#if query}
+								<div class="self-center pl-1.5 translate-y-[0.5px] rounded-l-xl bg-transparent">
+									<button
+										class="p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 transition"
+										aria-label={i18n.t('Clear search')}
+										on:click={() => {
+											query = '';
+											handleSearchInput();
+										}}
+									>
+										<XMark className="size-3" strokeWidth="2" />
+									</button>
+								</div>
+							{/if}
+						</div>
+					</div>
+
+					<div class="px-3 flex w-full bg-transparent overflow-x-auto scrollbar-none -mx-1">
+						<div
+							class="flex gap-0.5 w-fit text-center text-sm rounded-full bg-transparent px-1.5 whitespace-nowrap"
+						>
+							<Select
+								bind:value={statusFilter}
+								items={[
+									{ value: 'all', label: i18n.t('All') },
+									{ value: 'active', label: i18n.t('Active') },
+									{ value: 'paused', label: i18n.t('Paused') }
+								]}
+								onChange={() => {
+									page = 1;
+								}}
+								triggerClass="relative w-full flex items-center gap-0.5 px-2.5 py-1.5 bg-gray-50 dark:bg-gray-850 rounded-xl"
+							>
+								<svelte:fragment slot="trigger" let:selectedLabel>
+									<span
+										class="inline-flex h-input px-0.5 w-full outline-hidden bg-transparent truncate placeholder-gray-400 focus:outline-hidden"
+									>
+										{selectedLabel}
+									</span>
+									<ChevronDown className="size-3.5" strokeWidth="2.5" />
+								</svelte:fragment>
+
+								<svelte:fragment slot="item" let:item let:selected>
+									{item.label}
+									<div class="ml-auto {selected ? '' : 'invisible'}">
+										<Check />
+									</div>
+								</svelte:fragment>
+							</Select>
+						</div>
+
+						<div class="flex-1"></div>
+
+						<Dropdown align="end">
+							<Tooltip content={i18n.t('Actions')}>
+								<button
+									class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+									type="button"
+									aria-label={i18n.t('Actions')}
+								>
+									<EllipsisHorizontal className="size-4" />
+								</button>
+							</Tooltip>
+
+							<div slot="content">
+								<div
+									class="w-[170px] rounded-xl p-1 border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-850 dark:text-white shadow-sm"
+								>
+									<button
+										class="select-none flex w-full gap-2 items-center px-3 py-1.5 text-sm font-medium cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md"
+										type="button"
+										on:click={() => bulkToggleHandler(true)}
+									>
+										<CheckCircle className="size-4" />
+										{i18n.t('Enable All')}
+									</button>
+									<button
+										class="select-none flex w-full gap-2 items-center px-3 py-1.5 text-sm font-medium cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md"
+										type="button"
+										on:click={() => bulkToggleHandler(false)}
+									>
+										<Minus className="size-4" />
+										{i18n.t('Disable All')}
+									</button>
+								</div>
+							</div>
+						</Dropdown>
+					</div>
+
+					{#if automations === null || loading}
+						<div class="w-full h-full flex justify-center items-center my-16 mb-24">
+							<Spinner className="size-5" />
+						</div>
+					{:else if (automations ?? []).length === 0}
+						<div class="w-full h-full flex flex-col justify-center items-center my-16 mb-24">
+							<div class="max-w-md text-center">
+								<div class="text-3xl mb-3">⚡</div>
+								<div class="text-lg font-medium mb-1">
+									{query ? i18n.t('No results found') : i18n.t('No automations found')}
+								</div>
+								<div class="text-gray-500 text-center text-xs">
+									{query
+										? i18n.t(
+												'Try adjusting your search or filter to find what you are looking for.'
+											)
+										: i18n.t(
+												'Create scheduled prompts that run automatically on a recurring basis.'
+											)}
+								</div>
+							</div>
+						</div>
+					{:else}
+						<div class="gap-2 grid my-2 px-3">
+							{#each automations as automation (automation.id)}
+								<a
+									class="flex space-x-4 text-left w-full px-3 py-2.5 dark:hover:bg-gray-850/50 hover:bg-gray-50 transition rounded-2xl"
+									href={`/automations/${automation.id}`}
+								>
+									<div class="flex-1">
+										<div class="line-clamp-1 text-sm">{automation.name}</div>
+										<div class="text-xs text-gray-500 line-clamp-1">
+											{formatRRule(automation.data.rrule)}
+										</div>
+									</div>
+
+									<div class="flex flex-row gap-0.5 self-center">
+										<AutomationMenu
+											editHandler={() => {
+												goto(`/automations/${automation.id}`);
+											}}
+											cloneHandler={() => {
+												cloneHandler(automation);
+											}}
+											runHandler={() => {
+												runNowHandler(automation);
+											}}
+											deleteHandler={() => {
+												deleteTarget = automation;
+												showDeleteConfirm = true;
+											}}
+										>
+											<button
+												class="self-center w-fit text-sm p-1.5 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
+												type="button"
+											>
+												<EllipsisHorizontal className="size-5" />
+											</button>
+										</AutomationMenu>
+
+										<button
+											on:click={(e) => {
+												e.stopPropagation();
+												e.preventDefault();
+											}}
+										>
+											<Tooltip
+												content={automation.is_active ? i18n.t('Enabled') : i18n.t('Disabled')}
 											>
 												<Switch
 													bind:state={automation.is_active}

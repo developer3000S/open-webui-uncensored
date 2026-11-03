@@ -9,8 +9,7 @@
 		currentChatPage,
 		temporaryChatEnabled
 	} from '$lib/stores';
-	import type { i18n as i18nType } from 'i18next';
-	import type { Writable } from 'svelte/store';
+		import type { Writable } from 'svelte/store';
 	import { tick, getContext, onMount, onDestroy, createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 
@@ -24,17 +23,14 @@
 
 	import ChatPlaceholder from './ChatPlaceholder.svelte';
 
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
-	export let className = 'h-full flex pt-8';
-
-	export let chatId = '';
+	export let className: any = 'h-full flex pt-8';
+	export let chatId: any = '';
 	export let user = $_user;
 
-	export let history = {};
-	export let selectedModels;
-	export let atSelectedModel;
-
+	export let history: { messages?: Record<string, any>; currentId?: string | null; [key: string]: any } = {};
+	export let selectedModels: any;
+	export let atSelectedModel: any;
 	let messages: any[] = [];
 
 	export let setInputText: Function = () => {};
@@ -48,14 +44,13 @@
 	export let submitMessage: Function = () => {};
 	export let addMessages: Function = () => {};
 
-	export let readOnly = false;
-	export let editCodeBlock = true;
-
-	export let topPadding = false;
-	export let bottomPadding = false;
+	export let readOnly: any = false;
+	export let editCodeBlock: any = true;
+	export let topPadding: any = false;
+	export let bottomPadding: any = false;
 	export let autoScroll: boolean = true;
 
-	export let onSelect = (e) => {};
+	export let onSelect = (e: any) => {};
 
 	export let messagesCount: number | null = 8;
 	let messagesLoading = false;

@@ -10,18 +10,16 @@
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
-
-	export let overlay = false;
+	
+	export let overlay: any = false;
 	export let chatId: string | null = null;
 
 	let terminalEl: HTMLDivElement;
 	let term: Terminal | null = null;
 	let fitAddon: FitAddon | null = null;
 	let ws: WebSocket | null = null;
-	export let connected = false;
-	export let connecting = false;
+	export let connected: any = false;
+	export let connecting: any = false;
 	let resizeObserver: ResizeObserver | null = null;
 	let pingInterval: ReturnType<typeof setInterval> | null = null;
 

@@ -6,7 +6,7 @@ export const createNewKnowledge = async (
 	description: string,
 	accessGrants: object[]
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/create`, {
 		method: 'POST',
@@ -39,7 +39,7 @@ export const createNewKnowledge = async (
 };
 
 export const getExternalKnowledgeConnections = async (token: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/external/connections`, {
 		method: 'GET',
@@ -67,7 +67,7 @@ export const getExternalKnowledgeConnections = async (token: string) => {
 };
 
 export const createExternalKnowledgeConnection = async (token: string, connection: object) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/external/connections`, {
 		method: 'POST',
@@ -100,7 +100,7 @@ export const updateExternalKnowledgeConnection = async (
 	id: string,
 	connection: object
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/external/connections/${id}`, {
 		method: 'PATCH',
@@ -129,7 +129,7 @@ export const updateExternalKnowledgeConnection = async (
 };
 
 export const deleteExternalKnowledgeConnection = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/external/connections/${id}`, {
 		method: 'DELETE',
@@ -157,7 +157,7 @@ export const deleteExternalKnowledgeConnection = async (token: string, id: strin
 };
 
 export const testExternalKnowledgeConnection = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/external/connections/${id}/test`, {
 		method: 'POST',
@@ -189,7 +189,7 @@ export const testExternalKnowledgeRetrieval = async (
 	id: string,
 	payload: object
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(
 		`${WEBUI_API_BASE_URL}/knowledge/external/connections/${id}/retrieve-test`,
@@ -221,7 +221,7 @@ export const testExternalKnowledgeRetrieval = async (
 };
 
 export const testExternalKnowledgeSource = async (token: string, payload: object) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/external/source/test`, {
 		method: 'POST',
@@ -250,7 +250,7 @@ export const testExternalKnowledgeSource = async (token: string, payload: object
 };
 
 export const createExternalKnowledgeSource = async (token: string, payload: object) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/external/source/create`, {
 		method: 'POST',
@@ -279,7 +279,7 @@ export const createExternalKnowledgeSource = async (token: string, payload: obje
 };
 
 export const updateExternalKnowledgeSource = async (token: string, id: string, payload: object) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/external/source/${id}`, {
 		method: 'PATCH',
@@ -308,7 +308,7 @@ export const updateExternalKnowledgeSource = async (token: string, id: string, p
 };
 
 export const createExternalKnowledge = async (token: string, payload: object) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/external/knowledge/create`, {
 		method: 'POST',
@@ -337,7 +337,7 @@ export const createExternalKnowledge = async (token: string, payload: object) =>
 };
 
 export const getKnowledgeBases = async (token: string = '', page: number | null = null) => {
-	let error = null;
+	let error: any = null;
 
 	const searchParams = new URLSearchParams();
 	if (page) searchParams.append('page', page.toString());
@@ -377,7 +377,7 @@ export const searchKnowledgeBases = async (
 	page: number | null = null,
 	source: string | null = null
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const searchParams = new URLSearchParams();
 	if (query) searchParams.append('query', query);
@@ -422,7 +422,7 @@ export const searchKnowledgeFiles = async (
 	page: number = 1,
 	includeContent: boolean = false
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const searchParams = new URLSearchParams();
 	if (query) searchParams.append('query', query);
@@ -465,7 +465,7 @@ export const searchKnowledgeFiles = async (
 };
 
 export const getKnowledgeById = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/${id}`, {
 		method: 'GET',
@@ -507,7 +507,7 @@ export const searchKnowledgeFilesById = async (
 	directoryId?: string | null,
 	includeContent: boolean = false
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const searchParams = new URLSearchParams();
 	if (query) searchParams.append('query', query);
@@ -554,7 +554,7 @@ export const searchKnowledgeFilesById = async (
 };
 
 export const getPendingKnowledgeFiles = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/${id}/files/pending`, {
 		method: 'GET',
@@ -605,7 +605,7 @@ type KnowledgeUpdateForm = {
 };
 
 export const updateKnowledgeById = async (token: string, id: string, form: KnowledgeUpdateForm) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/${id}/update`, {
 		method: 'POST',
@@ -647,7 +647,7 @@ export const updateKnowledgeAccessGrants = async (
 	id: string,
 	accessGrants: any[]
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/${id}/access/update`, {
 		method: 'POST',
@@ -682,7 +682,7 @@ export const addFileToKnowledgeById = async (
 	directoryId?: string | null,
 	forceDuplicate = false
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const body: Record<string, unknown> = { file_id: fileId };
 	if (directoryId) body.directory_id = directoryId;
@@ -719,7 +719,7 @@ export const addFileToKnowledgeById = async (
 };
 
 export const updateFileFromKnowledgeById = async (token: string, id: string, fileId: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/${id}/file/update`, {
 		method: 'POST',
@@ -754,7 +754,7 @@ export const updateFileFromKnowledgeById = async (token: string, id: string, fil
 };
 
 export const removeFileFromKnowledgeById = async (token: string, id: string, fileId: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/${id}/file/remove`, {
 		method: 'POST',
@@ -789,7 +789,7 @@ export const removeFileFromKnowledgeById = async (token: string, id: string, fil
 };
 
 export const resetKnowledgeById = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/${id}/reset`, {
 		method: 'POST',
@@ -825,7 +825,7 @@ export const syncKnowledgeDiff = async (
 	id: string,
 	manifest: Array<{ filename: string; path: string; checksum: string; size: number }>
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/${id}/sync/diff`, {
 		method: 'POST',
@@ -862,7 +862,7 @@ export const syncKnowledgeCleanup = async (
 	fileIds: string[],
 	dirIds: string[] = []
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/${id}/sync/cleanup`, {
 		method: 'POST',
@@ -894,7 +894,7 @@ export const syncKnowledgeCleanup = async (
 };
 
 export const deleteKnowledgeById = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/${id}/delete`, {
 		method: 'DELETE',
@@ -926,7 +926,7 @@ export const deleteKnowledgeById = async (token: string, id: string) => {
 };
 
 export const reindexKnowledgeFiles = async (token: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/reindex`, {
 		method: 'POST',
@@ -954,7 +954,7 @@ export const reindexKnowledgeFiles = async (token: string) => {
 };
 
 export const exportKnowledgeById = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/${id}/export`, {
 		method: 'GET',
@@ -987,7 +987,7 @@ export const createKnowledgeDirectory = async (
 	name: string,
 	parentId?: string | null
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const body: Record<string, string | null> = { name };
 	if (parentId) body.parent_id = parentId;
@@ -1024,7 +1024,7 @@ export const updateKnowledgeDirectory = async (
 	dirId: string,
 	form: { name?: string; parent_id?: string | null }
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/${id}/dirs/${dirId}/update`, {
 		method: 'POST',
@@ -1058,7 +1058,7 @@ export const deleteKnowledgeDirectory = async (
 	dirId: string,
 	moveFiles: boolean = true
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const searchParams = new URLSearchParams();
 	searchParams.append('move_files', moveFiles.toString());
@@ -1091,7 +1091,7 @@ export const deleteKnowledgeDirectory = async (
 };
 
 export const listKnowledgeDirectories = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/${id}/dirs`, {
 		method: 'GET',
@@ -1124,7 +1124,7 @@ export const moveFileInKnowledge = async (
 	fileId: string,
 	directoryId?: string | null
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/${id}/file/move`, {
 		method: 'POST',
@@ -1156,7 +1156,7 @@ export const moveFileInKnowledge = async (
 };
 
 export const cancelFileEmbedding = async (token: string, knowledgeId: string, fileId: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/${knowledgeId}/file/cancel`, {
 		method: 'POST',

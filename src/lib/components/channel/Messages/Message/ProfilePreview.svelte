@@ -3,17 +3,14 @@
 	import { getContext } from 'svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
-	import UserStatus from './UserStatus.svelte';
+		import UserStatus from './UserStatus.svelte';
 	import UserStatusLinkPreview from './UserStatusLinkPreview.svelte';
 
-	export let user = null;
+	let user: any = null;
 
-	export let align = 'center';
-	export let side = 'right';
-	export let sideOffset = 8;
-
+	export let align: any = 'center';
+	export let side: any = 'right';
+	export let sideOffset: any = 8;
 	let openPreview = false;
 </script>
 

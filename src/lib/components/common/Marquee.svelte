@@ -4,10 +4,9 @@
 
 	let idx = 0;
 
-	export let className = '';
+	export let className: any = '';
 	export let words = ['lorem', 'ipsum'];
-	export let duration = 4000;
-
+	export let duration: any = 4000;
 	onMount(() => {
 		setInterval(async () => {
 			if (idx === words.length - 1) {

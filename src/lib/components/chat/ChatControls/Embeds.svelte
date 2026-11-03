@@ -4,8 +4,7 @@
 	import FullHeightIframe from '$lib/components/common/FullHeightIframe.svelte';
 	import XMark from '$lib/components/icons/XMark.svelte';
 
-	export let overlay = false;
-
+	export let overlay: any = false;
 	const getSrcUrl = (url: string, chatId?: string, messageId?: string, sourceId: string) => {
 		try {
 			const parsed = new URL(url);
@@ -26,7 +25,7 @@
 		} catch {
 			// Fallback for relative URLs or invalid input
 			const hasQuery = url.includes('?');
-			const parts = [];
+			const parts: any[] = [];
 
 			if (chatId) parts.push(`chat_id=${encodeURIComponent(chatId)}`);
 			if (messageId) parts.push(`message_id=${encodeURIComponent(messageId)}`);

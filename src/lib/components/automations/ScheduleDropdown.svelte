@@ -1,22 +1,20 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
 	import { getContext } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
 
 	import Dropdown from '$lib/components/common/Dropdown.svelte';
-	import type { i18n as i18nType } from 'i18next';
 	import type { Writable } from 'svelte/store';
 
-	const i18n = getContext<Writable<i18nType>>('i18n');
-
-	export let frequency = 'DAILY';
-	export let interval = 1;
-	export let hour = 9;
-	export let minute = 0;
+	export let frequency: any = 'DAILY';
+	export let interval: any = 1;
+	export let hour: any = 9;
+	export let minute: any = 0;
 	export let selectedDays: string[] = [];
-	export let monthDay = 1;
-	export let onceDate = '';
-	export let onceTime = '09:00';
-	export let customRrule = '';
-
+	export let monthDay: any = 1;
+	export let onceDate: any = '';
+	export let onceTime: any = '09:00';
+	export let customRrule: any = '';
 	export let side: 'top' | 'bottom' = 'top';
 	export let align: 'start' | 'end' = 'start';
 
@@ -26,22 +24,22 @@
 	let showDropdown = false;
 
 	$: FREQUENCIES = [
-		{ key: 'ONCE', label: $i18n.t('Once') },
-		{ key: 'HOURLY', label: $i18n.t('Hourly') },
-		{ key: 'DAILY', label: $i18n.t('Daily') },
-		{ key: 'WEEKLY', label: $i18n.t('Weekly') },
-		{ key: 'MONTHLY', label: $i18n.t('Monthly') },
-		{ key: 'CUSTOM', label: $i18n.t('Custom') }
+		{ key: 'ONCE', label: i18n.t('Once') },
+		{ key: 'HOURLY', label: i18n.t('Hourly') },
+		{ key: 'DAILY', label: i18n.t('Daily') },
+		{ key: 'WEEKLY', label: i18n.t('Weekly') },
+		{ key: 'MONTHLY', label: i18n.t('Monthly') },
+		{ key: 'CUSTOM', label: i18n.t('Custom') }
 	];
 
 	$: DAYS = [
-		{ key: 'MO', label: $i18n.t('Mo', { context: 'day_of_week' }) },
-		{ key: 'TU', label: $i18n.t('Tu', { context: 'day_of_week' }) },
-		{ key: 'WE', label: $i18n.t('We', { context: 'day_of_week' }) },
-		{ key: 'TH', label: $i18n.t('Th', { context: 'day_of_week' }) },
-		{ key: 'FR', label: $i18n.t('Fr', { context: 'day_of_week' }) },
-		{ key: 'SA', label: $i18n.t('Sa', { context: 'day_of_week' }) },
-		{ key: 'SU', label: $i18n.t('Su', { context: 'day_of_week' }) }
+		{ key: 'MO', label: i18n.t('Mo', { context: 'day_of_week' }) },
+		{ key: 'TU', label: i18n.t('Tu', { context: 'day_of_week' }) },
+		{ key: 'WE', label: i18n.t('We', { context: 'day_of_week' }) },
+		{ key: 'TH', label: i18n.t('Th', { context: 'day_of_week' }) },
+		{ key: 'FR', label: i18n.t('Fr', { context: 'day_of_week' }) },
+		{ key: 'SA', label: i18n.t('Sa', { context: 'day_of_week' }) },
+		{ key: 'SU', label: i18n.t('Su', { context: 'day_of_week' }) }
 	];
 
 	let lastVisualFrequency = 'DAILY';
@@ -196,7 +194,7 @@
 		class="rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 flex flex-col bg-white dark:bg-gray-850 w-48 p-1"
 	>
 		<div class="px-2 text-xs text-gray-500 pt-1">
-			{$i18n.t('Schedule')}
+			{i18n.t('Schedule')}
 		</div>
 
 		<div class="px-1.5 py-0.5">
@@ -247,7 +245,7 @@
 					</div>
 				{:else}
 					<div class="flex items-center gap-1.5">
-						<span class="text-xs text-gray-500 mr-0.5">{$i18n.t('Time')}</span>
+						<span class="text-xs text-gray-500 mr-0.5">{i18n.t('Time')}</span>
 						<input
 							type="time"
 							value={`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`}
@@ -265,7 +263,154 @@
 
 				{#if frequency === 'MONTHLY'}
 					<div class="flex items-center gap-1.5">
-						<span class="text-xs text-gray-500">{$i18n.t('Day')}</span>
+						<span class="text-xs text-gray-500">{i18n.t('Day')}</span>
+						<input
+							type="number"
+							bind:value={monthDay}
+							min={1}
+							max={31}
+							class="w-8 bg-transparent text-center outline-hidden text-xs"
+							on:click={(e) => e.stopPropagation()}
+							on:input={onChange}
+						/>
+					</div>
+				{/if}
+			</div>
+
+			{#if frequency === 'WEEKLY'}
+				<div class="flex gap-1 px-2 pb-2">
+					{#each DAYS as d}
+						<button
+							type="button"
+							class="flex-1 py-1 text-xs rounded-xl transition {selectedDays.includes(d.key)
+								? 'bg-gray-50 dark:bg-gray-800 text-black dark:text-gray-100'
+								: 'text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200'}"
+							on:click={() => {
+								if (selectedDays.includes(d.key)) {
+									selectedDays = selectedDays.filter((x) => x !== d.key);
+								} else {
+									selectedDays = [...selectedDays, d.key];
+								}
+								onChange();
+							}}
+						>
+							{d.label}
+						</button>
+					{/each}
+				</div>
+			{/if}
+		{/if}
+	</div>
+</Dropdown>
+
+<Dropdown bind:show={showDropdown} {side} {align}>
+	<button
+		type="button"
+		class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-2xl text-xs transition
+			text-gray-600 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5"
+	>
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			fill="none"
+			viewBox="0 0 24 24"
+			stroke-width="1.5"
+			stroke="currentColor"
+			class="size-3.5"
+		>
+			<path
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+			/>
+		</svg>
+		<span class="whitespace-nowrap">{scheduleLabel}</span>
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			fill="none"
+			viewBox="0 0 24 24"
+			stroke-width="2"
+			stroke="currentColor"
+			class="size-2.5"
+		>
+			<path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+		</svg>
+	</button>
+
+	<div
+		slot="content"
+		class="rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 flex flex-col bg-white dark:bg-gray-850 w-48 p-1"
+	>
+		<div class="px-2 text-xs text-gray-500 pt-1">
+			{i18n.t('Schedule')}
+		</div>
+
+		<div class="px-1.5 py-0.5">
+			<select
+				class="w-full bg-transparent rounded-xl text-xs py-1.5 px-1.5 outline-hidden"
+				bind:value={frequency}
+				on:click={(e) => e.stopPropagation()}
+				on:change={onChange}
+			>
+				{#each FREQUENCIES as f}
+					<option value={f.key}>{f.label}</option>
+				{/each}
+			</select>
+		</div>
+
+		{#if frequency === 'CUSTOM'}
+			<div class="px-2 pb-2">
+				<input
+					type="text"
+					bind:value={customRrule}
+					placeholder="RRULE:FREQ=DAILY;BYHOUR=9;BYMINUTE=0"
+					class="w-full bg-transparent outline-hidden text-xs placeholder:text-gray-400 dark:placeholder:text-gray-600"
+					on:click={(e) => e.stopPropagation()}
+					on:input={onChange}
+				/>
+			</div>
+		{:else if frequency !== 'HOURLY'}
+			<div class="flex gap-2 flex-wrap items-center px-3 pb-2 text-xs">
+				{#if frequency === 'ONCE'}
+					<div class="flex items-center gap-1.5">
+						<input
+							type="date"
+							bind:value={onceDate}
+							min={new Date().toISOString().split('T')[0]}
+							class="bg-transparent outline-hidden text-xs dark:color-scheme-dark"
+							on:click={(e) => e.stopPropagation()}
+							on:input={onChange}
+						/>
+					</div>
+					<div class="flex items-center gap-1.5">
+						<input
+							type="time"
+							bind:value={onceTime}
+							class="bg-transparent outline-hidden text-xs dark:color-scheme-dark"
+							on:click={(e) => e.stopPropagation()}
+							on:input={onChange}
+						/>
+					</div>
+				{:else}
+					<div class="flex items-center gap-1.5">
+						<span class="text-xs text-gray-500 mr-0.5">{i18n.t('Time')}</span>
+						<input
+							type="time"
+							value={`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`}
+							on:input={(e) => {
+								const [h, m] = e.currentTarget.value.split(':').map(Number);
+								hour = h;
+								minute = m;
+								onChange();
+							}}
+							class="bg-transparent text-center outline-hidden text-xs dark:color-scheme-dark"
+							on:click={(e) => e.stopPropagation()}
+						/>
+					</div>
+				{/if}
+
+				{#if frequency === 'MONTHLY'}
+					<div class="flex items-center gap-1.5">
+						<span class="text-xs text-gray-500">{i18n.t('Day')}</span>
 						<input
 							type="number"
 							bind:value={monthDay}

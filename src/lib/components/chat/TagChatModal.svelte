@@ -5,14 +5,12 @@
 	import Tags from '../common/Tags.svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
-
-	export let tags;
+	
+	export let tags: any;
 	export let deleteTag: Function;
 	export let addTag: Function;
 
-	export let show = false;
+	export let show: any = false;
 </script>
 
 <Modal bind:show size="xs">

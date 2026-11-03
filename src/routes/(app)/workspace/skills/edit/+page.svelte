@@ -1,33 +1,33 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
+	import { getContext, onMount } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
 	import { skills } from '$lib/stores';
-	import { onMount, getContext } from 'svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { getSkillById, getSkills, updateSkillById } from '$lib/apis/skills';
 	import { page } from '$app/stores';
 
 	import SkillEditor from '$lib/components/workspace/Skills/SkillEditor.svelte';
 
-	let skill = null;
+	let skill: any = null;
 	let disabled = false;
 
 	$: skillId = $page.url.searchParams.get('id');
 
-	const onSubmit = async (_skill) => {
-		const updatedSkill = await updateSkillById(localStorage.token, skillId, _skill).catch(
-			(error) => {
+	const onSubmit = async (_skill: any) => {
+		const updatedSkill = await updateSkillById(localStorage.token, skillId, _skill).catch(async (error)=> {
 				toast.error(`${error}`);
 				return null;
 			}
 		);
 
 		if (updatedSkill) {
-			toast.success($i18n.t('Skill updated successfully'));
+			toast.success(i18n.t('Skill updated successfully'));
 			await skills.set(await getSkills(localStorage.token));
 			skill = {
 				id: updatedSkill.id,
@@ -65,6 +65,10 @@
 		}
 	});
 </script>
+
+{#if skill}
+	<SkillEditor {skill} {onSubmit} {disabled} edit />
+{/if}
 
 {#if skill}
 	<SkillEditor {skill} {onSubmit} {disabled} edit />

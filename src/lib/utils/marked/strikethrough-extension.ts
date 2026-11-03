@@ -1,6 +1,6 @@
 export const disableSingleTilde = {
 	tokenizer: {
-		del(src) {
+		del(src: any) {
 			// 1. First check for the REAL strikethrough: ~~text~~
 			const doubleMatch = /^~~(?=\S)([\s\S]*?\S)~~/.exec(src);
 			if (doubleMatch) {

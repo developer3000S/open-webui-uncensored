@@ -1,16 +1,16 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
+	import type i18nType from 'i18next';
 	import { getContext } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
+	import { onMount, onDestroy } from 'svelte';
 	import Spinner from '$lib/components/common/Spinner.svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	export let history: Array<{ date: string; won: number; lost: number }> = [];
-	export let loading = false;
-	export let aggregateWeekly = false;
-
+	export let loading: any = false;
+	export let aggregateWeekly: any = false;
 	let chartCanvas: HTMLCanvasElement;
 	let chartInstance: any = null;
 	let Chart: any = null;
@@ -187,7 +187,23 @@
 		</div>
 	{:else if !history.length || history.every((h) => h.won === 0 && h.lost === 0)}
 		<div class="flex items-center justify-center h-40 text-gray-500 text-sm">
-			{$i18n.t('No activity data')}
+			{i18n.t('No activity data')}
+		</div>
+	{:else}
+		<div class="h-48">
+			<canvas bind:this={chartCanvas}></canvas>
+		</div>
+	{/if}
+</div>
+
+<div class="w-full">
+	{#if loading}
+		<div class="flex items-center justify-center h-40">
+			<Spinner className="size-5" />
+		</div>
+	{:else if !history.length || history.every((h) => h.won === 0 && h.lost === 0)}
+		<div class="flex items-center justify-center h-40 text-gray-500 text-sm">
+			{i18n.t('No activity data')}
 		</div>
 	{:else}
 		<div class="h-48">

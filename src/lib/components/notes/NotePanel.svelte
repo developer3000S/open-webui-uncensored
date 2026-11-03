@@ -5,17 +5,16 @@
 	import Drawer from '../common/Drawer.svelte';
 	import EllipsisVertical from '../icons/EllipsisVertical.svelte';
 
-	export let show = false;
-	export let pane = null;
+	export let show: any = false;
+	export let pane: any = null;
 
-	export let containerId = 'note-container';
-
+	export let containerId: any = 'note-container';
 	let mediaQuery;
 	let largeScreen = false;
 
 	let minSize = 0;
 
-	const handleMediaQuery = async (e) => {
+	const handleMediaQuery = async (e: any) => {
 		if (e.matches) {
 			largeScreen = true;
 		} else {

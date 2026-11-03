@@ -2,7 +2,7 @@
 	import { WEBUI_BASE_URL } from '$lib/constants';
 	import { safeImageUrl } from '$lib/utils/safeImageUrl';
 
-	export let className = 'size-8';
+	export let className: any = 'size-8';
 	export let src = `${WEBUI_BASE_URL}/static/favicon.png`;
 </script>
 

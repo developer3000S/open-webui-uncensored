@@ -3,34 +3,27 @@
 	import { tick } from 'svelte';
 
 	/** Whether the dropdown is open */
-	export let show = false;
-
+	export let show: any = false;
 	/** Side to open on: 'bottom' | 'top' */
-	export let side = 'bottom';
-
+	export let side: any = 'bottom';
 	/** Alignment: 'start' | 'end' */
-	export let align = 'start';
-
+	export let align: any = 'start';
 	/** Close when clicking outside */
-	export let closeOnOutsideClick = true;
-
+	export let closeOnOutsideClick: any = true;
 	/** Called when open/close state changes */
 	export let onOpenChange: (state: boolean) => void = () => {};
 
 	/** CSS classes for the dropdown content container */
-	export let contentClass = '';
-
+	export let contentClass: any = '';
 	/** Max height for the dropdown content */
-	export let maxHeight = 'min(32rem, calc(100dvh - 2rem))';
-
+	export let maxHeight: any = 'min(32rem, calc(100dvh - 2rem))';
 	/** Side offset in px */
-	export let sideOffset = 4;
-
+	export let sideOffset: any = 4;
 	let triggerEl;
 	let contentEl;
 
 	/** Svelte action: moves the node to document.body */
-	function portal(node) {
+	function portal(node: any) {
 		document.body.appendChild(node);
 		return {
 			destroy() {
@@ -42,13 +35,13 @@
 	}
 
 	/** Svelte action: captures the first child element as the trigger reference */
-	function trigger(node) {
+	function trigger(node: any) {
 		triggerEl = node.firstElementChild || node;
-		function handleClick(e) {
+		function handleClick(e: any) {
 			e.preventDefault();
 			toggleOpen();
 		}
-		function handleKeydown(e) {
+		function handleKeydown(e: any) {
 			if (e.key === 'Enter' || e.key === ' ') {
 				e.preventDefault();
 				toggleOpen();
@@ -131,7 +124,7 @@
 		});
 	}
 
-	function handleWindowPointerDown(event) {
+	function handleWindowPointerDown(event: any) {
 		if (!show || !closeOnOutsideClick) return;
 		if (triggerEl?.contains(event.target)) return;
 		if (contentEl?.contains(event.target)) return;
@@ -139,7 +132,7 @@
 		onOpenChange(false);
 	}
 
-	function handleKeydown(event) {
+	function handleKeydown(event: any) {
 		if (event.key === 'Escape' && show) {
 			show = false;
 			onOpenChange(false);
@@ -194,8 +187,8 @@
 		style:max-height={maxHeight}
 		style:overflow-y="auto"
 		transition:flyAndScale
-		on:click={(e) => e.stopPropagation()}
-		on:pointerdown={(e) => e.stopPropagation()}
+		on:click={(e: any) => e.stopPropagation()}
+		on:pointerdown={(e: any) => e.stopPropagation()}
 	>
 		<slot name="content" />
 	</div>

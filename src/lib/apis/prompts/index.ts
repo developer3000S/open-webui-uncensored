@@ -46,7 +46,7 @@ type PromptDiff = {
 };
 
 export const createNewPrompt = async (token: string, prompt: PromptItem) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/prompts/create`, {
 		method: 'POST',
@@ -78,7 +78,7 @@ export const createNewPrompt = async (token: string, prompt: PromptItem) => {
 };
 
 export const getPrompts = async (token: string = '') => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/prompts/`, {
 		method: 'GET',
@@ -109,7 +109,7 @@ export const getPrompts = async (token: string = '') => {
 };
 
 export const getPromptTags = async (token: string = '') => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/prompts/tags`, {
 		method: 'GET',
@@ -145,7 +145,7 @@ export const getPromptItems = async (
 	direction: string | null,
 	page: number
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const searchParams = new URLSearchParams();
 	if (query) {
@@ -196,7 +196,7 @@ export const getPromptItems = async (
 };
 
 export const getPromptList = async (token: string = '') => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/prompts/list`, {
 		method: 'GET',
@@ -227,7 +227,7 @@ export const getPromptList = async (token: string = '') => {
 };
 
 export const getPromptById = async (token: string, promptId: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/prompts/id/${promptId}`, {
 		method: 'GET',
@@ -259,7 +259,7 @@ export const getPromptById = async (token: string, promptId: string) => {
 };
 
 export const updatePromptById = async (token: string, prompt: PromptItem) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/prompts/id/${prompt.id}/update`, {
 		method: 'POST',
@@ -298,7 +298,7 @@ export const updatePromptMetadata = async (
 	command: string,
 	tags: string[] = []
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/prompts/id/${promptId}/update/meta`, {
 		method: 'POST',
@@ -331,7 +331,7 @@ export const setProductionPromptVersion = async (
 	promptId: string,
 	version_id: string
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/prompts/id/${promptId}/update/version`, {
 		method: 'POST',
@@ -362,7 +362,7 @@ export const setProductionPromptVersion = async (
 };
 
 export const togglePromptById = async (token: string, promptId: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/prompts/id/${promptId}/toggle`, {
 		method: 'POST',
@@ -390,7 +390,7 @@ export const togglePromptById = async (token: string, promptId: string) => {
 };
 
 export const deletePromptById = async (token: string, promptId: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/prompts/id/${promptId}/delete`, {
 		method: 'DELETE',
@@ -426,7 +426,7 @@ export const updatePromptAccessGrants = async (
 	promptId: string,
 	accessGrants: any[]
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/prompts/id/${promptId}/access/update`, {
 		method: 'POST',
@@ -463,7 +463,7 @@ export const getPromptHistory = async (
 	promptId: string,
 	page: number = 0
 ): Promise<PromptHistoryItem[]> => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/prompts/id/${promptId}/history?page=${page}`, {
 		method: 'GET',
@@ -495,7 +495,7 @@ export const deletePromptHistoryVersion = async (
 	promptId: string,
 	historyId: string
 ): Promise<boolean> => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/prompts/id/${promptId}/history/${historyId}`, {
 		method: 'DELETE',
@@ -527,7 +527,7 @@ export const getPromptHistoryEntry = async (
 	promptId: string,
 	historyId: string
 ): Promise<PromptHistoryItem> => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/prompts/id/${promptId}/history/${historyId}`, {
 		method: 'GET',
@@ -560,7 +560,7 @@ export const getPromptDiff = async (
 	fromId: string,
 	toId: string
 ): Promise<PromptDiff> => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(
 		`${WEBUI_API_BASE_URL}/prompts/id/${promptId}/history/diff?from_id=${fromId}&to_id=${toId}`,

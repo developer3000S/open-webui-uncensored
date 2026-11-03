@@ -1,5 +1,7 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
 	import { getContext } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
 
 	import Dropdown from '$lib/components/common/Dropdown.svelte';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
@@ -8,10 +10,8 @@
 	import EllipsisHorizontal from '$lib/components/icons/EllipsisHorizontal.svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
-	export let isProduction = false;
+	export let isProduction: any = false;
 	export let onDelete: Function;
 	export let onClose: Function;
 
@@ -21,11 +21,11 @@
 
 <ConfirmDialog
 	bind:show={showDeleteConfirmDialog}
-	title={$i18n.t('Delete Version')}
-	message={$i18n.t(
+	title={i18n.t('Delete Version')}
+	message={i18n.t(
 		"Are you sure you want to delete this version? Child versions will be relinked to this version's parent."
 	)}
-	confirmLabel={$i18n.t('Delete')}
+	confirmLabel={i18n.t('Delete')}
 	onConfirm={() => {
 		onDelete();
 	}}
@@ -39,11 +39,11 @@
 		}
 	}}
 >
-	<Tooltip content={$i18n.t('More')}>
+	<Tooltip content={i18n.t('More')}>
 		<slot>
 			<button
 				class="p-1 rounded-lg text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-850 transition"
-				aria-label={$i18n.t('More Options')}
+				aria-label={i18n.t('More Options')}
 			>
 				<EllipsisHorizontal className="size-5" />
 			</button>
@@ -55,12 +55,12 @@
 			class="min-w-[170px] rounded-2xl p-1 border border-gray-100 dark:border-gray-800 z-50 bg-white dark:bg-gray-850 dark:text-white shadow-lg"
 		>
 			{#if isProduction}
-				<Tooltip content={$i18n.t('Cannot delete the production version')} placement="top">
+				<Tooltip content={i18n.t('Cannot delete the production version')} placement="top">
 					<div
 						class="flex gap-2 items-center px-3 py-1.5 text-sm rounded-xl opacity-40 cursor-not-allowed"
 					>
 						<GarbageBin />
-						<div class="flex items-center">{$i18n.t('Delete')}</div>
+						<div class="flex items-center">{i18n.t('Delete')}</div>
 					</div>
 				</Tooltip>
 			{:else}
@@ -72,7 +72,67 @@
 					}}
 				>
 					<GarbageBin />
-					<div class="flex items-center">{$i18n.t('Delete')}</div>
+					<div class="flex items-center">{i18n.t('Delete')}</div>
+				</button>
+			{/if}
+		</div>
+	</div>
+</Dropdown>
+
+<ConfirmDialog
+	bind:show={showDeleteConfirmDialog}
+	title={i18n.t('Delete Version')}
+	message={i18n.t(
+		"Are you sure you want to delete this version? Child versions will be relinked to this version's parent."
+	)}
+	confirmLabel={i18n.t('Delete')}
+	onConfirm={() => {
+		onDelete();
+	}}
+/>
+
+<Dropdown
+	bind:show
+	onOpenChange={(state) => {
+		if (state === false) {
+			onClose();
+		}
+	}}
+>
+	<Tooltip content={i18n.t('More')}>
+		<slot>
+			<button
+				class="p-1 rounded-lg text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-850 transition"
+				aria-label={i18n.t('More Options')}
+			>
+				<EllipsisHorizontal className="size-5" />
+			</button>
+		</slot>
+	</Tooltip>
+
+	<div slot="content">
+		<div
+			class="min-w-[170px] rounded-2xl p-1 border border-gray-100 dark:border-gray-800 z-50 bg-white dark:bg-gray-850 dark:text-white shadow-lg"
+		>
+			{#if isProduction}
+				<Tooltip content={i18n.t('Cannot delete the production version')} placement="top">
+					<div
+						class="flex gap-2 items-center px-3 py-1.5 text-sm rounded-xl opacity-40 cursor-not-allowed"
+					>
+						<GarbageBin />
+						<div class="flex items-center">{i18n.t('Delete')}</div>
+					</div>
+				</Tooltip>
+			{:else}
+				<button
+					class="select-none flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl w-full"
+					on:click={() => {
+						show = false;
+						showDeleteConfirmDialog = true;
+					}}
+				>
+					<GarbageBin />
+					<div class="flex items-center">{i18n.t('Delete')}</div>
 				</button>
 			{/if}
 		</div>

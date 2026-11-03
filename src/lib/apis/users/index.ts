@@ -2,7 +2,7 @@ import { WEBUI_API_BASE_URL } from '$lib/constants';
 import { getUserPosition } from '$lib/utils';
 
 export const getUserGroups = async (token: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/users/groups`, {
 		method: 'GET',
@@ -29,7 +29,7 @@ export const getUserGroups = async (token: string) => {
 };
 
 export const getUserDefaultPermissions = async (token: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/users/default/permissions`, {
 		method: 'GET',
@@ -56,7 +56,7 @@ export const getUserDefaultPermissions = async (token: string) => {
 };
 
 export const updateUserDefaultPermissions = async (token: string, permissions: object) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/users/default/permissions`, {
 		method: 'POST',
@@ -86,7 +86,7 @@ export const updateUserDefaultPermissions = async (token: string, permissions: o
 };
 
 export const getUserDefaultPermissionsDefaults = async (token: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/users/default/permissions/defaults`, {
 		method: 'GET',
@@ -113,7 +113,7 @@ export const getUserDefaultPermissionsDefaults = async (token: string) => {
 };
 
 export const updateUserRole = async (token: string, id: string, role: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/users/update/role`, {
 		method: 'POST',
@@ -150,8 +150,8 @@ export const getUsers = async (
 	direction?: string,
 	page = 1
 ) => {
-	let error = null;
-	let res = null;
+	let error: any = null;
+	let res: any = null;
 
 	const searchParams = new URLSearchParams();
 
@@ -200,8 +200,8 @@ export const searchUsers = async (
 	direction?: string,
 	page = 1
 ) => {
-	let error = null;
-	let res = null;
+	let error: any = null;
+	let res: any = null;
 
 	const searchParams = new URLSearchParams();
 
@@ -244,8 +244,8 @@ export const searchUsers = async (
 };
 
 export const getAllUsers = async (token: string) => {
-	let error = null;
-	let res = null;
+	let error: any = null;
+	let res: any = null;
 
 	res = await fetch(`${WEBUI_API_BASE_URL}/users/all`, {
 		method: 'GET',
@@ -272,7 +272,7 @@ export const getAllUsers = async (token: string) => {
 };
 
 export const getUserSettings = async (token: string) => {
-	let error = null;
+	let error: any = null;
 	const res = await fetch(`${WEBUI_API_BASE_URL}/users/user/settings`, {
 		method: 'GET',
 		headers: {
@@ -298,7 +298,7 @@ export const getUserSettings = async (token: string) => {
 };
 
 export const updateUserSettings = async (token: string, settings: object) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/users/user/settings/update`, {
 		method: 'POST',
@@ -328,7 +328,7 @@ export const updateUserSettings = async (token: string, settings: object) => {
 };
 
 export const getUserInfoById = async (token: string, userId: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/users/${userId}/info`, {
 		method: 'GET',
@@ -355,7 +355,7 @@ export const getUserInfoById = async (token: string, userId: string) => {
 };
 
 export const updateUserStatus = async (token: string, formData: object) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/users/user/status/update`, {
 		method: 'POST',
@@ -385,7 +385,7 @@ export const updateUserStatus = async (token: string, formData: object) => {
 };
 
 export const getUserInfo = async (token: string) => {
-	let error = null;
+	let error: any = null;
 	const res = await fetch(`${WEBUI_API_BASE_URL}/users/user/info`, {
 		method: 'GET',
 		headers: {
@@ -411,7 +411,7 @@ export const getUserInfo = async (token: string) => {
 };
 
 export const updateUserInfo = async (token: string, info: object) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/users/user/info/update`, {
 		method: 'POST',
@@ -456,7 +456,7 @@ export const getAndUpdateUserLocation = async (token: string) => {
 };
 
 export const getUserActiveStatusById = async (token: string, userId: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/users/${userId}/active`, {
 		method: 'GET',
@@ -483,7 +483,7 @@ export const getUserActiveStatusById = async (token: string, userId: string) => 
 };
 
 export const deleteUserById = async (token: string, userId: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/users/${userId}`, {
 		method: 'DELETE',
@@ -518,7 +518,7 @@ type UserUpdateForm = {
 };
 
 export const updateUserById = async (token: string, userId: string, user: UserUpdateForm) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/users/${userId}/update`, {
 		method: 'POST',
@@ -552,7 +552,7 @@ export const updateUserById = async (token: string, userId: string, user: UserUp
 };
 
 export const getUserGroupsById = async (token: string, userId: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/users/${userId}/groups`, {
 		method: 'GET',
@@ -579,7 +579,7 @@ export const getUserGroupsById = async (token: string, userId: string) => {
 };
 
 export const getUserPreview = async (token: string, userId: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/users/${userId}/preview`, {
 		method: 'GET',

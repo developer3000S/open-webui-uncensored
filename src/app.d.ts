@@ -3,6 +3,9 @@
 declare const APP_VERSION: string;
 declare const APP_BUILD_HASH: string;
 
+declare var gapi: any;
+declare var google: any;
+
 declare global {
 	namespace App {
 		// interface Error {}

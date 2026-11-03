@@ -3,20 +3,16 @@
 	import { LinkPreview } from 'bits-ui';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
-	import { getUserInfoById } from '$lib/apis/users';
+		import { getUserInfoById } from '$lib/apis/users';
 
 	import UserStatus from './UserStatus.svelte';
 
 	export let id: string | null = null;
-	export let openPreview = false;
-
-	export let side = 'top';
-	export let align = 'start';
-	export let sideOffset = 6;
-
-	let user = null;
+	export let openPreview: any = false;
+	export let side: any = 'top';
+	export let align: any = 'start';
+	export let sideOffset: any = 6;
+	let user: any = null;
 	let requestedUserId: string | null = null;
 
 	const loadUser = async (userId: string) => {

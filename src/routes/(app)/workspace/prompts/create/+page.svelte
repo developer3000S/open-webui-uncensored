@@ -1,11 +1,12 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
+	import { getContext, onMount, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
-	import { onMount, tick, getContext } from 'svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { createNewPrompt } from '$lib/apis/prompts';
 	import PromptEditor from '$lib/components/workspace/Prompts/PromptEditor.svelte';
@@ -20,20 +21,20 @@
 
 	let clone = false;
 
-	const onSubmit = async (_prompt) => {
-		const res = await createNewPrompt(localStorage.token, _prompt).catch((error) => {
+	const onSubmit = async (_prompt: any) => {
+		const res = await createNewPrompt(localStorage.token, _prompt).catch(async (error)=> {
 			toast.error(`${error}`);
 			return null;
 		});
 
 		if (res) {
-			toast.success($i18n.t('Prompt created successfully'));
+			toast.success(i18n.t('Prompt created successfully'));
 			await goto('/workspace/prompts');
 		}
 	};
 
 	onMount(async () => {
-		window.addEventListener('message', async (event) => {
+		window.addEventListener('message', async (event: any) => {
 			console.log(event);
 			if (
 				!['https://openwebui.com', 'https://www.openwebui.com', 'http://localhost:9999'].includes(
@@ -75,6 +76,10 @@
 		}
 	});
 </script>
+
+{#key prompt}
+	<PromptEditor {prompt} {onSubmit} {clone} />
+{/key}
 
 {#key prompt}
 	<PromptEditor {prompt} {onSubmit} {clone} />

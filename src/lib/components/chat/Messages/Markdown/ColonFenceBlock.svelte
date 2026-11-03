@@ -1,8 +1,9 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
 	import { getContext } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { copyToClipboard } from '$lib/utils';
 	import { settings } from '$lib/stores';
@@ -43,7 +44,56 @@
 		</span>
 
 		<div class="invisible group-hover:visible flex gap-0.5">
-			<Tooltip content={copied ? $i18n.t('Copied') : $i18n.t('Copy')}>
+			<Tooltip content={copied ? i18n.t('Copied') : i18n.t('Copy')}>
+				<button
+					class="p-1 rounded-lg bg-transparent hover:bg-black/5 dark:hover:bg-white/5 transition"
+					on:click={(e) => {
+						e.stopPropagation();
+						copyText();
+					}}
+				>
+					{#if copied}
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke-width="1.5"
+							stroke="currentColor"
+							class="size-3.5 text-green-500"
+						>
+							<path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+						</svg>
+					{:else}
+						<DocumentDuplicate className="size-3.5" strokeWidth="1.5" />
+					{/if}
+				</button>
+			</Tooltip>
+		</div>
+	</div>
+
+	<!-- Content -->
+	<div class="prose-sm" dir="auto">
+		<MarkdownTokens
+			id={`${id}-${tokenIdx}-cf`}
+			tokens={token.tokens}
+			{done}
+			{editCodeBlock}
+			{sourceIds}
+			{onTaskClick}
+			{onSourceClick}
+		/>
+	</div>
+</div>
+
+<div class="relative group my-2 rounded-2xl border border-gray-100 dark:border-gray-800 px-4 py-3">
+	<!-- Header row: type badge + copy button -->
+	<div class="flex items-center justify-between mb-2">
+		<span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+			{label}
+		</span>
+
+		<div class="invisible group-hover:visible flex gap-0.5">
+			<Tooltip content={copied ? i18n.t('Copied') : i18n.t('Copy')}>
 				<button
 					class="p-1 rounded-lg bg-transparent hover:bg-black/5 dark:hover:bg-white/5 transition"
 					on:click={(e) => {

@@ -1,4 +1,8 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
+	import { getContext, onMount, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { marked } from 'marked';
 
 	import { toast } from 'svelte-sonner';
@@ -7,12 +11,8 @@
 	import fileSaver from 'file-saver';
 	const { saveAs } = fileSaver;
 
-	import { onMount, getContext, tick } from 'svelte';
 	import { goto } from '$app/navigation';
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
-
 	import { WEBUI_NAME, config, mobile, models as _models, settings, user } from '$lib/stores';
 	import { WEBUI_API_BASE_URL, WEBUI_BASE_URL } from '$lib/constants';
 	import {
@@ -62,19 +62,19 @@
 
 	let showModelDeleteConfirm = false;
 
-	let selectedModel = null;
+	let selectedModel: any = null;
 
-	let groupIds = [];
+	let groupIds: any[] = [];
 
-	let tags = [];
+	let tags: any = [];
 	let selectedTag = '';
 
 	let query = '';
 	let viewOption = '';
 
 	let page = 1;
-	let models = null;
-	let total = null;
+	let models: any = null;
+	let total: any = null;
 
 	let searchDebounceTimer;
 
@@ -94,7 +94,7 @@
 				null,
 				null,
 				page
-			).catch((error) => {
+			).catch(async (error)=> {
 				toast.error(`${error}`);
 				return null;
 			});
@@ -104,7 +104,7 @@
 				total = res.total;
 
 				// get tags
-				tags = await getModelTags(localStorage.token).catch((error) => {
+				tags = await getModelTags(localStorage.token).catch(async (error)=> {
 					toast.error(`${error}`);
 					return [];
 				});
@@ -114,14 +114,14 @@
 		}
 	};
 
-	const deleteModelHandler = async (model) => {
-		const res = await deleteModelById(localStorage.token, model.id).catch((e) => {
+	const deleteModelHandler = async (model: any) => {
+		const res = await deleteModelById(localStorage.token, model.id).catch(async (e)=> {
 			toast.error(`${e}`);
 			return null;
 		});
 
 		if (res) {
-			toast.success($i18n.t(`Deleted {{name}}`, { name: model.id }));
+			toast.success(i18n.t(`Deleted {{name}}`, { name: model.id }));
 
 			page = 1;
 			getModelList();
@@ -135,7 +135,7 @@
 		);
 	};
 
-	const cloneModelHandler = async (model) => {
+	const cloneModelHandler = async (model: any) => {
 		sessionStorage.model = JSON.stringify({
 			...model,
 			id: `${model.id}-clone`,
@@ -144,14 +144,14 @@
 		goto('/workspace/models/create');
 	};
 
-	const shareModelHandler = async (model) => {
-		toast.success($i18n.t('Redirecting you to Open WebUI Community'));
+	const shareModelHandler = async (model: any) => {
+		toast.success(i18n.t('Redirecting you to Open WebUI Community'));
 
 		const url = 'https://openwebui.com';
 
 		const tab = await window.open(`${url}/post?type=model`, '_blank');
 
-		const messageHandler = (event) => {
+		const messageHandler = (event: any) => {
 			if (event.origin !== url) return;
 			if (event.data === 'loaded') {
 				tab.postMessage(JSON.stringify(model), '*');
@@ -162,7 +162,7 @@
 		window.addEventListener('message', messageHandler, false);
 	};
 
-	const hideModelHandler = async (model) => {
+	const hideModelHandler = async (model: any) => {
 		model.meta = {
 			...model.meta,
 			hidden: !(model?.meta?.hidden ?? false)
@@ -174,7 +174,7 @@
 
 		if (res) {
 			toast.success(
-				$i18n.t(`Model {{name}} is now {{status}}`, {
+				i18n.t(`Model {{name}} is now {{status}}`, {
 					name: model.id,
 					status: model.meta.hidden ? 'hidden' : 'visible'
 				})
@@ -192,32 +192,32 @@
 		);
 	};
 
-	const copyLinkHandler = async (model) => {
+	const copyLinkHandler = async (model: any) => {
 		const baseUrl = window.location.origin;
 		const res = await copyToClipboard(`${baseUrl}/?model=${encodeURIComponent(model.id)}`);
 
 		if (res) {
-			toast.success($i18n.t('Copied link to clipboard'));
+			toast.success(i18n.t('Copied link to clipboard'));
 		} else {
-			toast.error($i18n.t('Failed to copy link'));
+			toast.error(i18n.t('Failed to copy link'));
 		}
 	};
 
-	const downloadModels = async (models) => {
+	const downloadModels = async (models: any) => {
 		let blob = new Blob([JSON.stringify(models)], {
 			type: 'application/json'
 		});
 		saveAs(blob, `models-export-${Date.now()}.json`);
 	};
 
-	const exportModelHandler = async (model) => {
+	const exportModelHandler = async (model: any) => {
 		let blob = new Blob([JSON.stringify([model])], {
 			type: 'application/json'
 		});
 		saveAs(blob, `${model.id}-${Date.now()}.json`);
 	};
 
-	const pinModelHandler = async (modelId) => {
+	const pinModelHandler = async (modelId: any) => {
 		let pinnedModels = $settings?.pinnedModels ?? [];
 
 		if (pinnedModels.includes(modelId)) {
@@ -232,7 +232,7 @@
 
 	const fetchAllWorkspaceModels = async () => {
 		// Fetch all workspace models across every page
-		const allModels = [];
+		const allModels: any[] = [];
 		let currentPage = 1;
 		let fetchedTotal = 0;
 
@@ -299,7 +299,7 @@
 			})
 		);
 		await getModelList();
-		toast.success($i18n.t('All models are now visible'));
+		toast.success(i18n.t('All models are now visible'));
 	};
 
 	const hideAllHandler = async () => {
@@ -319,7 +319,7 @@
 			})
 		);
 		await getModelList();
-		toast.success($i18n.t('All models are now hidden'));
+		toast.success(i18n.t('All models are now hidden'));
 	};
 
 	onMount(async () => {
@@ -362,7 +362,7 @@
 
 <svelte:head>
 	<title>
-		{$i18n.t('Models')} • {$WEBUI_NAME}
+		{i18n.t('Models')} • {$WEBUI_NAME}
 	</title>
 </svelte:head>
 
@@ -382,36 +382,36 @@
 			type="file"
 			accept=".json"
 			hidden
-			on:change={() => {
+			on:change={async () => {
 				console.log(importFiles);
 
 				let reader = new FileReader();
-				reader.onload = async (event) => {
-					let savedModels = [];
+				reader.onload = async (event: any) => {
+					let savedModels: any[] = [];
 					try {
 						savedModels = JSON.parse(event.target.result);
 						console.log(savedModels);
 					} catch (e) {
-						toast.error($i18n.t('Invalid JSON file'));
+						toast.error(i18n.t('Invalid JSON file'));
 						return;
 					}
 
 					for (const model of savedModels) {
 						if (model?.info ?? false) {
 							if ($_models.find((m) => m.id === model.id)) {
-								await updateModelById(localStorage.token, model.id, model.info).catch((error) => {
+								await updateModelById(localStorage.token, model.id, model.info).catch(async (error)=> {
 									toast.error(`${error}`);
 									return null;
 								});
 							} else {
-								await createNewModel(localStorage.token, model.info).catch((error) => {
+								await createNewModel(localStorage.token, model.info).catch(async (error)=> {
 									toast.error(`${error}`);
 									return null;
 								});
 							}
 						} else {
 							if (model?.id && model?.name) {
-								await createNewModel(localStorage.token, model).catch((error) => {
+								await createNewModel(localStorage.token, model).catch(async (error)=> {
 									toast.error(`${error}`);
 									return null;
 								});
@@ -436,7 +436,7 @@
 		<div class="flex justify-between items-center">
 			<div class="flex items-center md:self-center text-xl font-medium px-0.5 gap-2 shrink-0">
 				<div>
-					{$i18n.t('Models')}
+					{i18n.t('Models')}
 				</div>
 
 				<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
@@ -453,7 +453,7 @@
 						}}
 					>
 						<div class=" self-center font-medium line-clamp-1">
-							{$i18n.t('Import')}
+							{i18n.t('Import')}
 						</div>
 					</button>
 				{/if}
@@ -466,7 +466,7 @@
 						}}
 					>
 						<div class=" self-center font-medium line-clamp-1">
-							{$i18n.t('Export')}
+							{i18n.t('Export')}
 						</div>
 					</button>
 				{/if}
@@ -476,7 +476,7 @@
 				>
 					<Plus className="size-3" strokeWidth="2.5" />
 
-					<div class=" hidden md:block md:ml-1 text-xs">{$i18n.t('New Model')}</div>
+					<div class=" hidden md:block md:ml-1 text-xs">{i18n.t('New Model')}</div>
 				</a>
 			</div>
 		</div>
@@ -493,8 +493,8 @@
 				<input
 					class=" w-full text-sm py-1 rounded-r-xl outline-hidden bg-transparent"
 					bind:value={query}
-					aria-label={$i18n.t('Search Models')}
-					placeholder={$i18n.t('Search Models')}
+					aria-label={i18n.t('Search Models')}
+					placeholder={i18n.t('Search Models')}
 					maxlength="500"
 					on:input={() => {
 						clearTimeout(searchDebounceTimer);
@@ -509,7 +509,7 @@
 					<div class="self-center pl-1.5 translate-y-[0.5px] rounded-l-xl bg-transparent">
 						<button
 							class="p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 transition"
-							aria-label={$i18n.t('Clear search')}
+							aria-label={i18n.t('Clear search')}
 							on:click={() => {
 								query = '';
 								page = 1;
@@ -538,7 +538,7 @@
 			>
 				<ViewSelector
 					bind:value={viewOption}
-					onChange={async (value) => {
+					onChange={async (value: any) => {
 						localStorage.workspaceViewOption = value;
 						await tick();
 					}}
@@ -557,7 +557,7 @@
 			<div class="flex-1"></div>
 
 			<Dropdown>
-				<Tooltip content={$i18n.t('Actions')}>
+				<Tooltip content={i18n.t('Actions')}>
 					<button
 						class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
 						type="button"
@@ -578,7 +578,7 @@
 							}}
 						>
 							<CheckCircle className="size-4" />
-							<div class="flex items-center">{$i18n.t('Enable All')}</div>
+							<div class="flex items-center">{i18n.t('Enable All')}</div>
 						</button>
 
 						<button
@@ -589,7 +589,7 @@
 							}}
 						>
 							<Minus className="size-4" />
-							<div class="flex items-center">{$i18n.t('Disable All')}</div>
+							<div class="flex items-center">{i18n.t('Disable All')}</div>
 						</button>
 
 						<hr class="border-gray-100 dark:border-gray-800 my-1" />
@@ -602,7 +602,7 @@
 							}}
 						>
 							<Eye className="size-4" />
-							<div class="flex items-center">{$i18n.t('Show All')}</div>
+							<div class="flex items-center">{i18n.t('Show All')}</div>
 						</button>
 
 						<button
@@ -613,7 +613,7 @@
 							}}
 						>
 							<EyeSlash className="size-4" />
-							<div class="flex items-center">{$i18n.t('Hide All')}</div>
+							<div class="flex items-center">{i18n.t('Hide All')}</div>
 						</button>
 					</div>
 				</div>
@@ -646,7 +646,7 @@
 												: 'opacity-50 dark:opacity-50'} bg-transparent rounded-2xl"
 										>
 											<img
-												src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${model.id}&lang=${$i18n.language}`}
+												src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${model.id}&lang=${$language}`}
 												alt="modelfile profile"
 												class=" rounded-2xl size-12 object-cover"
 												loading="lazy"
@@ -675,7 +675,7 @@
 												<div class="flex items-center gap-1">
 													{#if !model.write_access}
 														<div>
-															<Badge type="muted" content={$i18n.t('Read Only')} />
+															<Badge type="muted" content={i18n.t('Read Only')} />
 														</div>
 													{/if}
 
@@ -683,14 +683,14 @@
 														<div class="flex items-center gap-0.5">
 															{#if shiftKey && model.write_access}
 																<Tooltip
-																	content={model?.meta?.hidden ? $i18n.t('Show') : $i18n.t('Hide')}
+																	content={model?.meta?.hidden ? i18n.t('Show') : i18n.t('Hide')}
 																>
 																	<button
 																		class="self-center w-fit text-sm p-1.5 dark:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 																		type="button"
 																		aria-label={model?.meta?.hidden
-																			? $i18n.t('Show')
-																			: $i18n.t('Hide')}
+																			? i18n.t('Show')
+																			: i18n.t('Hide')}
 																		on:click={(e) => {
 																			e.stopPropagation();
 																			hideModelHandler(model);
@@ -704,11 +704,11 @@
 																	</button>
 																</Tooltip>
 
-																<Tooltip content={$i18n.t('Delete')}>
+																<Tooltip content={i18n.t('Delete')}>
 																	<button
 																		class="self-center w-fit text-sm p-1.5 dark:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 																		type="button"
-																		aria-label={$i18n.t('Delete')}
+																		aria-label={i18n.t('Delete')}
 																		on:click={(e) => {
 																			e.stopPropagation();
 																			deleteModelHandler(model);
@@ -768,7 +768,7 @@
 															}}
 														>
 															<Tooltip
-																content={model.is_active ? $i18n.t('Enabled') : $i18n.t('Disabled')}
+																content={model.is_active ? i18n.t('Enabled') : i18n.t('Disabled')}
 															>
 																<Switch
 																	bind:state={model.is_active}
@@ -791,14 +791,14 @@
 
 											<div class=" flex gap-1 pr-2 -mt-1 items-center">
 												<Tooltip
-													content={model?.user?.email ?? $i18n.t('Deleted User')}
+													content={model?.user?.email ?? i18n.t('Deleted User')}
 													className="flex shrink-0"
 													placement="top-start"
 												>
 													<div class="shrink-0 text-gray-500 text-xs">
-														{$i18n.t('By {{name}}', {
+														{i18n.t('By {{name}}', {
 															name: capitalizeFirstLetter(
-																model?.user?.name ?? model?.user?.email ?? $i18n.t('Deleted User')
+																model?.user?.name ?? model?.user?.email ?? i18n.t('Deleted User')
 															)
 														})}
 													</div>
@@ -837,9 +837,9 @@
 				<div class=" w-full h-full flex flex-col justify-center items-center my-16 mb-24">
 					<div class="max-w-md text-center">
 						<div class=" text-3xl mb-3">😕</div>
-						<div class=" text-lg font-medium mb-1">{$i18n.t('No models found')}</div>
+						<div class=" text-lg font-medium mb-1">{i18n.t('No models found')}</div>
 						<div class=" text-gray-500 text-center text-xs">
-							{$i18n.t('Try adjusting your search or filter to find what you are looking for.')}
+							{i18n.t('Try adjusting your search or filter to find what you are looking for.')}
 						</div>
 					</div>
 				</div>
@@ -854,7 +854,7 @@
 	{#if $config?.features.enable_community_sharing}
 		<div class=" my-16">
 			<div class=" text-xl font-medium mb-1 line-clamp-1">
-				{$i18n.t('Made by Open WebUI Community')}
+				{i18n.t('Made by Open WebUI Community')}
 			</div>
 
 			<a
@@ -863,9 +863,9 @@
 				target="_blank"
 			>
 				<div class=" self-center">
-					<div class=" font-medium line-clamp-1">{$i18n.t('Discover a model')}</div>
+					<div class=" font-medium line-clamp-1">{i18n.t('Discover a model')}</div>
 					<div class=" text-sm line-clamp-1">
-						{$i18n.t('Discover, download, and explore model presets')}
+						{i18n.t('Discover, download, and explore model presets')}
 					</div>
 				</div>
 

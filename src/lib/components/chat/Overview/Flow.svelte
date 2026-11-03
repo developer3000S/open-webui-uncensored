@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 
 	const dispatch = createEventDispatcher();
@@ -16,10 +16,10 @@
 	import AlignVertical from '$lib/components/icons/AlignVertical.svelte';
 	import AlignHorizontal from '$lib/components/icons/AlignHorizontal.svelte';
 
-	export let nodes;
-	export let nodeTypes;
-	export let edges;
-	export let setLayoutDirection;
+	export let nodes: any;
+	export let nodeTypes: any;
+	export let edges: any;
+	export let setLayoutDirection: any;
 </script>
 
 <SvelteFlow

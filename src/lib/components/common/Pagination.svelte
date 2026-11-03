@@ -5,9 +5,9 @@
 	import ChevronLeft from '../icons/ChevronLeft.svelte';
 	import ChevronRight from '../icons/ChevronRight.svelte';
 
-	export let page = 0;
-	export let count = 0;
-	export let perPage = 20;
+	export let page: any = 0;
+	export let count: any = 0;
+	export let perPage: any = 20;
 </script>
 
 <div class="flex justify-center">

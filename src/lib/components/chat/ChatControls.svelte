@@ -1,5 +1,9 @@
 <script context="module" lang="ts">
-	let savedTab: 'controls' | 'files' | 'overview' = 'controls';
+	import type i18nType from 'i18next';
+	import { getContext, onDestroy, onMount, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
+		let savedTab: 'controls' | 'files' | 'overview' = 'controls';
 </script>
 
 <script lang="ts">
@@ -8,7 +12,6 @@
 	import { Pane, PaneResizer } from 'paneforge';
 	import { v4 as uuidv4 } from 'uuid';
 
-	import { onDestroy, onMount, tick, getContext } from 'svelte';
 	import {
 		config,
 		terminalServers,
@@ -36,26 +39,21 @@
 	import Overview from './Overview.svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
+	export let history: { messages?: Record<string, any>; currentId?: string | null; [key: string]: any } = {};
+	export let models: any = [];
 
-	export let history;
-	export let models = [];
+	let chatId: any = null;
 
-	export let chatId = null;
-
-	export let chatFiles = [];
-	export let params = {};
+	export let chatFiles: any = [];
+	let params: Record<string, any> = {};
 
 	export let eventTarget: EventTarget;
 	export let submitPrompt: Function;
 	export let stopResponse: Function;
 	export let showMessage: Function;
-	export let files;
-	export let modelId;
-
-	export let codeInterpreterEnabled = false;
-
+	export let files: any;
+	export let modelId: any;
+	export let codeInterpreterEnabled: any = false;
 	export let pane: Pane | null = null;
 
 	let largeScreen = false;
@@ -152,10 +150,10 @@
 				};
 				files = files;
 			}
-			toast.success($i18n.t('File attached to chat'));
-		} catch (e) {
+			toast.success(i18n.t('File attached to chat'));
+		} catch (e: any) {
 			files = files.filter((f) => f.itemId !== tempItemId);
-			toast.error($i18n.t('Failed to attach file'));
+			toast.error(i18n.t('Failed to attach file'));
 		}
 	};
 
@@ -171,7 +169,7 @@
 		}
 	};
 
-	const handleMediaQuery = async (e) => {
+	const handleMediaQuery = async (e: any) => {
 		if (e.matches) {
 			largeScreen = true;
 			if ($showCallOverlay) {
@@ -315,7 +313,7 @@
 											: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
 										on:click={() => (activeTab = 'controls')}
 									>
-										{$i18n.t('Controls')}
+										{i18n.t('Controls')}
 									</button>
 								{/if}
 								{#if showFilesTab}
@@ -326,7 +324,7 @@
 											: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
 										on:click={() => (activeTab = 'files')}
 									>
-										{$i18n.t('Files')}
+										{i18n.t('Files')}
 									</button>
 								{/if}
 								{#if showOverviewTab}
@@ -337,14 +335,14 @@
 											: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
 										on:click={() => (activeTab = 'overview')}
 									>
-										{$i18n.t('Overview')}
+										{i18n.t('Overview')}
 									</button>
 								{/if}
 							</div>
 							<button
 								class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400"
 								on:click={() => showControls.set(false)}
-								aria-label={$i18n.t('Close')}
+								aria-label={i18n.t('Close')}
 							>
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
@@ -369,7 +367,7 @@
 							{#if activeTab === 'overview'}
 								<Overview
 									{history}
-									onNodeClick={(e) => {
+									onNodeClick={(e: any) => {
 										const node = e.node;
 										showMessage(node.data.message, true);
 									}}
@@ -461,7 +459,7 @@
 												: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
 											on:click={() => (activeTab = 'controls')}
 										>
-											{$i18n.t('Controls')}
+											{i18n.t('Controls')}
 										</button>
 									{/if}
 									{#if showFilesTab}
@@ -472,7 +470,7 @@
 												: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
 											on:click={() => (activeTab = 'files')}
 										>
-											{$i18n.t('Files')}
+											{i18n.t('Files')}
 										</button>
 									{/if}
 									{#if showOverviewTab}
@@ -483,14 +481,14 @@
 												: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
 											on:click={() => (activeTab = 'overview')}
 										>
-											{$i18n.t('Overview')}
+											{i18n.t('Overview')}
 										</button>
 									{/if}
 								</div>
 								<button
 									class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400"
 									on:click={() => showControls.set(false)}
-									aria-label={$i18n.t('Close')}
+									aria-label={i18n.t('Close')}
 								>
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
@@ -515,7 +513,274 @@
 								{#if activeTab === 'overview'}
 									<Overview
 										{history}
-										onNodeClick={(e) => {
+										onNodeClick={(e: any) => {
+											const node = e.node;
+											if (node?.data?.message?.favorite) {
+												history.messages[node.data.message.id].favorite = true;
+											} else {
+												history.messages[node.data.message.id].favorite = null;
+											}
+											showMessage(node.data.message, true);
+										}}
+										onClose={() => showControls.set(false)}
+									/>
+								{:else if activeTab === 'files' && $selectedTerminalId}
+									<FileNav onAttach={handleTerminalAttach} overlay={dragged} {chatId} />
+								{:else if activeTab === 'files' && codeInterpreterEnabled}
+									<PyodideFileNav overlay={dragged} />
+								{:else}
+									<Controls embed={true} {models} bind:chatFiles bind:params />
+								{/if}
+							</div>
+						</div>
+					{/if}
+				</div>
+			</div>
+		{/if}
+	</Pane>
+{/if}
+
+{#if !largeScreen}
+	{#if $showControls}
+		<Drawer
+			show={$showControls}
+			onClose={() => showControls.set(false)}
+			className="min-h-[100dvh] !bg-white dark:!bg-gray-850"
+		>
+			<div class="h-[100dvh] flex flex-col">
+				{#if $showCallOverlay}
+					<div
+						class="h-full max-h-[100dvh] bg-white text-gray-700 dark:bg-black dark:text-gray-300 flex justify-center"
+					>
+						<CallOverlay
+							bind:files
+							{submitPrompt}
+							{stopResponse}
+							{modelId}
+							{chatId}
+							{eventTarget}
+							on:close={() => showControls.set(false)}
+						/>
+					</div>
+				{:else if $showEmbeds}
+					<Embeds />
+				{:else if $showArtifacts}
+					<Artifacts {history} />
+				{:else}
+					<!-- Controls + Files tabs -->
+					<div class="flex flex-col h-full min-h-0">
+						<!-- Tab bar -->
+						<div class="flex items-center justify-between px-2 pt-2 pb-2 shrink-0">
+							<div class="flex gap-1 min-w-0 overflow-x-auto scrollbar-hidden">
+								{#if showControlsTab}
+									<button
+										class="px-2.5 py-1 text-sm rounded-lg transition whitespace-nowrap {activeTab ===
+										'controls'
+											? 'bg-gray-100 dark:bg-gray-800 font-medium text-gray-900 dark:text-white'
+											: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
+										on:click={() => (activeTab = 'controls')}
+									>
+										{i18n.t('Controls')}
+									</button>
+								{/if}
+								{#if showFilesTab}
+									<button
+										class="px-2.5 py-1 text-sm rounded-lg transition whitespace-nowrap {activeTab ===
+										'files'
+											? 'bg-gray-100 dark:bg-gray-800 font-medium text-gray-900 dark:text-white'
+											: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
+										on:click={() => (activeTab = 'files')}
+									>
+										{i18n.t('Files')}
+									</button>
+								{/if}
+								{#if showOverviewTab}
+									<button
+										class="px-2.5 py-1 text-sm rounded-lg transition whitespace-nowrap {activeTab ===
+										'overview'
+											? 'bg-gray-100 dark:bg-gray-800 font-medium text-gray-900 dark:text-white'
+											: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
+										on:click={() => (activeTab = 'overview')}
+									>
+										{i18n.t('Overview')}
+									</button>
+								{/if}
+							</div>
+							<button
+								class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400"
+								on:click={() => showControls.set(false)}
+								aria-label={i18n.t('Close')}
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="1.5"
+									class="size-4"
+								>
+									<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+								</svg>
+							</button>
+						</div>
+
+						<div
+							class="flex-1 min-h-0 {activeTab === 'overview'
+								? 'h-full'
+								: activeTab === 'controls'
+									? 'overflow-y-auto px-3 pt-1'
+									: ''}"
+						>
+							{#if activeTab === 'overview'}
+								<Overview
+									{history}
+									onNodeClick={(e: any) => {
+										const node = e.node;
+										showMessage(node.data.message, true);
+									}}
+									onClose={() => showControls.set(false)}
+								/>
+							{:else if activeTab === 'files' && $selectedTerminalId}
+								<FileNav onAttach={handleTerminalAttach} {chatId} />
+							{:else if activeTab === 'files' && codeInterpreterEnabled}
+								<PyodideFileNav />
+							{:else}
+								<Controls embed={true} {models} bind:chatFiles bind:params />
+							{/if}
+						</div>
+					</div>
+				{/if}
+			</div>
+		</Drawer>
+	{/if}
+{:else}
+	{#if $showControls}
+		<PaneResizer
+			class="relative flex items-center justify-center group border-l border-gray-50 dark:border-gray-850/30 hover:border-gray-200 dark:hover:border-gray-800 transition z-20"
+			id="controls-resizer"
+		>
+			<div
+				class="absolute -left-1.5 -right-1.5 -top-0 -bottom-0 z-20 cursor-col-resize bg-transparent"
+			></div>
+		</PaneResizer>
+	{/if}
+
+	<Pane
+		bind:pane
+		defaultSize={0}
+		onResize={(size) => {
+			if ($showControls && pane.isExpanded()) {
+				if (size < minSize) pane.resize(minSize);
+				if (size < minSize) {
+					localStorage.chatControlsSize = 0;
+				} else {
+					const container = document.getElementById('chat-container');
+					localStorage.chatControlsSize = Math.floor((size / 100) * container.clientWidth);
+				}
+			}
+		}}
+		onCollapse={() => {
+			if (paneReady) showControls.set(false);
+		}}
+		collapsible={true}
+		class="z-10 bg-white dark:bg-gray-850"
+	>
+		{#if $showControls}
+			<div class="flex max-h-full min-h-full">
+				<div
+					class="w-full {specialPanel && !$showCallOverlay
+						? ' '
+						: 'bg-white dark:shadow-lg dark:bg-gray-850'} z-40 pointer-events-auto {activeTab ===
+					'files'
+						? ''
+						: 'overflow-y-auto'} scrollbar-hidden"
+					id="controls-container"
+				>
+					{#if $showCallOverlay}
+						<div class="w-full h-full flex justify-center">
+							<CallOverlay
+								bind:files
+								{submitPrompt}
+								{stopResponse}
+								{modelId}
+								{chatId}
+								{eventTarget}
+								on:close={() => showControls.set(false)}
+							/>
+						</div>
+					{:else if $showEmbeds}
+						<Embeds overlay={dragged} />
+					{:else if $showArtifacts}
+						<Artifacts {history} overlay={dragged} />
+					{:else}
+						<!-- Controls + Files tabs -->
+						<div class="flex flex-col h-full min-h-0">
+							<!-- Tab bar -->
+							<div class="flex items-center justify-between px-2 pt-2 pb-2 shrink-0">
+								<div class="flex gap-1 min-w-0 overflow-x-auto scrollbar-hidden">
+									{#if showControlsTab}
+										<button
+											class="px-2.5 py-1 text-sm rounded-lg transition whitespace-nowrap {activeTab ===
+											'controls'
+												? 'bg-gray-100 dark:bg-gray-800 font-medium text-gray-900 dark:text-white'
+												: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
+											on:click={() => (activeTab = 'controls')}
+										>
+											{i18n.t('Controls')}
+										</button>
+									{/if}
+									{#if showFilesTab}
+										<button
+											class="px-2.5 py-1 text-sm rounded-lg transition whitespace-nowrap {activeTab ===
+											'files'
+												? 'bg-gray-100 dark:bg-gray-800 font-medium text-gray-900 dark:text-white'
+												: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
+											on:click={() => (activeTab = 'files')}
+										>
+											{i18n.t('Files')}
+										</button>
+									{/if}
+									{#if showOverviewTab}
+										<button
+											class="px-2.5 py-1 text-sm rounded-lg transition whitespace-nowrap {activeTab ===
+											'overview'
+												? 'bg-gray-100 dark:bg-gray-800 font-medium text-gray-900 dark:text-white'
+												: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
+											on:click={() => (activeTab = 'overview')}
+										>
+											{i18n.t('Overview')}
+										</button>
+									{/if}
+								</div>
+								<button
+									class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400"
+									on:click={() => showControls.set(false)}
+									aria-label={i18n.t('Close')}
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="1.5"
+										class="size-4"
+									>
+										<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+									</svg>
+								</button>
+							</div>
+
+							<div
+								class="flex-1 min-h-0 {activeTab === 'overview'
+									? 'h-full'
+									: activeTab === 'controls'
+										? 'overflow-y-auto px-3 pt-1'
+										: ''}"
+							>
+								{#if activeTab === 'overview'}
+									<Overview
+										{history}
+										onNodeClick={(e: any) => {
 											const node = e.node;
 											if (node?.data?.message?.favorite) {
 												history.messages[node.data.message.id].favorite = true;

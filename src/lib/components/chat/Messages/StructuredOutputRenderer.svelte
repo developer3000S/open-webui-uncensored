@@ -12,15 +12,15 @@
 		type OutputItem
 	} from './structuredOutput';
 
-	export let id = '';
+	export let id: any = '';
 	export let output: OutputItem[] = [];
-	export let done = true;
-	export let model = null;
-	export let save = false;
-	export let preview = false;
-	export let renderMarkdown = true;
-	export let editCodeBlock = true;
-	export let topPadding = false;
+	export let done: any = true;
+	let model: any = null;
+	export let save: any = false;
+	export let preview: any = false;
+	export let renderMarkdown: any = true;
+	export let editCodeBlock: any = true;
+	export let topPadding: any = false;
 	export let sourceIds: string[] = [];
 	export let formatMessageContent: (content: string) => string = (content) => content;
 	export let onSave: any = () => {};

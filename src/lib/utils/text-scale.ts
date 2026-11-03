@@ -1,4 +1,4 @@
-export const setTextScale = (scale) => {
+export const setTextScale = (scale: any) => {
 	if (typeof document === 'undefined') {
 		return;
 	}

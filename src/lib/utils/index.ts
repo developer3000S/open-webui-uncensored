@@ -53,19 +53,19 @@ export const replaceOutsideCode = (content: string, replacer: (str: string) => s
 		.join('');
 };
 
-export const replaceTokens = (content, char, user) => {
+export const replaceTokens = (content: any, char: any, user: any) => {
 	if (!content.includes('{{')) return content;
 	const tokens = [
 		{ regex: /{{char}}/gi, replacement: char },
 		{ regex: /{{user}}/gi, replacement: user },
 		{
 			regex: /{{VIDEO_FILE_ID_([a-f0-9-]+)}}/gi,
-			replacement: (_, fileId) =>
+			replacement: (_: any, fileId: any) =>
 				`<video src="${WEBUI_BASE_URL}/api/v1/files/${fileId}/content" controls></video>`
 		},
 		{
 			regex: /{{HTML_FILE_ID_([a-f0-9-]+)}}/gi,
-			replacement: (_, fileId) => `<file type="html" id="${fileId}" />`
+			replacement: (_: any, fileId: any) => `<file type="html" id="${fileId}" />`
 		}
 	];
 
@@ -174,11 +174,11 @@ export function unescapeHtml(html: string): string {
 	return decode(html);
 }
 
-export const capitalizeFirstLetter = (string) => {
+export const capitalizeFirstLetter = (string: any) => {
 	return string.charAt(0).toUpperCase() + string.slice(1);
 };
 
-export const splitStream = (splitOn) => {
+export const splitStream = (splitOn: any) => {
 	let buffer = '';
 	return new TransformStream({
 		transform(chunk, controller) {
@@ -193,14 +193,14 @@ export const splitStream = (splitOn) => {
 	});
 };
 
-export const convertMessagesToHistory = (messages) => {
+export const convertMessagesToHistory = (messages: any) => {
 	const history = {
 		messages: {},
 		currentId: null
 	};
 
-	let parentMessageId = null;
-	let messageId = null;
+	let parentMessageId: any = null;
+	let messageId: any = null;
 
 	for (const message of messages) {
 		messageId = uuidv4();
@@ -230,7 +230,7 @@ export const convertMessagesToHistory = (messages) => {
 // A lost assistant placeholder may exist under its map key with only
 // completion fields (content/done/error), missing id/role/parentId.
 // Reconstruct graph fields so already-corrupted chats recover on open.
-export const sanitizeHistory = (history) => {
+export const sanitizeHistory = (history: any) => {
 	if (!history?.messages || typeof history.messages !== 'object') return;
 
 	// Purge entries that aren't usable objects
@@ -247,7 +247,7 @@ export const sanitizeHistory = (history) => {
 	}
 
 	// Build reverse lookup: parent, indexed by child id
-	const parentByChildId = {};
+	const parentByChildId: Record<string, any> = {};
 	for (const [id, message] of Object.entries(history.messages)) {
 		for (const childId of message.childrenIds) {
 			parentByChildId[childId] = id;
@@ -258,7 +258,7 @@ export const sanitizeHistory = (history) => {
 	// look valid.
 	const currentMessage = history.messages?.[history.currentId];
 	if (!currentMessage?.id || !currentMessage?.role) {
-		let latestLeafId = null;
+		let latestLeafId: any = null;
 		let latestTimestamp = -1;
 
 		for (const [id, message] of Object.entries(history.messages)) {
@@ -299,7 +299,7 @@ export const sanitizeHistory = (history) => {
 	}
 };
 
-export const getGravatarURL = (email) => {
+export const getGravatarURL = (email: any) => {
 	// Trim leading and trailing whitespace from
 	// an email address and force all characters
 	// to lower case
@@ -393,7 +393,7 @@ async function resizeImageToDataURL(
 	return Promise.resolve(toDataURL());
 }
 
-export const compressImage = async (imageUrl, maxWidth, maxHeight) => {
+export const compressImage = async (imageUrl: any, maxWidth: any, maxHeight: any) => {
 	return new Promise((resolve, reject) => {
 		const img = new Image();
 		img.onload = async () => {
@@ -446,7 +446,7 @@ export const compressImage = async (imageUrl, maxWidth, maxHeight) => {
 		img.src = imageUrl;
 	});
 };
-export const generateInitialsImage = (name) => {
+export const generateInitialsImage = (name: any) => {
 	const canvas = document.createElement('canvas');
 	const ctx = canvas.getContext('2d');
 	canvas.width = 100;
@@ -481,7 +481,7 @@ export const generateInitialsImage = (name) => {
 	return canvas.toDataURL();
 };
 
-export const formatDate = (inputDate) => {
+export const formatDate = (inputDate: any) => {
 	const date = dayjs(inputDate);
 
 	if (date.isToday()) {
@@ -493,13 +493,13 @@ export const formatDate = (inputDate) => {
 	}
 };
 
-export const copyToClipboard = async (text, html = null, formatted = false) => {
+export const copyToClipboard = (text: any, html: any = null, formatted: any = false) => {
 	if (formatted) {
 		let styledHtml = '';
 		if (!html) {
 			const options = {
 				throwOnError: false,
-				highlight: function (code, lang) {
+				highlight: function (code: any, lang: any) {
 					const language = hljs.getLanguage(lang) ? lang : 'plaintext';
 					return hljs.highlight(code, { language }).value;
 				}
@@ -629,7 +629,7 @@ export const copyToClipboard = async (text, html = null, formatted = false) => {
 	}
 };
 
-export const compareVersion = (latest, current) => {
+export const compareVersion = (latest: any, current: any) => {
 	return current === '0.0.0'
 		? false
 		: current.localeCompare(latest, undefined, {
@@ -639,9 +639,9 @@ export const compareVersion = (latest, current) => {
 			}) < 0;
 };
 
-export const extractCurlyBraceWords = (text) => {
+export const extractCurlyBraceWords = (text: any) => {
 	const regex = /\{\{([^}]+)\}\}/g;
-	const matches = [];
+	const matches: any[] = [];
 	let match;
 
 	while ((match = regex.exec(text)) !== null) {
@@ -655,7 +655,7 @@ export const extractCurlyBraceWords = (text) => {
 	return matches;
 };
 
-export const removeLastWordFromString = (inputString, wordString) => {
+export const removeLastWordFromString = (inputString: any, wordString: any) => {
 	console.log('inputString', inputString);
 	// Split the string by newline characters to handle lines separately
 	const lines = inputString.split('\n');
@@ -688,7 +688,7 @@ export const removeLastWordFromString = (inputString, wordString) => {
 	return resultString;
 };
 
-export const removeFirstHashWord = (inputString) => {
+export const removeFirstHashWord = (inputString: any) => {
 	// Split the string into an array of words
 	const words = inputString.split(' ');
 
@@ -706,7 +706,7 @@ export const removeFirstHashWord = (inputString) => {
 	return resultString;
 };
 
-export const transformFileName = (fileName) => {
+export const transformFileName = (fileName: any) => {
 	// Convert to lowercase
 	const lowerCaseFileName = fileName.toLowerCase();
 
@@ -719,7 +719,7 @@ export const transformFileName = (fileName) => {
 	return finalFileName;
 };
 
-export const calculateSHA256 = async (file) => {
+export const calculateSHA256 = async (file: any) => {
 	// Create a FileReader to read the file asynchronously
 	const reader = new FileReader();
 
@@ -753,7 +753,7 @@ export const calculateSHA256 = async (file) => {
 	}
 };
 
-export const getImportOrigin = (_chats) => {
+export const getImportOrigin = (_chats: any) => {
 	// Check what external service chat imports are from
 	// ChatGPT exports may include folder/project metadata entries without 'mapping',
 	// so we check if ANY item has a 'mapping' key instead of only the first one.
@@ -763,7 +763,7 @@ export const getImportOrigin = (_chats) => {
 	return 'webui';
 };
 
-export const getUserPosition = async (raw = false) => {
+export const getUserPosition = (raw: any = false) => {
 	// Get the user's location using the Geolocation API
 	const position = await new Promise((resolve, reject) => {
 		navigator.geolocation.getCurrentPosition(resolve, reject);
@@ -801,12 +801,12 @@ const extractOpenAIMessageContent = (message): string => {
 	}
 };
 
-const convertOpenAIMessages = (convo) => {
+const convertOpenAIMessages = (convo: any) => {
 	// Parse OpenAI chat messages and create chat dictionary for creating new chats
 	const mapping = convo['mapping'];
-	const messages = [];
+	const messages: any[] = [];
 	let currentId = '';
-	let lastId = null;
+	let lastId: any = null;
 	const uniqueModels = new Set<string>();
 
 	for (const message_id in mapping) {
@@ -880,7 +880,7 @@ const convertOpenAIMessages = (convo) => {
 	return chat;
 };
 
-const validateChat = (chat) => {
+const validateChat = (chat: any) => {
 	// Because ChatGPT sometimes has features we can't use like DALL-E or might have corrupted messages, need to validate
 	const messages = chat.messages;
 
@@ -899,9 +899,9 @@ const validateChat = (chat) => {
 	return true;
 };
 
-export const convertOpenAIChats = (_chats) => {
+export const convertOpenAIChats = (_chats: any) => {
 	// Create a list of dictionaries with each conversation from import
-	const chats = [];
+	const chats: any[] = [];
 	let failed = 0;
 	let skipped = 0;
 	for (const convo of _chats) {
@@ -946,7 +946,7 @@ export const isValidHttpUrl = (string: string) => {
 
 	try {
 		url = new URL(string);
-	} catch (_) {
+	} catch (_: any) {
 		return false;
 	}
 
@@ -1031,7 +1031,7 @@ export const removeAllDetails = (content) => {
 	}).trim();
 };
 
-export const processDetails = (content) => {
+export const processDetails = (content: any) => {
 	content = removeDetails(content, ['reasoning', 'code_interpreter']);
 
 	// This regex matches <details> tags with type="tool_calls" and captures their attributes to convert them to a string
@@ -1040,7 +1040,7 @@ export const processDetails = (content) => {
 	if (matches) {
 		for (const match of matches) {
 			const attributesRegex = /(\w+)="([^"]*)"/g;
-			const attributes = {};
+			const attributes: Record<string, any> = {};
 			let attributeMatch;
 			while ((attributeMatch = attributesRegex.exec(match)) !== null) {
 				attributes[attributeMatch[1]] = attributeMatch[2];
@@ -1295,7 +1295,7 @@ export const getTimeRange = (timestamp) => {
  * @returns {Object} - The extracted frontmatter as a dictionary.
  */
 export const extractFrontmatter = (content) => {
-	const frontmatter = {};
+	const frontmatter: Record<string, any> = {};
 	let frontmatterStarted = false;
 	let frontmatterEnded = false;
 	const frontmatterPattern = /^\s*([a-z_]+):\s*(.*)\s*$/i;
@@ -1376,7 +1376,7 @@ export const getWeekday = () => {
 };
 
 export const createMessagesList = (history, messageId) => {
-	const list = [];
+	const list: any[] = [];
 	let currentId = messageId;
 
 	while (currentId !== null && currentId !== undefined) {
@@ -1499,7 +1499,7 @@ const OPENAPI_HTTP_METHODS = new Set([
 
 // Main conversion function
 export const convertOpenApiToToolPayload = (openApiSpec) => {
-	const toolPayload = [];
+	const toolPayload: any = [];
 
 	// Guard against invalid or non-OpenAPI specs (e.g., MCP-style configs)
 	if (!openApiSpec || !openApiSpec.paths) {
@@ -1893,7 +1893,7 @@ export const extractContentFromFile = async (file: File) => {
 	}
 };
 
-export const getAge = (birthDate) => {
+export const getAge = (birthDate: any) => {
 	const today = new Date();
 	const bDate = new Date(birthDate);
 	let age = today.getFullYear() - bDate.getFullYear();
@@ -2035,7 +2035,7 @@ export const getCodeBlockContents = (content: string): object => {
 
 	const codeBlockContents = content.match(/```[\s\S]*?```/g);
 
-	let codeBlocks = [];
+	let codeBlocks: any = [];
 
 	// Groups of related HTML/CSS/JS blocks. Each HTML block starts a new group;
 	// CSS and JS blocks attach to the current (most recent) group.
@@ -2121,11 +2121,11 @@ export const getCodeBlockContents = (content: string): object => {
 			}))
 	};
 };
-export const parseFrontmatter = (content) => {
+export const parseFrontmatter = (content: any) => {
 	const match = content.match(/^---\s*\n([\s\S]*?)\n---/);
 	if (match) {
-		const frontmatter = {};
-		match[1].split('\n').forEach((line) => {
+		const frontmatter: Record<string, any> = {};
+		match[1].split('\n').forEach((line: any) => {
 			const [key, ...value] = line.split(':');
 			if (key && value) {
 				frontmatter[key.trim()] = value

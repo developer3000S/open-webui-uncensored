@@ -29,26 +29,24 @@
 	});
 </script>
 
-<script>
+<script lang="ts">
 	import { onDestroy } from 'svelte';
 	import { replaceTokens, processResponseContent } from '$lib/utils';
 	import { user } from '$lib/stores';
 
 	import MarkdownTokens from './Markdown/MarkdownTokens.svelte';
 
-	export let id = '';
-	export let content;
-	export let done = true;
-	export let model = null;
-	export let save = false;
-	export let preview = false;
-
-	export let paragraphTag = 'p';
-	export let editCodeBlock = true;
-	export let topPadding = false;
-	export let allowEmbeds = true;
-
-	export let sourceIds = [];
+	export let id: any = '';
+	export let content: any;
+	export let done: any = true;
+	let model: any = null;
+	export let save: any = false;
+	export let preview: any = false;
+	export let paragraphTag: any = 'p';
+	export let editCodeBlock: any = true;
+	export let topPadding: any = false;
+	export let allowEmbeds: any = true;
+	let sourceIds: any[] = [];
 
 	export let onSave = () => {};
 	export let onUpdate = () => {};
@@ -58,8 +56,8 @@
 	export let onSourceClick = () => {};
 	export let onTaskClick = () => {};
 
-	let tokens = [];
-	let pendingUpdate = null;
+	let tokens: any[] = [];
+	let pendingUpdate: any = null;
 	let lastContent = '';
 	let lastParsedContent = '';
 

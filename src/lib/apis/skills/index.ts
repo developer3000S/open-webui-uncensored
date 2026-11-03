@@ -1,7 +1,7 @@
 import { WEBUI_API_BASE_URL } from '$lib/constants';
 
 export const createNewSkill = async (token: string, skill: object) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/skills/create`, {
 		method: 'POST',
@@ -32,7 +32,7 @@ export const createNewSkill = async (token: string, skill: object) => {
 };
 
 export const getSkills = async (token: string = '') => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/skills/`, {
 		method: 'GET',
@@ -63,7 +63,7 @@ export const getSkills = async (token: string = '') => {
 };
 
 export const getSkillList = async (token: string = '') => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/skills/list`, {
 		method: 'GET',
@@ -99,7 +99,7 @@ export const getSkillItems = async (
 	viewOption: string | null = null,
 	page: number | null = null
 ) => {
-	let error = null;
+	let error: any = null;
 
 	const searchParams = new URLSearchParams();
 	if (query) searchParams.append('query', query);
@@ -135,7 +135,7 @@ export const getSkillItems = async (
 };
 
 export const exportSkills = async (token: string = '') => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/skills/export`, {
 		method: 'GET',
@@ -166,7 +166,7 @@ export const exportSkills = async (token: string = '') => {
 };
 
 export const getSkillById = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/skills/id/${id}`, {
 		method: 'GET',
@@ -197,7 +197,7 @@ export const getSkillById = async (token: string, id: string) => {
 };
 
 export const updateSkillById = async (token: string, id: string, skill: object) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/skills/id/${id}/update`, {
 		method: 'POST',
@@ -228,7 +228,7 @@ export const updateSkillById = async (token: string, id: string, skill: object) 
 };
 
 export const updateSkillAccessGrants = async (token: string, id: string, accessGrants: any[]) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/skills/id/${id}/access/update`, {
 		method: 'POST',
@@ -259,7 +259,7 @@ export const updateSkillAccessGrants = async (token: string, id: string, accessG
 };
 
 export const toggleSkillById = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/skills/id/${id}/toggle`, {
 		method: 'POST',
@@ -290,7 +290,7 @@ export const toggleSkillById = async (token: string, id: string) => {
 };
 
 export const deleteSkillById = async (token: string, id: string) => {
-	let error = null;
+	let error: any = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/skills/id/${id}/delete`, {
 		method: 'DELETE',

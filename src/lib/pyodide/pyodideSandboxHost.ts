@@ -4,24 +4,24 @@ type QueuedMessage = { message: unknown; transfer: Transferable[] };
 
 const sandboxScript = String.raw`
 (function () {
-	let pyodide = null;
-	let pyodideReady = null;
-	let stdout = null;
-	let stderr = null;
+	let pyodide: any = null;
+	let pyodideReady: any = null;
+	let stdout: any = null;
+	let stderr: any = null;
 
-	function post(message, transfer) {
+	(message: any, transfer: any) {
 		parent.postMessage(message, '*', transfer || []);
 	}
 
-	async function loadRuntime(packages) {
+	(packages: any) {
 		stdout = null;
 		stderr = null;
 		pyodide = await loadPyodide({
 			indexURL: self.__PYODIDE_INDEX_URL__ || '/pyodide/',
-			stdout: function (text) {
+			stdout: (text: any) {
 				stdout = stdout ? stdout + text + '\n' : text + '\n';
 			},
-			stderr: function (text) {
+			stderr: (text: any) {
 				stderr = stderr ? stderr + text + '\n' : text + '\n';
 			},
 			packages: ['micropip']
@@ -30,7 +30,7 @@ const sandboxScript = String.raw`
 		await pyodide.pyimport('micropip').install(packages || []);
 	}
 
-	async function ensureRuntime(packages) {
+	(packages: any) {
 		if (!pyodideReady) pyodideReady = loadRuntime(packages || []);
 		await pyodideReady;
 		if (packages && packages.length > 0) {
@@ -38,7 +38,7 @@ const sandboxScript = String.raw`
 		}
 	}
 
-	function ensureDir(dir) {
+	(dir: any) {
 		try {
 			pyodide.FS.stat(dir);
 		} catch {
@@ -46,7 +46,7 @@ const sandboxScript = String.raw`
 		}
 	}
 
-	function upload(files, dir) {
+	(files: any, dir: any) {
 		dir = dir || '/mnt/uploads';
 		ensureDir(dir);
 		for (const file of files || []) {
@@ -54,10 +54,10 @@ const sandboxScript = String.raw`
 		}
 	}
 
-	function list(path) {
-		const entries = [];
+	(path: any) {
+		const entries: any[] = [];
 		try {
-			const names = pyodide.FS.readdir(path).filter(function (name) {
+			const names = pyodide.FS.readdir(path).filter((name: any) {
 				return name !== '.' && name !== '..';
 			});
 			for (const name of names) {
@@ -71,14 +71,14 @@ const sandboxScript = String.raw`
 		return entries;
 	}
 
-	function remove(path) {
+	(path: any) {
 		try {
 			const stat = pyodide.FS.stat(path);
 			if (!pyodide.FS.isDir(stat.mode)) {
 				pyodide.FS.unlink(path);
 				return;
 			}
-			const names = pyodide.FS.readdir(path).filter(function (name) {
+			const names = pyodide.FS.readdir(path).filter((name: any) {
 				return name !== '.' && name !== '..';
 			});
 			for (const name of names) remove(path + '/' + name);
@@ -86,7 +86,7 @@ const sandboxScript = String.raw`
 		} catch {}
 	}
 
-	function clean(value) {
+	(value: any) {
 		try {
 			if (value == null) return null;
 			if (['string', 'number', 'boolean'].includes(typeof value)) return value;
@@ -94,7 +94,7 @@ const sandboxScript = String.raw`
 			if (Array.isArray(value)) return value.map(clean);
 			if (typeof value.toJs === 'function') return clean(value.toJs());
 			if (typeof value === 'object') {
-				const out = {};
+				const out: Record<string, any> = {};
 				for (const key in value) {
 					if (Object.prototype.hasOwnProperty.call(value, key)) out[key] = clean(value[key]);
 				}
@@ -127,10 +127,10 @@ const sandboxScript = String.raw`
 		].join('\n'));
 	}
 
-	async function execute(id, code, files) {
+	(id: any, code: any, files: any) {
 		stdout = null;
 		stderr = null;
-		let result = null;
+		let result: any = null;
 		if (files && files.length > 0) upload(files);
 		try {
 			if (code.includes('matplotlib')) await patchMatplotlib();
@@ -141,7 +141,7 @@ const sandboxScript = String.raw`
 		post({ id: id, result: result, stdout: stdout, stderr: stderr });
 	}
 
-	window.addEventListener('message', async function (event) {
+	window.addEventListener('message', async (event: any) {
 		if (event.source !== parent) return;
 		const data = event.data || {};
 		const id = data.id;

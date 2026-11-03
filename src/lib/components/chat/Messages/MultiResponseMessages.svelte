@@ -1,6 +1,9 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
+	import { getContext, onMount, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import dayjs from 'dayjs';
-	import { onMount, tick, getContext } from 'svelte';
 	import { createEventDispatcher } from 'svelte';
 
 	import { mobile, models, settings } from '$lib/stores';
@@ -21,19 +24,16 @@
 	import { WEBUI_BASE_URL } from '$lib/constants';
 	import equal from 'fast-deep-equal';
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 	dayjs.extend(localizedFormat);
 
-	export let chatId;
-	export let history;
-	export let messageId;
-	export let selectedModels = [];
+	export let chatId: any;
+	export let history: { messages?: Record<string, any>; currentId?: string | null; [key: string]: any } = {};
+	export let messageId: any;
+	export let selectedModels: any = [];
 
-	export let isLastMessage;
-	export let readOnly = false;
-	export let editCodeBlock = true;
-
+	export let isLastMessage: any;
+	export let readOnly: any = false;
+	export let editCodeBlock: any = true;
 	export let setInputText: Function = () => {};
 	export let updateChat: Function;
 	export let editMessage: Function;
@@ -52,16 +52,15 @@
 
 	export let triggerScroll: Function;
 
-	export let topPadding = false;
-
+	export let topPadding: any = false;
 	const dispatch = createEventDispatcher();
 
 	let currentMessageId;
 	let parentMessage;
-	let groupedMessageIds = {};
-	let groupedMessageIdsIdx = {};
+	let groupedMessageIds: Record<string, any> = {};
+	let groupedMessageIdsIdx: Record<string, any> = {};
 
-	let selectedModelIdx = null;
+	let selectedModelIdx: any = null;
 
 	let message = structuredClone(history.messages[messageId]);
 	$: if (history.messages) {
@@ -75,7 +74,7 @@
 		}
 	}
 
-	const gotoMessage = async (modelIdx, messageIdx) => {
+	const gotoMessage = async (modelIdx: any, messageIdx: any) => {
 		// Clamp messageIdx to ensure it's within valid range
 		groupedMessageIdsIdx[modelIdx] = Math.max(
 			0,
@@ -104,7 +103,7 @@
 		triggerScroll();
 	};
 
-	const showPreviousMessage = async (modelIdx) => {
+	const showPreviousMessage = async (modelIdx: any) => {
 		groupedMessageIdsIdx[modelIdx] = Math.max(0, groupedMessageIdsIdx[modelIdx] - 1);
 
 		let messageId = groupedMessageIds[modelIdx].messageIds[groupedMessageIdsIdx[modelIdx]];
@@ -124,7 +123,7 @@
 		triggerScroll();
 	};
 
-	const showNextMessage = async (modelIdx) => {
+	const showNextMessage = async (modelIdx: any) => {
 		groupedMessageIdsIdx[modelIdx] = Math.min(
 			groupedMessageIds[modelIdx].messageIds.length - 1,
 			groupedMessageIdsIdx[modelIdx] + 1
@@ -156,7 +155,7 @@
 			? history.messages[history.messages[messageId].parentId]
 			: null;
 
-		groupedMessageIds = parentMessage?.models.reduce((a, model, modelIdx) => {
+		groupedMessageIds = parentMessage?.models.reduce((a: any, model: any, modelIdx: any) => {
 			// Find all messages that are children of the parent message and have the same model
 			let modelMessageIds = parentMessage?.childrenIds
 				.map((id) => history.messages[id])
@@ -207,7 +206,7 @@
 		await tick();
 	};
 
-	const onGroupClick = async (_messageId, modelIdx) => {
+	const onGroupClick = async (_messageId: any, modelIdx: any) => {
 		if (messageId != _messageId) {
 			let currentMessageId = _messageId;
 			let messageChildrenIds = history.messages[currentMessageId].childrenIds;
@@ -305,7 +304,7 @@
 									{selectedModels}
 									isLastMessage={true}
 									siblings={groupedMessageIds[selectedModelIdx].messageIds}
-									gotoMessage={(message, messageIdx) => gotoMessage(selectedModelIdx, messageIdx)}
+									gotoMessage={(message: any, messageIdx: any) => gotoMessage(selectedModelIdx, messageIdx)}
 									showPreviousMessage={() => showPreviousMessage(selectedModelIdx)}
 									showNextMessage={() => showNextMessage(selectedModelIdx)}
 									{setInputText}
@@ -317,7 +316,7 @@
 									{actionMessage}
 									{submitMessage}
 									{continueResponse}
-									regenerateResponse={async (message, prompt = null) => {
+									regenerateResponse={async (message: any, prompt: any = null) => {
 										regenerateResponse(message, prompt);
 										await tick();
 										groupedMessageIdsIdx[selectedModelIdx] =
@@ -362,7 +361,7 @@
 										{selectedModels}
 										isLastMessage={true}
 										siblings={groupedMessageIds[modelIdx].messageIds}
-										gotoMessage={(message, messageIdx) => gotoMessage(modelIdx, messageIdx)}
+										gotoMessage={(message: any, messageIdx: any) => gotoMessage(modelIdx, messageIdx)}
 										showPreviousMessage={() => showPreviousMessage(modelIdx)}
 										showNextMessage={() => showNextMessage(modelIdx)}
 										{setInputText}
@@ -374,7 +373,7 @@
 										{actionMessage}
 										{submitMessage}
 										{continueResponse}
-										regenerateResponse={async (message, prompt = null) => {
+										regenerateResponse={async (message: any, prompt: any = null) => {
 											regenerateResponse(message, prompt);
 											await tick();
 											groupedMessageIdsIdx[modelIdx] =
@@ -406,7 +405,7 @@
 
 							<div class="w-full rounded-xl pl-5 pr-2 py-2 mt-2">
 								<Name>
-									{$i18n.t('Merged Response')}
+									{i18n.t('Merged Response')}
 
 									{#if message.timestamp}
 										<span
@@ -430,7 +429,212 @@
 
 					{#if isLastMessage}
 						<div class=" shrink-0 text-gray-600 dark:text-gray-500 mt-1">
-							<Tooltip content={$i18n.t('Merge Responses')} placement="bottom">
+							<Tooltip content={i18n.t('Merge Responses')} placement="bottom">
+								<button
+									type="button"
+									id="merge-response-button"
+									class="{true
+										? 'visible'
+										: 'invisible group-hover:visible'} p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg dark:hover:text-white hover:text-black transition"
+									on:click={() => {
+										mergeResponsesHandler();
+									}}
+								>
+									<Merge className=" size-5 " />
+								</button>
+							</Tooltip>
+						</div>
+					{/if}
+				</div>
+			{/if}
+		{/if}
+	</div>
+{/if}
+
+{#if parentMessage}
+	<div>
+		<div
+			class="flex snap-x snap-mandatory overflow-x-auto scrollbar-hidden"
+			id="responses-container-{chatId}-{parentMessage.id}"
+		>
+			{#if $settings?.displayMultiModelResponsesInTabs ?? false}
+				<div class="w-full">
+					<div class=" flex w-full mb-4.5 border-b border-gray-200 dark:border-gray-850">
+						<div
+							class="flex gap-2 scrollbar-none overflow-x-auto w-fit text-center font-medium bg-transparent pt-1 text-sm"
+							on:wheel|preventDefault={(e) => {
+								e.currentTarget.scrollLeft += e.deltaY;
+							}}
+						>
+							{#each Object.keys(groupedMessageIds) as modelIdx}
+								{#if groupedMessageIdsIdx[modelIdx] !== undefined && (groupedMessageIds[modelIdx]?.messageIds ?? []).length > 0}
+									<!-- svelte-ignore a11y-no-static-element-interactions -->
+									<!-- svelte-ignore a11y-click-events-have-key-events -->
+
+									{@const _messageId =
+										groupedMessageIds[modelIdx].messageIds[groupedMessageIdsIdx[modelIdx]]}
+
+									{@const model = $models.find((m) => m.id === history.messages[_messageId]?.model)}
+
+									<button
+										class="min-w-fit {selectedModelIdx == modelIdx
+											? ' dark:border-gray-300 '
+											: ' opacity-35 border-transparent'} pb-1.5 px-2.5 transition border-b-2"
+										on:click={async () => {
+											if (selectedModelIdx != modelIdx) {
+												selectedModelIdx = modelIdx;
+											}
+
+											onGroupClick(_messageId, modelIdx);
+										}}
+									>
+										<div class="flex items-center gap-1.5">
+											<div class="-translate-y-[1px]">
+												{model ? `${model.name}` : history.messages[_messageId]?.model}
+											</div>
+										</div>
+									</button>
+								{/if}
+							{/each}
+						</div>
+					</div>
+
+					{#if selectedModelIdx !== null}
+						{#key history.currentId}
+							{#if message}
+								<ResponseMessage
+									{chatId}
+									{history}
+									messageId={message?.id}
+									{selectedModels}
+									isLastMessage={true}
+									siblings={groupedMessageIds[selectedModelIdx].messageIds}
+									gotoMessage={(message: any, messageIdx: any) => gotoMessage(selectedModelIdx, messageIdx)}
+									showPreviousMessage={() => showPreviousMessage(selectedModelIdx)}
+									showNextMessage={() => showNextMessage(selectedModelIdx)}
+									{setInputText}
+									{updateChat}
+									{editMessage}
+									{saveMessage}
+									{rateMessage}
+									{deleteMessage}
+									{actionMessage}
+									{submitMessage}
+									{continueResponse}
+									regenerateResponse={async (message: any, prompt: any = null) => {
+										regenerateResponse(message, prompt);
+										await tick();
+										groupedMessageIdsIdx[selectedModelIdx] =
+											groupedMessageIds[selectedModelIdx].messageIds.length - 1;
+									}}
+									{addMessages}
+									{readOnly}
+									{topPadding}
+								/>
+							{/if}
+						{/key}
+					{/if}
+				</div>
+			{:else}
+				{#each Object.keys(groupedMessageIds) as modelIdx}
+					{#if groupedMessageIdsIdx[modelIdx] !== undefined && groupedMessageIds[modelIdx].messageIds.length > 0}
+						{@const _messageId =
+							groupedMessageIds[modelIdx].messageIds[groupedMessageIdsIdx[modelIdx]]}
+
+						<!-- svelte-ignore a11y_no_static_element_interactions -->
+						<!-- svelte-ignore a11y_click_events_have_key_events -->
+						<div
+							role="presentation"
+							class=" snap-center w-full max-w-full m-1 border {history.messages[messageId]
+								?.modelIdx == modelIdx
+								? `bg-gray-50 dark:bg-gray-850 border-gray-100 dark:border-gray-800 border-2 ${
+										$mobile ? 'min-w-full' : 'min-w-80'
+									}`
+								: `border-gray-100/30 dark:border-gray-850/30 border-dashed ${
+										$mobile ? 'min-w-full' : 'min-w-80'
+									}`} transition-all p-5 rounded-2xl"
+							on:click={async () => {
+								onGroupClick(_messageId, modelIdx);
+							}}
+						>
+							{#key history.currentId}
+								{#if message}
+									<ResponseMessage
+										{chatId}
+										{history}
+										messageId={_messageId}
+										{selectedModels}
+										isLastMessage={true}
+										siblings={groupedMessageIds[modelIdx].messageIds}
+										gotoMessage={(message: any, messageIdx: any) => gotoMessage(modelIdx, messageIdx)}
+										showPreviousMessage={() => showPreviousMessage(modelIdx)}
+										showNextMessage={() => showNextMessage(modelIdx)}
+										{setInputText}
+										{updateChat}
+										{editMessage}
+										{saveMessage}
+										{rateMessage}
+										{deleteMessage}
+										{actionMessage}
+										{submitMessage}
+										{continueResponse}
+										regenerateResponse={async (message: any, prompt: any = null) => {
+											regenerateResponse(message, prompt);
+											await tick();
+											groupedMessageIdsIdx[modelIdx] =
+												groupedMessageIds[modelIdx].messageIds.length - 1;
+										}}
+										{addMessages}
+										{readOnly}
+										{editCodeBlock}
+										{topPadding}
+									/>
+								{/if}
+							{/key}
+						</div>
+					{/if}
+				{/each}
+			{/if}
+		</div>
+
+		{#if !readOnly}
+			{#if !Object.keys(groupedMessageIds).find((modelIdx) => {
+				const { messageIds } = groupedMessageIds[modelIdx];
+				const _messageId = messageIds[groupedMessageIdsIdx[modelIdx]];
+				return !history.messages[_messageId]?.done ?? false;
+			})}
+				<div class="flex justify-end">
+					<div class="w-full">
+						{#if history.messages[messageId]?.merged?.status}
+							{@const message = history.messages[messageId]?.merged}
+
+							<div class="w-full rounded-xl pl-5 pr-2 py-2 mt-2">
+								<Name>
+									{i18n.t('Merged Response')}
+
+									{#if message.timestamp}
+										<span
+											class=" self-center invisible group-hover:visible text-gray-400 text-xs font-medium uppercase ml-0.5 -mt-0.5"
+										>
+											{dayjs(message.timestamp * 1000).format('LT')}
+										</span>
+									{/if}
+								</Name>
+
+								<div class="mt-1 markdown-prose w-full min-w-full">
+									{#if (message?.content ?? '') === ''}
+										<Skeleton />
+									{:else}
+										<Markdown id={`merged`} content={message.content ?? ''} />
+									{/if}
+								</div>
+							</div>
+						{/if}
+					</div>
+
+					{#if isLastMessage}
+						<div class=" shrink-0 text-gray-600 dark:text-gray-500 mt-1">
+							<Tooltip content={i18n.t('Merge Responses')} placement="bottom">
 								<button
 									type="button"
 									id="merge-response-button"

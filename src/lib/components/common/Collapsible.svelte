@@ -1,12 +1,12 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
+	import { getContext } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { decode } from 'html-entities';
 	import { v4 as uuidv4 } from 'uuid';
 
-	import { getContext } from 'svelte';
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
-
 	import dayjs from '$lib/dayjs';
 	import duration from 'dayjs/plugin/duration';
 	import relativeTime from 'dayjs/plugin/relativeTime';
@@ -14,7 +14,7 @@
 	dayjs.extend(duration);
 	dayjs.extend(relativeTime);
 
-	async function loadLocale(locales) {
+	async function loadLocale(locales: any) {
 		if (!locales || !Array.isArray(locales)) {
 			return;
 		}
@@ -28,8 +28,8 @@
 		}
 	}
 
-	// Assuming $i18n.languages is an array of language codes
-	$: loadLocale($i18n.languages);
+	// Assuming $languages is an array of language codes
+	$: loadLocale($languages);
 
 	import { slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
@@ -38,23 +38,19 @@
 	import ChevronDown from '../icons/ChevronDown.svelte';
 	import Spinner from './Spinner.svelte';
 
-	export let open = false;
-
-	export let className = '';
-	export let buttonClassName =
+	export let open: any = false;
+	export let className: any = '';
+	export let buttonClassName: any =
 		'w-fit text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition';
+	export let id: any = '';
+	let title: any = null;
+	let attributes: any = null;
 
-	export let id = '';
-	export let title = null;
-	export let attributes = null;
-
-	export let chevron = false;
-	export let grow = false;
-
-	export let disabled = false;
-	export let messageDone = false;
-	export let hide = false;
-
+	export let chevron: any = false;
+	export let grow: any = false;
+	export let disabled: any = false;
+	export let messageDone: any = false;
+	export let hide: any = false;
 	export let onChange: Function = () => {};
 
 	const toggleOpen = () => {
@@ -92,26 +88,26 @@
 					{#if attributes?.type === 'reasoning'}
 						{#if (attributes?.done === 'true' || messageDone) && attributes?.duration}
 							{#if attributes.duration < 1}
-								{$i18n.t('Thought for less than a second')}
+								{i18n.t('Thought for less than a second')}
 							{:else if attributes.duration < 60}
-								{$i18n.t('Thought for {{DURATION}} seconds', {
+								{i18n.t('Thought for {{DURATION}} seconds', {
 									DURATION: attributes.duration
 								})}
 							{:else}
-								{$i18n.t('Thought for {{DURATION}}', {
+								{i18n.t('Thought for {{DURATION}}', {
 									DURATION: dayjs.duration(attributes.duration, 'seconds').humanize()
 								})}
 							{/if}
 						{:else if attributes?.done === 'true' || messageDone}
-							{$i18n.t('Thought')}
+							{i18n.t('Thought')}
 						{:else}
-							{$i18n.t('Thinking...')}
+							{i18n.t('Thinking...')}
 						{/if}
 					{:else if attributes?.type === 'code_interpreter'}
 						{#if attributes?.done === 'true' || messageDone}
-							{$i18n.t('Analyzed')}
+							{i18n.t('Analyzed')}
 						{:else}
-							{$i18n.t('Analyzing...')}
+							{i18n.t('Analyzing...')}
 						{/if}
 					{:else}
 						{title}

@@ -1,6 +1,9 @@
-<script>
+<script lang="ts">
+	import type i18nType from 'i18next';
+	import { getContext, onMount } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { toast } from 'svelte-sonner';
-	import { onMount, getContext } from 'svelte';
 
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -14,19 +17,17 @@
 	import { WEBUI_VERSION } from '$lib/constants';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
-	let func = null;
+	let func: any = null;
 
-	const saveHandler = async (data) => {
+	const saveHandler = async (data: any) => {
 		console.log(data);
 
 		const manifest = extractFrontmatter(data.content);
 		if (compareVersion(manifest?.required_open_webui_version ?? '0.0.0', WEBUI_VERSION)) {
 			console.log('Version is lower than required');
 			toast.error(
-				$i18n.t(
+				i18n.t(
 					'Open WebUI version (v{{OPEN_WEBUI_VERSION}}) is lower than required version (v{{REQUIRED_VERSION}})',
 					{
 						OPEN_WEBUI_VERSION: WEBUI_VERSION,
@@ -42,13 +43,13 @@
 			name: data.name,
 			meta: data.meta,
 			content: data.content
-		}).catch((error) => {
+		}).catch(async (error)=> {
 			toast.error(`${error}`);
 			return null;
 		});
 
 		if (res) {
-			toast.success($i18n.t('Function updated successfully'));
+			toast.success(i18n.t('Function updated successfully'));
 			functions.set(await getFunctions(localStorage.token));
 			models.set(
 				await getModels(
@@ -85,7 +86,28 @@
 			name={func.name}
 			meta={func.meta}
 			content={func.content}
-			onSave={(value) => {
+			onSave={(value: any) => {
+				saveHandler(value);
+			}}
+		/>
+	</div>
+{:else}
+	<div class="flex items-center justify-center h-full">
+		<div class=" pb-16">
+			<Spinner className="size-5" />
+		</div>
+	</div>
+{/if}
+
+{#if func}
+	<div class="px-[16px] h-full">
+		<FunctionEditor
+			edit={true}
+			id={func.id}
+			name={func.name}
+			meta={func.meta}
+			content={func.content}
+			onSave={(value: any) => {
 				saveHandler(value);
 			}}
 		/>

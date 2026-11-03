@@ -1,4 +1,8 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
+	import { createEventDispatcher, getContext, onMount, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import DOMPurify from 'dompurify';
 	import { toast } from 'svelte-sonner';
 
@@ -10,8 +14,6 @@
 
 	dayjs.extend(duration);
 	dayjs.extend(relativeTime);
-
-	import { onMount, tick, getContext, createEventDispatcher } from 'svelte';
 
 	import { createPicker, getAuthToken } from '$lib/utils/google-drive-picker';
 	import { pickAndDownloadFile } from '$lib/utils/onedrive-file-picker';
@@ -106,46 +108,41 @@
 	import TaskList from './Messages/ResponseMessage/TaskList.svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
-
-	export let onUpload: Function = (e) => {};
+	export let onUpload: Function = (e: any) => {};
 	export let onChange: Function = () => {};
 	export let onWebSearchToggle: Function = () => {};
 
 	export let createMessagePair: Function;
 	export let stopResponse: Function;
 
-	export let autoScroll = false;
-	export let generating = false;
-	export let uploadPending = false;
-
+	export let autoScroll: any = false;
+	export let generating: any = false;
+	export let uploadPending: any = false;
 	export let atSelectedModel: Model | undefined = undefined;
 	export let selectedModels: [''];
 
-	let selectedModelIds = [];
+	let selectedModelIds: any[] = [];
 	$: selectedModelIds = atSelectedModel !== undefined ? [atSelectedModel.id] : selectedModels;
 
-	export let history;
-	export let taskIds = null;
+	export let history: { messages?: Record<string, any>; currentId?: string | null; [key: string]: any } = {};
+	let taskIds: any = null;
 
 	$: isActive =
 		(taskIds && taskIds.length > 0) ||
 		(history.currentId && history.messages[history.currentId]?.done != true) ||
 		generating;
 
-	export let prompt = '';
-	export let files = [];
+	export let prompt: any = '';
+	export let files: any = [];
 
-	export let selectedToolIds = [];
+	export let selectedToolIds: any = [];
 	export let selectedSkillIds: string[] = [];
-	export let selectedFilterIds = [];
+	export let selectedFilterIds: any = [];
 
-	export let imageGenerationEnabled = false;
-	export let webSearchEnabled = false;
-	export let codeInterpreterEnabled = false;
-
-	export let pendingOAuthTools = [];
+	export let imageGenerationEnabled: any = false;
+	export let webSearchEnabled: any = false;
+	export let codeInterpreterEnabled: any = false;
+	export let pendingOAuthTools: any = [];
 
 	let showTerminalMenu = false;
 
@@ -154,18 +151,18 @@
 	export let onQueueEdit: (id: string) => void = () => {};
 	export let onQueueDelete: (id: string) => void = () => {};
 
-	export let chatTasks = [];
+	export let chatTasks: any = [];
 
-	let inputContent = null;
+	let inputContent: any = null;
 
 	let showInputVariablesModal = false;
-	let inputVariablesModalCallback = (variableValues) => {};
-	let inputVariables = {};
-	let inputVariableValues = {};
+	let inputVariablesModalCallback = (variableValues: any) => {};
+	let inputVariables: Record<string, any> = {};
+	let inputVariableValues: Record<string, any> = {};
 
 	let showValvesModal = false;
 	let selectedValvesType = 'tool'; // 'tool' or 'function'
-	let selectedValvesItemId = null;
+	let selectedValvesItemId: any = null;
 	let integrationsMenuCloseOnOutsideClick = true;
 
 	$: if (!showValvesModal) {
@@ -213,12 +210,12 @@
 
 	const textVariableHandler = async (text: string) => {
 		if (text.includes('{{CLIPBOARD}}')) {
-			const clipboardText = await navigator.clipboard.readText().catch((err) => {
-				toast.error($i18n.t('Failed to read clipboard contents'));
+			const clipboardText = await navigator.clipboard.readText().catch(async (err)=> {
+				toast.error(i18n.t('Failed to read clipboard contents'));
 				return '{{CLIPBOARD}}';
 			});
 
-			const clipboardItems = await navigator.clipboard.read().catch((err) => {
+			const clipboardItems = await navigator.clipboard.read().catch(async (err)=> {
 				console.error('Failed to read clipboard items:', err);
 				return [];
 			});
@@ -244,7 +241,7 @@
 			try {
 				location = await getUserPosition();
 			} catch (error) {
-				toast.error($i18n.t('Location access not allowed'));
+				toast.error(i18n.t('Location access not allowed'));
 				location = 'LOCATION_UNKNOWN';
 			}
 			text = text.replaceAll('{{USER_LOCATION}}', String(location));
@@ -376,7 +373,7 @@
 		return word;
 	};
 
-	const replaceCommandWithText = (text) => {
+	const replaceCommandWithText = (text: any) => {
 		const chatInput = document.getElementById('chat-input');
 		if (!chatInput) return;
 
@@ -421,7 +418,7 @@
 	};
 
 	let command = '';
-	export let showCommands = false;
+	export let showCommands: any = false;
 	$: showCommands =
 		['/', '#', '@', '$', ':'].includes(command?.charAt(0)) || '\\#' === command?.slice(0, 2);
 	let suggestions: any[] | null = null;
@@ -468,12 +465,11 @@
 
 	let showInputModal = false;
 
-	export let dragged = false;
+	export let dragged: any = false;
 	let shiftKey = false;
 
-	let user = null;
-	export let placeholder = '';
-
+	let user: any = null;
+	export let placeholder: any = '';
 	type ModelCapability =
 		'vision' | 'file_upload' | 'web_search' | 'image_generation' | 'code_interpreter' | 'terminal';
 	type ModelCapabilitiesById = Record<string, Partial<Record<ModelCapability, boolean>>>;
@@ -489,45 +485,45 @@
 		capabilitiesById: ModelCapabilitiesById
 	) => modelIds.filter((id) => capabilitiesById[id]?.[capability] ?? true);
 
-	let visionCapableModels = [];
+	let visionCapableModels: any[] = [];
 	$: visionCapableModels = getCapableModelIds(selectedModelIds, 'vision', modelCapabilitiesById);
 
-	let fileUploadCapableModels = [];
+	let fileUploadCapableModels: any[] = [];
 	$: fileUploadCapableModels = getCapableModelIds(
 		selectedModelIds,
 		'file_upload',
 		modelCapabilitiesById
 	);
 
-	let webSearchCapableModels = [];
+	let webSearchCapableModels: any[] = [];
 	$: webSearchCapableModels = getCapableModelIds(
 		selectedModelIds,
 		'web_search',
 		modelCapabilitiesById
 	);
 
-	let imageGenerationCapableModels = [];
+	let imageGenerationCapableModels: any[] = [];
 	$: imageGenerationCapableModels = getCapableModelIds(
 		selectedModelIds,
 		'image_generation',
 		modelCapabilitiesById
 	);
 
-	let codeInterpreterCapableModels = [];
+	let codeInterpreterCapableModels: any[] = [];
 	$: codeInterpreterCapableModels = getCapableModelIds(
 		selectedModelIds,
 		'code_interpreter',
 		modelCapabilitiesById
 	);
 
-	let terminalCapableModels = [];
+	let terminalCapableModels: any[] = [];
 	$: terminalCapableModels = getCapableModelIds(
 		selectedModelIds,
 		'terminal',
 		modelCapabilitiesById
 	);
 
-	let toggleFilters = [];
+	let toggleFilters: any[] = [];
 	$: toggleFilters = (atSelectedModel?.id ? [atSelectedModel.id] : selectedModels)
 		.map((id) => ($models.find((model) => model.id === id) || {})?.filters ?? [])
 		.reduce((acc, filters) => acc.filter((f1) => filters.some((f2) => f2.id === f1.id)));
@@ -613,14 +609,14 @@
 		}
 	};
 
-	const uploadFileHandler = async (file, process = true, itemData = {}) => {
+	const uploadFileHandler = async (file: any, process: any = true, itemData: any = {}) => {
 		if ($_user?.role !== 'admin' && !($_user?.permissions?.chat?.file_upload ?? true)) {
-			toast.error($i18n.t('You do not have permission to upload files.'));
+			toast.error(i18n.t('You do not have permission to upload files.'));
 			return null;
 		}
 
 		if (fileUploadCapableModels.length !== selectedModelIds.length) {
-			toast.error($i18n.t('Model(s) do not support file upload'));
+			toast.error(i18n.t('Model(s) do not support file upload'));
 			return null;
 		}
 
@@ -640,7 +636,7 @@
 		};
 
 		if (fileItem.size == 0) {
-			toast.error($i18n.t('You cannot upload an empty file.'));
+			toast.error(i18n.t('You cannot upload an empty file.'));
 			return null;
 		}
 
@@ -649,7 +645,7 @@
 		if (!$temporaryChatEnabled) {
 			try {
 				// If the file is an audio file, provide the language for STT.
-				let metadata = null;
+				let metadata: any = null;
 				if (
 					(file.type.startsWith('audio/') || file.type.startsWith('video/')) &&
 					$settings?.audio?.stt?.language
@@ -686,7 +682,7 @@
 				} else {
 					files = files.filter((item) => item?.itemId !== tempItemId);
 				}
-			} catch (e) {
+			} catch (e: any) {
 				toast.error(`${e}`);
 				files = files.filter((item) => item?.itemId !== tempItemId);
 			}
@@ -695,13 +691,13 @@
 
 			const content = await extractContentFromFile(file).catch((error) => {
 				toast.error(
-					$i18n.t('Failed to extract content from the file: {{error}}', { error: error })
+					i18n.t('Failed to extract content from the file: {{error}}', { error: error })
 				);
 				return null;
 			});
 
 			if (content === null) {
-				toast.error($i18n.t('Failed to extract content from the file.'));
+				toast.error(i18n.t('Failed to extract content from the file.'));
 				files = files.filter((item) => item?.itemId !== tempItemId);
 				return null;
 			} else {
@@ -721,7 +717,7 @@
 		}
 	};
 
-	const inputFilesHandler = async (inputFiles) => {
+	const inputFilesHandler = async (inputFiles: any) => {
 		console.log('Input files handler called with:', inputFiles);
 
 		if (
@@ -729,14 +725,14 @@
 			files.length + inputFiles.length > $config?.file?.max_count
 		) {
 			toast.error(
-				$i18n.t(`You can only chat with a maximum of {{maxCount}} file(s) at a time.`, {
+				i18n.t(`You can only chat with a maximum of {{maxCount}} file(s) at a time.`, {
 					maxCount: $config?.file?.max_count
 				})
 			);
 			return;
 		}
 
-		inputFiles.forEach(async (file) => {
+		inputFiles.forEach(async (file: any) => {
 			console.log('Processing file:', {
 				name: file.name,
 				type: file.type,
@@ -753,7 +749,7 @@
 					maxSize: ($config?.file?.max_size ?? 0) * 1024 * 1024
 				});
 				toast.error(
-					$i18n.t(`File size should not exceed {{maxSize}} MB.`, {
+					i18n.t(`File size should not exceed {{maxSize}} MB.`, {
 						maxSize: $config?.file?.max_size
 					})
 				);
@@ -762,11 +758,11 @@
 
 			if (file['type'].startsWith('image/')) {
 				if (visionCapableModels.length === 0) {
-					toast.error($i18n.t('Selected model(s) do not support image inputs'));
+					toast.error(i18n.t('Selected model(s) do not support image inputs'));
 					return;
 				}
 
-				const compressImageHandler = async (imageUrl, settings = {}, config = {}) => {
+				const compressImageHandler = (imageUrl: any, settings: any = {}, config: any = {}) => {
 					// Quick shortcut so we don’t do unnecessary work.
 					const settingsCompression = settings?.imageCompression ?? false;
 					const configWidth = config?.file?.image_compression?.width ?? null;
@@ -778,8 +774,8 @@
 					}
 
 					// Default to null (no compression unless set)
-					let width = null;
-					let height = null;
+					let width: any = null;
+					let height: any = null;
 
 					// If user/settings want compression, pick their preferred size.
 					if (settingsCompression) {
@@ -804,7 +800,7 @@
 
 				let reader = new FileReader();
 
-				reader.onload = async (event) => {
+				reader.onload = (event: any) {
 					let imageUrl = event.target.result;
 
 					// Compress the image if settings or config require it
@@ -835,7 +831,7 @@
 
 	const createNote = async () => {
 		if (inputContent?.md.trim() === '' && inputContent?.html.trim() === '') {
-			toast.error($i18n.t('Cannot create an empty note.'));
+			toast.error(i18n.t('Cannot create an empty note.'));
 			return;
 		}
 
@@ -952,7 +948,7 @@
 		}
 
 		if (e.dataTransfer?.files) {
-			const inputFiles = Array.from(e.dataTransfer?.files);
+			const inputFiles: any = Array.from(e.dataTransfer?.files);
 			if (inputFiles && inputFiles.length > 0) {
 				console.log(inputFiles);
 				inputFilesHandler(inputFiles);
@@ -1003,7 +999,7 @@
 			{
 				char: '@',
 				render: getSuggestionRenderer(CommandSuggestionList, {
-					i18n,
+					i18n: _,
 					onSelect: (e) => {
 						const { type, data } = e;
 
@@ -1041,7 +1037,7 @@
 			{
 				char: '/',
 				render: getSuggestionRenderer(CommandSuggestionList, {
-					i18n,
+					i18n: _,
 					onSelect: (e) => {
 						const { type, data } = e;
 
@@ -1079,7 +1075,7 @@
 			{
 				char: '#',
 				render: getSuggestionRenderer(CommandSuggestionList, {
-					i18n,
+					i18n: _,
 					onSelect: (e) => {
 						const { type, data } = e;
 
@@ -1117,7 +1113,7 @@
 			{
 				char: '$',
 				render: getSuggestionRenderer(CommandSuggestionList, {
-					i18n,
+					i18n: _,
 					onSelect: (e) => {
 						document.getElementById('chat-input')?.focus();
 					},
@@ -1136,7 +1132,7 @@
 					editor.chain().focus().deleteRange(range).insertContent(emoji).run();
 				},
 				render: getSuggestionRenderer(CommandSuggestionList, {
-					i18n,
+					i18n: _,
 					onSelect: (e) => {
 						document.getElementById('chat-input')?.focus();
 					},
@@ -1218,7 +1214,7 @@
 	bind:show={showInputModal}
 	bind:value={prompt}
 	bind:inputContent
-	onChange={(content) => {
+	onChange={(content: any) => {
 		console.log(content);
 		chatInputElement?.setContent(content?.json ?? null);
 	}}
@@ -1242,7 +1238,7 @@
 							class=" absolute -top-12 left-0 right-0 flex justify-center z-30 pointer-events-none"
 						>
 							<button
-								aria-label={$i18n.t('Scroll to bottom')}
+								aria-label={i18n.t('Scroll to bottom')}
 								class=" bg-white border border-gray-100 dark:border-none dark:bg-white/20 p-1.5 rounded-full pointer-events-auto"
 								on:click={() => {
 									autoScroll = true;
@@ -1286,7 +1282,7 @@
 								const _inputFiles = Array.from(inputFiles);
 								inputFilesHandler(_inputFiles);
 							} else {
-								toast.error($i18n.t(`File not found.`));
+								toast.error(i18n.t(`File not found.`));
 							}
 
 							filesInputElement.value = '';
@@ -1302,7 +1298,7 @@
 								await tick();
 								document.getElementById('chat-input')?.focus();
 							}}
-							onConfirm={async (data) => {
+							onConfirm={async (data: any) => {
 								const { text, filename } = data;
 
 								recording = false;
@@ -1371,7 +1367,7 @@
 											<img
 												alt="model profile"
 												class="size-3.5 max-w-[28px] object-cover rounded-full"
-												src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${$models.find((model) => model.id === atSelectedModel.id).id}&lang=${$i18n.language}`}
+												src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${$models.find((model) => model.id === atSelectedModel.id).id}&lang=${$language}`}
 											/>
 											<div class="translate-y-[0.5px]">
 												<span class="">{atSelectedModel.name}</span>
@@ -1412,7 +1408,7 @@
 													{#if selectedModelIds.length !== visionCapableModels.length}
 														<Tooltip
 															className=" absolute top-1 left-1"
-															content={$i18n.t('{{ models }}', {
+															content={i18n.t('{{ models }}', {
 																models: selectedModelIds
 																	.filter((id) => !visionCapableModels.includes(id))
 																	.join(', ')
@@ -1441,7 +1437,7 @@
 															? ''
 															: 'outline-hidden focus:outline-hidden group-hover:visible invisible transition'}"
 														type="button"
-														aria-label={$i18n.t('Remove file')}
+														aria-label={i18n.t('Remove file')}
 														on:click={() => {
 															files.splice(fileIdx, 1);
 															files = files;
@@ -1520,7 +1516,7 @@
 													bind:this={chatInputElement}
 													id="chat-input"
 													editable={!showInputModal}
-													onChange={(content) => {
+													onChange={(content: any) => {
 														prompt = content.md;
 														inputContent = content;
 														command = getCommand();
@@ -1538,11 +1534,11 @@
 															navigator.maxTouchPoints > 0 ||
 															navigator.msMaxTouchPoints > 0
 														)}
-													placeholder={placeholder ? placeholder : $i18n.t('Send a Message')}
+													placeholder={placeholder ? placeholder : i18n.t('Send a Message')}
 													largeTextAsFile={($settings?.largeTextAsFile ?? false) && !shiftKey}
 													autocomplete={$config?.features?.enable_autocomplete_generation &&
 														($settings?.promptAutocomplete ?? false)}
-													generateAutoCompletion={async (text) => {
+													generateAutoCompletion={async (text: any) => {
 														if (selectedModelIds.length === 0 || !selectedModelIds.at(0)) {
 															return null;
 														}
@@ -1565,11 +1561,11 @@
 													}}
 													{suggestions}
 													oncompositionstart={() => (isComposing = true)}
-													oncompositionend={(e) => {
+													oncompositionend={(e: any) => {
 														compositionEndedAt = e.timeStamp;
 														isComposing = false;
 													}}
-													on:keydown={async (e) => {
+													on:keydown={async (e: any) => {
 														e = e.detail.event;
 
 														const isCtrlPressed = e.ctrlKey || e.metaKey; // metaKey is for Cmd key on Mac
@@ -1639,7 +1635,7 @@
 															codeInterpreterEnabled = false;
 														}
 													}}
-													on:paste={async (e) => {
+													on:paste={async (e: any) => {
 														e = e.detail.event;
 														console.log(e);
 
@@ -1707,13 +1703,13 @@
 											} catch (error) {
 												console.error('Google Drive Error:', error);
 												toast.error(
-													$i18n.t('Error accessing Google Drive: {{error}}', {
+													i18n.t('Error accessing Google Drive: {{error}}', {
 														error: error.message
 													})
 												);
 											}
 										}}
-										uploadOneDriveHandler={async (authorityType) => {
+										uploadOneDriveHandler={async (authorityType: any) => {
 											try {
 												const fileData = await pickAndDownloadFile(authorityType);
 												if (fileData) {
@@ -1740,7 +1736,7 @@
 											type="button"
 											id="input-menu-button"
 											class="bg-transparent hover:bg-gray-100 text-gray-700 dark:text-white dark:hover:bg-gray-800 rounded-full size-8 flex justify-center items-center outline-hidden focus:outline-hidden shrink-0"
-											aria-label={$i18n.t('More')}
+											aria-label={i18n.t('More')}
 										>
 											<PlusAlt className="size-5.5" />
 										</button>
@@ -1768,7 +1764,7 @@
 												bind:codeInterpreterEnabled
 												{onWebSearchToggle}
 												closeOnOutsideClick={integrationsMenuCloseOnOutsideClick}
-												onShowValves={(e) => {
+												onShowValves={(e: any) => {
 													const { type, id } = e;
 													selectedValvesType = type;
 													selectedValvesItemId = id;
@@ -1786,7 +1782,7 @@
 													type="button"
 													id="integration-menu-button"
 													class="bg-transparent hover:bg-gray-100 text-gray-700 dark:text-white dark:hover:bg-gray-800 rounded-full size-8 flex justify-center items-center outline-hidden focus:outline-hidden shrink-0"
-													aria-label={$i18n.t('Integrations')}
+													aria-label={i18n.t('Integrations')}
 												>
 													<Component className="size-4.5" strokeWidth="1.5" />
 												</button>
@@ -1795,7 +1791,7 @@
 
 										{#if selectedModelIds.length === 1 && $models.find((m) => m.id === selectedModelIds[0])?.has_user_valves}
 											<div class="ml-1 flex gap-1.5 shrink-0">
-												<Tooltip content={$i18n.t('Valves')} placement="top">
+												<Tooltip content={i18n.t('Valves')} placement="top">
 													<button
 														type="button"
 														id="model-valves-button"
@@ -1815,7 +1811,7 @@
 										<div class="ml-1 flex gap-1.5 shrink-0">
 											{#if (selectedToolIds ?? []).length > 0}
 												<Tooltip
-													content={$i18n.t('{{COUNT}} Available Tools', {
+													content={i18n.t('{{COUNT}} Available Tools', {
 														COUNT: (selectedToolIds ?? []).length
 													})}
 												>
@@ -1838,7 +1834,7 @@
 
 											{#if (selectedSkillIds ?? []).length > 0}
 												<Tooltip
-													content={$i18n.t('{{COUNT}} Available Skills', {
+													content={i18n.t('{{COUNT}} Available Skills', {
 														COUNT: (selectedSkillIds ?? []).length
 													})}
 												>
@@ -1904,7 +1900,7 @@
 															<!-- svelte-ignore a11y-no-static-element-interactions -->
 															<div
 																class="hidden group-hover:block"
-																on:click={(e) => {
+																on:click={(e: any) => {
 																	e.stopPropagation();
 																	e.preventDefault();
 																	selectedFilterIds = selectedFilterIds.filter(
@@ -1920,7 +1916,7 @@
 											{/each}
 
 											{#if webSearchEnabled}
-												<Tooltip content={$i18n.t('Web Search')} placement="top">
+												<Tooltip content={i18n.t('Web Search')} placement="top">
 													<button
 														on:click|preventDefault={() => (webSearchEnabled = !webSearchEnabled)}
 														type="button"
@@ -1938,7 +1934,7 @@
 											{/if}
 
 											{#if imageGenerationEnabled}
-												<Tooltip content={$i18n.t('Image')} placement="top">
+												<Tooltip content={i18n.t('Image')} placement="top">
 													<button
 														on:click|preventDefault={() =>
 															(imageGenerationEnabled = !imageGenerationEnabled)}
@@ -1956,11 +1952,11 @@
 											{/if}
 
 											{#if codeInterpreterEnabled}
-												<Tooltip content={$i18n.t('Code Interpreter')} placement="top">
+												<Tooltip content={i18n.t('Code Interpreter')} placement="top">
 													<button
 														aria-label={codeInterpreterEnabled
-															? $i18n.t('Disable Code Interpreter')
-															: $i18n.t('Enable Code Interpreter')}
+															? i18n.t('Disable Code Interpreter')
+															: i18n.t('Enable Code Interpreter')}
 														aria-pressed={codeInterpreterEnabled}
 														on:click|preventDefault={() =>
 															(codeInterpreterEnabled = !codeInterpreterEnabled)}
@@ -1982,7 +1978,7 @@
 											{/if}
 
 											{#each pendingOAuthTools as pendingTool (pendingTool.id)}
-												<Tooltip content={$i18n.t('Click to connect')} placement="top">
+												<Tooltip content={i18n.t('Click to connect')} placement="top">
 													<button
 														on:click|preventDefault={() => {
 															initiateOAuthRedirect(pendingTool);
@@ -2003,9 +1999,9 @@
 								<div class="self-end flex space-x-1 mr-1 shrink-0 gap-[0.5px]">
 									{#if isActive && prompt === '' && files.length === 0}
 										<div class=" flex items-center">
-											<Tooltip content={$i18n.t('Stop')}>
+											<Tooltip content={i18n.t('Stop')}>
 												<button
-													aria-label={$i18n.t('Stop')}
+													aria-label={i18n.t('Stop')}
 													class="bg-white hover:bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-800 transition rounded-full p-1.5"
 													on:click={() => {
 														stopResponse();
@@ -2028,8 +2024,8 @@
 										</div>
 									{:else}
 										{#if prompt !== '' && !history?.currentId && !$selectedTerminalId && ($config?.features?.enable_notes ?? false) && ($_user?.role === 'admin' || ($_user?.permissions?.features?.notes ?? true))}
-											<!-- {$i18n.t('Create Note')}  -->
-											<Tooltip content={$i18n.t('Create note')} className=" flex items-center">
+											<!-- {i18n.t('Create Note')}  -->
+											<Tooltip content={i18n.t('Create note')} className=" flex items-center">
 												<button
 													id="create-note-button"
 													class=" text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 transition rounded-full p-1.5 -mr-1 self-center"
@@ -2054,8 +2050,8 @@
 											{/if}
 
 											{#if $_user?.role === 'admin' || ($_user?.permissions?.chat?.stt ?? true)}
-												<!-- {$i18n.t('Record voice')} -->
-												<Tooltip content={$i18n.t('Dictate')}>
+												<!-- {i18n.t('Record voice')} -->
+												<Tooltip content={i18n.t('Dictate')}>
 													<button
 														id="voice-input-button"
 														class=" text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 transition rounded-full p-1.5 self-center mr-0.5"
@@ -2064,9 +2060,9 @@
 															try {
 																let stream = await navigator.mediaDevices
 																	.getUserMedia({ audio: true })
-																	.catch(function (err) {
+																	.catch((err: any) => {
 																		toast.error(
-																			$i18n.t(
+																			i18n.t(
 																				`Permission denied when accessing microphone: {{error}}`,
 																				{
 																					error: err
@@ -2083,7 +2079,7 @@
 																}
 																stream = null;
 															} catch {
-																toast.error($i18n.t('Permission denied when accessing microphone'));
+																toast.error(i18n.t('Permission denied when accessing microphone'));
 															}
 														}}
 														aria-label="Voice Input"
@@ -2106,21 +2102,21 @@
 
 										{#if prompt === '' && files.length === 0 && ($_user?.role === 'admin' || ($_user?.permissions?.chat?.call ?? true))}
 											<div class=" flex items-center">
-												<!-- {$i18n.t('Call')} -->
-												<Tooltip content={$i18n.t('Voice mode')}>
+												<!-- {i18n.t('Call')} -->
+												<Tooltip content={i18n.t('Voice mode')}>
 													<button
 														class=" bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full p-1.5 self-center"
 														type="button"
 														on:click={async () => {
 															if (selectedModels.length > 1) {
-																toast.error($i18n.t('Select only one model to call'));
+																toast.error(i18n.t('Select only one model to call'));
 
 																return;
 															}
 
 															if ($config.audio.stt.engine === 'web') {
 																toast.error(
-																	$i18n.t('Call feature is not supported when using Web STT engine')
+																	i18n.t('Call feature is not supported when using Web STT engine')
 																);
 
 																return;
@@ -2157,11 +2153,11 @@
 															} catch (err) {
 																// If the user denies the permission or an error occurs, show an error message
 																toast.error(
-																	$i18n.t('Permission denied when accessing media devices')
+																	i18n.t('Permission denied when accessing media devices')
 																);
 															}
 														}}
-														aria-label={$i18n.t('Voice mode')}
+														aria-label={i18n.t('Voice mode')}
 													>
 														<Voice className="size-5" strokeWidth="2.5" />
 													</button>
@@ -2171,8 +2167,8 @@
 											<div class=" flex items-center">
 												<Tooltip
 													content={uploadPending
-														? $i18n.t('Waiting for upload...')
-														: $i18n.t('Send message')}
+														? i18n.t('Waiting for upload...')
+														: i18n.t('Send message')}
 												>
 													<button
 														id="send-message-button"

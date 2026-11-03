@@ -62,9 +62,9 @@ export const chats = writable(null);
 export const pinnedChats = writable([]);
 export const pinnedNotes = writable([]);
 export const tags = writable([]);
-export const folders = writable([]);
+export const folders: Writable<any[]> = writable([]);
 
-export const selectedFolder = writable(null);
+export const selectedFolder: Writable<any | null> = writable(null);
 
 export const models: Writable<Model[]> = writable([]);
 
@@ -73,8 +73,8 @@ export const tools = writable(null);
 export const skills = writable(null);
 export const functions = writable(null);
 
-export const toolServers = writable([]);
-export const terminalServers = writable([]);
+export const toolServers: Writable<any[]> = writable([]);
+export const terminalServers: Writable<any[]> = writable([]);
 
 // Persistent Pyodide worker for code interpreter FS
 export const pyodideWorker: Writable<Worker | null> = writable(null);
@@ -183,6 +183,7 @@ type OllamaModelDetails = {
 };
 
 type Settings = {
+	[key: string]: any;
 	pinnedModels?: never[];
 	toolServers?: never[];
 	detectArtifacts?: boolean;
@@ -281,7 +282,8 @@ type Document = {
 	title: string;
 };
 
-type Config = {
+export type Config = {
+	[key: string]: any;
 	license_metadata: any;
 	status: boolean;
 	name: string;
@@ -312,6 +314,13 @@ type Config = {
 		enable_pyodide_file_persistence?: boolean;
 		folder_max_file_count?: number;
 		enable_coder?: boolean;
+		enable_ldap?: boolean;
+		enable_signup_password_confirmation?: boolean;
+		enable_password_change_form?: boolean;
+		enable_user_webhooks?: boolean;
+		enable_easter_eggs?: boolean;
+		onboarding?: boolean;
+		[key: string]: unknown;
 	};
 	oauth: {
 		providers: {
@@ -324,6 +333,9 @@ type Config = {
 		pending_user_overlay_content?: string;
 		iframe_csp?: string;
 	};
+	onboarding?: boolean;
+	metadata?: Record<string, unknown>;
+	[key: string]: unknown;
 };
 
 type PromptSuggestion = {

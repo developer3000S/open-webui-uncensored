@@ -1,9 +1,12 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
+	import { createEventDispatcher, getContext, onMount, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { toast } from 'svelte-sonner';
 	import { marked } from 'marked';
 	import DOMPurify from 'dompurify';
 
-	import { onMount, getContext, tick, createEventDispatcher } from 'svelte';
 	import { blur, fade } from 'svelte/transition';
 
 	const dispatch = createEventDispatcher();
@@ -31,44 +34,36 @@
 	import FolderTitle from './Placeholder/FolderTitle.svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
-
 	export let createMessagePair: Function;
 	export let stopResponse: Function;
 
-	export let autoScroll = false;
-
+	export let autoScroll: any = false;
 	export let atSelectedModel: Model | undefined;
 	export let selectedModels: [''];
 
-	export let history;
+	export let history: { messages?: Record<string, any>; currentId?: string | null; [key: string]: any } = {};
+	export let prompt: any = '';
+	export let files: any = [];
+	let messageInput: any = null;
 
-	export let prompt = '';
-	export let files = [];
-	export let messageInput = null;
+	export let selectedToolIds: any = [];
+	export let selectedSkillIds: any = [];
+	export let selectedFilterIds: any = [];
+	export let pendingOAuthTools: any = [];
 
-	export let selectedToolIds = [];
-	export let selectedSkillIds = [];
-	export let selectedFilterIds = [];
-	export let pendingOAuthTools = [];
-
-	export let showCommands = false;
-
-	export let imageGenerationEnabled = false;
-	export let codeInterpreterEnabled = false;
-	export let webSearchEnabled = false;
-
-	export let onUpload: Function = (e) => {};
-	export let onSelect = (e) => {};
-	export let onChange = (e) => {};
+	export let showCommands: any = false;
+	export let imageGenerationEnabled: any = false;
+	export let codeInterpreterEnabled: any = false;
+	export let webSearchEnabled: any = false;
+	export let onUpload: Function = (e: any) => {};
+	export let onSelect = (e: any) => {};
+	export let onChange = (e: any) => {};
 	export let onWebSearchToggle: Function = () => {};
 
-	export let toolServers = [];
+	export let toolServers: any = [];
 
-	export let dragged = false;
-
-	let models = [];
+	export let dragged: any = false;
+	let models: any[] = [];
 	let selectedModelIdx = 0;
 
 	$: if (selectedModels.length > 0) {
@@ -90,12 +85,12 @@
 <div class="m-auto w-full max-w-6xl px-2 @2xl:px-20 translate-y-6 py-24 text-center">
 	{#if $temporaryChatEnabled}
 		<Tooltip
-			content={$i18n.t("This chat won't appear in history and your messages will not be saved.")}
+			content={i18n.t("This chat won't appear in history and your messages will not be saved.")}
 			className="w-full flex justify-center mb-0.5"
 			placement="top"
 		>
 			<div class="flex items-center gap-2 text-gray-500 text-base my-2 w-fit">
-				<EyeSlash strokeWidth="2.5" className="size-4" />{$i18n.t('Temporary Chat')}
+				<EyeSlash strokeWidth="2.5" className="size-4" />{i18n.t('Temporary Chat')}
 			</div>
 		</Tooltip>
 	{/if}
@@ -108,7 +103,7 @@
 				<FolderTitle
 					folder={$selectedFolder}
 					readOnly={folderNotOwned}
-					onUpdate={async (folder) => {
+					onUpdate={async (folder: any) => {
 						await chats.set(await getChatList(localStorage.token, $currentChatPage));
 						currentChatPage.set(1);
 					}}
@@ -132,7 +127,7 @@
 								>
 									<button
 										aria-hidden={models.length <= 1}
-										aria-label={$i18n.t('Get information on {{name}} in the UI', {
+										aria-label={i18n.t('Get information on {{name}} in the UI', {
 											name: models[modelIdx]?.name
 										})}
 										on:click={() => {
@@ -140,12 +135,12 @@
 										}}
 									>
 										<img
-											src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${model?.id}&lang=${$i18n.language}`}
+											src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${model?.id}&lang=${$language}`}
 											alt=""
 											class=" size-9 @sm:size-10 rounded-full border-[1px] border-gray-100 dark:border-none"
 											aria-hidden="true"
 											draggable="false"
-											on:error={(e) => {
+											on:error={(e: any) => {
 												e.currentTarget.src = '/favicon.png';
 											}}
 										/>
@@ -170,7 +165,7 @@
 								</span>
 							</Tooltip>
 						{:else}
-							{$i18n.t('Hello, {{name}}', { name: $user?.name })}
+							{i18n.t('Hello, {{name}}', { name: $user?.name })}
 						{/if}
 					</div>
 				</div>
@@ -245,11 +240,11 @@
 						{toolServers}
 						{stopResponse}
 						{createMessagePair}
-						placeholder={$i18n.t('How can I help you today?')}
+						placeholder={i18n.t('How can I help you today?')}
 						{onChange}
 						{onUpload}
 						{onWebSearchToggle}
-						on:submit={(e) => {
+						on:submit={(e: any) => {
 							dispatch('submit', e.detail);
 						}}
 					/>

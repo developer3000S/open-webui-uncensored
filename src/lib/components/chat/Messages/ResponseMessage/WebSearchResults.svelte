@@ -7,7 +7,7 @@
 	export let status = { urls: [], query: '' };
 	let state = false;
 
-	let searchError = null;
+	let searchError: any = null;
 	let loading = false;
 
 	const loadResults = async () => {

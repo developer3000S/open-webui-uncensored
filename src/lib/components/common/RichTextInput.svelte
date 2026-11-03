@@ -1,4 +1,8 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
+	import { getContext, onDestroy, onMount, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { marked } from 'marked';
 	import DOMPurify from 'dompurify';
 	import equal from 'fast-deep-equal';
@@ -35,7 +39,7 @@
 		codeBlockStyle: 'fenced',
 		headingStyle: 'atx'
 	});
-	turndownService.escape = (string) => string;
+	turndownService.escape = (string: any) => string;
 
 	// Produce single newlines between paragraphs instead of double.
 	// TipTap wraps every line in <p> tags; the default Turndown rule emits
@@ -44,7 +48,7 @@
 	// This rule eliminates that hack so <pre><code> content is untouched.
 	turndownService.addRule('singleNewlineParagraphs', {
 		filter: 'p',
-		replacement: function (content) {
+		replacement: (content: any)  => {
 			return '\n' + content + '\n';
 		}
 	});
@@ -55,7 +59,7 @@
 	// Add custom table header rule before using GFM plugin
 	turndownService.addRule('tableHeaders', {
 		filter: 'th',
-		replacement: function (content, node) {
+		replacement: (content: any, node: any)  => {
 			return content;
 		}
 	});
@@ -63,7 +67,7 @@
 	// Add custom table rule to handle headers properly
 	turndownService.addRule('tables', {
 		filter: 'table',
-		replacement: function (content, node) {
+		replacement: (content: any, node: any)  => {
 			// Extract rows
 			const rows = Array.from(node.querySelectorAll('tr'));
 			if (rows.length === 0) return content;
@@ -99,7 +103,7 @@
 			node.nodeName === 'LI' &&
 			(node.getAttribute('data-checked') === 'true' ||
 				node.getAttribute('data-checked') === 'false'),
-		replacement: function (content, node) {
+		replacement: (content: any, node: any)  => {
 			const checked = node.getAttribute('data-checked') === 'true';
 			content = content.replace(/^\s+/, '');
 			return `- [${checked ? 'x' : ' '}] ${content}\n`;
@@ -118,12 +122,9 @@
 		}
 	});
 
-	import { onMount, onDestroy, tick, getContext } from 'svelte';
 	import { createEventDispatcher } from 'svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 	const eventDispatch = createEventDispatcher();
 
 	import { Fragment, DOMParser } from 'prosemirror-model';
@@ -179,9 +180,9 @@
 
 	import type { SocketIOCollaborationProvider } from './RichTextInput/Collaboration';
 
-	export let oncompositionstart = (e) => {};
-	export let oncompositionend = (e) => {};
-	export let onChange = (e) => {};
+	export let oncompositionstart = (e: any) => {};
+	export let oncompositionend = (e: any) => {};
+	export let onChange = (e: any) => {};
 
 	// create a lowlight instance with all languages loaded
 	const lowlight = createLowlight(
@@ -196,14 +197,13 @@
 
 	export let editor: Editor | null = null;
 
-	export let socket = null;
-	export let user = null;
-	export let files = [];
+	let socket: any = null;
+	let user: any = null;
+	export let files: any = [];
 
-	export let documentId = '';
-
-	export let className = 'input-prose min-h-fit h-full';
-	export let placeholder = $i18n.t('Type here...');
+	export let documentId: any = '';
+	export let className: any = 'input-prose min-h-fit h-full';
+	export let placeholder = i18n.t('Type here...');
 	let _placeholder = placeholder;
 
 	$: if (placeholder !== _placeholder) {
@@ -217,14 +217,14 @@
 		}
 	};
 
-	export let richText = true;
-	export let dragHandle = false;
-	export let link = false;
-	export let image = false;
-	export let fileHandler = false;
-	export let suggestions = null;
+	export let richText: any = true;
+	export let dragHandle: any = false;
+	export let link: any = false;
+	export let image: any = false;
+	export let fileHandler: any = false;
+	let suggestions: any = null;
 
-	export let onFileDrop = (currentEditor, files, pos) => {
+	export let onFileDrop = (currentEditor: any, files: any, pos: any) => {
 		files.forEach((file) => {
 			const fileReader = new FileReader();
 
@@ -244,7 +244,7 @@
 		});
 	};
 
-	export let onFilePaste = (currentEditor, files, htmlContent) => {
+	export let onFilePaste = (currentEditor: any, files: any, htmlContent: any) => {
 		files.forEach((file) => {
 			if (htmlContent) {
 				// if there is htmlContent, stop manual insertion & let other extensions handle insertion via inputRule
@@ -271,29 +271,25 @@
 		});
 	};
 
-	export let onSelectionUpdate = (e) => {};
+	export let onSelectionUpdate = (e: any) => {};
 
-	export let id = '';
-	export let value = '';
-	export let html = '';
-
-	export let json = false;
-	export let raw = false;
-	export let editable = true;
-	export let collaboration = false;
-
-	export let showFormattingToolbar = true;
-
-	export let preserveBreaks = false;
+	export let id: any = '';
+	export let value: any = '';
+	export let html: any = '';
+	export let json: any = false;
+	export let raw: any = false;
+	export let editable: any = true;
+	export let collaboration: any = false;
+	export let showFormattingToolbar: any = true;
+	export let preserveBreaks: any = false;
 	export let generateAutoCompletion: Function = async () => null;
-	export let autocomplete = false;
-	export let messageInput = false;
-	export let shiftEnter = false;
-	export let largeTextAsFile = false;
-	export let insertPromptAsRichText = false;
-	export let floatingMenuPlacement = 'bottom-start';
-
-	let content = null;
+	export let autocomplete: any = false;
+	export let messageInput: any = false;
+	export let shiftEnter: any = false;
+	export let largeTextAsFile: any = false;
+	export let insertPromptAsRichText: any = false;
+	export let floatingMenuPlacement: any = 'bottom-start';
+	let content: any = null;
 	let htmlValue = '';
 	let jsonValue = '';
 	let mdValue = '';
@@ -304,7 +300,7 @@
 	let bubbleMenuElement: Element | null = null;
 	let element: Element | null = null;
 
-	let pendingUpdate = null;
+	let pendingUpdate: any = null;
 
 	const options = {
 		throwOnError: false
@@ -342,7 +338,7 @@
 	};
 
 	// Returns {start, end} of the word at pos
-	function getWordBoundsAtPos(doc, pos) {
+	function getWordBoundsAtPos(doc: any, pos: any) {
 		const resolvedPos = doc.resolve(pos);
 		const textBlock = resolvedPos.parent;
 		const paraStart = resolvedPos.start();
@@ -359,7 +355,7 @@
 		};
 	}
 
-	export const replaceCommandWithText = async (text) => {
+	export const replaceCommandWithText = async (text: any) => {
 		const { state, dispatch } = editor.view;
 		const { selection } = state;
 		const pos = selection.from;
@@ -391,7 +387,7 @@
 
 			// Extract just the content, not the wrapper paragraphs
 			const content = fragment.content;
-			let nodesToInsert = [];
+			let nodesToInsert: any = [];
 
 			content.forEach((node) => {
 				if (node.type.name === 'paragraph') {
@@ -410,7 +406,7 @@
 			if (text.includes('\n')) {
 				// Split the text into lines and create a <p> node for each line
 				const lines = text.split('\n');
-				const nodes = lines.map(
+				const nodes: any = lines.map(
 					(line, index) =>
 						index === 0
 							? state.schema.text(line ? line : []) // First line is plain text
@@ -507,7 +503,7 @@
 	// Convert text to ProseMirror nodes, using hardBreak for newlines
 	const textToNodes = (state, text) => {
 		if (!text.includes('\n')) return state.schema.text(text);
-		const nodes = [];
+		const nodes: any = [];
 		text.split('\n').forEach((line, i) => {
 			if (i > 0) nodes.push(state.schema.nodes.hardBreak.create());
 			if (line) nodes.push(state.schema.text(line));
@@ -525,7 +521,7 @@
 		let offset = 0; // Track position changes due to text length differences
 
 		// Collect all replacements first to avoid position conflicts
-		const replacements = [];
+		const replacements: any = [];
 
 		doc.descendants((node, pos) => {
 			if (node.isText && node.text) {
@@ -577,10 +573,10 @@
 	};
 
 	// Function to find the next template in the document
-	function findNextTemplate(doc, from = 0) {
+	(doc: any, from: any = 0) => {
 		const patterns = [{ start: '{{', end: '}}' }];
 
-		let result = null;
+		let result: any = null;
 
 		doc.nodesBetween(from, doc.content.size, (node, pos) => {
 			if (result) return false; // Stop if we've found a match
@@ -609,7 +605,7 @@
 	}
 
 	// Function to select the next template in the document
-	function selectNextTemplate(state, dispatch) {
+	function selectNextTemplate(state: any, dispatch: any) {
 		const { doc, selection } = state;
 		const from = selection.to;
 		let template = findNextTemplate(doc, from);
@@ -634,7 +630,7 @@
 		return false;
 	}
 
-	export const setContent = (content) => {
+	export const setContent = (content: any) => {
 		editor.commands.setContent(content);
 	};
 
@@ -702,14 +698,14 @@
 			if (preserveBreaks) {
 				turndownService.addRule('preserveBreaks', {
 					filter: 'br', // Target <br> elements
-					replacement: function (content) {
+					replacement: (content: any)  => {
 						return '<br/>';
 					}
 				});
 			}
 
 			if (!raw) {
-				async function tryParse(value, attempts = 3, interval = 100) {
+				async (value: any, attempts: any = 3, interval: any = 100) => {
 					try {
 						// Try parsing the value
 						return marked.parse(value.replaceAll(`\n<br/>`, `<br/>`), {
@@ -801,7 +797,7 @@
 				...(autocomplete
 					? [
 							AIAutocompletion.configure({
-								generateCompletion: async (text) => {
+								generateCompletion: async (text: any) => {
 									if (text.trim().length === 0) {
 										return null;
 									}
@@ -971,7 +967,7 @@
 						);
 
 						const lines = plainText.split('\n');
-						const nodes = [];
+						const nodes: any = [];
 
 						lines.forEach((line, index) => {
 							if (index > 0) {
@@ -1010,7 +1006,7 @@
 							const { state, dispatch } = view;
 							const { from, to } = state.selection;
 							const lines = event.data.split('\n');
-							const nodes = [];
+							const nodes: any = [];
 
 							lines.forEach((line, index) => {
 								if (index > 0) {
@@ -1155,7 +1151,7 @@
 									const { from, to } = state.selection;
 
 									const lines = plainText.split('\n');
-									const nodes = [];
+									const nodes: any = [];
 
 									lines.forEach((line, index) => {
 										if (index > 0) {
@@ -1312,6 +1308,32 @@
 		}
 	};
 </script>
+
+{#if richText && showFormattingToolbar}
+	<div
+		bind:this={bubbleMenuElement}
+		id="bubble-menu"
+		class="p-0"
+		style="visibility: hidden; opacity: 0; position: absolute; z-index: 9999;"
+	>
+		<FormattingButtons {editor} />
+	</div>
+
+	<div
+		bind:this={floatingMenuElement}
+		id="floating-menu"
+		class="p-0"
+		style="visibility: hidden; opacity: 0; position: absolute; z-index: 9999;"
+	>
+		<FormattingButtons {editor} />
+	</div>
+{/if}
+
+<div
+	bind:this={element}
+	dir="auto"
+	class="relative w-full min-w-full {className} {!editable ? 'cursor-not-allowed' : ''}"
+></div>
 
 {#if richText && showFormattingToolbar}
 	<div

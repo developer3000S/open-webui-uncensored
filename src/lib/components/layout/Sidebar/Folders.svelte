@@ -1,22 +1,22 @@
 <script lang="ts">
-	import { getContext, createEventDispatcher } from 'svelte';
+	import type i18nType from 'i18next';
+	import { createEventDispatcher, getContext } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 	const dispatch = createEventDispatcher();
 
 	import RecursiveFolder from './RecursiveFolder.svelte';
 	import { chatId, selectedFolder } from '$lib/stores';
 
-	export let folderRegistry = {};
+	let folderRegistry: Record<string, any> = {};
 
-	export let folders = {};
-	export let shiftKey = false;
+	let folders: Record<string, any> = {};
+	export let shiftKey: any = false;
+	export let onDelete = (folderId: any) => {};
 
-	export let onDelete = (folderId) => {};
-
-	let ownedList = [];
-	let sharedList = [];
+	let ownedList: any = [];
+	let sharedList: any = [];
 
 	$: {
 		const rootKeys = Object.keys(folders)
@@ -39,7 +39,7 @@
 		sharedList = rootKeys.filter((key) => folders[key].shared);
 	}
 
-	const onItemMove = (e) => {
+	const onItemMove = (e: any) => {
 		if (e.originFolderId) {
 			folderRegistry[e.originFolderId]?.setFolderItems();
 		}
@@ -65,13 +65,13 @@
 		{shiftKey}
 		{onDelete}
 		{onItemMove}
-		on:import={(e) => {
+		on:import={(e: any) => {
 			dispatch('import', e.detail);
 		}}
-		on:update={(e) => {
+		on:update={(e: any) => {
 			dispatch('update', e.detail);
 		}}
-		on:change={(e) => {
+		on:change={(e: any) => {
 			dispatch('change', e.detail);
 		}}
 	/>
@@ -79,7 +79,7 @@
 
 {#if sharedList.length > 0}
 	<div class="w-full pl-2.5 text-[11px] text-gray-400 dark:text-gray-600 pt-2 pb-0.5">
-		{$i18n.t('Shared')}
+		{i18n.t('Shared')}
 	</div>
 	{#each sharedList as folderId (folderId)}
 		<RecursiveFolder
@@ -90,13 +90,60 @@
 			{shiftKey}
 			{onDelete}
 			{onItemMove}
-			on:import={(e) => {
+			on:import={(e: any) => {
 				dispatch('import', e.detail);
 			}}
-			on:update={(e) => {
+			on:update={(e: any) => {
 				dispatch('update', e.detail);
 			}}
-			on:change={(e) => {
+			on:change={(e: any) => {
+				dispatch('change', e.detail);
+			}}
+		/>
+	{/each}
+{/if}
+
+{#each ownedList as folderId (folderId)}
+	<RecursiveFolder
+		className=""
+		bind:folderRegistry
+		{folders}
+		{folderId}
+		{shiftKey}
+		{onDelete}
+		{onItemMove}
+		on:import={(e: any) => {
+			dispatch('import', e.detail);
+		}}
+		on:update={(e: any) => {
+			dispatch('update', e.detail);
+		}}
+		on:change={(e: any) => {
+			dispatch('change', e.detail);
+		}}
+	/>
+{/each}
+
+{#if sharedList.length > 0}
+	<div class="w-full pl-2.5 text-[11px] text-gray-400 dark:text-gray-600 pt-2 pb-0.5">
+		{i18n.t('Shared')}
+	</div>
+	{#each sharedList as folderId (folderId)}
+		<RecursiveFolder
+			className=""
+			bind:folderRegistry
+			{folders}
+			{folderId}
+			{shiftKey}
+			{onDelete}
+			{onItemMove}
+			on:import={(e: any) => {
+				dispatch('import', e.detail);
+			}}
+			on:update={(e: any) => {
+				dispatch('update', e.detail);
+			}}
+			on:change={(e: any) => {
 				dispatch('change', e.detail);
 			}}
 		/>

@@ -1,24 +1,25 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
+	import { getContext, onMount } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
-	import { onMount, getContext } from 'svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { getPromptById, updatePromptById } from '$lib/apis/prompts';
 	import { page } from '$app/stores';
 
 	import PromptEditor from '$lib/components/workspace/Prompts/PromptEditor.svelte';
 
-	let prompt = null;
+	let prompt: any = null;
 	let disabled = false;
 
 	// Get prompt ID from route params
 	$: promptId = $page.params.id;
 
-	const onSubmit = async (_prompt) => {
+	const onSubmit = async (_prompt: any) => {
 		console.log(_prompt);
 		const updatedPrompt = await updatePromptById(localStorage.token, _prompt).catch((error) => {
 			toast.error(`${error}`);
@@ -26,7 +27,7 @@
 		});
 
 		if (updatedPrompt) {
-			toast.success($i18n.t('Prompt updated successfully'));
+			toast.success(i18n.t('Prompt updated successfully'));
 			// Update local prompt state to reflect the new version
 			prompt = {
 				id: updatedPrompt.id,
@@ -67,6 +68,10 @@
 		}
 	});
 </script>
+
+{#if prompt}
+	<PromptEditor {prompt} {onSubmit} {disabled} edit />
+{/if}
 
 {#if prompt}
 	<PromptEditor {prompt} {onSubmit} {disabled} edit />

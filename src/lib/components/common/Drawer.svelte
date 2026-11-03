@@ -3,11 +3,11 @@
 	import { flyAndScale } from '$lib/utils/transitions';
 	import { fade, fly, slide } from 'svelte/transition';
 
-	export let show = false;
-	export let className = '';
+	export let show: any = false;
+	export let className: any = '';
 	export let onClose = () => {};
 
-	let modalElement = null;
+	let modalElement: any = null;
 	let mounted = false;
 
 	const handleKeyDown = (event: KeyboardEvent) => {

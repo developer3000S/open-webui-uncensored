@@ -1,9 +1,9 @@
-<script>
-	import { getContext, createEventDispatcher, onMount, onDestroy, tick } from 'svelte';
+<script lang="ts">
+	import type i18nType from 'i18next';
+	import { createEventDispatcher, getContext, onDestroy, onMount, tick } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 	const dispatch = createEventDispatcher();
 
 	import DOMPurify from 'dompurify';
@@ -48,21 +48,16 @@
 	import Emoji from '$lib/components/common/Emoji.svelte';
 	import Spinner from '$lib/components/common/Spinner.svelte';
 
-	export let folderRegistry = {};
-	export let open = false;
-
-	export let folders;
-	export let folderId;
-	export let shiftKey = false;
-
-	export let className = '';
-
-	export let deleteFolderContents = true;
-
-	export let parentDragged = false;
-
-	export let onDelete = (e) => {};
-	export let onItemMove = (e) => {};
+	let folderRegistry: Record<string, any> = {};
+	export let open: any = false;
+	export let folders: any;
+	export let folderId: any;
+	export let shiftKey: any = false;
+	export let className: any = '';
+	export let deleteFolderContents: any = true;
+	export let parentDragged: any = false;
+	export let onDelete = (e: any) => {};
+	export let onItemMove = (e: any) => {};
 
 	let folderElement;
 
@@ -71,16 +66,16 @@
 	let edit = false;
 
 	let showCreateSubFolderModal = false;
-	let createSubFolderParentId = null;
+	let createSubFolderParentId: any = null;
 
 	let draggedOver = false;
 	let dragged = false;
 
-	let clickTimer = null;
+	let clickTimer: any = null;
 
 	let name = '';
 
-	const onDragOver = (e) => {
+	const onDragOver = (e: any) => {
 		e.preventDefault();
 		e.stopPropagation();
 		if (dragged || parentDragged || folders[folderId]?.shared) {
@@ -89,7 +84,7 @@
 		draggedOver = true;
 	};
 
-	const onDrop = async (e) => {
+	const onDrop = async (e: any) => {
 		e.preventDefault();
 		e.stopPropagation();
 		if (dragged || parentDragged) {
@@ -110,7 +105,7 @@
 
 							// Read the JSON file with FileReader
 							const reader = new FileReader();
-							reader.onload = async function (event) {
+							reader.onload = async function (event: any) {
 								try {
 									const fileContent = JSON.parse(event.target.result);
 									open = true;
@@ -146,8 +141,7 @@
 									return;
 								}
 								// Move the folder
-								const res = await updateFolderParentIdById(localStorage.token, id, folderId).catch(
-									(error) => {
+								const res = await updateFolderParentIdById(localStorage.token, id, folderId).catch(async (error)=> {
 										toast.error(`${error}`);
 										return null;
 									}
@@ -159,12 +153,12 @@
 							} else if (type === 'chat') {
 								open = true;
 
-								let chat = await getChatById(localStorage.token, id).catch((error) => {
+								let chat = await getChatById(localStorage.token, id).catch(async (error)=> {
 									return null;
 								});
 								if (!chat && item) {
 									if (!($user?.role === 'admin' || ($user?.permissions?.chat?.import ?? true))) {
-										toast.error($i18n.t('Access prohibited'));
+										toast.error(i18n.t('Access prohibited'));
 										return;
 									}
 
@@ -177,7 +171,7 @@
 											created_at: item?.created_at ?? null,
 											updated_at: item?.updated_at ?? null
 										}
-									]).catch((error) => {
+									]).catch(async (error)=> {
 										toast.error(`${error}`);
 										return null;
 									});
@@ -221,7 +215,7 @@
 		}
 	};
 
-	const onDragLeave = (e) => {
+	const onDragLeave = (e: any) => {
 		e.preventDefault();
 		if (dragged || parentDragged) {
 			return;
@@ -237,7 +231,7 @@
 	let x;
 	let y;
 
-	const onDragStart = (event) => {
+	const onDragStart = (event: any) => {
 		event.stopPropagation();
 		event.dataTransfer.setDragImage(dragImage, 0, 0);
 
@@ -255,14 +249,14 @@
 		folderElement.style.opacity = '0.5'; // Optional: Visual cue to show it's being dragged
 	};
 
-	const onDrag = (event) => {
+	const onDrag = (event: any) => {
 		event.stopPropagation();
 
 		x = event.clientX;
 		y = event.clientY;
 	};
 
-	const onDragEnd = (event) => {
+	const onDragEnd = (event: any) => {
 		event.stopPropagation();
 
 		folderElement.style.opacity = '1'; // Reset visual cue after drag
@@ -319,14 +313,14 @@
 		);
 
 		if (res) {
-			toast.success($i18n.t('Folder deleted successfully'));
+			toast.success(i18n.t('Folder deleted successfully'));
 			onDelete(folderId);
 		}
 	};
 
-	const updateHandler = async ({ name, meta, data }) => {
+	const updateHandler = async ({ name, meta, data })  => {
 		if (name === '') {
-			toast.error($i18n.t('Folder name cannot be empty.'));
+			toast.error(i18n.t('Folder name cannot be empty.'));
 			return;
 		}
 
@@ -339,7 +333,7 @@
 			name,
 			...(meta ? { meta } : {}),
 			...(data ? { data } : {})
-		}).catch((error) => {
+		}).catch(async (error)=> {
 			toast.error(`${error}`);
 
 			folders[folderId].name = currentName;
@@ -352,11 +346,11 @@
 				folders[folderId].data = data;
 			}
 
-			// toast.success($i18n.t('Folder name updated successfully'));
-			toast.success($i18n.t('Folder updated successfully'));
+			// toast.success(i18n.t('Folder name updated successfully'));
+			toast.success(i18n.t('Folder updated successfully'));
 
 			if ($selectedFolder?.id === folderId) {
-				const folder = await getFolderById(localStorage.token, folderId).catch((error) => {
+				const folder = await getFolderById(localStorage.token, folderId).catch(async (error)=> {
 					toast.error(`${error}`);
 					return null;
 				});
@@ -370,8 +364,7 @@
 	};
 
 	const isExpandedUpdateHandler = async () => {
-		const res = await updateFolderIsExpandedById(localStorage.token, folderId, open).catch(
-			(error) => {
+		const res = await updateFolderIsExpandedById(localStorage.token, folderId, open).catch(async (error)=> {
 				toast.error(`${error}`);
 				return null;
 			}
@@ -387,7 +380,7 @@
 		}, 500);
 	};
 
-	let chats = null;
+	let chats: any = null;
 	export const setFolderItems = async () => {
 		await tick();
 		if (open) {
@@ -398,7 +391,7 @@
 				chats = res?.chats ?? [];
 			} catch (error) {
 				// Fallback to regular API
-				chats = await getChatListByFolderId(localStorage.token, folderId).catch((error) => {
+				chats = await getChatListByFolderId(localStorage.token, folderId).catch(async (error)=> {
 					toast.error(`${error}`);
 					return [];
 				});
@@ -446,7 +439,7 @@
 
 	const createSubFolderHandler = async ({ name, meta, data, parent_id }) => {
 		if (name === '') {
-			toast.error($i18n.t('Folder name cannot be empty.'));
+			toast.error(i18n.t('Folder name cannot be empty.'));
 			return;
 		}
 
@@ -463,7 +456,7 @@
 		});
 
 		if (res) {
-			toast.success($i18n.t('Folder created successfully'));
+			toast.success(i18n.t('Folder created successfully'));
 			dispatch('update');
 		}
 	};
@@ -471,17 +464,17 @@
 
 <DeleteConfirmDialog
 	bind:show={showDeleteConfirm}
-	title={$i18n.t('Delete folder?')}
+	title={i18n.t('Delete folder?')}
 	on:confirm={() => {
 		deleteHandler();
 	}}
 >
 	<div class=" text-sm text-gray-700 dark:text-gray-300 flex-1 line-clamp-3 mb-2">
-		<!-- {$i18n.t('This will delete <strong>{{NAME}}</strong> and <strong>all its contents</strong>.', {
+		<!-- {i18n.t('This will delete <strong>{{NAME}}</strong> and <strong>all its contents</strong>.', {
 				NAME: folders[folderId].name
 			})} -->
 
-		{$i18n.t(`Are you sure you want to delete "{{NAME}}"?`, {
+		{i18n.t(`Are you sure you want to delete "{{NAME}}"?`, {
 			NAME: folders[folderId].name
 		})}
 	</div>
@@ -490,7 +483,7 @@
 		<input type="checkbox" bind:checked={deleteFolderContents} />
 
 		<div class="text-xs text-gray-500">
-			{$i18n.t('Delete all contents inside this folder')}
+			{i18n.t('Delete all contents inside this folder')}
 		</div>
 	</div>
 </DeleteConfirmDialog>
@@ -529,7 +522,7 @@
 		bind:open
 		className="w-full"
 		buttonClassName="w-full"
-		onChange={(state) => {
+		onChange={(state: any) => {
 			dispatch('open', state);
 		}}
 	>
@@ -541,7 +534,7 @@
 				folderId
 					? 'bg-gray-100 dark:bg-gray-900 selected'
 					: ''}"
-				on:dblclick={(e) => {
+				on:dblclick={(e: any) => {
 					if (folders[folderId]?.shared) return;
 					if (clickTimer) {
 						clearTimeout(clickTimer); // cancel the single-click action
@@ -549,15 +542,15 @@
 					}
 					renameHandler();
 				}}
-				on:click={async (e) => {
-					(e) => e.stopPropagation();
+				on:click={async (e: any) => {
+					(e: any) => e.stopPropagation();
 					if (clickTimer) {
 						clearTimeout(clickTimer);
 						clickTimer = null;
 					}
 
 					clickTimer = setTimeout(async () => {
-						const folder = await getFolderById(localStorage.token, folderId).catch((error) => {
+						const folder = await getFolderById(localStorage.token, folderId).catch(async (error)=> {
 							toast.error(`${error}`);
 							return null;
 						});
@@ -574,13 +567,13 @@
 						clickTimer = null;
 					}, 100); // 100ms delay (typical double-click threshold)
 				}}
-				on:pointerup={(e) => {
+				on:pointerup={(e: any) => {
 					e.stopPropagation();
 				}}
 			>
 				<button
 					class="text-gray-500 dark:text-gray-500 transition-all p-1 hover:bg-gray-200 dark:hover:bg-gray-850 rounded-lg"
-					on:click={(e) => {
+					on:click={(e: any) => {
 						e.stopPropagation();
 						e.stopImmediatePropagation();
 						open = !open;
@@ -621,15 +614,15 @@
 								updateHandler({ name });
 								edit = false;
 							}}
-							on:click={(e) => {
+							on:click={(e: any) => {
 								// Prevent accidental collapse toggling when clicking inside input
 								e.stopPropagation();
 							}}
-							on:mousedown={(e) => {
+							on:mousedown={(e: any) => {
 								// Prevent accidental collapse toggling when clicking inside input
 								e.stopPropagation();
 							}}
-							on:keydown={(e) => {
+							on:keydown={(e: any) => {
 								if (e.key === 'Enter') {
 									updateHandler({ name });
 									edit = false;
@@ -697,13 +690,13 @@
 								parentDragged={dragged}
 								{onItemMove}
 								{onDelete}
-								on:import={(e) => {
+								on:import={(e: any) => {
 									dispatch('import', e.detail);
 								}}
-								on:update={(e) => {
+								on:update={(e: any) => {
 									dispatch('update', e.detail);
 								}}
-								on:change={(e) => {
+								on:change={(e: any) => {
 									dispatch('change', e.detail);
 								}}
 							/>
@@ -721,7 +714,276 @@
 							ownerUserId={folders[folderId]?.shared && chat.owner_name ? chat.user_id : null}
 							readonly={chat.user_id !== $user?.id}
 							{shiftKey}
-							on:change={(e) => {
+							on:change={(e: any) => {
+								dispatch('change', e.detail);
+							}}
+						/>
+					{/each}
+				</div>
+			{/if}
+
+			{#if chats === null}
+				<div class="flex justify-center items-center p-2">
+					<Spinner className="size-4 text-gray-500" />
+				</div>
+			{/if}
+		</div>
+	</Collapsible>
+</div>
+
+<DeleteConfirmDialog
+	bind:show={showDeleteConfirm}
+	title={i18n.t('Delete folder?')}
+	on:confirm={() => {
+		deleteHandler();
+	}}
+>
+	<div class=" text-sm text-gray-700 dark:text-gray-300 flex-1 line-clamp-3 mb-2">
+		<!-- {i18n.t('This will delete <strong>{{NAME}}</strong> and <strong>all its contents</strong>.', {
+				NAME: folders[folderId].name
+			})} -->
+
+		{i18n.t(`Are you sure you want to delete "{{NAME}}"?`, {
+			NAME: folders[folderId].name
+		})}
+	</div>
+
+	<div class="flex items-center gap-1.5">
+		<input type="checkbox" bind:checked={deleteFolderContents} />
+
+		<div class="text-xs text-gray-500">
+			{i18n.t('Delete all contents inside this folder')}
+		</div>
+	</div>
+</DeleteConfirmDialog>
+
+<FolderModal bind:show={showFolderModal} edit={true} {folderId} onSubmit={updateHandler} />
+
+<FolderModal
+	bind:show={showCreateSubFolderModal}
+	parentId={createSubFolderParentId}
+	onSubmit={createSubFolderHandler}
+/>
+
+<FolderShareModal bind:show={showShareModal} folder={folders[folderId]} />
+
+{#if dragged && x && y}
+	<DragGhost {x} {y}>
+		<div class=" bg-black/80 backdrop-blur-2xl px-2 py-1 rounded-lg w-fit max-w-40">
+			<div class="flex items-center gap-1">
+				<FolderOpen className="size-3.5" strokeWidth="2" />
+				<div class=" text-xs text-white line-clamp-1">
+					{folders[folderId].name}
+				</div>
+			</div>
+		</div>
+	</DragGhost>
+{/if}
+
+<div bind:this={folderElement} class="relative {className}" draggable={!folders[folderId]?.shared}>
+	{#if draggedOver}
+		<div
+			class="absolute top-0 left-0 w-full h-full rounded-xs bg-gray-100/50 dark:bg-gray-700/20 bg-opacity-50 dark:bg-opacity-10 z-50 pointer-events-none touch-none"
+		></div>
+	{/if}
+
+	<Collapsible
+		bind:open
+		className="w-full"
+		buttonClassName="w-full"
+		onChange={(state: any) => {
+			dispatch('open', state);
+		}}
+	>
+		<!-- svelte-ignore a11y-no-static-element-interactions -->
+		<div class="w-full group">
+			<div
+				id="folder-{folderId}-button"
+				class="relative w-full py-1 px-1.5 rounded-xl flex items-center gap-1.5 hover:bg-gray-100 dark:hover:bg-gray-900 transition {$selectedFolder?.id ===
+				folderId
+					? 'bg-gray-100 dark:bg-gray-900 selected'
+					: ''}"
+				on:dblclick={(e: any) => {
+					if (folders[folderId]?.shared) return;
+					if (clickTimer) {
+						clearTimeout(clickTimer); // cancel the single-click action
+						clickTimer = null;
+					}
+					renameHandler();
+				}}
+				on:click={async (e: any) => {
+					(e: any) => e.stopPropagation();
+					if (clickTimer) {
+						clearTimeout(clickTimer);
+						clickTimer = null;
+					}
+
+					clickTimer = setTimeout(async () => {
+						const folder = await getFolderById(localStorage.token, folderId).catch(async (error)=> {
+							toast.error(`${error}`);
+							return null;
+						});
+
+						if (folder) {
+							await selectedFolder.set({ ...folders[folderId], ...folder });
+						}
+
+						await goto('/');
+
+						if ($mobile) {
+							showSidebar.set(!$showSidebar);
+						}
+						clickTimer = null;
+					}, 100); // 100ms delay (typical double-click threshold)
+				}}
+				on:pointerup={(e: any) => {
+					e.stopPropagation();
+				}}
+			>
+				<button
+					class="text-gray-500 dark:text-gray-500 transition-all p-1 hover:bg-gray-200 dark:hover:bg-gray-850 rounded-lg"
+					on:click={(e: any) => {
+						e.stopPropagation();
+						e.stopImmediatePropagation();
+						open = !open;
+						isExpandedUpdateDebounceHandler();
+					}}
+				>
+					{#if folders[folderId]?.meta?.icon}
+						<div class="flex group-hover:hidden transition-all">
+							<Emoji className="size-3.5" shortCode={folders[folderId].meta.icon} />
+						</div>
+
+						<div class="hidden group-hover:flex transition-all p-[1px]">
+							{#if open}
+								<ChevronDown className=" size-3" strokeWidth="2.5" />
+							{:else}
+								<ChevronRight className=" size-3" strokeWidth="2.5" />
+							{/if}
+						</div>
+					{:else}
+						<div class="p-[1px]">
+							{#if open}
+								<ChevronDown className=" size-3" strokeWidth="2.5" />
+							{:else}
+								<ChevronRight className=" size-3" strokeWidth="2.5" />
+							{/if}
+						</div>
+					{/if}
+				</button>
+
+				<div class="translate-y-[0.5px] flex-1 justify-start text-start line-clamp-1">
+					{#if edit}
+						<input
+							id="folder-{folderId}-input"
+							type="text"
+							bind:value={name}
+							on:blur={() => {
+								console.log('Blur');
+								updateHandler({ name });
+								edit = false;
+							}}
+							on:click={(e: any) => {
+								// Prevent accidental collapse toggling when clicking inside input
+								e.stopPropagation();
+							}}
+							on:mousedown={(e: any) => {
+								// Prevent accidental collapse toggling when clicking inside input
+								e.stopPropagation();
+							}}
+							on:keydown={(e: any) => {
+								if (e.key === 'Enter') {
+									updateHandler({ name });
+									edit = false;
+								}
+							}}
+							class="w-full h-full bg-transparent outline-hidden"
+						/>
+					{:else}
+						{folders[folderId].name}
+					{/if}
+				</div>
+
+				{#if !folders[folderId]?.shared}
+					<button
+						class="absolute z-10 right-2 invisible group-hover:visible self-center flex items-center dark:text-gray-300"
+					>
+						<FolderMenu
+							onEdit={() => {
+								showFolderModal = true;
+							}}
+							onShare={() => {
+								showShareModal = true;
+							}}
+							onDelete={() => {
+								showDeleteConfirm = true;
+							}}
+							onExport={() => {
+								exportHandler();
+							}}
+							onCreateSubFolder={() => {
+								createSubFolderParentId = folderId;
+								showCreateSubFolderModal = true;
+							}}
+						>
+							<div class="p-1 dark:hover:bg-gray-850 rounded-lg touch-auto">
+								<EllipsisHorizontal className="size-4" strokeWidth="2.5" />
+							</div>
+						</FolderMenu>
+					</button>
+				{/if}
+			</div>
+		</div>
+
+		<div slot="content" class="w-full">
+			{#if (folders[folderId]?.childrenIds ?? []).length > 0 || (chats ?? []).length > 0}
+				<div
+					class="ml-3 pl-1 mt-[1px] flex flex-col overflow-y-auto scrollbar-hidden border-s border-gray-100 dark:border-gray-900"
+				>
+					{#if folders[folderId]?.childrenIds}
+						{@const children = folders[folderId]?.childrenIds
+							.map((id) => folders[id])
+							.sort((a, b) =>
+								a.name.localeCompare(b.name, undefined, {
+									numeric: true,
+									sensitivity: 'base'
+								})
+							)}
+
+						{#each children as childFolder (`${folderId}-${childFolder.id}`)}
+							<svelte:self
+								bind:folderRegistry
+								{folders}
+								folderId={childFolder.id}
+								{shiftKey}
+								parentDragged={dragged}
+								{onItemMove}
+								{onDelete}
+								on:import={(e: any) => {
+									dispatch('import', e.detail);
+								}}
+								on:update={(e: any) => {
+									dispatch('update', e.detail);
+								}}
+								on:change={(e: any) => {
+									dispatch('change', e.detail);
+								}}
+							/>
+						{/each}
+					{/if}
+
+					{#each chats ?? [] as chat (chat.id)}
+						<ChatItem
+							id={chat.id}
+							title={chat.title}
+							createdAt={chat.created_at}
+							updatedAt={chat.updated_at}
+							lastReadAt={chat.last_read_at}
+							ownerName={folders[folderId]?.shared ? (chat.owner_name ?? null) : null}
+							ownerUserId={folders[folderId]?.shared && chat.owner_name ? chat.user_id : null}
+							readonly={chat.user_id !== $user?.id}
+							{shiftKey}
+							on:change={(e: any) => {
 								dispatch('change', e.detail);
 							}}
 						/>

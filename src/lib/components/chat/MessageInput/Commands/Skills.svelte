@@ -1,18 +1,19 @@
 <script lang="ts">
+	import type i18nType from 'i18next';
 	import { getContext, onDestroy } from 'svelte';
+	const i18n = getContext<i18nType>('i18n');
+
 	import { getSkillItems } from '$lib/apis/skills';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import Keyframes from '$lib/components/icons/Keyframes.svelte';
 
 	import type { Writable } from 'svelte/store';
-	import type { i18n as i18nType } from 'i18next';
-	const i18n = getContext<Writable<i18nType>>('i18n');
 
-	export let query = '';
-	export let onSelect = (e) => {};
+	export let query: any = '';
+	export let onSelect = (e: any) => {};
 
 	let selectedIdx = 0;
-	export let filteredItems = [];
+	export let filteredItems: any = [];
 
 	let searchDebounceTimer: ReturnType<typeof setTimeout>;
 
@@ -61,7 +62,7 @@
 			.replaceAll('"', '&quot;')
 			.replaceAll("'", '&#39;');
 
-	const getTooltipContent = (skill) => {
+	const getTooltipContent = (skill: any) => {
 		const name = escapeTooltipText(skill.name);
 		const description = escapeTooltipText(skill.description);
 
@@ -72,7 +73,48 @@
 </script>
 
 <div class="px-2 text-xs text-gray-500 py-1">
-	{$i18n.t('Skills')}
+	{i18n.t('Skills')}
+</div>
+
+{#if filteredItems.length > 0}
+	{#each filteredItems as skill, skillIdx}
+		<Tooltip
+			content={getTooltipContent(skill)}
+			placement="top-start"
+			tippyOptions={{ maxWidth: '20rem' }}
+		>
+			<button
+				class="px-2.5 py-1.5 rounded-xl w-full text-left {skillIdx === selectedIdx
+					? 'bg-gray-50 dark:bg-gray-800 selected-command-option-button'
+					: ''}"
+				type="button"
+				on:click={() => {
+					onSelect({ type: 'skill', data: skill });
+				}}
+				on:mousemove={() => {
+					selectedIdx = skillIdx;
+				}}
+				on:focus={() => {}}
+				data-selected={skillIdx === selectedIdx}
+			>
+				<div class="flex w-full min-w-0 items-center text-black dark:text-gray-100">
+					<div class="flex items-center justify-center size-5 mr-2 shrink-0">
+						<Keyframes className="size-4" />
+					</div>
+					<div class="truncate min-w-0 flex-1">
+						{skill.name}
+					</div>
+					<div class="ml-2 max-w-24 shrink-0 truncate text-xs text-gray-500">
+						{skill.id}
+					</div>
+				</div>
+			</button>
+		</Tooltip>
+	{/each}
+{/if}
+
+<div class="px-2 text-xs text-gray-500 py-1">
+	{i18n.t('Skills')}
 </div>
 
 {#if filteredItems.length > 0}
