@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import dayjs from 'dayjs';
@@ -60,7 +60,7 @@
 	};
 
 	const memoryTypeLabel = (memory: Memory) =>
-		(memory.type ?? 'user') === 'user' ? i18n.t('User') : i18n.t('Context');
+		(memory.type ?? 'user') === 'user' ? $i18n.t('User') : $i18n.t('Context');
 
 	const memoryUpdatedAt = (memory: Memory) =>
 		memory.updated_at ? dayjs(memory.updated_at * 1000).format('MMM D, h:mm A') : '';
@@ -87,7 +87,7 @@
 		});
 
 		if (res && memories.length > 0) {
-			toast.success(i18n.t('Memory cleared successfully'));
+			toast.success($i18n.t('Memory cleared successfully'));
 			memories = [];
 		}
 		showClearConfirmDialog = false;
@@ -108,7 +108,7 @@
 	<div>
 		<div class="flex justify-between dark:text-gray-300 px-5 pt-4 pb-1">
 			<div class="flex items-center gap-2">
-				<div class="text-lg font-medium">{i18n.t('Memory')}</div>
+				<div class="text-lg font-medium">{$i18n.t('Memory')}</div>
 
 				{#if !loading}
 					<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
@@ -130,7 +130,7 @@
 				<input
 					class="w-full text-sm py-1 rounded-r-xl outline-hidden bg-transparent"
 					bind:value={query}
-					placeholder={i18n.t('Search Memories')}
+					placeholder={$i18n.t('Search Memories')}
 					maxlength="500"
 				/>
 
@@ -155,9 +155,9 @@
 							class="text-xs text-gray-500 dark:text-gray-400 text-center px-5 min-h-20 w-full flex justify-center items-center"
 						>
 							{#if memories.length === 0}
-								{i18n.t('Memories accessible by LLMs will be shown here.')}
+								{$i18n.t('Memories accessible by LLMs will be shown here.')}
 							{:else}
-								{i18n.t('No results found')}
+								{$i18n.t('No results found')}
 							{/if}
 						</div>
 					{:else}
@@ -195,7 +195,7 @@
 										<div
 											class="flex items-center text-gray-500 dark:text-gray-400 opacity-70 group-hover:opacity-100 focus-within:opacity-100 transition"
 										>
-											<Tooltip content={i18n.t('Edit')}>
+											<Tooltip content={$i18n.t('Edit')}>
 												<button
 													class="self-center w-fit text-sm p-1 leading-none hover:text-gray-900 dark:hover:text-gray-100 transition"
 													on:click={(e) => {
@@ -207,7 +207,7 @@
 												</button>
 											</Tooltip>
 
-											<Tooltip content={i18n.t('Delete')}>
+											<Tooltip content={$i18n.t('Delete')}>
 												<button
 													class="self-center w-fit text-sm p-1 leading-none hover:text-gray-900 dark:hover:text-gray-100 transition"
 													on:click={(e) => {
@@ -238,9 +238,9 @@
 						if (memories.length > 0) {
 							showClearConfirmDialog = true;
 						} else {
-							toast.error(i18n.t('No memories to clear'));
+							toast.error($i18n.t('No memories to clear'));
 						}
-					}}>{i18n.t('Clear memory')}</button
+					}}>{$i18n.t('Clear memory')}</button
 				>
 
 				<button
@@ -248,7 +248,7 @@
 					on:click={() => {
 						selectedMemory = null;
 						showMemoryModal = true;
-					}}>{i18n.t('Add Memory')}</button
+					}}>{$i18n.t('Add Memory')}</button
 				>
 			</div>
 		</div>
@@ -256,8 +256,8 @@
 </Modal>
 
 <ConfirmDialog
-	title={i18n.t('Clear Memory')}
-	message={i18n.t('Are you sure you want to clear all memories? This action cannot be undone.')}
+	title={$i18n.t('Clear Memory')}
+	message={$i18n.t('Are you sure you want to clear all memories? This action cannot be undone.')}
 	show={showClearConfirmDialog}
 	on:confirm={onClearConfirmed}
 	on:cancel={() => {
@@ -266,18 +266,20 @@
 />
 
 <ConfirmDialog
-	title={i18n.t('Delete Memory?')}
+	title={$i18n.t('Delete Memory?')}
 	show={showDeleteConfirm}
 	on:confirm={async () => {
 		if (!selectedMemory) return;
 
-		const res = await deleteMemoryById(localStorage.token, selectedMemory.id).catch(async (error)=> {
-			toast.error(`${error}`);
-			return null;
-		});
+		const res = await deleteMemoryById(localStorage.token, selectedMemory.id).catch(
+			async (error) => {
+				toast.error(`${error}`);
+				return null;
+			}
+		);
 
 		if (res) {
-			toast.success(i18n.t('Memory deleted successfully'));
+			toast.success($i18n.t('Memory deleted successfully'));
 			await loadMemories();
 		}
 		showDeleteConfirm = false;
@@ -287,7 +289,7 @@
 	}}
 >
 	<div class="text-sm text-gray-500 flex-1">
-		{i18n.t('Are you sure you want to delete this memory? This action cannot be undone.')}
+		{$i18n.t('Are you sure you want to delete this memory? This action cannot be undone.')}
 		<div
 			class="mt-2 bg-gray-50 dark:bg-gray-900 p-3 rounded-xl border border-gray-100 dark:border-gray-800 text-black dark:text-white whitespace-pre-wrap break-words max-h-32 overflow-y-auto"
 		>
@@ -308,7 +310,7 @@
 	<div>
 		<div class="flex justify-between dark:text-gray-300 px-5 pt-4 pb-1">
 			<div class="flex items-center gap-2">
-				<div class="text-lg font-medium">{i18n.t('Memory')}</div>
+				<div class="text-lg font-medium">{$i18n.t('Memory')}</div>
 
 				{#if !loading}
 					<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
@@ -330,7 +332,7 @@
 				<input
 					class="w-full text-sm py-1 rounded-r-xl outline-hidden bg-transparent"
 					bind:value={query}
-					placeholder={i18n.t('Search Memories')}
+					placeholder={$i18n.t('Search Memories')}
 					maxlength="500"
 				/>
 
@@ -355,9 +357,9 @@
 							class="text-xs text-gray-500 dark:text-gray-400 text-center px-5 min-h-20 w-full flex justify-center items-center"
 						>
 							{#if memories.length === 0}
-								{i18n.t('Memories accessible by LLMs will be shown here.')}
+								{$i18n.t('Memories accessible by LLMs will be shown here.')}
 							{:else}
-								{i18n.t('No results found')}
+								{$i18n.t('No results found')}
 							{/if}
 						</div>
 					{:else}
@@ -395,7 +397,7 @@
 										<div
 											class="flex items-center text-gray-500 dark:text-gray-400 opacity-70 group-hover:opacity-100 focus-within:opacity-100 transition"
 										>
-											<Tooltip content={i18n.t('Edit')}>
+											<Tooltip content={$i18n.t('Edit')}>
 												<button
 													class="self-center w-fit text-sm p-1 leading-none hover:text-gray-900 dark:hover:text-gray-100 transition"
 													on:click={(e) => {
@@ -407,7 +409,7 @@
 												</button>
 											</Tooltip>
 
-											<Tooltip content={i18n.t('Delete')}>
+											<Tooltip content={$i18n.t('Delete')}>
 												<button
 													class="self-center w-fit text-sm p-1 leading-none hover:text-gray-900 dark:hover:text-gray-100 transition"
 													on:click={(e) => {
@@ -438,9 +440,9 @@
 						if (memories.length > 0) {
 							showClearConfirmDialog = true;
 						} else {
-							toast.error(i18n.t('No memories to clear'));
+							toast.error($i18n.t('No memories to clear'));
 						}
-					}}>{i18n.t('Clear memory')}</button
+					}}>{$i18n.t('Clear memory')}</button
 				>
 
 				<button
@@ -448,7 +450,7 @@
 					on:click={() => {
 						selectedMemory = null;
 						showMemoryModal = true;
-					}}>{i18n.t('Add Memory')}</button
+					}}>{$i18n.t('Add Memory')}</button
 				>
 			</div>
 		</div>
@@ -456,8 +458,8 @@
 </Modal>
 
 <ConfirmDialog
-	title={i18n.t('Clear Memory')}
-	message={i18n.t('Are you sure you want to clear all memories? This action cannot be undone.')}
+	title={$i18n.t('Clear Memory')}
+	message={$i18n.t('Are you sure you want to clear all memories? This action cannot be undone.')}
 	show={showClearConfirmDialog}
 	on:confirm={onClearConfirmed}
 	on:cancel={() => {
@@ -466,18 +468,20 @@
 />
 
 <ConfirmDialog
-	title={i18n.t('Delete Memory?')}
+	title={$i18n.t('Delete Memory?')}
 	show={showDeleteConfirm}
 	on:confirm={async () => {
 		if (!selectedMemory) return;
 
-		const res = await deleteMemoryById(localStorage.token, selectedMemory.id).catch(async (error)=> {
-			toast.error(`${error}`);
-			return null;
-		});
+		const res = await deleteMemoryById(localStorage.token, selectedMemory.id).catch(
+			async (error) => {
+				toast.error(`${error}`);
+				return null;
+			}
+		);
 
 		if (res) {
-			toast.success(i18n.t('Memory deleted successfully'));
+			toast.success($i18n.t('Memory deleted successfully'));
 			await loadMemories();
 		}
 		showDeleteConfirm = false;
@@ -487,7 +491,7 @@
 	}}
 >
 	<div class="text-sm text-gray-500 flex-1">
-		{i18n.t('Are you sure you want to delete this memory? This action cannot be undone.')}
+		{$i18n.t('Are you sure you want to delete this memory? This action cannot be undone.')}
 		<div
 			class="mt-2 bg-gray-50 dark:bg-gray-900 p-3 rounded-xl border border-gray-100 dark:border-gray-800 text-black dark:text-white whitespace-pre-wrap break-words max-h-32 overflow-y-auto"
 		>

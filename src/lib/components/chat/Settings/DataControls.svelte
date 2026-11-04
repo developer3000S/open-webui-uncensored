@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import fileSaver from 'file-saver';
 	const { saveAs } = fileSaver;
@@ -50,7 +50,7 @@
 
 		let reader = new FileReader();
 		reader.onload = (event) => {
-			let chats = JSON.parse(event.target.result);
+			let chats = JSON.parse(event.target.result as string);
 			console.log(chats);
 			if (getImportOrigin(chats) == 'openai') {
 				try {
@@ -112,7 +112,7 @@
 
 	const archiveAllChatsHandler = async () => {
 		await goto('/');
-		await archiveAllChats(localStorage.token).catch(async (error)=> {
+		await archiveAllChats(localStorage.token).catch(async (error) => {
 			toast.error(`${error}`);
 		});
 
@@ -124,7 +124,7 @@
 
 	const deleteAllChatsHandler = async () => {
 		await goto('/');
-		await deleteAllChats(localStorage.token).catch(async (error)=> {
+		await deleteAllChats(localStorage.token).catch(async (error) => {
 			toast.error(`${error}`);
 		});
 
@@ -155,8 +155,8 @@
 <FilesModal bind:show={showFilesModal} />
 
 <ConfirmDialog
-	title={i18n.t('Archive All Chats')}
-	message={i18n.t('Are you sure you want to archive all chats? This action cannot be undone.')}
+	title={$i18n.t('Archive All Chats')}
+	message={$i18n.t('Are you sure you want to archive all chats? This action cannot be undone.')}
 	bind:show={showArchiveConfirmDialog}
 	on:confirm={archiveAllChatsHandler}
 	on:cancel={() => {
@@ -165,8 +165,8 @@
 />
 
 <ConfirmDialog
-	title={i18n.t('Delete All Chats')}
-	message={i18n.t('Are you sure you want to delete all chats? This action cannot be undone.')}
+	title={$i18n.t('Delete All Chats')}
+	message={$i18n.t('Are you sure you want to delete all chats? This action cannot be undone.')}
 	bind:show={showDeleteConfirmDialog}
 	on:confirm={deleteAllChatsHandler}
 	on:cancel={() => {
@@ -186,12 +186,12 @@
 		/>
 
 		<div>
-			<div class="mb-1 text-sm font-medium">{i18n.t('Chats')}</div>
+			<div class="mb-1 text-sm font-medium">{$i18n.t('Chats')}</div>
 
 			{#if $user?.role === 'admin' || ($user.permissions?.chat?.import ?? true)}
 				<div>
 					<div class="py-0.5 flex w-full justify-between">
-						<div class="self-center text-xs">{i18n.t('Import Chats')}</div>
+						<div class="self-center text-xs">{$i18n.t('Import Chats')}</div>
 						<button
 							class="p-1 px-3 text-xs flex rounded-sm transition"
 							on:click={() => {
@@ -199,7 +199,7 @@
 							}}
 							type="button"
 						>
-							<span class="self-center">{i18n.t('Import')}</span>
+							<span class="self-center">{$i18n.t('Import')}</span>
 						</button>
 					</div>
 				</div>
@@ -208,7 +208,7 @@
 			{#if $user?.role === 'admin' || ($user.permissions?.chat?.export ?? true)}
 				<div>
 					<div class="py-0.5 flex w-full justify-between">
-						<div class="self-center text-xs">{i18n.t('Export Chats')}</div>
+						<div class="self-center text-xs">{$i18n.t('Export Chats')}</div>
 						<button
 							class="p-1 px-3 text-xs flex rounded-sm transition"
 							on:click={() => {
@@ -216,7 +216,7 @@
 							}}
 							type="button"
 						>
-							<span class="self-center">{i18n.t('Export')}</span>
+							<span class="self-center">{$i18n.t('Export')}</span>
 						</button>
 					</div>
 				</div>
@@ -224,7 +224,7 @@
 
 			<div>
 				<div class="py-0.5 flex w-full justify-between">
-					<div class="self-center text-xs">{i18n.t('Archived Chats')}</div>
+					<div class="self-center text-xs">{$i18n.t('Archived Chats')}</div>
 					<button
 						class="p-1 px-3 text-xs flex rounded-sm transition"
 						on:click={() => {
@@ -232,14 +232,14 @@
 						}}
 						type="button"
 					>
-						<span class="self-center">{i18n.t('Manage')}</span>
+						<span class="self-center">{$i18n.t('Manage')}</span>
 					</button>
 				</div>
 			</div>
 
 			<div>
 				<div class="py-0.5 flex w-full justify-between">
-					<div class="self-center text-xs">{i18n.t('Shared Chats')}</div>
+					<div class="self-center text-xs">{$i18n.t('Shared Chats')}</div>
 					<button
 						class="p-1 px-3 text-xs flex rounded-sm transition"
 						on:click={() => {
@@ -247,14 +247,14 @@
 						}}
 						type="button"
 					>
-						<span class="self-center">{i18n.t('Manage')}</span>
+						<span class="self-center">{$i18n.t('Manage')}</span>
 					</button>
 				</div>
 			</div>
 
 			<div>
 				<div class="py-0.5 flex w-full justify-between">
-					<div class="self-center text-xs">{i18n.t('Archive All Chats')}</div>
+					<div class="self-center text-xs">{$i18n.t('Archive All Chats')}</div>
 					<button
 						class="p-1 px-3 text-xs flex rounded-sm transition"
 						on:click={() => {
@@ -262,14 +262,14 @@
 						}}
 						type="button"
 					>
-						<span class="self-center">{i18n.t('Archive All')}</span>
+						<span class="self-center">{$i18n.t('Archive All')}</span>
 					</button>
 				</div>
 			</div>
 
 			<div>
 				<div class="py-0.5 flex w-full justify-between">
-					<div class="self-center text-xs">{i18n.t('Delete All Chats')}</div>
+					<div class="self-center text-xs">{$i18n.t('Delete All Chats')}</div>
 					<button
 						class="p-1 px-3 text-xs flex rounded-sm transition"
 						on:click={() => {
@@ -277,18 +277,18 @@
 						}}
 						type="button"
 					>
-						<span class="self-center">{i18n.t('Delete All')}</span>
+						<span class="self-center">{$i18n.t('Delete All')}</span>
 					</button>
 				</div>
 			</div>
 		</div>
 
 		<div>
-			<div class="mb-1 text-sm font-medium">{i18n.t('Files')}</div>
+			<div class="mb-1 text-sm font-medium">{$i18n.t('Files')}</div>
 
 			<div>
 				<div class="py-0.5 flex w-full justify-between">
-					<div class="self-center text-xs">{i18n.t('Manage Files')}</div>
+					<div class="self-center text-xs">{$i18n.t('Manage Files')}</div>
 					<button
 						class="p-1 px-3 text-xs flex rounded-sm transition"
 						on:click={() => {
@@ -296,7 +296,7 @@
 						}}
 						type="button"
 					>
-						<span class="self-center">{i18n.t('Manage')}</span>
+						<span class="self-center">{$i18n.t('Manage')}</span>
 					</button>
 				</div>
 			</div>
@@ -318,8 +318,8 @@
 <FilesModal bind:show={showFilesModal} />
 
 <ConfirmDialog
-	title={i18n.t('Archive All Chats')}
-	message={i18n.t('Are you sure you want to archive all chats? This action cannot be undone.')}
+	title={$i18n.t('Archive All Chats')}
+	message={$i18n.t('Are you sure you want to archive all chats? This action cannot be undone.')}
 	bind:show={showArchiveConfirmDialog}
 	on:confirm={archiveAllChatsHandler}
 	on:cancel={() => {
@@ -328,8 +328,8 @@
 />
 
 <ConfirmDialog
-	title={i18n.t('Delete All Chats')}
-	message={i18n.t('Are you sure you want to delete all chats? This action cannot be undone.')}
+	title={$i18n.t('Delete All Chats')}
+	message={$i18n.t('Are you sure you want to delete all chats? This action cannot be undone.')}
 	bind:show={showDeleteConfirmDialog}
 	on:confirm={deleteAllChatsHandler}
 	on:cancel={() => {
@@ -349,12 +349,12 @@
 		/>
 
 		<div>
-			<div class="mb-1 text-sm font-medium">{i18n.t('Chats')}</div>
+			<div class="mb-1 text-sm font-medium">{$i18n.t('Chats')}</div>
 
 			{#if $user?.role === 'admin' || ($user.permissions?.chat?.import ?? true)}
 				<div>
 					<div class="py-0.5 flex w-full justify-between">
-						<div class="self-center text-xs">{i18n.t('Import Chats')}</div>
+						<div class="self-center text-xs">{$i18n.t('Import Chats')}</div>
 						<button
 							class="p-1 px-3 text-xs flex rounded-sm transition"
 							on:click={() => {
@@ -362,7 +362,7 @@
 							}}
 							type="button"
 						>
-							<span class="self-center">{i18n.t('Import')}</span>
+							<span class="self-center">{$i18n.t('Import')}</span>
 						</button>
 					</div>
 				</div>
@@ -371,7 +371,7 @@
 			{#if $user?.role === 'admin' || ($user.permissions?.chat?.export ?? true)}
 				<div>
 					<div class="py-0.5 flex w-full justify-between">
-						<div class="self-center text-xs">{i18n.t('Export Chats')}</div>
+						<div class="self-center text-xs">{$i18n.t('Export Chats')}</div>
 						<button
 							class="p-1 px-3 text-xs flex rounded-sm transition"
 							on:click={() => {
@@ -379,7 +379,7 @@
 							}}
 							type="button"
 						>
-							<span class="self-center">{i18n.t('Export')}</span>
+							<span class="self-center">{$i18n.t('Export')}</span>
 						</button>
 					</div>
 				</div>
@@ -387,7 +387,7 @@
 
 			<div>
 				<div class="py-0.5 flex w-full justify-between">
-					<div class="self-center text-xs">{i18n.t('Archived Chats')}</div>
+					<div class="self-center text-xs">{$i18n.t('Archived Chats')}</div>
 					<button
 						class="p-1 px-3 text-xs flex rounded-sm transition"
 						on:click={() => {
@@ -395,14 +395,14 @@
 						}}
 						type="button"
 					>
-						<span class="self-center">{i18n.t('Manage')}</span>
+						<span class="self-center">{$i18n.t('Manage')}</span>
 					</button>
 				</div>
 			</div>
 
 			<div>
 				<div class="py-0.5 flex w-full justify-between">
-					<div class="self-center text-xs">{i18n.t('Shared Chats')}</div>
+					<div class="self-center text-xs">{$i18n.t('Shared Chats')}</div>
 					<button
 						class="p-1 px-3 text-xs flex rounded-sm transition"
 						on:click={() => {
@@ -410,14 +410,14 @@
 						}}
 						type="button"
 					>
-						<span class="self-center">{i18n.t('Manage')}</span>
+						<span class="self-center">{$i18n.t('Manage')}</span>
 					</button>
 				</div>
 			</div>
 
 			<div>
 				<div class="py-0.5 flex w-full justify-between">
-					<div class="self-center text-xs">{i18n.t('Archive All Chats')}</div>
+					<div class="self-center text-xs">{$i18n.t('Archive All Chats')}</div>
 					<button
 						class="p-1 px-3 text-xs flex rounded-sm transition"
 						on:click={() => {
@@ -425,14 +425,14 @@
 						}}
 						type="button"
 					>
-						<span class="self-center">{i18n.t('Archive All')}</span>
+						<span class="self-center">{$i18n.t('Archive All')}</span>
 					</button>
 				</div>
 			</div>
 
 			<div>
 				<div class="py-0.5 flex w-full justify-between">
-					<div class="self-center text-xs">{i18n.t('Delete All Chats')}</div>
+					<div class="self-center text-xs">{$i18n.t('Delete All Chats')}</div>
 					<button
 						class="p-1 px-3 text-xs flex rounded-sm transition"
 						on:click={() => {
@@ -440,18 +440,18 @@
 						}}
 						type="button"
 					>
-						<span class="self-center">{i18n.t('Delete All')}</span>
+						<span class="self-center">{$i18n.t('Delete All')}</span>
 					</button>
 				</div>
 			</div>
 		</div>
 
 		<div>
-			<div class="mb-1 text-sm font-medium">{i18n.t('Files')}</div>
+			<div class="mb-1 text-sm font-medium">{$i18n.t('Files')}</div>
 
 			<div>
 				<div class="py-0.5 flex w-full justify-between">
-					<div class="self-center text-xs">{i18n.t('Manage Files')}</div>
+					<div class="self-center text-xs">{$i18n.t('Manage Files')}</div>
 					<button
 						class="p-1 px-3 text-xs flex rounded-sm transition"
 						on:click={() => {
@@ -459,7 +459,7 @@
 						}}
 						type="button"
 					>
-						<span class="self-center">{i18n.t('Manage')}</span>
+						<span class="self-center">{$i18n.t('Manage')}</span>
 					</button>
 				</div>
 			</div>

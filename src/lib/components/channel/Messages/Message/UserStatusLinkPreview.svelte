@@ -3,7 +3,7 @@
 	import { LinkPreview } from 'bits-ui';
 
 	import type { Writable } from 'svelte/store';
-		import { getUserInfoById } from '$lib/apis/users';
+	import { getUserInfoById } from '$lib/apis/users';
 
 	import UserStatus from './UserStatus.svelte';
 

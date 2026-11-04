@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { fly } from 'svelte/transition';
 
@@ -44,10 +44,16 @@
 	export let selectedSkillIds: string[] = [];
 
 	export let selectedModels: string[] = [];
+	export let closeOnOutsideClick: any = undefined;
 	export let fileUploadCapableModels: string[] = [];
 
-	export let toggleFilters: { id: string; name: string; description?: string; icon?: string }[] =
-		[];
+	export let toggleFilters: {
+		id: string;
+		name: string;
+		description?: string;
+		icon?: string;
+		has_user_valves?: boolean;
+	}[] = [];
 	export let selectedFilterIds: string[] = [];
 
 	export let showWebSearchButton: any = false;
@@ -56,9 +62,9 @@
 	export let imageGenerationEnabled: any = false;
 	export let showCodeInterpreterButton: any = false;
 	export let codeInterpreterEnabled: any = false;
-	export let onShowValves: Function;
-	export let onClose: Function;
-	export let onWebSearchToggle: Function = () => {};
+	export let onShowValves: any;
+	export let onClose: any;
+	export let onWebSearchToggle: any = () => {};
 
 	let show = false;
 	let tab = '';
@@ -137,7 +143,7 @@
 		}
 	}}
 >
-	<Tooltip content={i18n.t('Integrations')} placement="top">
+	<Tooltip content={$i18n.t('Integrations')} placement="top">
 		<slot />
 	</Tooltip>
 	<div slot="content">
@@ -158,7 +164,7 @@
 
 								<div class="flex items-center w-full justify-between">
 									<div class=" line-clamp-1">
-										{i18n.t('Tools')}
+										{$i18n.t('Tools')}
 										<span class="ml-0.5 text-gray-500">{Object.keys(tools).length}</span>
 									</div>
 
@@ -180,7 +186,7 @@
 
 								<div class="flex items-center w-full justify-between">
 									<div class=" line-clamp-1">
-										{i18n.t('Skills')}
+										{$i18n.t('Skills')}
 										<span class="ml-0.5 text-gray-500">{Object.keys(skills).length}</span>
 									</div>
 
@@ -234,7 +240,7 @@
 
 									{#if filter?.has_user_valves && ($user?.role === 'admin' || ($user?.permissions?.chat?.valves ?? true))}
 										<div class=" shrink-0">
-											<Tooltip content={i18n.t('Valves')}>
+											<Tooltip content={$i18n.t('Valves')}>
 												<button
 													class="self-center w-fit text-sm text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition rounded-full"
 													type="button"
@@ -268,13 +274,13 @@
 					{/if}
 
 					{#if showWebSearchButton}
-						<Tooltip content={i18n.t('Search the internet')} placement="top-start">
+						<Tooltip content={$i18n.t('Search the internet')} placement="top-start">
 							<button
 								class="flex w-full justify-between gap-2 items-center px-3 py-1.5 text-sm cursor-pointer rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50"
 								aria-pressed={webSearchEnabled}
 								aria-label={webSearchEnabled
-									? i18n.t('Disable Web Search')
-									: i18n.t('Enable Web Search')}
+									? $i18n.t('Disable Web Search')
+									: $i18n.t('Enable Web Search')}
 								on:click={() => {
 									webSearchEnabled = !webSearchEnabled;
 									onWebSearchToggle(webSearchEnabled);
@@ -286,7 +292,7 @@
 											<GlobeAlt />
 										</div>
 
-										<div class=" truncate">{i18n.t('Web Search')}</div>
+										<div class=" truncate">{$i18n.t('Web Search')}</div>
 									</div>
 								</div>
 
@@ -304,13 +310,13 @@
 					{/if}
 
 					{#if showImageGenerationButton}
-						<Tooltip content={i18n.t('Generate an image')} placement="top-start">
+						<Tooltip content={$i18n.t('Generate an image')} placement="top-start">
 							<button
 								class="flex w-full justify-between gap-2 items-center px-3 py-1.5 text-sm cursor-pointer rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50"
 								aria-pressed={imageGenerationEnabled}
 								aria-label={imageGenerationEnabled
-									? i18n.t('Disable Image Generation')
-									: i18n.t('Enable Image Generation')}
+									? $i18n.t('Disable Image Generation')
+									: $i18n.t('Enable Image Generation')}
 								on:click={() => {
 									imageGenerationEnabled = !imageGenerationEnabled;
 								}}
@@ -321,7 +327,7 @@
 											<Photo className="size-4" strokeWidth="1.5" />
 										</div>
 
-										<div class=" truncate">{i18n.t('Image')}</div>
+										<div class=" truncate">{$i18n.t('Image')}</div>
 									</div>
 								</div>
 
@@ -339,13 +345,13 @@
 					{/if}
 
 					{#if showCodeInterpreterButton}
-						<Tooltip content={i18n.t('Execute code for analysis')} placement="top-start">
+						<Tooltip content={$i18n.t('Execute code for analysis')} placement="top-start">
 							<button
 								class="flex w-full justify-between gap-2 items-center px-3 py-1.5 text-sm cursor-pointer rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50"
 								aria-pressed={codeInterpreterEnabled}
 								aria-label={codeInterpreterEnabled
-									? i18n.t('Disable Code Interpreter')
-									: i18n.t('Enable Code Interpreter')}
+									? $i18n.t('Disable Code Interpreter')
+									: $i18n.t('Enable Code Interpreter')}
 								on:click={() => {
 									codeInterpreterEnabled = !codeInterpreterEnabled;
 								}}
@@ -356,7 +362,7 @@
 											<Terminal className="size-3.5" strokeWidth="1.75" />
 										</div>
 
-										<div class=" truncate">{i18n.t('Code Interpreter')}</div>
+										<div class=" truncate">{$i18n.t('Code Interpreter')}</div>
 									</div>
 								</div>
 
@@ -385,7 +391,7 @@
 
 						<div class="flex items-center w-full justify-between">
 							<div>
-								{i18n.t('Tools')}
+								{$i18n.t('Tools')}
 								<span class="ml-0.5 text-gray-500">{Object.keys(tools).length}</span>
 							</div>
 						</div>
@@ -438,7 +444,7 @@
 
 							{#if (tools[toolId]?.authenticated ?? true) && toolId.startsWith('server:mcp:')}
 								<div class="shrink-0">
-									<Tooltip content={i18n.t('Disconnect OAuth')}>
+									<Tooltip content={$i18n.t('Disconnect OAuth')}>
 										<button
 											class="self-center w-fit text-sm text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition rounded-full"
 											type="button"
@@ -452,14 +458,14 @@
 
 												try {
 													await deleteOAuthSession(localStorage.token, provider);
-													toast.success(i18n.t('OAuth session disconnected'));
+													toast.success($i18n.t('OAuth session disconnected'));
 
 													// Refresh tools to update authenticated state
 													_tools.set(await getTools(localStorage.token));
 													selectedToolIds = selectedToolIds.filter((id) => id !== toolId);
 													await init();
 												} catch (err) {
-													toast.error(err ?? i18n.t('Failed to disconnect'));
+													toast.error(err ?? $i18n.t('Failed to disconnect'));
 												}
 											}}
 										>
@@ -471,7 +477,7 @@
 
 							{#if tools[toolId]?.has_user_valves && ($user?.role === 'admin' || ($user?.permissions?.chat?.valves ?? true))}
 								<div class=" shrink-0">
-									<Tooltip content={i18n.t('Valves')}>
+									<Tooltip content={$i18n.t('Valves')}>
 										<button
 											class="self-center w-fit text-sm text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition rounded-full"
 											type="button"
@@ -508,7 +514,7 @@
 
 						<div class="flex items-center w-full justify-between">
 							<div>
-								{i18n.t('Skills')}
+								{$i18n.t('Skills')}
 								<span class="ml-0.5 text-gray-500">{Object.keys(skills).length}</span>
 							</div>
 						</div>
@@ -562,7 +568,7 @@
 		}
 	}}
 >
-	<Tooltip content={i18n.t('Integrations')} placement="top">
+	<Tooltip content={$i18n.t('Integrations')} placement="top">
 		<slot />
 	</Tooltip>
 	<div slot="content">
@@ -583,7 +589,7 @@
 
 								<div class="flex items-center w-full justify-between">
 									<div class=" line-clamp-1">
-										{i18n.t('Tools')}
+										{$i18n.t('Tools')}
 										<span class="ml-0.5 text-gray-500">{Object.keys(tools).length}</span>
 									</div>
 
@@ -605,7 +611,7 @@
 
 								<div class="flex items-center w-full justify-between">
 									<div class=" line-clamp-1">
-										{i18n.t('Skills')}
+										{$i18n.t('Skills')}
 										<span class="ml-0.5 text-gray-500">{Object.keys(skills).length}</span>
 									</div>
 
@@ -659,7 +665,7 @@
 
 									{#if filter?.has_user_valves && ($user?.role === 'admin' || ($user?.permissions?.chat?.valves ?? true))}
 										<div class=" shrink-0">
-											<Tooltip content={i18n.t('Valves')}>
+											<Tooltip content={$i18n.t('Valves')}>
 												<button
 													class="self-center w-fit text-sm text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition rounded-full"
 													type="button"
@@ -693,13 +699,13 @@
 					{/if}
 
 					{#if showWebSearchButton}
-						<Tooltip content={i18n.t('Search the internet')} placement="top-start">
+						<Tooltip content={$i18n.t('Search the internet')} placement="top-start">
 							<button
 								class="flex w-full justify-between gap-2 items-center px-3 py-1.5 text-sm cursor-pointer rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50"
 								aria-pressed={webSearchEnabled}
 								aria-label={webSearchEnabled
-									? i18n.t('Disable Web Search')
-									: i18n.t('Enable Web Search')}
+									? $i18n.t('Disable Web Search')
+									: $i18n.t('Enable Web Search')}
 								on:click={() => {
 									webSearchEnabled = !webSearchEnabled;
 									onWebSearchToggle(webSearchEnabled);
@@ -711,7 +717,7 @@
 											<GlobeAlt />
 										</div>
 
-										<div class=" truncate">{i18n.t('Web Search')}</div>
+										<div class=" truncate">{$i18n.t('Web Search')}</div>
 									</div>
 								</div>
 
@@ -729,13 +735,13 @@
 					{/if}
 
 					{#if showImageGenerationButton}
-						<Tooltip content={i18n.t('Generate an image')} placement="top-start">
+						<Tooltip content={$i18n.t('Generate an image')} placement="top-start">
 							<button
 								class="flex w-full justify-between gap-2 items-center px-3 py-1.5 text-sm cursor-pointer rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50"
 								aria-pressed={imageGenerationEnabled}
 								aria-label={imageGenerationEnabled
-									? i18n.t('Disable Image Generation')
-									: i18n.t('Enable Image Generation')}
+									? $i18n.t('Disable Image Generation')
+									: $i18n.t('Enable Image Generation')}
 								on:click={() => {
 									imageGenerationEnabled = !imageGenerationEnabled;
 								}}
@@ -746,7 +752,7 @@
 											<Photo className="size-4" strokeWidth="1.5" />
 										</div>
 
-										<div class=" truncate">{i18n.t('Image')}</div>
+										<div class=" truncate">{$i18n.t('Image')}</div>
 									</div>
 								</div>
 
@@ -764,13 +770,13 @@
 					{/if}
 
 					{#if showCodeInterpreterButton}
-						<Tooltip content={i18n.t('Execute code for analysis')} placement="top-start">
+						<Tooltip content={$i18n.t('Execute code for analysis')} placement="top-start">
 							<button
 								class="flex w-full justify-between gap-2 items-center px-3 py-1.5 text-sm cursor-pointer rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50"
 								aria-pressed={codeInterpreterEnabled}
 								aria-label={codeInterpreterEnabled
-									? i18n.t('Disable Code Interpreter')
-									: i18n.t('Enable Code Interpreter')}
+									? $i18n.t('Disable Code Interpreter')
+									: $i18n.t('Enable Code Interpreter')}
 								on:click={() => {
 									codeInterpreterEnabled = !codeInterpreterEnabled;
 								}}
@@ -781,7 +787,7 @@
 											<Terminal className="size-3.5" strokeWidth="1.75" />
 										</div>
 
-										<div class=" truncate">{i18n.t('Code Interpreter')}</div>
+										<div class=" truncate">{$i18n.t('Code Interpreter')}</div>
 									</div>
 								</div>
 
@@ -810,7 +816,7 @@
 
 						<div class="flex items-center w-full justify-between">
 							<div>
-								{i18n.t('Tools')}
+								{$i18n.t('Tools')}
 								<span class="ml-0.5 text-gray-500">{Object.keys(tools).length}</span>
 							</div>
 						</div>
@@ -863,7 +869,7 @@
 
 							{#if (tools[toolId]?.authenticated ?? true) && toolId.startsWith('server:mcp:')}
 								<div class="shrink-0">
-									<Tooltip content={i18n.t('Disconnect OAuth')}>
+									<Tooltip content={$i18n.t('Disconnect OAuth')}>
 										<button
 											class="self-center w-fit text-sm text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition rounded-full"
 											type="button"
@@ -877,14 +883,14 @@
 
 												try {
 													await deleteOAuthSession(localStorage.token, provider);
-													toast.success(i18n.t('OAuth session disconnected'));
+													toast.success($i18n.t('OAuth session disconnected'));
 
 													// Refresh tools to update authenticated state
 													_tools.set(await getTools(localStorage.token));
 													selectedToolIds = selectedToolIds.filter((id) => id !== toolId);
 													await init();
 												} catch (err) {
-													toast.error(err ?? i18n.t('Failed to disconnect'));
+													toast.error(err ?? $i18n.t('Failed to disconnect'));
 												}
 											}}
 										>
@@ -896,7 +902,7 @@
 
 							{#if tools[toolId]?.has_user_valves && ($user?.role === 'admin' || ($user?.permissions?.chat?.valves ?? true))}
 								<div class=" shrink-0">
-									<Tooltip content={i18n.t('Valves')}>
+									<Tooltip content={$i18n.t('Valves')}>
 										<button
 											class="self-center w-fit text-sm text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition rounded-full"
 											type="button"
@@ -933,7 +939,7 @@
 
 						<div class="flex items-center w-full justify-between">
 							<div>
-								{i18n.t('Skills')}
+								{$i18n.t('Skills')}
 								<span class="ml-0.5 text-gray-500">{Object.keys(skills).length}</span>
 							</div>
 						</div>

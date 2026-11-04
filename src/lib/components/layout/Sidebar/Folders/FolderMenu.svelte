@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 	const dispatch = createEventDispatcher();
@@ -14,11 +14,11 @@
 	import Folder from '$lib/components/icons/Folder.svelte';
 
 	export let align: 'start' | 'end' = 'start';
-	export let onEdit = () => {};
-	export let onExport = () => {};
-	export let onShare = () => {};
-	export let onDelete = () => {};
-	export let onCreateSubFolder = () => {};
+	export let onEdit: any = () => {};
+	export let onExport: any = () => {};
+	export let onShare: any = () => {};
+	export let onDelete: any = () => {};
+	export let onCreateSubFolder: any = () => {};
 
 	let show = false;
 </script>
@@ -32,7 +32,7 @@
 		}
 	}}
 >
-	<Tooltip content={i18n.t('More')}>
+	<Tooltip content={$i18n.t('More')}>
 		<button
 			on:click={(e) => {
 				e.stopPropagation();
@@ -54,7 +54,7 @@
 				}}
 			>
 				<Folder />
-				<div class="flex items-center">{i18n.t('Create Folder')}</div>
+				<div class="flex items-center">{$i18n.t('Create Folder')}</div>
 			</button>
 
 			<hr class="border-gray-50/30 dark:border-gray-800/30 my-1" />
@@ -66,7 +66,7 @@
 				}}
 			>
 				<Pencil />
-				<div class="flex items-center">{i18n.t('Edit')}</div>
+				<div class="flex items-center">{$i18n.t('Edit')}</div>
 			</button>
 
 			<button
@@ -76,7 +76,7 @@
 				}}
 			>
 				<Download />
-				<div class="flex items-center">{i18n.t('Export')}</div>
+				<div class="flex items-center">{$i18n.t('Export')}</div>
 			</button>
 
 			<button
@@ -99,7 +99,7 @@
 						d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.935-2.186 2.25 2.25 0 0 0-3.935 2.186Z"
 					/>
 				</svg>
-				<div class="flex items-center">{i18n.t('Share')}</div>
+				<div class="flex items-center">{$i18n.t('Share')}</div>
 			</button>
 
 			<hr class="border-gray-50/30 dark:border-gray-800/30 my-1" />
@@ -111,7 +111,7 @@
 				}}
 			>
 				<GarbageBin />
-				<div class="flex items-center">{i18n.t('Delete')}</div>
+				<div class="flex items-center">{$i18n.t('Delete')}</div>
 			</button>
 		</div>
 	</div>
@@ -126,7 +126,7 @@
 		}
 	}}
 >
-	<Tooltip content={i18n.t('More')}>
+	<Tooltip content={$i18n.t('More')}>
 		<button
 			on:click={(e) => {
 				e.stopPropagation();
@@ -148,7 +148,7 @@
 				}}
 			>
 				<Folder />
-				<div class="flex items-center">{i18n.t('Create Folder')}</div>
+				<div class="flex items-center">{$i18n.t('Create Folder')}</div>
 			</button>
 
 			<hr class="border-gray-50/30 dark:border-gray-800/30 my-1" />
@@ -160,7 +160,7 @@
 				}}
 			>
 				<Pencil />
-				<div class="flex items-center">{i18n.t('Edit')}</div>
+				<div class="flex items-center">{$i18n.t('Edit')}</div>
 			</button>
 
 			<button
@@ -170,7 +170,7 @@
 				}}
 			>
 				<Download />
-				<div class="flex items-center">{i18n.t('Export')}</div>
+				<div class="flex items-center">{$i18n.t('Export')}</div>
 			</button>
 
 			<button
@@ -193,7 +193,7 @@
 						d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.935-2.186 2.25 2.25 0 0 0-3.935 2.186Z"
 					/>
 				</svg>
-				<div class="flex items-center">{i18n.t('Share')}</div>
+				<div class="flex items-center">{$i18n.t('Share')}</div>
 			</button>
 
 			<hr class="border-gray-50/30 dark:border-gray-800/30 my-1" />
@@ -205,7 +205,7 @@
 				}}
 			>
 				<GarbageBin />
-				<div class="flex items-center">{i18n.t('Delete')}</div>
+				<div class="flex items-center">{$i18n.t('Delete')}</div>
 			</button>
 		</div>
 	</div>

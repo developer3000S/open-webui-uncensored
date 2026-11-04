@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Spinner from '../../common/Spinner.svelte';
 
@@ -193,7 +193,7 @@
 						class="shrink-0 px-2.5 py-0.5 text-[0.65rem] font-medium rounded hover:bg-gray-200 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
 						on:click={runQuery}
 					>
-						{i18n.t('Run')}
+						{$i18n.t('Run')}
 					</button>
 				</div>
 			</div>
@@ -247,7 +247,7 @@
 						</tbody>
 					</table>
 				{:else}
-					<div class="text-xs text-gray-400 text-center pt-6">{i18n.t('No data')}</div>
+					<div class="text-xs text-gray-400 text-center pt-6">{$i18n.t('No data')}</div>
 				{/if}
 			</div>
 
@@ -257,7 +257,7 @@
 					class="flex items-center justify-center gap-3 py-1.5 px-3 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-500 shrink-0"
 				>
 					<button
-						aria-label={i18n.t('Previous Page')}
+						aria-label={$i18n.t('Previous Page')}
 						class="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30"
 						disabled={page === 0}
 						on:click={() => {
@@ -280,7 +280,186 @@
 					</button>
 					<span>{page + 1} / {totalPages} ({totalRows.toLocaleString()} rows)</span>
 					<button
-						aria-label={i18n.t('Next Page')}
+						aria-label={$i18n.t('Next Page')}
+						class="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30"
+						disabled={page >= totalPages - 1}
+						on:click={() => {
+							page++;
+							loadPage();
+						}}
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 20 20"
+							fill="currentColor"
+							class="size-4"
+						>
+							<path
+								fill-rule="evenodd"
+								d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"
+								clip-rule="evenodd"
+							/>
+						</svg>
+					</button>
+				</div>
+			{/if}
+		{/if}
+	{/if}
+</div>
+
+<div class="sqlite-view flex flex-col h-full">
+	{#if loading}
+		<div class="flex items-center justify-center h-full"><Spinner className="size-4" /></div>
+	{:else if error}
+		<div class="p-3 text-xs text-red-500">{error}</div>
+	{:else}
+		<!-- Table tabs + query toggle -->
+		<div
+			class="flex items-center gap-1 px-2 py-1.5 border-b border-gray-100 dark:border-gray-800 overflow-x-auto scrollbar-none shrink-0"
+		>
+			{#each tables as table}
+				<button
+					class="shrink-0 px-2 py-1 text-xs rounded-lg transition
+						{table === selectedTable && !queryMode
+						? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium'
+						: 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'}"
+					on:click={() => selectTable(table)}
+				>
+					{table}
+				</button>
+			{/each}
+			<div class="flex-1"></div>
+			<button
+				class="shrink-0 px-2 py-1 text-xs rounded-lg transition font-mono
+					{queryMode
+					? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium'
+					: 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'}"
+				on:click={() => {
+					queryMode = !queryMode;
+				}}
+			>
+				SQL
+			</button>
+		</div>
+
+		{#if queryMode}
+			<!-- Query editor -->
+			<div class="shrink-0">
+				<textarea
+					bind:value={queryText}
+					placeholder="SELECT * FROM ..."
+					class="query-editor w-full text-xs font-mono bg-transparent text-gray-800 dark:text-gray-200 px-3 py-2 outline-none resize-none"
+					rows="3"
+					spellcheck="false"
+					on:keydown={(e) => {
+						if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+							e.preventDefault();
+							runQuery();
+						}
+					}}
+				></textarea>
+				<div
+					class="flex items-center justify-between px-2 py-1 bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800"
+				>
+					{#if queryError}
+						<span class="text-[0.65rem] text-red-500 dark:text-red-400 truncate mr-2"
+							>{queryError}</span
+						>
+					{:else}
+						<span class="text-[0.6rem] text-gray-400 dark:text-gray-600 select-none">⌘+Enter</span>
+					{/if}
+					<button
+						class="shrink-0 px-2.5 py-0.5 text-[0.65rem] font-medium rounded hover:bg-gray-200 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+						on:click={runQuery}
+					>
+						{$i18n.t('Run')}
+					</button>
+				</div>
+			</div>
+
+			{#if queryColumns.length > 0}
+				<div class="flex-1 overflow-auto min-h-0">
+					<table class="sqlite-table w-full text-xs font-mono border-collapse">
+						<thead>
+							<tr>
+								<th class="sqlite-row-num">#</th>
+								{#each queryColumns as col}
+									<th>{col}</th>
+								{/each}
+							</tr>
+						</thead>
+						<tbody>
+							{#each queryRows as row, i}
+								<tr>
+									<td class="sqlite-row-num">{i + 1}</td>
+									{#each row as cell}
+										<td class:sqlite-null={cell === 'NULL'}>{cell}</td>
+									{/each}
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			{/if}
+		{:else}
+			<!-- Table data -->
+			<div class="flex-1 overflow-auto min-h-0">
+				{#if columns.length > 0}
+					<table class="sqlite-table w-full text-xs font-mono border-collapse">
+						<thead>
+							<tr>
+								<th class="sqlite-row-num">#</th>
+								{#each columns as col}
+									<th>{col}</th>
+								{/each}
+							</tr>
+						</thead>
+						<tbody>
+							{#each rows as row, i}
+								<tr>
+									<td class="sqlite-row-num">{page * pageSize + i + 1}</td>
+									{#each row as cell}
+										<td class:sqlite-null={cell === 'NULL'}>{cell}</td>
+									{/each}
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				{:else}
+					<div class="text-xs text-gray-400 text-center pt-6">{$i18n.t('No data')}</div>
+				{/if}
+			</div>
+
+			<!-- Pagination -->
+			{#if totalPages > 1}
+				<div
+					class="flex items-center justify-center gap-3 py-1.5 px-3 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-500 shrink-0"
+				>
+					<button
+						aria-label={$i18n.t('Previous Page')}
+						class="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30"
+						disabled={page === 0}
+						on:click={() => {
+							page--;
+							loadPage();
+						}}
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 20 20"
+							fill="currentColor"
+							class="size-4"
+						>
+							<path
+								fill-rule="evenodd"
+								d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z"
+								clip-rule="evenodd"
+							/>
+						</svg>
+					</button>
+					<span>{page + 1} / {totalPages} ({totalRows.toLocaleString()} rows)</span>
+					<button
+						aria-label={$i18n.t('Next Page')}
 						class="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30"
 						disabled={page >= totalPages - 1}
 						on:click={() => {
@@ -444,184 +623,3 @@
 		color: #6b7280;
 	}
 </style>
-
-<div class="sqlite-view flex flex-col h-full">
-	{#if loading}
-		<div class="flex items-center justify-center h-full"><Spinner className="size-4" /></div>
-	{:else if error}
-		<div class="p-3 text-xs text-red-500">{error}</div>
-	{:else}
-		<!-- Table tabs + query toggle -->
-		<div
-			class="flex items-center gap-1 px-2 py-1.5 border-b border-gray-100 dark:border-gray-800 overflow-x-auto scrollbar-none shrink-0"
-		>
-			{#each tables as table}
-				<button
-					class="shrink-0 px-2 py-1 text-xs rounded-lg transition
-						{table === selectedTable && !queryMode
-						? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium'
-						: 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'}"
-					on:click={() => selectTable(table)}
-				>
-					{table}
-				</button>
-			{/each}
-			<div class="flex-1"></div>
-			<button
-				class="shrink-0 px-2 py-1 text-xs rounded-lg transition font-mono
-					{queryMode
-					? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium'
-					: 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'}"
-				on:click={() => {
-					queryMode = !queryMode;
-				}}
-			>
-				SQL
-			</button>
-		</div>
-
-		{#if queryMode}
-			<!-- Query editor -->
-			<div class="shrink-0">
-				<textarea
-					bind:value={queryText}
-					placeholder="SELECT * FROM ..."
-					class="query-editor w-full text-xs font-mono bg-transparent text-gray-800 dark:text-gray-200 px-3 py-2 outline-none resize-none"
-					rows="3"
-					spellcheck="false"
-					on:keydown={(e) => {
-						if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-							e.preventDefault();
-							runQuery();
-						}
-					}}
-				></textarea>
-				<div
-					class="flex items-center justify-between px-2 py-1 bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800"
-				>
-					{#if queryError}
-						<span class="text-[0.65rem] text-red-500 dark:text-red-400 truncate mr-2"
-							>{queryError}</span
-						>
-					{:else}
-						<span class="text-[0.6rem] text-gray-400 dark:text-gray-600 select-none">⌘+Enter</span>
-					{/if}
-					<button
-						class="shrink-0 px-2.5 py-0.5 text-[0.65rem] font-medium rounded hover:bg-gray-200 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-						on:click={runQuery}
-					>
-						{i18n.t('Run')}
-					</button>
-				</div>
-			</div>
-
-			{#if queryColumns.length > 0}
-				<div class="flex-1 overflow-auto min-h-0">
-					<table class="sqlite-table w-full text-xs font-mono border-collapse">
-						<thead>
-							<tr>
-								<th class="sqlite-row-num">#</th>
-								{#each queryColumns as col}
-									<th>{col}</th>
-								{/each}
-							</tr>
-						</thead>
-						<tbody>
-							{#each queryRows as row, i}
-								<tr>
-									<td class="sqlite-row-num">{i + 1}</td>
-									{#each row as cell}
-										<td class:sqlite-null={cell === 'NULL'}>{cell}</td>
-									{/each}
-								</tr>
-							{/each}
-						</tbody>
-					</table>
-				</div>
-			{/if}
-		{:else}
-			<!-- Table data -->
-			<div class="flex-1 overflow-auto min-h-0">
-				{#if columns.length > 0}
-					<table class="sqlite-table w-full text-xs font-mono border-collapse">
-						<thead>
-							<tr>
-								<th class="sqlite-row-num">#</th>
-								{#each columns as col}
-									<th>{col}</th>
-								{/each}
-							</tr>
-						</thead>
-						<tbody>
-							{#each rows as row, i}
-								<tr>
-									<td class="sqlite-row-num">{page * pageSize + i + 1}</td>
-									{#each row as cell}
-										<td class:sqlite-null={cell === 'NULL'}>{cell}</td>
-									{/each}
-								</tr>
-							{/each}
-						</tbody>
-					</table>
-				{:else}
-					<div class="text-xs text-gray-400 text-center pt-6">{i18n.t('No data')}</div>
-				{/if}
-			</div>
-
-			<!-- Pagination -->
-			{#if totalPages > 1}
-				<div
-					class="flex items-center justify-center gap-3 py-1.5 px-3 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-500 shrink-0"
-				>
-					<button
-						aria-label={i18n.t('Previous Page')}
-						class="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30"
-						disabled={page === 0}
-						on:click={() => {
-							page--;
-							loadPage();
-						}}
-					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							viewBox="0 0 20 20"
-							fill="currentColor"
-							class="size-4"
-						>
-							<path
-								fill-rule="evenodd"
-								d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z"
-								clip-rule="evenodd"
-							/>
-						</svg>
-					</button>
-					<span>{page + 1} / {totalPages} ({totalRows.toLocaleString()} rows)</span>
-					<button
-						aria-label={i18n.t('Next Page')}
-						class="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30"
-						disabled={page >= totalPages - 1}
-						on:click={() => {
-							page++;
-							loadPage();
-						}}
-					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							viewBox="0 0 20 20"
-							fill="currentColor"
-							class="size-4"
-						>
-							<path
-								fill-rule="evenodd"
-								d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"
-								clip-rule="evenodd"
-							/>
-						</svg>
-					</button>
-				</div>
-			{/if}
-		{/if}
-	{/if}
-</div>
-
-

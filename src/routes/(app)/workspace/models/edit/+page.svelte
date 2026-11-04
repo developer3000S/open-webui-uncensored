@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
@@ -18,10 +18,11 @@
 
 	let model: any = null;
 
+	// @ts-ignore
 	onMount(async () => {
 		const _id = $page.url.searchParams.get('id');
 		if (_id) {
-			model = await getModelById(localStorage.token, _id).catch(async (e)=> {
+			model = await getModelById(localStorage.token, _id).catch(async (e) => {
 				return null;
 			});
 
@@ -30,7 +31,7 @@
 			}
 
 			if (!model?.write_access) {
-				toast.error(i18n.t('You do not have permission to edit this model'));
+				toast.error($i18n.t('You do not have permission to edit this model'));
 				goto('/workspace/models');
 			}
 		} else {
@@ -48,7 +49,7 @@
 					$config?.features?.enable_direct_connections && ($settings?.directConnections ?? null)
 				)
 			);
-			toast.success(i18n.t('Model updated successfully'));
+			toast.success($i18n.t('Model updated successfully'));
 			await goto('/workspace/models');
 		}
 	};

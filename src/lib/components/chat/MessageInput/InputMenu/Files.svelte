@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { searchFiles } from '$lib/apis/files';
 
@@ -12,7 +12,7 @@
 
 	import type { Writable } from 'svelte/store';
 
-	export let onSelect = (e: any) => {};
+	export let onSelect: any = (e: any) => {};
 
 	let loaded = false;
 	let items: any = [];
@@ -53,6 +53,7 @@
 		return res;
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		await getItemsPage();
 		await tick();
@@ -62,7 +63,7 @@
 
 {#if loaded}
 	{#if items.length === 0}
-		<div class="text-center text-xs text-gray-500 py-3">{i18n.t('No files found')}</div>
+		<div class="text-center text-xs text-gray-500 py-3">{$i18n.t('No files found')}</div>
 	{:else}
 		<div class="flex flex-col gap-0.5">
 			{#each items as item, idx}
@@ -86,7 +87,7 @@
 					data-selected={idx === selectedIdx}
 				>
 					<div class="text-black dark:text-gray-100 flex items-center gap-1.5 overflow-hidden">
-						<Tooltip content={i18n.t('File')} placement="top">
+						<Tooltip content={$i18n.t('File')} placement="top">
 							<DocumentPage className="size-4 shrink-0" />
 						</Tooltip>
 
@@ -109,7 +110,7 @@
 				>
 					<div class="w-full flex justify-center py-4 text-xs animate-pulse items-center gap-2">
 						<Spinner className=" size-4" />
-						<div class=" ">{i18n.t('Loading...')}</div>
+						<div class=" ">{$i18n.t('Loading...')}</div>
 					</div>
 				</Loader>
 			{/if}
@@ -123,7 +124,7 @@
 
 {#if loaded}
 	{#if items.length === 0}
-		<div class="text-center text-xs text-gray-500 py-3">{i18n.t('No files found')}</div>
+		<div class="text-center text-xs text-gray-500 py-3">{$i18n.t('No files found')}</div>
 	{:else}
 		<div class="flex flex-col gap-0.5">
 			{#each items as item, idx}
@@ -147,7 +148,7 @@
 					data-selected={idx === selectedIdx}
 				>
 					<div class="text-black dark:text-gray-100 flex items-center gap-1.5 overflow-hidden">
-						<Tooltip content={i18n.t('File')} placement="top">
+						<Tooltip content={$i18n.t('File')} placement="top">
 							<DocumentPage className="size-4 shrink-0" />
 						</Tooltip>
 
@@ -170,7 +171,7 @@
 				>
 					<div class="w-full flex justify-center py-4 text-xs animate-pulse items-center gap-2">
 						<Spinner className=" size-4" />
-						<div class=" ">{i18n.t('Loading...')}</div>
+						<div class=" ">{$i18n.t('Loading...')}</div>
 					</div>
 				</Loader>
 			{/if}

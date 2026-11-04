@@ -1,17 +1,17 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
-	export let onChange: Function = () => {};
+	export let onChange: any = () => {};
 	export let state: any = 'private';
 </script>
 
 <div class=" rounded-lg flex flex-col gap-2">
 	<div class="">
-		<div class=" text-xs font-medium mb-2.5 text-gray-500">{i18n.t('Visibility')}</div>
+		<div class=" text-xs font-medium mb-2.5 text-gray-500">{$i18n.t('Visibility')}</div>
 
 		<div class="flex gap-2.5 items-center mb-1">
 			<div>
@@ -64,15 +64,15 @@
 						onChange(state);
 					}}
 				>
-					<option class=" text-gray-700" value="public" selected>{i18n.t('Public')}</option>
-					<option class=" text-gray-700" value="private" selected>{i18n.t('Private')}</option>
+					<option class=" text-gray-700" value="public" selected>{$i18n.t('Public')}</option>
+					<option class=" text-gray-700" value="private" selected>{$i18n.t('Private')}</option>
 				</select>
 
 				<div class=" text-xs text-gray-400 font-medium">
 					{#if state === 'private'}
-						{i18n.t('Only invited users can access')}
+						{$i18n.t('Only invited users can access')}
 					{:else}
-						{i18n.t('Visible to all users')}
+						{$i18n.t('Visible to all users')}
 					{/if}
 				</div>
 			</div>
@@ -82,7 +82,7 @@
 
 <div class=" rounded-lg flex flex-col gap-2">
 	<div class="">
-		<div class=" text-xs font-medium mb-2.5 text-gray-500">{i18n.t('Visibility')}</div>
+		<div class=" text-xs font-medium mb-2.5 text-gray-500">{$i18n.t('Visibility')}</div>
 
 		<div class="flex gap-2.5 items-center mb-1">
 			<div>
@@ -135,15 +135,15 @@
 						onChange(state);
 					}}
 				>
-					<option class=" text-gray-700" value="public" selected>{i18n.t('Public')}</option>
-					<option class=" text-gray-700" value="private" selected>{i18n.t('Private')}</option>
+					<option class=" text-gray-700" value="public" selected>{$i18n.t('Public')}</option>
+					<option class=" text-gray-700" value="private" selected>{$i18n.t('Private')}</option>
 				</select>
 
 				<div class=" text-xs text-gray-400 font-medium">
 					{#if state === 'private'}
-						{i18n.t('Only invited users can access')}
+						{$i18n.t('Only invited users can access')}
 					{:else}
-						{i18n.t('Visible to all users')}
+						{$i18n.t('Visible to all users')}
 					{/if}
 				</div>
 			</div>

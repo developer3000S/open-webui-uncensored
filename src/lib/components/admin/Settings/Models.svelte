@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { marked } from 'marked';
 	import fileSaver from 'file-saver';
@@ -150,7 +150,7 @@
 			)
 		);
 
-		toast.success(i18n.t('All models are now visible'));
+		toast.success($i18n.t('All models are now visible'));
 		await tick();
 		await init();
 	};
@@ -169,7 +169,7 @@
 			)
 		);
 
-		toast.success(i18n.t('All models are now hidden'));
+		toast.success($i18n.t('All models are now hidden'));
 		await tick();
 		await init();
 	};
@@ -226,12 +226,14 @@
 		model = { ...model, base_model_id: null, ...overrides };
 
 		if (workspaceModels.find((m) => m.id === model.id)) {
-			const res = await updateModelById(localStorage.token, model.id, model).catch(async (error)=> {
-				return null;
-			});
+			const res = await updateModelById(localStorage.token, model.id, model).catch(
+				async (error) => {
+					return null;
+				}
+			);
 
 			if (res && showToast) {
-				toast.success(i18n.t('Model updated successfully'));
+				toast.success($i18n.t('Model updated successfully'));
 			}
 		} else {
 			const res = await createNewModel(localStorage.token, {
@@ -242,12 +244,12 @@
 				params: {},
 				access_grants: [],
 				...model
-			}).catch(async (error)=> {
+			}).catch(async (error) => {
 				return null;
 			});
 
 			if (res && showToast) {
-				toast.success(i18n.t('Model updated successfully'));
+				toast.success($i18n.t('Model updated successfully'));
 				await init();
 			}
 		}
@@ -263,7 +265,7 @@
 				params: {},
 				access_grants: [],
 				is_active: model.is_active
-			}).catch(async (error)=> {
+			}).catch(async (error) => {
 				return null;
 			});
 		} else {
@@ -291,10 +293,10 @@
 
 		toast.success(
 			model.meta.hidden
-				? i18n.t(`Model {{name}} is now hidden`, {
+				? $i18n.t(`Model {{name}} is now hidden`, {
 						name: model.id
 					})
-				: i18n.t(`Model {{name}} is now visible`, {
+				: $i18n.t(`Model {{name}} is now visible`, {
 						name: model.id
 					})
 		);
@@ -305,9 +307,9 @@
 		const res = await copyToClipboard(`${baseUrl}/?model=${encodeURIComponent(model.id)}`);
 
 		if (res) {
-			toast.success(i18n.t('Copied link to clipboard'));
+			toast.success($i18n.t('Copied link to clipboard'));
 		} else {
-			toast.error(i18n.t('Failed to copy link'));
+			toast.error($i18n.t('Failed to copy link'));
 		}
 	};
 
@@ -341,6 +343,7 @@
 		await updateUserSettings(localStorage.token, { ui: $settings });
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		await init();
 		const id = $page.url.searchParams.get('id');
@@ -386,7 +389,7 @@
 			<div class="flex justify-between items-center">
 				<div class="flex items-center md:self-center text-xl font-medium px-0.5 gap-2 shrink-0">
 					<div>
-						{i18n.t('Models')}
+						{$i18n.t('Models')}
 					</div>
 
 					<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
@@ -414,13 +417,13 @@
 											const res = await importModels(localStorage.token, models);
 
 											if (res) {
-												toast.success(i18n.t('Models imported successfully'));
+												toast.success($i18n.t('Models imported successfully'));
 												await init();
 											} else {
-												toast.error(i18n.t('Failed to import models'));
+												toast.error($i18n.t('Failed to import models'));
 											}
 										} catch (e) {
-											toast.error(e?.detail ?? i18n.t('Invalid JSON file'));
+											toast.error(e?.detail ?? $i18n.t('Invalid JSON file'));
 											console.error(e);
 										}
 
@@ -442,7 +445,7 @@
 								<Spinner className="size-3" />
 							{/if}
 							<div class=" self-center font-medium line-clamp-1">
-								{i18n.t('Import')}
+								{$i18n.t('Import')}
 							</div>
 						</button>
 
@@ -453,7 +456,7 @@
 							}}
 						>
 							<div class=" self-center font-medium line-clamp-1">
-								{i18n.t('Export')}
+								{$i18n.t('Export')}
 							</div>
 						</button>
 					{/if}
@@ -466,7 +469,7 @@
 						}}
 					>
 						<div class=" self-center font-medium line-clamp-1">
-							{i18n.t('Manage')}
+							{$i18n.t('Manage')}
 						</div>
 					</button>
 
@@ -478,7 +481,7 @@
 						}}
 					>
 						<div class=" self-center font-medium line-clamp-1">
-							{i18n.t('Settings')}
+							{$i18n.t('Settings')}
 						</div>
 					</button>
 				</div>
@@ -496,7 +499,7 @@
 					<input
 						class=" w-full text-sm py-1 rounded-r-xl outline-hidden bg-transparent"
 						bind:value={searchValue}
-						placeholder={i18n.t('Search Models')}
+						placeholder={$i18n.t('Search Models')}
 					/>
 					{#if searchValue}
 						<div class="self-center pl-1.5 translate-y-[0.5px] rounded-l-xl bg-transparent">
@@ -533,7 +536,7 @@
 				<div class="flex-1"></div>
 
 				<Dropdown>
-					<Tooltip content={i18n.t('Actions')}>
+					<Tooltip content={$i18n.t('Actions')}>
 						<button
 							class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
 							type="button"
@@ -554,7 +557,7 @@
 								}}
 							>
 								<CheckCircle className="size-4" />
-								<div class="flex items-center">{i18n.t('Enable All')}</div>
+								<div class="flex items-center">{$i18n.t('Enable All')}</div>
 							</button>
 
 							<button
@@ -565,7 +568,7 @@
 								}}
 							>
 								<Minus className="size-4" />
-								<div class="flex items-center">{i18n.t('Disable All')}</div>
+								<div class="flex items-center">{$i18n.t('Disable All')}</div>
 							</button>
 
 							<hr class="border-gray-100 dark:border-gray-800 my-1" />
@@ -578,7 +581,7 @@
 								}}
 							>
 								<Eye className="size-4" />
-								<div class="flex items-center">{i18n.t('Show All')}</div>
+								<div class="flex items-center">{$i18n.t('Show All')}</div>
 							</button>
 
 							<button
@@ -589,7 +592,7 @@
 								}}
 							>
 								<EyeSlash className="size-4" />
-								<div class="flex items-center">{i18n.t('Hide All')}</div>
+								<div class="flex items-center">{$i18n.t('Hide All')}</div>
 							</button>
 						</div>
 					</div>
@@ -662,8 +665,8 @@
 														g.principal_id === '*' &&
 														g.permission === 'read'
 												)
-													? i18n.t('Public')
-													: i18n.t('Private')}
+													? $i18n.t('Public')
+													: $i18n.t('Private')}
 											/>
 										</div>
 									</Tooltip>
@@ -682,7 +685,7 @@
 							</button>
 							<div class="flex flex-row gap-0.5 items-center self-center">
 								{#if shiftKey}
-									<Tooltip content={model?.meta?.hidden ? i18n.t('Show') : i18n.t('Hide')}>
+									<Tooltip content={model?.meta?.hidden ? $i18n.t('Show') : $i18n.t('Hide')}>
 										<button
 											class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 											type="button"
@@ -699,7 +702,7 @@
 									</Tooltip>
 								{:else}
 									<button
-										aria-label={i18n.t('Edit')}
+										aria-label={$i18n.t('Edit')}
 										class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 										type="button"
 										on:click={() => {
@@ -723,7 +726,6 @@
 									</button>
 
 									<ModelMenu
-										user={$user}
 										{model}
 										exportHandler={() => {
 											exportModelHandler(model);
@@ -753,8 +755,8 @@
 									<div class="ml-1">
 										<Tooltip
 											content={(model?.is_active ?? true)
-												? i18n.t('Enabled')
-												: i18n.t('Disabled')}
+												? $i18n.t('Enabled')
+												: $i18n.t('Disabled')}
 										>
 											<Switch
 												bind:state={model.is_active}
@@ -772,9 +774,9 @@
 					<div class=" w-full h-full flex flex-col justify-center items-center my-16 mb-24">
 						<div class="max-w-md text-center">
 							<div class=" text-3xl mb-3">😕</div>
-							<div class=" text-lg font-medium mb-1">{i18n.t('No models found')}</div>
+							<div class=" text-lg font-medium mb-1">{$i18n.t('No models found')}</div>
 							<div class=" text-gray-500 text-center text-xs">
-								{i18n.t('Try adjusting your search or filter to find what you are looking for.')}
+								{$i18n.t('Try adjusting your search or filter to find what you are looking for.')}
 							</div>
 						</div>
 					</div>
@@ -817,7 +819,7 @@
 			<div class="flex justify-between items-center">
 				<div class="flex items-center md:self-center text-xl font-medium px-0.5 gap-2 shrink-0">
 					<div>
-						{i18n.t('Models')}
+						{$i18n.t('Models')}
 					</div>
 
 					<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
@@ -845,13 +847,13 @@
 											const res = await importModels(localStorage.token, models);
 
 											if (res) {
-												toast.success(i18n.t('Models imported successfully'));
+												toast.success($i18n.t('Models imported successfully'));
 												await init();
 											} else {
-												toast.error(i18n.t('Failed to import models'));
+												toast.error($i18n.t('Failed to import models'));
 											}
 										} catch (e) {
-											toast.error(e?.detail ?? i18n.t('Invalid JSON file'));
+											toast.error(e?.detail ?? $i18n.t('Invalid JSON file'));
 											console.error(e);
 										}
 
@@ -873,7 +875,7 @@
 								<Spinner className="size-3" />
 							{/if}
 							<div class=" self-center font-medium line-clamp-1">
-								{i18n.t('Import')}
+								{$i18n.t('Import')}
 							</div>
 						</button>
 
@@ -884,7 +886,7 @@
 							}}
 						>
 							<div class=" self-center font-medium line-clamp-1">
-								{i18n.t('Export')}
+								{$i18n.t('Export')}
 							</div>
 						</button>
 					{/if}
@@ -897,7 +899,7 @@
 						}}
 					>
 						<div class=" self-center font-medium line-clamp-1">
-							{i18n.t('Manage')}
+							{$i18n.t('Manage')}
 						</div>
 					</button>
 
@@ -909,7 +911,7 @@
 						}}
 					>
 						<div class=" self-center font-medium line-clamp-1">
-							{i18n.t('Settings')}
+							{$i18n.t('Settings')}
 						</div>
 					</button>
 				</div>
@@ -927,7 +929,7 @@
 					<input
 						class=" w-full text-sm py-1 rounded-r-xl outline-hidden bg-transparent"
 						bind:value={searchValue}
-						placeholder={i18n.t('Search Models')}
+						placeholder={$i18n.t('Search Models')}
 					/>
 					{#if searchValue}
 						<div class="self-center pl-1.5 translate-y-[0.5px] rounded-l-xl bg-transparent">
@@ -964,7 +966,7 @@
 				<div class="flex-1"></div>
 
 				<Dropdown>
-					<Tooltip content={i18n.t('Actions')}>
+					<Tooltip content={$i18n.t('Actions')}>
 						<button
 							class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
 							type="button"
@@ -985,7 +987,7 @@
 								}}
 							>
 								<CheckCircle className="size-4" />
-								<div class="flex items-center">{i18n.t('Enable All')}</div>
+								<div class="flex items-center">{$i18n.t('Enable All')}</div>
 							</button>
 
 							<button
@@ -996,7 +998,7 @@
 								}}
 							>
 								<Minus className="size-4" />
-								<div class="flex items-center">{i18n.t('Disable All')}</div>
+								<div class="flex items-center">{$i18n.t('Disable All')}</div>
 							</button>
 
 							<hr class="border-gray-100 dark:border-gray-800 my-1" />
@@ -1009,7 +1011,7 @@
 								}}
 							>
 								<Eye className="size-4" />
-								<div class="flex items-center">{i18n.t('Show All')}</div>
+								<div class="flex items-center">{$i18n.t('Show All')}</div>
 							</button>
 
 							<button
@@ -1020,7 +1022,7 @@
 								}}
 							>
 								<EyeSlash className="size-4" />
-								<div class="flex items-center">{i18n.t('Hide All')}</div>
+								<div class="flex items-center">{$i18n.t('Hide All')}</div>
 							</button>
 						</div>
 					</div>
@@ -1093,8 +1095,8 @@
 														g.principal_id === '*' &&
 														g.permission === 'read'
 												)
-													? i18n.t('Public')
-													: i18n.t('Private')}
+													? $i18n.t('Public')
+													: $i18n.t('Private')}
 											/>
 										</div>
 									</Tooltip>
@@ -1113,7 +1115,7 @@
 							</button>
 							<div class="flex flex-row gap-0.5 items-center self-center">
 								{#if shiftKey}
-									<Tooltip content={model?.meta?.hidden ? i18n.t('Show') : i18n.t('Hide')}>
+									<Tooltip content={model?.meta?.hidden ? $i18n.t('Show') : $i18n.t('Hide')}>
 										<button
 											class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 											type="button"
@@ -1130,7 +1132,7 @@
 									</Tooltip>
 								{:else}
 									<button
-										aria-label={i18n.t('Edit')}
+										aria-label={$i18n.t('Edit')}
 										class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 										type="button"
 										on:click={() => {
@@ -1154,7 +1156,6 @@
 									</button>
 
 									<ModelMenu
-										user={$user}
 										{model}
 										exportHandler={() => {
 											exportModelHandler(model);
@@ -1184,8 +1185,8 @@
 									<div class="ml-1">
 										<Tooltip
 											content={(model?.is_active ?? true)
-												? i18n.t('Enabled')
-												: i18n.t('Disabled')}
+												? $i18n.t('Enabled')
+												: $i18n.t('Disabled')}
 										>
 											<Switch
 												bind:state={model.is_active}
@@ -1203,9 +1204,9 @@
 					<div class=" w-full h-full flex flex-col justify-center items-center my-16 mb-24">
 						<div class="max-w-md text-center">
 							<div class=" text-3xl mb-3">😕</div>
-							<div class=" text-lg font-medium mb-1">{i18n.t('No models found')}</div>
+							<div class=" text-lg font-medium mb-1">{$i18n.t('No models found')}</div>
 							<div class=" text-gray-500 text-center text-xs">
-								{i18n.t('Try adjusting your search or filter to find what you are looking for.')}
+								{$i18n.t('Try adjusting your search or filter to find what you are looking for.')}
 							</div>
 						</div>
 					</div>

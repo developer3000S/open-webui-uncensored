@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
@@ -24,14 +24,14 @@
 	export let share: any = true;
 	export let sharePublic: any = true;
 	export let shareUsers: any = true;
-	export let onChange = () => {};
+	export let onChange: any = () => {};
 </script>
 
 <Modal size="sm" bind:show>
 	<div>
 		<div class=" flex justify-between dark:text-gray-100 px-5 pt-3 pb-1">
 			<div class=" text-lg font-medium self-center font-primary">
-				{i18n.t('Access Control')}
+				{$i18n.t('Access Control')}
 			</div>
 			<button
 				class="self-center"
@@ -61,7 +61,7 @@
 	<div>
 		<div class=" flex justify-between dark:text-gray-100 px-5 pt-3 pb-1">
 			<div class=" text-lg font-medium self-center font-primary">
-				{i18n.t('Access Control')}
+				{$i18n.t('Access Control')}
 			</div>
 			<button
 				class="self-center"

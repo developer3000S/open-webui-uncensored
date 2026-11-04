@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 	const dispatch = createEventDispatcher();
@@ -114,7 +114,7 @@
 			{#if loading}
 				<div class="flex items-center gap-1.5 py-1 px-2 text-xs text-gray-400">
 					<Spinner className="size-3" />
-					<span>{i18n.t('Loading...')}</span>
+					<span>{$i18n.t('Loading...')}</span>
 				</div>
 			{:else}
 				{#each chats as chat (chat.id)}
@@ -135,7 +135,7 @@
 
 				{#if chats.length === 0 && children.length === 0}
 					<div class="text-[11px] text-gray-400 dark:text-gray-600 py-1 px-2">
-						{i18n.t('Empty')}
+						{$i18n.t('Empty')}
 					</div>
 				{/if}
 			{/if}
@@ -204,7 +204,7 @@
 			{#if loading}
 				<div class="flex items-center gap-1.5 py-1 px-2 text-xs text-gray-400">
 					<Spinner className="size-3" />
-					<span>{i18n.t('Loading...')}</span>
+					<span>{$i18n.t('Loading...')}</span>
 				</div>
 			{:else}
 				{#each chats as chat (chat.id)}
@@ -225,7 +225,7 @@
 
 				{#if chats.length === 0 && children.length === 0}
 					<div class="text-[11px] text-gray-400 dark:text-gray-600 py-1 px-2">
-						{i18n.t('Empty')}
+						{$i18n.t('Empty')}
 					</div>
 				{/if}
 			{/if}

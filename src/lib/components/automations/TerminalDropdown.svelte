@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { TerminalServer } from '$lib/apis/terminal/index';
 
@@ -23,7 +23,7 @@
 
 	$: terminalLabel = terminalServerId
 		? terminalServers.find((s) => s.id === terminalServerId)?.name || 'Terminal'
-		: i18n.t('Terminal');
+		: $i18n.t('Terminal');
 </script>
 
 {#if terminalServers.length > 0}
@@ -53,7 +53,7 @@
 			class="rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 flex flex-col bg-white dark:bg-gray-850 min-w-56 max-w-56 p-1"
 		>
 			<div class="px-2 text-xs text-gray-500 py-1">
-				{i18n.t('Terminal')}
+				{$i18n.t('Terminal')}
 			</div>
 
 			{#each terminalServers as server (server.id)}
@@ -100,7 +100,7 @@
 			{#if terminalServerId}
 				<div class="border-t border-gray-100 dark:border-gray-800 mt-1 pt-1">
 					<div class="px-2.5 py-1 text-xs text-gray-500">
-						{i18n.t('Working Directory')}
+						{$i18n.t('Working Directory')}
 					</div>
 					<div class="px-2">
 						<input
@@ -145,7 +145,7 @@
 			class="rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 flex flex-col bg-white dark:bg-gray-850 min-w-56 max-w-56 p-1"
 		>
 			<div class="px-2 text-xs text-gray-500 py-1">
-				{i18n.t('Terminal')}
+				{$i18n.t('Terminal')}
 			</div>
 
 			{#each terminalServers as server (server.id)}
@@ -192,7 +192,7 @@
 			{#if terminalServerId}
 				<div class="border-t border-gray-100 dark:border-gray-800 mt-1 pt-1">
 					<div class="px-2.5 py-1 text-xs text-gray-500">
-						{i18n.t('Working Directory')}
+						{$i18n.t('Working Directory')}
 					</div>
 					<div class="px-2">
 						<input

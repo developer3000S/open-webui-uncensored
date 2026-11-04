@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import fileSaver from 'file-saver';
@@ -94,12 +94,12 @@
 	};
 
 	const shareHandler = async (tool: any) => {
-		const item = await getToolById(localStorage.token, tool.id).catch(async (error)=> {
+		const item = await getToolById(localStorage.token, tool.id).catch(async (error) => {
 			toast.error(`${error}`);
 			return null;
 		});
 
-		toast.success(i18n.t('Redirecting you to Open WebUI Community'));
+		toast.success($i18n.t('Redirecting you to Open WebUI Community'));
 
 		const url = 'https://openwebui.com';
 
@@ -118,7 +118,7 @@
 	};
 
 	const cloneHandler = async (tool: any) => {
-		const _tool = await getToolById(localStorage.token, tool.id).catch(async (error)=> {
+		const _tool = await getToolById(localStorage.token, tool.id).catch(async (error) => {
 			toast.error(`${error}`);
 			return null;
 		});
@@ -134,7 +134,7 @@
 	};
 
 	const exportHandler = async (tool: any) => {
-		const _tool = await getToolById(localStorage.token, tool.id).catch(async (error)=> {
+		const _tool = await getToolById(localStorage.token, tool.id).catch(async (error) => {
 			toast.error(`${error}`);
 			return null;
 		});
@@ -148,13 +148,13 @@
 	};
 
 	const deleteHandler = async (tool: any) => {
-		const res = await deleteToolById(localStorage.token, tool.id).catch(async (error)=> {
+		const res = await deleteToolById(localStorage.token, tool.id).catch(async (error) => {
 			toast.error(`${error}`);
 			return null;
 		});
 
 		if (res) {
-			toast.success(i18n.t('Tool deleted successfully'));
+			toast.success($i18n.t('Tool deleted successfully'));
 			await init();
 		}
 	};
@@ -164,6 +164,7 @@
 		_tools.set(await getTools(localStorage.token));
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		viewOption = localStorage?.workspaceViewOption || '';
 		await init();
@@ -203,13 +204,13 @@
 </script>
 
 <svelte:head>
-			<title>
-		{i18n.t('Tools')} • {$WEBUI_NAME}
+	<title>
+		{$i18n.t('Tools')} • {$WEBUI_NAME}
 	</title>
-			<title>
-		{i18n.t('Tools')} • {$WEBUI_NAME}
+	<title>
+		{$i18n.t('Tools')} • {$WEBUI_NAME}
 	</title>
-		</svelte:head>
+</svelte:head>
 
 <ImportModal
 	bind:show={showImportModal}
@@ -222,7 +223,7 @@
 	loadUrlHandler={async (url: any) => {
 		return await loadToolByUrl(localStorage.token, url);
 	}}
-	successMessage={i18n.t('Tool imported successfully')}
+	successMessage={$i18n.t('Tool imported successfully')}
 />
 
 {#if loaded}
@@ -243,7 +244,7 @@
 		<div class="flex justify-between items-center">
 			<div class="flex items-center md:self-center text-xl font-medium px-0.5 gap-2 shrink-0">
 				<div>
-					{i18n.t('Tools')}
+					{$i18n.t('Tools')}
 				</div>
 
 				<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
@@ -260,7 +261,7 @@
 						}}
 					>
 						<div class=" self-center font-medium line-clamp-1">
-							{i18n.t('Import')}
+							{$i18n.t('Import')}
 						</div>
 					</button>
 				{/if}
@@ -283,7 +284,7 @@
 						}}
 					>
 						<div class=" self-center font-medium line-clamp-1">
-							{i18n.t('Export')}
+							{$i18n.t('Export')}
 						</div>
 					</button>
 				{/if}
@@ -302,7 +303,7 @@
 						>
 							<Plus className="size-3" strokeWidth="2.5" />
 
-							<div class=" hidden md:block md:ml-1 text-xs">{i18n.t('New Tool')}</div>
+							<div class=" hidden md:block md:ml-1 text-xs">{$i18n.t('New Tool')}</div>
 						</div>
 					</AddToolMenu>
 				{:else}
@@ -312,7 +313,7 @@
 					>
 						<Plus className="size-3" strokeWidth="2.5" />
 
-						<div class=" hidden md:block md:ml-1 text-xs">{i18n.t('New Tool')}</div></a
+						<div class=" hidden md:block md:ml-1 text-xs">{$i18n.t('New Tool')}</div></a
 					>
 				{/if}
 			</div>
@@ -332,14 +333,14 @@
 					class=" w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
 					bind:value={query}
 					on:input={handleSearchInput}
-					aria-label={i18n.t('Search Tools')}
-					placeholder={i18n.t('Search Tools')}
+					aria-label={$i18n.t('Search Tools')}
+					placeholder={$i18n.t('Search Tools')}
 				/>
 				{#if query}
 					<div class="self-center pl-1.5 translate-y-[0.5px] rounded-l-xl bg-transparent">
 						<button
 							class="p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 transition"
-							aria-label={i18n.t('Clear search')}
+							aria-label={$i18n.t('Clear search')}
 							on:click={() => {
 								query = '';
 								handleSearchInput();
@@ -407,13 +408,13 @@
 											<div class="px-0.5">
 												<div class="text-xs text-gray-500 shrink-0">
 													<Tooltip
-														content={tool?.user?.email ?? i18n.t('Deleted User')}
+														content={tool?.user?.email ?? $i18n.t('Deleted User')}
 														className="flex shrink-0"
 														placement="top-start"
 													>
-														{i18n.t('By {{name}}', {
+														{$i18n.t('By {{name}}', {
 															name: capitalizeFirstLetter(
-																tool?.user?.name ?? tool?.user?.email ?? i18n.t('Deleted User')
+																tool?.user?.name ?? tool?.user?.email ?? $i18n.t('Deleted User')
 															)
 														})}
 													</Tooltip>
@@ -439,18 +440,18 @@
 														{/if}
 													</div>
 												</Tooltip>
-												<Badge type="muted" content={i18n.t('Read Only')} />
+												<Badge type="muted" content={$i18n.t('Read Only')} />
 											</div>
 											<div class="px-0.5">
 												<div class="text-xs text-gray-500 shrink-0">
 													<Tooltip
-														content={tool?.user?.email ?? i18n.t('Deleted User')}
+														content={tool?.user?.email ?? $i18n.t('Deleted User')}
 														className="flex shrink-0"
 														placement="top-start"
 													>
-														{i18n.t('By {{name}}', {
+														{$i18n.t('By {{name}}', {
 															name: capitalizeFirstLetter(
-																tool?.user?.name ?? tool?.user?.email ?? i18n.t('Deleted User')
+																tool?.user?.name ?? tool?.user?.email ?? $i18n.t('Deleted User')
 															)
 														})}
 													</Tooltip>
@@ -463,11 +464,11 @@
 							{#if tool.write_access}
 								<div class="flex flex-row gap-0.5 self-center">
 									{#if shiftKey}
-										<Tooltip content={i18n.t('Delete')}>
+										<Tooltip content={$i18n.t('Delete')}>
 											<button
 												class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 												type="button"
-												aria-label={i18n.t('Delete')}
+												aria-label={$i18n.t('Delete')}
 												on:click={() => {
 													deleteHandler(tool);
 												}}
@@ -481,7 +482,7 @@
 												<button
 													class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 													type="button"
-													aria-label={i18n.t('Support')}
+													aria-label={$i18n.t('Support')}
 													on:click={() => {
 														selectedTool = tool;
 														showManifestModal = true;
@@ -492,11 +493,11 @@
 											</Tooltip>
 										{/if}
 
-										<Tooltip content={i18n.t('Valves')}>
+										<Tooltip content={$i18n.t('Valves')}>
 											<button
 												class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 												type="button"
-												aria-label={i18n.t('Valves')}
+												aria-label={$i18n.t('Valves')}
 												on:click={() => {
 													selectedTool = tool;
 													showValvesModal = true;
@@ -561,9 +562,9 @@
 			<div class=" w-full h-full flex flex-col justify-center items-center my-16 mb-24">
 				<div class="max-w-md text-center">
 					<div class=" text-3xl mb-3">😕</div>
-					<div class=" text-lg font-medium mb-1">{i18n.t('No tools found')}</div>
+					<div class=" text-lg font-medium mb-1">{$i18n.t('No tools found')}</div>
 					<div class=" text-gray-500 text-center text-xs">
-						{i18n.t('Try adjusting your search or filter to find what you are looking for.')}
+						{$i18n.t('Try adjusting your search or filter to find what you are looking for.')}
 					</div>
 				</div>
 			</div>
@@ -573,7 +574,7 @@
 	{#if $config?.features.enable_community_sharing}
 		<div class=" my-16">
 			<div class=" text-xl font-medium mb-1 line-clamp-1">
-				{i18n.t('Made by Open WebUI Community')}
+				{$i18n.t('Made by Open WebUI Community')}
 			</div>
 
 			<a
@@ -582,9 +583,9 @@
 				target="_blank"
 			>
 				<div class=" self-center">
-					<div class=" font-medium line-clamp-1">{i18n.t('Discover a tool')}</div>
+					<div class=" font-medium line-clamp-1">{$i18n.t('Discover a tool')}</div>
 					<div class=" text-sm line-clamp-1">
-						{i18n.t('Discover, download, and explore custom tools')}
+						{$i18n.t('Discover, download, and explore custom tools')}
 					</div>
 				</div>
 
@@ -599,13 +600,13 @@
 
 	<DeleteConfirmDialog
 		bind:show={showDeleteConfirm}
-		title={i18n.t('Delete tool?')}
+		title={$i18n.t('Delete tool?')}
 		on:confirm={() => {
 			deleteHandler(selectedTool);
 		}}
 	>
 		<div class=" text-sm text-gray-500 truncate">
-			{i18n.t('This will delete')} <span class="  font-medium">{selectedTool.name}</span>.
+			{$i18n.t('This will delete')} <span class="  font-medium">{selectedTool.name}</span>.
 		</div>
 	</DeleteConfirmDialog>
 
@@ -621,13 +622,13 @@
 				console.log(_tools);
 
 				for (const tool of _tools) {
-					const res = await createNewTool(localStorage.token, tool).catch(async (error)=> {
+					const res = await createNewTool(localStorage.token, tool).catch(async (error) => {
 						toast.error(`${error}`);
 						return null;
 					});
 				}
 
-				toast.success(i18n.t('Tool imported successfully'));
+				toast.success($i18n.t('Tool imported successfully'));
 				await init();
 				importFiles = null;
 				toolsImportInputElement.value = '';
@@ -638,18 +639,18 @@
 	>
 		<div class="text-sm text-gray-500">
 			<div class=" bg-yellow-500/20 text-yellow-700 dark:text-yellow-200 rounded-lg px-4 py-3">
-				<div>{i18n.t('Please carefully review the following warnings:')}</div>
+				<div>{$i18n.t('Please carefully review the following warnings:')}</div>
 
 				<ul class=" mt-1 list-disc pl-4 text-xs">
 					<li>
-						{i18n.t('Tools have a function calling system that allows arbitrary code execution.')}.
+						{$i18n.t('Tools have a function calling system that allows arbitrary code execution.')}.
 					</li>
-					<li>{i18n.t('Do not install tools from sources you do not fully trust.')}</li>
+					<li>{$i18n.t('Do not install tools from sources you do not fully trust.')}</li>
 				</ul>
 			</div>
 
 			<div class="my-3">
-				{i18n.t(
+				{$i18n.t(
 					'I acknowledge that I have read and I understand the implications of my action. I am aware of the risks associated with executing arbitrary code and I have verified the trustworthiness of the source.'
 				)}
 			</div>
@@ -661,8 +662,6 @@
 	</div>
 {/if}
 
-
-
 <ImportModal
 	bind:show={showImportModal}
 	onImport={(tool: any) => {
@@ -674,7 +673,7 @@
 	loadUrlHandler={async (url: any) => {
 		return await loadToolByUrl(localStorage.token, url);
 	}}
-	successMessage={i18n.t('Tool imported successfully')}
+	successMessage={$i18n.t('Tool imported successfully')}
 />
 
 {#if loaded}
@@ -695,7 +694,7 @@
 		<div class="flex justify-between items-center">
 			<div class="flex items-center md:self-center text-xl font-medium px-0.5 gap-2 shrink-0">
 				<div>
-					{i18n.t('Tools')}
+					{$i18n.t('Tools')}
 				</div>
 
 				<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
@@ -712,7 +711,7 @@
 						}}
 					>
 						<div class=" self-center font-medium line-clamp-1">
-							{i18n.t('Import')}
+							{$i18n.t('Import')}
 						</div>
 					</button>
 				{/if}
@@ -735,7 +734,7 @@
 						}}
 					>
 						<div class=" self-center font-medium line-clamp-1">
-							{i18n.t('Export')}
+							{$i18n.t('Export')}
 						</div>
 					</button>
 				{/if}
@@ -754,7 +753,7 @@
 						>
 							<Plus className="size-3" strokeWidth="2.5" />
 
-							<div class=" hidden md:block md:ml-1 text-xs">{i18n.t('New Tool')}</div>
+							<div class=" hidden md:block md:ml-1 text-xs">{$i18n.t('New Tool')}</div>
 						</div>
 					</AddToolMenu>
 				{:else}
@@ -764,7 +763,7 @@
 					>
 						<Plus className="size-3" strokeWidth="2.5" />
 
-						<div class=" hidden md:block md:ml-1 text-xs">{i18n.t('New Tool')}</div></a
+						<div class=" hidden md:block md:ml-1 text-xs">{$i18n.t('New Tool')}</div></a
 					>
 				{/if}
 			</div>
@@ -784,14 +783,14 @@
 					class=" w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
 					bind:value={query}
 					on:input={handleSearchInput}
-					aria-label={i18n.t('Search Tools')}
-					placeholder={i18n.t('Search Tools')}
+					aria-label={$i18n.t('Search Tools')}
+					placeholder={$i18n.t('Search Tools')}
 				/>
 				{#if query}
 					<div class="self-center pl-1.5 translate-y-[0.5px] rounded-l-xl bg-transparent">
 						<button
 							class="p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 transition"
-							aria-label={i18n.t('Clear search')}
+							aria-label={$i18n.t('Clear search')}
 							on:click={() => {
 								query = '';
 								handleSearchInput();
@@ -859,13 +858,13 @@
 											<div class="px-0.5">
 												<div class="text-xs text-gray-500 shrink-0">
 													<Tooltip
-														content={tool?.user?.email ?? i18n.t('Deleted User')}
+														content={tool?.user?.email ?? $i18n.t('Deleted User')}
 														className="flex shrink-0"
 														placement="top-start"
 													>
-														{i18n.t('By {{name}}', {
+														{$i18n.t('By {{name}}', {
 															name: capitalizeFirstLetter(
-																tool?.user?.name ?? tool?.user?.email ?? i18n.t('Deleted User')
+																tool?.user?.name ?? tool?.user?.email ?? $i18n.t('Deleted User')
 															)
 														})}
 													</Tooltip>
@@ -891,18 +890,18 @@
 														{/if}
 													</div>
 												</Tooltip>
-												<Badge type="muted" content={i18n.t('Read Only')} />
+												<Badge type="muted" content={$i18n.t('Read Only')} />
 											</div>
 											<div class="px-0.5">
 												<div class="text-xs text-gray-500 shrink-0">
 													<Tooltip
-														content={tool?.user?.email ?? i18n.t('Deleted User')}
+														content={tool?.user?.email ?? $i18n.t('Deleted User')}
 														className="flex shrink-0"
 														placement="top-start"
 													>
-														{i18n.t('By {{name}}', {
+														{$i18n.t('By {{name}}', {
 															name: capitalizeFirstLetter(
-																tool?.user?.name ?? tool?.user?.email ?? i18n.t('Deleted User')
+																tool?.user?.name ?? tool?.user?.email ?? $i18n.t('Deleted User')
 															)
 														})}
 													</Tooltip>
@@ -915,11 +914,11 @@
 							{#if tool.write_access}
 								<div class="flex flex-row gap-0.5 self-center">
 									{#if shiftKey}
-										<Tooltip content={i18n.t('Delete')}>
+										<Tooltip content={$i18n.t('Delete')}>
 											<button
 												class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 												type="button"
-												aria-label={i18n.t('Delete')}
+												aria-label={$i18n.t('Delete')}
 												on:click={() => {
 													deleteHandler(tool);
 												}}
@@ -933,7 +932,7 @@
 												<button
 													class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 													type="button"
-													aria-label={i18n.t('Support')}
+													aria-label={$i18n.t('Support')}
 													on:click={() => {
 														selectedTool = tool;
 														showManifestModal = true;
@@ -944,11 +943,11 @@
 											</Tooltip>
 										{/if}
 
-										<Tooltip content={i18n.t('Valves')}>
+										<Tooltip content={$i18n.t('Valves')}>
 											<button
 												class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 												type="button"
-												aria-label={i18n.t('Valves')}
+												aria-label={$i18n.t('Valves')}
 												on:click={() => {
 													selectedTool = tool;
 													showValvesModal = true;
@@ -1013,9 +1012,9 @@
 			<div class=" w-full h-full flex flex-col justify-center items-center my-16 mb-24">
 				<div class="max-w-md text-center">
 					<div class=" text-3xl mb-3">😕</div>
-					<div class=" text-lg font-medium mb-1">{i18n.t('No tools found')}</div>
+					<div class=" text-lg font-medium mb-1">{$i18n.t('No tools found')}</div>
 					<div class=" text-gray-500 text-center text-xs">
-						{i18n.t('Try adjusting your search or filter to find what you are looking for.')}
+						{$i18n.t('Try adjusting your search or filter to find what you are looking for.')}
 					</div>
 				</div>
 			</div>
@@ -1025,7 +1024,7 @@
 	{#if $config?.features.enable_community_sharing}
 		<div class=" my-16">
 			<div class=" text-xl font-medium mb-1 line-clamp-1">
-				{i18n.t('Made by Open WebUI Community')}
+				{$i18n.t('Made by Open WebUI Community')}
 			</div>
 
 			<a
@@ -1034,9 +1033,9 @@
 				target="_blank"
 			>
 				<div class=" self-center">
-					<div class=" font-medium line-clamp-1">{i18n.t('Discover a tool')}</div>
+					<div class=" font-medium line-clamp-1">{$i18n.t('Discover a tool')}</div>
 					<div class=" text-sm line-clamp-1">
-						{i18n.t('Discover, download, and explore custom tools')}
+						{$i18n.t('Discover, download, and explore custom tools')}
 					</div>
 				</div>
 
@@ -1051,13 +1050,13 @@
 
 	<DeleteConfirmDialog
 		bind:show={showDeleteConfirm}
-		title={i18n.t('Delete tool?')}
+		title={$i18n.t('Delete tool?')}
 		on:confirm={() => {
 			deleteHandler(selectedTool);
 		}}
 	>
 		<div class=" text-sm text-gray-500 truncate">
-			{i18n.t('This will delete')} <span class="  font-medium">{selectedTool.name}</span>.
+			{$i18n.t('This will delete')} <span class="  font-medium">{selectedTool.name}</span>.
 		</div>
 	</DeleteConfirmDialog>
 
@@ -1073,13 +1072,13 @@
 				console.log(_tools);
 
 				for (const tool of _tools) {
-					const res = await createNewTool(localStorage.token, tool).catch(async (error)=> {
+					const res = await createNewTool(localStorage.token, tool).catch(async (error) => {
 						toast.error(`${error}`);
 						return null;
 					});
 				}
 
-				toast.success(i18n.t('Tool imported successfully'));
+				toast.success($i18n.t('Tool imported successfully'));
 				await init();
 				importFiles = null;
 				toolsImportInputElement.value = '';
@@ -1090,18 +1089,18 @@
 	>
 		<div class="text-sm text-gray-500">
 			<div class=" bg-yellow-500/20 text-yellow-700 dark:text-yellow-200 rounded-lg px-4 py-3">
-				<div>{i18n.t('Please carefully review the following warnings:')}</div>
+				<div>{$i18n.t('Please carefully review the following warnings:')}</div>
 
 				<ul class=" mt-1 list-disc pl-4 text-xs">
 					<li>
-						{i18n.t('Tools have a function calling system that allows arbitrary code execution.')}.
+						{$i18n.t('Tools have a function calling system that allows arbitrary code execution.')}.
 					</li>
-					<li>{i18n.t('Do not install tools from sources you do not fully trust.')}</li>
+					<li>{$i18n.t('Do not install tools from sources you do not fully trust.')}</li>
 				</ul>
 			</div>
 
 			<div class="my-3">
-				{i18n.t(
+				{$i18n.t(
 					'I acknowledge that I have read and I understand the implications of my action. I am aware of the risks associated with executing arbitrary code and I have verified the trustworthiness of the source.'
 				)}
 			</div>

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { afterUpdate, getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { tick } from 'svelte';
 	import Folder from '../../icons/Folder.svelte';
@@ -48,14 +48,14 @@
 
 <div class="flex items-center px-2 pb-1.5 shrink-0 gap-1">
 	<!-- Back -->
-	<Tooltip content={i18n.t('Back')}>
+	<Tooltip content={$i18n.t('Back')}>
 		<button
 			class="shrink-0 p-1 rounded transition {canGoBack
 				? 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-400'
 				: 'text-gray-200 dark:text-gray-700 cursor-default'}"
 			on:click={onGoBack}
 			disabled={!canGoBack}
-			aria-label={i18n.t('Back')}
+			aria-label={$i18n.t('Back')}
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
@@ -73,14 +73,14 @@
 	</Tooltip>
 
 	<!-- Forward -->
-	<Tooltip content={i18n.t('Forward')}>
+	<Tooltip content={$i18n.t('Forward')}>
 		<button
 			class="shrink-0 p-1 rounded transition {canGoForward
 				? 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-400'
 				: 'text-gray-200 dark:text-gray-700 cursor-default'}"
 			on:click={onGoForward}
 			disabled={!canGoForward}
-			aria-label={i18n.t('Forward')}
+			aria-label={$i18n.t('Forward')}
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
@@ -147,11 +147,11 @@
 		{/if}
 	</div>
 
-	<Tooltip content={i18n.t('Refresh')}>
+	<Tooltip content={$i18n.t('Refresh')}>
 		<button
 			class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 			on:click={onRefresh}
-			aria-label={i18n.t('Refresh')}
+			aria-label={$i18n.t('Refresh')}
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
@@ -170,10 +170,10 @@
 
 	{#if !selectedFile}
 		<Dropdown align="end" sideOffset={4}>
-			<Tooltip content={i18n.t('Sort')}>
+			<Tooltip content={$i18n.t('Sort')}>
 				<button
 					class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
-					aria-label={i18n.t('Sort')}
+					aria-label={$i18n.t('Sort')}
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -197,7 +197,7 @@
 						class="select-none flex rounded-xl py-1.5 px-3 w-full hover:bg-gray-50 dark:hover:bg-gray-800 transition items-center gap-2 text-sm"
 						on:click={() => onSort('name')}
 					>
-						<span class="flex-1 text-left">{i18n.t('Name')}</span>
+						<span class="flex-1 text-left">{$i18n.t('Name')}</span>
 						{#if sortBy === 'name'}
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -220,7 +220,7 @@
 						class="select-none flex rounded-xl py-1.5 px-3 w-full hover:bg-gray-50 dark:hover:bg-gray-800 transition items-center gap-2 text-sm"
 						on:click={() => onSort('date')}
 					>
-						<span class="flex-1 text-left">{i18n.t('Date Modified')}</span>
+						<span class="flex-1 text-left">{$i18n.t('Date Modified')}</span>
 						{#if sortBy === 'date'}
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -241,29 +241,29 @@
 				</div>
 			</div>
 		</Dropdown>
-		<Tooltip content={i18n.t('New Folder')}>
+		<Tooltip content={$i18n.t('New Folder')}>
 			<button
 				class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 				on:click={onNewFolder}
-				aria-label={i18n.t('New Folder')}
+				aria-label={$i18n.t('New Folder')}
 			>
 				<NewFolderAlt className="size-3.5" />
 			</button>
 		</Tooltip>
-		<Tooltip content={i18n.t('New File')}>
+		<Tooltip content={$i18n.t('New File')}>
 			<button
 				class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 				on:click={onNewFile}
-				aria-label={i18n.t('New File')}
+				aria-label={$i18n.t('New File')}
 			>
 				<FilePlusAlt className="size-3.5" />
 			</button>
 		</Tooltip>
-		<Tooltip content={i18n.t('Download')}>
+		<Tooltip content={$i18n.t('Download')}>
 			<button
 				class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 				on:click={onDownloadDir}
-				aria-label={i18n.t('Download')}
+				aria-label={$i18n.t('Download')}
 			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -280,11 +280,11 @@
 				</svg>
 			</button>
 		</Tooltip>
-		<Tooltip content={i18n.t('Upload')}>
+		<Tooltip content={$i18n.t('Upload')}>
 			<button
 				class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 				on:click={() => uploadInput?.click()}
-				aria-label={i18n.t('Upload')}
+				aria-label={$i18n.t('Upload')}
 			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -320,14 +320,14 @@
 
 <div class="flex items-center px-2 pb-1.5 shrink-0 gap-1">
 	<!-- Back -->
-	<Tooltip content={i18n.t('Back')}>
+	<Tooltip content={$i18n.t('Back')}>
 		<button
 			class="shrink-0 p-1 rounded transition {canGoBack
 				? 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-400'
 				: 'text-gray-200 dark:text-gray-700 cursor-default'}"
 			on:click={onGoBack}
 			disabled={!canGoBack}
-			aria-label={i18n.t('Back')}
+			aria-label={$i18n.t('Back')}
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
@@ -345,14 +345,14 @@
 	</Tooltip>
 
 	<!-- Forward -->
-	<Tooltip content={i18n.t('Forward')}>
+	<Tooltip content={$i18n.t('Forward')}>
 		<button
 			class="shrink-0 p-1 rounded transition {canGoForward
 				? 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-400'
 				: 'text-gray-200 dark:text-gray-700 cursor-default'}"
 			on:click={onGoForward}
 			disabled={!canGoForward}
-			aria-label={i18n.t('Forward')}
+			aria-label={$i18n.t('Forward')}
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
@@ -419,11 +419,11 @@
 		{/if}
 	</div>
 
-	<Tooltip content={i18n.t('Refresh')}>
+	<Tooltip content={$i18n.t('Refresh')}>
 		<button
 			class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 			on:click={onRefresh}
-			aria-label={i18n.t('Refresh')}
+			aria-label={$i18n.t('Refresh')}
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
@@ -442,10 +442,10 @@
 
 	{#if !selectedFile}
 		<Dropdown align="end" sideOffset={4}>
-			<Tooltip content={i18n.t('Sort')}>
+			<Tooltip content={$i18n.t('Sort')}>
 				<button
 					class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
-					aria-label={i18n.t('Sort')}
+					aria-label={$i18n.t('Sort')}
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -469,7 +469,7 @@
 						class="select-none flex rounded-xl py-1.5 px-3 w-full hover:bg-gray-50 dark:hover:bg-gray-800 transition items-center gap-2 text-sm"
 						on:click={() => onSort('name')}
 					>
-						<span class="flex-1 text-left">{i18n.t('Name')}</span>
+						<span class="flex-1 text-left">{$i18n.t('Name')}</span>
 						{#if sortBy === 'name'}
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -492,7 +492,7 @@
 						class="select-none flex rounded-xl py-1.5 px-3 w-full hover:bg-gray-50 dark:hover:bg-gray-800 transition items-center gap-2 text-sm"
 						on:click={() => onSort('date')}
 					>
-						<span class="flex-1 text-left">{i18n.t('Date Modified')}</span>
+						<span class="flex-1 text-left">{$i18n.t('Date Modified')}</span>
 						{#if sortBy === 'date'}
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -513,29 +513,29 @@
 				</div>
 			</div>
 		</Dropdown>
-		<Tooltip content={i18n.t('New Folder')}>
+		<Tooltip content={$i18n.t('New Folder')}>
 			<button
 				class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 				on:click={onNewFolder}
-				aria-label={i18n.t('New Folder')}
+				aria-label={$i18n.t('New Folder')}
 			>
 				<NewFolderAlt className="size-3.5" />
 			</button>
 		</Tooltip>
-		<Tooltip content={i18n.t('New File')}>
+		<Tooltip content={$i18n.t('New File')}>
 			<button
 				class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 				on:click={onNewFile}
-				aria-label={i18n.t('New File')}
+				aria-label={$i18n.t('New File')}
 			>
 				<FilePlusAlt className="size-3.5" />
 			</button>
 		</Tooltip>
-		<Tooltip content={i18n.t('Download')}>
+		<Tooltip content={$i18n.t('Download')}>
 			<button
 				class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 				on:click={onDownloadDir}
-				aria-label={i18n.t('Download')}
+				aria-label={$i18n.t('Download')}
 			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -552,11 +552,11 @@
 				</svg>
 			</button>
 		</Tooltip>
-		<Tooltip content={i18n.t('Upload')}>
+		<Tooltip content={$i18n.t('Upload')}>
 			<button
 				class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 				on:click={() => uploadInput?.click()}
-				aria-label={i18n.t('Upload')}
+				aria-label={$i18n.t('Upload')}
 			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"

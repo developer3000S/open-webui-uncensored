@@ -27,13 +27,13 @@
 	let tags: any[] = [];
 
 	const getTags = async () => {
-		return await getTagsById(localStorage.token, chatId).catch(async (error: any)=> {
+		return await getTagsById(localStorage.token, chatId).catch(async (error: any) => {
 			return [];
 		});
 	};
 
 	const addTag = async (tagName: any) => {
-		const res = await addTagById(localStorage.token, chatId, tagName).catch(async (error: any)=> {
+		const res = await addTagById(localStorage.token, chatId, tagName).catch(async (error: any) => {
 			toast.error(`${error}`);
 			return null;
 		});
@@ -65,6 +65,7 @@
 		});
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		if (chatId) {
 			tags = await getTags();

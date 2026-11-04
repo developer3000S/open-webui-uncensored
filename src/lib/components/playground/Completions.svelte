@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 
@@ -106,6 +106,7 @@
 		}
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		if ($user?.role !== 'admin') {
 			await goto('/');
@@ -136,7 +137,7 @@
 							bind:this={textCompletionAreaElement}
 							class="w-full h-full p-3 bg-transparent border border-gray-100/30 dark:border-gray-850/30 outline-hidden resize-none rounded-lg text-sm"
 							bind:value={text}
-							placeholder={i18n.t("You're a helpful assistant.")}
+							placeholder={$i18n.t("You're a helpful assistant.")}
 						></textarea>
 					</div>
 				</div>
@@ -162,7 +163,7 @@
 								submitHandler();
 							}}
 						>
-							{i18n.t('Run')}
+							{$i18n.t('Run')}
 						</button>
 					{:else}
 						<button
@@ -172,7 +173,7 @@
 							}}
 						>
 							<Spinner className="size-4" />
-							{i18n.t('Cancel')}
+							{$i18n.t('Cancel')}
 						</button>
 					{/if}
 				</div>
@@ -180,10 +181,6 @@
 		</div>
 	</div>
 </div>
-
-<style>
-
-</style>
 
 <div class=" flex flex-col justify-between w-full overflow-y-auto h-full">
 	<div class="mx-auto w-full md:px-0 h-full">
@@ -199,7 +196,7 @@
 							bind:this={textCompletionAreaElement}
 							class="w-full h-full p-3 bg-transparent border border-gray-100/30 dark:border-gray-850/30 outline-hidden resize-none rounded-lg text-sm"
 							bind:value={text}
-							placeholder={i18n.t("You're a helpful assistant.")}
+							placeholder={$i18n.t("You're a helpful assistant.")}
 						></textarea>
 					</div>
 				</div>
@@ -225,7 +222,7 @@
 								submitHandler();
 							}}
 						>
-							{i18n.t('Run')}
+							{$i18n.t('Run')}
 						</button>
 					{:else}
 						<button
@@ -235,7 +232,7 @@
 							}}
 						>
 							<Spinner className="size-4" />
-							{i18n.t('Cancel')}
+							{$i18n.t('Cancel')}
 						</button>
 					{/if}
 				</div>
@@ -244,4 +241,5 @@
 	</div>
 </div>
 
-
+<style>
+</style>

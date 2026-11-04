@@ -117,7 +117,7 @@ export class SocketIOCollaborationProvider {
 		});
 
 		// Listen for document state from server
-		this.socket.on('ydoc:document:state', (data: any)  => {
+		this.socket.on('ydoc:document:state', (data: { document_id: string; state?: Uint8Array; sessions?: string[] }) => {
 			if (data.document_id === this.documentId) {
 				try {
 					if (data.state) {
@@ -177,7 +177,7 @@ export class SocketIOCollaborationProvider {
 		});
 
 		// Listen for awareness updates
-		this.socket.on('ydoc:awareness:update', (data) => {
+		this.socket.on('ydoc:awareness:update', (data: { document_id: string; update: Uint8Array }) => {
 			if (data.document_id === this.documentId) {
 				try {
 					const awarenessUpdate = new Uint8Array(data.update);
@@ -193,7 +193,7 @@ export class SocketIOCollaborationProvider {
 		this.socket.on('disconnect', this.onDisconnect);
 
 		// Listen for document updates from Yjs
-		this.doc.on('update', (update: any, origin: any)  => {
+		this.doc.on('update', async (update: Uint8Array, origin: string) => {
 			if (this.editor && origin !== 'server' && this.isConnected) {
 				await tick(); // Ensure the DOM is updated before sending
 				this.socket.emit('ydoc:document:update', {
@@ -216,11 +216,12 @@ export class SocketIOCollaborationProvider {
 		this.awareness.on(
 			'change',
 			(
-				{ added, updated, removed }: { added: number[]; updated: number[]; removed: number[] },
+				change: { added: number[]; updated: number[]; removed: number[] },
 				origin: string
 			) => {
 				if (origin !== 'server' && this.isConnected) {
-					const changedClients = added.concat(updated).concat(removed);
+					const { added, updated, removed } = change;
+const changedClients = added.concat(updated).concat(removed);
 					const awarenessUpdate = this.awareness.encodeUpdate(changedClients);
 					this.socket.emit('ydoc:awareness:update', {
 						document_id: this.documentId,
@@ -284,11 +285,11 @@ class SimpleAwareness {
 		this._states.set(this.clientID, this._localState);
 	}
 
-	public on(event: string, handler: any) {
+	public on(event: string, handler: (changes: { added: number[], updated: number[], removed: number[] }, origin: string) => void): void {
 		if (event === 'change') this._updateHandlers.push(handler);
 	}
 
-	public off(event: string, handler: any) {
+	public off(event: string, handler: (changes: { added: number[], updated: number[], removed: number[] }, origin: string) => void): void {
 		if (event === 'change') {
 			const i = this._updateHandlers.indexOf(handler);
 			if (i !== -1) this._updateHandlers.splice(i, 1);
@@ -304,7 +305,7 @@ class SimpleAwareness {
 		return this._states;
 	}
 
-	public setLocalStateField(field: string, value: any) {
+	public setLocalStateField(field: string, value: unknown): void {
 		let localState = this._states.get(this.clientID);
 		if (!localState) {
 			localState = {};
@@ -318,7 +319,7 @@ class SimpleAwareness {
 		}
 	}
 
-	public applyUpdate(update: Uint8Array, origin: string) {
+	public applyUpdate(update: Uint8Array, origin: string): void {
 		// Very simple: Accepts a serialized JSON state for now as Uint8Array
 		try {
 			const str = new TextDecoder().decode(update);
@@ -335,7 +336,7 @@ class SimpleAwareness {
 		}
 	}
 
-	public encodeUpdate(clients: number[]) {
+	public encodeUpdate(clients: number[]): Uint8Array {
 		// Encodes the states for the given clientIDs as Uint8Array (JSON)
 		const obj: Record<number, any> = {};
 		for (const id of clients || Array.from(this._states.keys())) {

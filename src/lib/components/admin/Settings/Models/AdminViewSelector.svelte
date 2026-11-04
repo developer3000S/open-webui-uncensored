@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
 	import Check from '$lib/components/icons/Check.svelte';
@@ -10,17 +10,17 @@
 	import type { Writable } from 'svelte/store';
 
 	export let value: any = '';
-	export let placeholder = i18n.t('Select view');
+	export let placeholder = $i18n.t('Select view');
 	export let onChange: (value: string) => void = () => {};
 
 	const items = [
-		{ value: '', label: i18n.t('All') },
-		{ value: 'enabled', label: i18n.t('Enabled') },
-		{ value: 'disabled', label: i18n.t('Disabled') },
-		{ value: 'visible', label: i18n.t('Visible') },
-		{ value: 'hidden', label: i18n.t('Hidden') },
-		{ value: 'public', label: i18n.t('Public') },
-		{ value: 'private', label: i18n.t('Private') }
+		{ value: '', label: $i18n.t('All') },
+		{ value: 'enabled', label: $i18n.t('Enabled') },
+		{ value: 'disabled', label: $i18n.t('Disabled') },
+		{ value: 'visible', label: $i18n.t('Visible') },
+		{ value: 'hidden', label: $i18n.t('Hidden') },
+		{ value: 'public', label: $i18n.t('Public') },
+		{ value: 'private', label: $i18n.t('Private') }
 	];
 </script>
 

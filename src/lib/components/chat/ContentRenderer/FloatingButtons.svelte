@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
@@ -10,7 +10,7 @@
 
 	export let id: any = '';
 	export let actions: any = [];
-	export let onSetInputText = (text: any) => {};
+	export let onSetInputText: any = (text: any) => {};
 
 	let floatingInput = false;
 	let selectedAction: any = null;
@@ -25,16 +25,16 @@
 	const DEFAULT_ACTIONS = [
 		{
 			id: 'ask',
-			label: i18n.t('Ask'),
+			label: $i18n.t('Ask'),
 			icon: ChatBubble,
 			input: true,
 			prompt: `{{SELECTED_CONTENT}}\n\n\n{{INPUT_CONTENT}}`
 		},
 		{
 			id: 'explain',
-			label: i18n.t('Explain'),
+			label: $i18n.t('Explain'),
 			icon: LightBulb,
-			prompt: `{{SELECTED_CONTENT}}\n\n\n${i18n.t('Explain')}`
+			prompt: `{{SELECTED_CONTENT}}\n\n\n${$i18n.t('Explain')}`
 		}
 	];
 
@@ -133,8 +133,8 @@
 				type="text"
 				id="floating-message-input"
 				class="ml-5 bg-transparent outline-hidden w-full flex-1 text-sm"
-				placeholder={i18n.t('Ask a question')}
-				aria-label={i18n.t('Ask a question')}
+				placeholder={$i18n.t('Ask a question')}
+				aria-label={$i18n.t('Ask a question')}
 				bind:value={floatingInputValue}
 				on:keydown={(e) => {
 					if (e.key === 'Enter') {
@@ -145,7 +145,7 @@
 
 			<div class="ml-1 mr-1">
 				<button
-					aria-label={i18n.t('Submit question')}
+					aria-label={$i18n.t('Submit question')}
 					class="{floatingInputValue !== ''
 						? 'bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 '
 						: 'text-white bg-gray-200 dark:text-gray-900 dark:bg-gray-700 disabled'} transition rounded-full p-1.5 m-0.5 self-center"
@@ -219,8 +219,8 @@
 				type="text"
 				id="floating-message-input"
 				class="ml-5 bg-transparent outline-hidden w-full flex-1 text-sm"
-				placeholder={i18n.t('Ask a question')}
-				aria-label={i18n.t('Ask a question')}
+				placeholder={$i18n.t('Ask a question')}
+				aria-label={$i18n.t('Ask a question')}
 				bind:value={floatingInputValue}
 				on:keydown={(e) => {
 					if (e.key === 'Enter') {
@@ -231,7 +231,7 @@
 
 			<div class="ml-1 mr-1">
 				<button
-					aria-label={i18n.t('Submit question')}
+					aria-label={$i18n.t('Submit question')}
 					class="{floatingInputValue !== ''
 						? 'bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 '
 						: 'text-white bg-gray-200 dark:text-gray-900 dark:bg-gray-700 disabled'} transition rounded-full p-1.5 m-0.5 self-center"

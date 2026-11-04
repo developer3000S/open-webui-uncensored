@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 
@@ -39,10 +39,10 @@
 
 	import type { Writable } from 'svelte/store';
 
-	export let onSubmit: Function;
+	export let onSubmit: any;
 	export let onBack: null | Function = null;
 
-	let model: any = null;
+	export let model: any = null;
 	export let edit: any = false;
 	export let preset: any = true;
 	let loading = false;
@@ -76,7 +76,7 @@
 	}
 
 	let system = '';
-	let info = {
+	let info: any = {
 		id: '',
 		base_model_id: null,
 		name: '',
@@ -91,7 +91,7 @@
 		}
 	};
 
-	let params = {
+	let params: any = {
 		system: ''
 	};
 
@@ -110,7 +110,7 @@
 	let actionIds: any = [];
 	let accessGrants: any = [];
 	let terminalId = '';
-	let tts = { voice: '' };
+	let tts: any = { voice: '' };
 	export let suggestionTags: { name: string }[] = [];
 	let voices: { id: string; name?: string }[] = [];
 
@@ -140,7 +140,7 @@
 	const loadSuggestionTags = async () => {
 		const res: string[] = await (preset ? getModelTags : getBaseModelTags)(
 			localStorage.token
-		).catch(async ()=> []);
+		).catch(async () => []);
 		suggestionTags = res.map((tag) => ({ name: tag }));
 	};
 
@@ -156,28 +156,28 @@
 		info.name = name;
 
 		if (id === '') {
-			toast.error(i18n.t('Model ID is required.'));
+			toast.error($i18n.t('Model ID is required.'));
 			loading = false;
 
 			return;
 		}
 
 		if (name === '') {
-			toast.error(i18n.t('Model Name is required.'));
+			toast.error($i18n.t('Model Name is required.'));
 			loading = false;
 
 			return;
 		}
 
 		if (preset && !info.base_model_id) {
-			toast.error(i18n.t('Base Model is required.'));
+			toast.error($i18n.t('Base Model is required.'));
 			loading = false;
 
 			return;
 		}
 
 		if (knowledge.some((item) => item.status === 'uploading')) {
-			toast.error(i18n.t('Please wait until all files are uploaded.'));
+			toast.error($i18n.t('Please wait until all files are uploaded.'));
 			loading = false;
 
 			return;
@@ -296,9 +296,10 @@
 		success = false;
 	};
 
+	// @ts-ignore
 	onMount(async () => {
-		await tools.set((await getTools(localStorage.token).catch(async ()=> null)) ?? []);
-		skillsList = (await getSkills(localStorage.token).catch(async ()=> null)) ?? [];
+		await tools.set((await getTools(localStorage.token).catch(async () => null)) ?? []);
+		skillsList = (await getSkills(localStorage.token).catch(async () => null)) ?? [];
 		if (!$functions) {
 			await functions.set(await getFunctions(localStorage.token));
 		}
@@ -336,7 +337,8 @@
 			if (model.base_model_id) {
 				const base_model = $models
 					.filter(
-						(m) => (!m?.preset && !(m?.arena ?? false)) || (edit && m.id === model.base_model_id)
+						(m: any) =>
+							(!m?.preset && !(m?.arena ?? false)) || (edit && m.id === model.base_model_id)
 					)
 					.find((m) => [model.base_model_id, `${model.base_model_id}:latest`].includes(m.id));
 
@@ -444,7 +446,7 @@
 					/>
 				</svg>
 			</div>
-			<div class=" self-center text-sm font-medium">{i18n.t('Back')}</div>
+			<div class=" self-center text-sm font-medium">{$i18n.t('Back')}</div>
 		</button>
 	{/if}
 
@@ -543,7 +545,7 @@
 										? 'bg-transparent'
 										: 'bg-white'} shadow-xl group relative"
 									type="button"
-									aria-label={i18n.t('Upload profile image')}
+									aria-label={$i18n.t('Upload profile image')}
 									on:click={() => {
 										filesInputElement.click();
 									}}
@@ -596,7 +598,7 @@
 										}}
 										type="button"
 									>
-										{i18n.t('Reset Image')}</button
+										{$i18n.t('Reset Image')}</button
 									>
 								</div>
 							</div>
@@ -608,7 +610,7 @@
 									<div class="flex-1 w-full">
 										<input
 											class="text-3xl w-full bg-transparent outline-hidden"
-											placeholder={i18n.t('Model Name')}
+											placeholder={$i18n.t('Model Name')}
 											bind:value={name}
 											required
 										/>
@@ -618,7 +620,7 @@
 										<div>
 											<input
 												class="text-xs w-full bg-transparent outline-hidden"
-												placeholder={i18n.t('Model ID')}
+												placeholder={$i18n.t('Model ID')}
 												bind:value={id}
 												disabled={edit}
 												required
@@ -638,7 +640,7 @@
 										<LockClosed strokeWidth="2.5" className="size-3.5 shrink-0" />
 
 										<div class="text-sm font-medium shrink-0">
-											{i18n.t('Access')}
+											{$i18n.t('Access')}
 										</div>
 									</button>
 								</div>
@@ -647,14 +649,14 @@
 							{#if preset}
 								<div class="mb-1">
 									<div class=" text-xs font-medium mb-1 text-gray-500">
-										{i18n.t('Base Model (From)')}
+										{$i18n.t('Base Model (From)')}
 									</div>
 
 									<div>
 										<ModelSelector
 											id="workspace-base-model"
-											placeholder={i18n.t('Select a base model (e.g. llama3, gpt-4o)')}
-											searchPlaceholder={i18n.t('Search a model')}
+											placeholder={$i18n.t('Select a base model (e.g. llama3, gpt-4o)')}
+											searchPlaceholder={$i18n.t('Search a model')}
 											items={getBaseModelItems($models)}
 											className="w-[32rem]"
 											triggerClassName="text-sm"
@@ -669,7 +671,7 @@
 							<div class="mb-1">
 								<div class="mb-1 flex w-full justify-between items-center">
 									<div class=" self-center text-xs font-medium text-gray-500">
-										{i18n.t('Description')}
+										{$i18n.t('Description')}
 									</div>
 
 									<button
@@ -677,16 +679,16 @@
 										type="button"
 										aria-pressed={enableDescription ? 'true' : 'false'}
 										aria-label={enableDescription
-											? i18n.t('Custom description enabled')
-											: i18n.t('Default description enabled')}
+											? $i18n.t('Custom description enabled')
+											: $i18n.t('Default description enabled')}
 										on:click={() => {
 											enableDescription = !enableDescription;
 										}}
 									>
 										{#if !enableDescription}
-											<span class="ml-2 self-center">{i18n.t('Default')}</span>
+											<span class="ml-2 self-center">{$i18n.t('Default')}</span>
 										{:else}
-											<span class="ml-2 self-center">{i18n.t('Custom')}</span>
+											<span class="ml-2 self-center">{$i18n.t('Custom')}</span>
 										{/if}
 									</button>
 								</div>
@@ -694,7 +696,7 @@
 								{#if enableDescription}
 									<Textarea
 										className=" text-sm w-full bg-transparent outline-hidden resize-none overflow-y-hidden "
-										placeholder={i18n.t('Add a short description about what this model does')}
+										placeholder={$i18n.t('Add a short description about what this model does')}
 										bind:value={info.meta.description}
 									/>
 								{/if}
@@ -726,17 +728,17 @@
 					<div class="my-2">
 						<div class="flex w-full justify-between">
 							<div class=" self-center text-xs font-medium text-gray-500">
-								{i18n.t('Model Params')}
+								{$i18n.t('Model Params')}
 							</div>
 						</div>
 
 						<div class="mt-2">
 							<div class="my-1">
-								<div class=" text-xs font-medium mb-2">{i18n.t('System Prompt')}</div>
+								<div class=" text-xs font-medium mb-2">{$i18n.t('System Prompt')}</div>
 								<div>
 									<Textarea
 										className=" text-sm w-full bg-transparent outline-hidden resize-none overflow-y-hidden "
-										placeholder={i18n.t(
+										placeholder={$i18n.t(
 											'Write your model system prompt content here\ne.g.) You are Mario from Super Mario Bros, acting as an assistant.'
 										)}
 										rows={4}
@@ -747,7 +749,7 @@
 
 							<div class="flex w-full justify-between">
 								<div class=" self-center text-xs font-medium">
-									{i18n.t('Advanced Params')}
+									{$i18n.t('Advanced Params')}
 								</div>
 
 								<button
@@ -758,9 +760,9 @@
 									}}
 								>
 									{#if showAdvanced}
-										<span class="ml-2 self-center">{i18n.t('Hide')}</span>
+										<span class="ml-2 self-center">{$i18n.t('Hide')}</span>
 									{:else}
-										<span class="ml-2 self-center">{i18n.t('Show')}</span>
+										<span class="ml-2 self-center">{$i18n.t('Show')}</span>
 									{/if}
 								</button>
 							</div>
@@ -779,7 +781,7 @@
 						<div class="flex w-full justify-between items-center">
 							<div class="flex w-full justify-between items-center">
 								<div class=" self-center text-xs font-medium text-gray-500">
-									{i18n.t('Prompts')}
+									{$i18n.t('Prompts')}
 								</div>
 
 								<button
@@ -794,9 +796,9 @@
 									}}
 								>
 									{#if (info?.meta?.suggestion_prompts ?? null) === null}
-										<span class="ml-2 self-center">{i18n.t('Default')}</span>
+										<span class="ml-2 self-center">{$i18n.t('Default')}</span>
 									{:else}
-										<span class="ml-2 self-center">{i18n.t('Custom')}</span>
+										<span class="ml-2 self-center">{$i18n.t('Custom')}</span>
 									{/if}
 								</button>
 							</div>
@@ -893,13 +895,13 @@
 					<div class="my-4">
 						<div class="flex w-full justify-between mb-1">
 							<div class="self-center text-xs font-medium text-gray-500">
-								{i18n.t('TTS Voice')}
+								{$i18n.t('TTS Voice')}
 							</div>
 						</div>
 						<TTSVoiceInput
 							bind:value={tts.voice}
 							{voices}
-							placeholder={i18n.t('e.g. alloy, echo, shimmer')}
+							placeholder={$i18n.t('e.g. alloy, echo, shimmer')}
 						/>
 					</div>
 
@@ -915,9 +917,9 @@
 						>
 							<div class=" self-center font-medium">
 								{#if edit}
-									{i18n.t('Save & Update')}
+									{$i18n.t('Save & Update')}
 								{:else}
-									{i18n.t('Save & Create')}
+									{$i18n.t('Save & Create')}
 								{/if}
 							</div>
 
@@ -931,7 +933,7 @@
 
 					<div class="my-2 text-gray-300 dark:text-gray-700 pb-20">
 						<div class="flex w-full justify-between mb-2">
-							<div class=" self-center text-sm font-medium">{i18n.t('JSON Preview')}</div>
+							<div class=" self-center text-sm font-medium">{$i18n.t('JSON Preview')}</div>
 
 							<button
 								class="p-1 px-3 text-xs flex rounded-sm transition"
@@ -941,9 +943,9 @@
 								}}
 							>
 								{#if showPreview}
-									<span class="ml-2 self-center">{i18n.t('Hide')}</span>
+									<span class="ml-2 self-center">{$i18n.t('Hide')}</span>
 								{:else}
-									<span class="ml-2 self-center">{i18n.t('Show')}</span>
+									<span class="ml-2 self-center">{$i18n.t('Show')}</span>
 								{/if}
 							</button>
 						</div>
@@ -997,7 +999,7 @@
 					/>
 				</svg>
 			</div>
-			<div class=" self-center text-sm font-medium">{i18n.t('Back')}</div>
+			<div class=" self-center text-sm font-medium">{$i18n.t('Back')}</div>
 		</button>
 	{/if}
 
@@ -1096,7 +1098,7 @@
 										? 'bg-transparent'
 										: 'bg-white'} shadow-xl group relative"
 									type="button"
-									aria-label={i18n.t('Upload profile image')}
+									aria-label={$i18n.t('Upload profile image')}
 									on:click={() => {
 										filesInputElement.click();
 									}}
@@ -1149,7 +1151,7 @@
 										}}
 										type="button"
 									>
-										{i18n.t('Reset Image')}</button
+										{$i18n.t('Reset Image')}</button
 									>
 								</div>
 							</div>
@@ -1161,7 +1163,7 @@
 									<div class="flex-1 w-full">
 										<input
 											class="text-3xl w-full bg-transparent outline-hidden"
-											placeholder={i18n.t('Model Name')}
+											placeholder={$i18n.t('Model Name')}
 											bind:value={name}
 											required
 										/>
@@ -1171,7 +1173,7 @@
 										<div>
 											<input
 												class="text-xs w-full bg-transparent outline-hidden"
-												placeholder={i18n.t('Model ID')}
+												placeholder={$i18n.t('Model ID')}
 												bind:value={id}
 												disabled={edit}
 												required
@@ -1191,7 +1193,7 @@
 										<LockClosed strokeWidth="2.5" className="size-3.5 shrink-0" />
 
 										<div class="text-sm font-medium shrink-0">
-											{i18n.t('Access')}
+											{$i18n.t('Access')}
 										</div>
 									</button>
 								</div>
@@ -1200,14 +1202,14 @@
 							{#if preset}
 								<div class="mb-1">
 									<div class=" text-xs font-medium mb-1 text-gray-500">
-										{i18n.t('Base Model (From)')}
+										{$i18n.t('Base Model (From)')}
 									</div>
 
 									<div>
 										<ModelSelector
 											id="workspace-base-model"
-											placeholder={i18n.t('Select a base model (e.g. llama3, gpt-4o)')}
-											searchPlaceholder={i18n.t('Search a model')}
+											placeholder={$i18n.t('Select a base model (e.g. llama3, gpt-4o)')}
+											searchPlaceholder={$i18n.t('Search a model')}
 											items={getBaseModelItems($models)}
 											className="w-[32rem]"
 											triggerClassName="text-sm"
@@ -1222,7 +1224,7 @@
 							<div class="mb-1">
 								<div class="mb-1 flex w-full justify-between items-center">
 									<div class=" self-center text-xs font-medium text-gray-500">
-										{i18n.t('Description')}
+										{$i18n.t('Description')}
 									</div>
 
 									<button
@@ -1230,16 +1232,16 @@
 										type="button"
 										aria-pressed={enableDescription ? 'true' : 'false'}
 										aria-label={enableDescription
-											? i18n.t('Custom description enabled')
-											: i18n.t('Default description enabled')}
+											? $i18n.t('Custom description enabled')
+											: $i18n.t('Default description enabled')}
 										on:click={() => {
 											enableDescription = !enableDescription;
 										}}
 									>
 										{#if !enableDescription}
-											<span class="ml-2 self-center">{i18n.t('Default')}</span>
+											<span class="ml-2 self-center">{$i18n.t('Default')}</span>
 										{:else}
-											<span class="ml-2 self-center">{i18n.t('Custom')}</span>
+											<span class="ml-2 self-center">{$i18n.t('Custom')}</span>
 										{/if}
 									</button>
 								</div>
@@ -1247,7 +1249,7 @@
 								{#if enableDescription}
 									<Textarea
 										className=" text-sm w-full bg-transparent outline-hidden resize-none overflow-y-hidden "
-										placeholder={i18n.t('Add a short description about what this model does')}
+										placeholder={$i18n.t('Add a short description about what this model does')}
 										bind:value={info.meta.description}
 									/>
 								{/if}
@@ -1279,17 +1281,17 @@
 					<div class="my-2">
 						<div class="flex w-full justify-between">
 							<div class=" self-center text-xs font-medium text-gray-500">
-								{i18n.t('Model Params')}
+								{$i18n.t('Model Params')}
 							</div>
 						</div>
 
 						<div class="mt-2">
 							<div class="my-1">
-								<div class=" text-xs font-medium mb-2">{i18n.t('System Prompt')}</div>
+								<div class=" text-xs font-medium mb-2">{$i18n.t('System Prompt')}</div>
 								<div>
 									<Textarea
 										className=" text-sm w-full bg-transparent outline-hidden resize-none overflow-y-hidden "
-										placeholder={i18n.t(
+										placeholder={$i18n.t(
 											'Write your model system prompt content here\ne.g.) You are Mario from Super Mario Bros, acting as an assistant.'
 										)}
 										rows={4}
@@ -1300,7 +1302,7 @@
 
 							<div class="flex w-full justify-between">
 								<div class=" self-center text-xs font-medium">
-									{i18n.t('Advanced Params')}
+									{$i18n.t('Advanced Params')}
 								</div>
 
 								<button
@@ -1311,9 +1313,9 @@
 									}}
 								>
 									{#if showAdvanced}
-										<span class="ml-2 self-center">{i18n.t('Hide')}</span>
+										<span class="ml-2 self-center">{$i18n.t('Hide')}</span>
 									{:else}
-										<span class="ml-2 self-center">{i18n.t('Show')}</span>
+										<span class="ml-2 self-center">{$i18n.t('Show')}</span>
 									{/if}
 								</button>
 							</div>
@@ -1332,7 +1334,7 @@
 						<div class="flex w-full justify-between items-center">
 							<div class="flex w-full justify-between items-center">
 								<div class=" self-center text-xs font-medium text-gray-500">
-									{i18n.t('Prompts')}
+									{$i18n.t('Prompts')}
 								</div>
 
 								<button
@@ -1347,9 +1349,9 @@
 									}}
 								>
 									{#if (info?.meta?.suggestion_prompts ?? null) === null}
-										<span class="ml-2 self-center">{i18n.t('Default')}</span>
+										<span class="ml-2 self-center">{$i18n.t('Default')}</span>
 									{:else}
-										<span class="ml-2 self-center">{i18n.t('Custom')}</span>
+										<span class="ml-2 self-center">{$i18n.t('Custom')}</span>
 									{/if}
 								</button>
 							</div>
@@ -1446,13 +1448,13 @@
 					<div class="my-4">
 						<div class="flex w-full justify-between mb-1">
 							<div class="self-center text-xs font-medium text-gray-500">
-								{i18n.t('TTS Voice')}
+								{$i18n.t('TTS Voice')}
 							</div>
 						</div>
 						<TTSVoiceInput
 							bind:value={tts.voice}
 							{voices}
-							placeholder={i18n.t('e.g. alloy, echo, shimmer')}
+							placeholder={$i18n.t('e.g. alloy, echo, shimmer')}
 						/>
 					</div>
 
@@ -1468,9 +1470,9 @@
 						>
 							<div class=" self-center font-medium">
 								{#if edit}
-									{i18n.t('Save & Update')}
+									{$i18n.t('Save & Update')}
 								{:else}
-									{i18n.t('Save & Create')}
+									{$i18n.t('Save & Create')}
 								{/if}
 							</div>
 
@@ -1484,7 +1486,7 @@
 
 					<div class="my-2 text-gray-300 dark:text-gray-700 pb-20">
 						<div class="flex w-full justify-between mb-2">
-							<div class=" self-center text-sm font-medium">{i18n.t('JSON Preview')}</div>
+							<div class=" self-center text-sm font-medium">{$i18n.t('JSON Preview')}</div>
 
 							<button
 								class="p-1 px-3 text-xs flex rounded-sm transition"
@@ -1494,9 +1496,9 @@
 								}}
 							>
 								{#if showPreview}
-									<span class="ml-2 self-center">{i18n.t('Hide')}</span>
+									<span class="ml-2 self-center">{$i18n.t('Hide')}</span>
 								{:else}
-									<span class="ml-2 self-center">{i18n.t('Show')}</span>
+									<span class="ml-2 self-center">{$i18n.t('Show')}</span>
 								{/if}
 							</button>
 						</div>

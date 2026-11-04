@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 
@@ -27,7 +27,7 @@
 		urls = [...new Set(urls)];
 
 		if (urls.length === 0) {
-			toast.error(i18n.t('Please enter a valid URL.'));
+			toast.error($i18n.t('Please enter a valid URL.'));
 			return;
 		}
 
@@ -41,11 +41,11 @@
 	<div class="flex flex-col h-full">
 		<div class="flex justify-between items-center dark:text-gray-100 px-5 pt-4 pb-1.5">
 			<h1 class="text-lg font-medium self-center font-primary">
-				{i18n.t('Attach Webpage')}
+				{$i18n.t('Attach Webpage')}
 			</h1>
 			<button
 				class="self-center"
-				aria-label={i18n.t('Close modal')}
+				aria-label={$i18n.t('Close modal')}
 				on:click={() => {
 					show = false;
 				}}
@@ -65,14 +65,13 @@
 					<label
 						for="webpage-url"
 						class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
-						>{i18n.t('Webpage URLs')}</label
+						>{$i18n.t('Webpage URLs')}</label
 					>
 				</div>
 
 				<textarea
 					id="webpage-url"
 					class={`w-full flex-1 text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
-					type="text"
 					bind:value={url}
 					rows="3"
 					placeholder={'https://example.com'}
@@ -85,7 +84,7 @@
 						class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-800 text-white dark:bg-white dark:text-black dark:hover:bg-gray-200 transition rounded-full"
 						type="submit"
 					>
-						{i18n.t('Add')}
+						{$i18n.t('Add')}
 					</button>
 				</div>
 			</form>
@@ -97,11 +96,11 @@
 	<div class="flex flex-col h-full">
 		<div class="flex justify-between items-center dark:text-gray-100 px-5 pt-4 pb-1.5">
 			<h1 class="text-lg font-medium self-center font-primary">
-				{i18n.t('Attach Webpage')}
+				{$i18n.t('Attach Webpage')}
 			</h1>
 			<button
 				class="self-center"
-				aria-label={i18n.t('Close modal')}
+				aria-label={$i18n.t('Close modal')}
 				on:click={() => {
 					show = false;
 				}}
@@ -121,14 +120,13 @@
 					<label
 						for="webpage-url"
 						class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
-						>{i18n.t('Webpage URLs')}</label
+						>{$i18n.t('Webpage URLs')}</label
 					>
 				</div>
 
 				<textarea
 					id="webpage-url"
 					class={`w-full flex-1 text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
-					type="text"
 					bind:value={url}
 					rows="3"
 					placeholder={'https://example.com'}
@@ -141,7 +139,7 @@
 						class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-800 text-white dark:bg-white dark:text-black dark:hover:bg-gray-200 transition rounded-full"
 						type="submit"
 					>
-						{i18n.t('Add')}
+						{$i18n.t('Add')}
 					</button>
 				</div>
 			</form>

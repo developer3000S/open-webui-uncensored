@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext, onDestroy, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 
@@ -167,6 +167,7 @@
 		}
 	}
 
+	// @ts-ignore
 	onMount(async () => {
 		// Auto-load branches (and file tree) when the panel opens with a repo already selected
 		if (owner && repo) {
@@ -187,7 +188,7 @@
 			<input
 				bind:value={repoQuery}
 				on:input={handleRepoQueryInput}
-				placeholder={i18n.t('Search a repository')}
+				placeholder={$i18n.t('Search a repository')}
 				class="w-full rounded-xl bg-gray-50 dark:bg-gray-850 px-3 py-1.5 text-xs outline-hidden ring-1 ring-transparent focus:ring-gray-300 dark:focus:ring-gray-700"
 			/>
 			{#if orgs.length > 0}
@@ -197,7 +198,7 @@
 					on:change={searchRepos}
 					class="w-full rounded-xl bg-gray-50 dark:bg-gray-850 px-2.5 py-1.5 text-xs outline-hidden"
 				>
-					<option value="">{i18n.t('All organizations')}</option>
+					<option value="">{$i18n.t('All organizations')}</option>
 					{#each orgs as o (o.login)}
 						<option value={o.login}>{o.login}</option>
 					{/each}
@@ -219,7 +220,7 @@
 						fileContent = null;
 						selectedPath = '';
 						searchRepos();
-					}}>{i18n.t('Change')}</button
+					}}>{$i18n.t('Change')}</button
 				>
 			</div>
 
@@ -259,7 +260,7 @@
 							{/if}
 						</button>
 					{:else}
-						<div class="px-2 py-3 text-xs text-gray-500">{i18n.t('No repositories found')}</div>
+						<div class="px-2 py-3 text-xs text-gray-500">{$i18n.t('No repositories found')}</div>
 					{/each}
 				{/if}
 			</div>
@@ -336,11 +337,11 @@
 							class="text-[11px] px-2 py-0.5 rounded-lg bg-gray-200/60 dark:bg-gray-700/60 hover:bg-gray-200 dark:hover:bg-gray-700"
 							on:click={() => {
 								if (fileBinary) {
-									toast.error(i18n.t('Binary files cannot be attached'));
+									toast.error($i18n.t('Binary files cannot be attached'));
 									return;
 								}
 								dispatch('attach', { path: selectedPath, content: fileContent });
-							}}>{i18n.t('Attach file to context')}</button
+							}}>{$i18n.t('Attach file to context')}</button
 						>
 						<button
 							type="button"
@@ -356,7 +357,7 @@
 					<div class="px-3 py-3 text-xs text-gray-500">...</div>
 				{:else if fileBinary}
 					<div class="px-3 py-3 text-xs text-gray-500">
-						{i18n.t('Binary file — content is not shown')}
+						{$i18n.t('Binary file — content is not shown')}
 					</div>
 				{:else}
 					<pre
@@ -377,7 +378,7 @@
 			<input
 				bind:value={repoQuery}
 				on:input={handleRepoQueryInput}
-				placeholder={i18n.t('Search a repository')}
+				placeholder={$i18n.t('Search a repository')}
 				class="w-full rounded-xl bg-gray-50 dark:bg-gray-850 px-3 py-1.5 text-xs outline-hidden ring-1 ring-transparent focus:ring-gray-300 dark:focus:ring-gray-700"
 			/>
 			{#if orgs.length > 0}
@@ -387,7 +388,7 @@
 					on:change={searchRepos}
 					class="w-full rounded-xl bg-gray-50 dark:bg-gray-850 px-2.5 py-1.5 text-xs outline-hidden"
 				>
-					<option value="">{i18n.t('All organizations')}</option>
+					<option value="">{$i18n.t('All organizations')}</option>
 					{#each orgs as o (o.login)}
 						<option value={o.login}>{o.login}</option>
 					{/each}
@@ -409,7 +410,7 @@
 						fileContent = null;
 						selectedPath = '';
 						searchRepos();
-					}}>{i18n.t('Change')}</button
+					}}>{$i18n.t('Change')}</button
 				>
 			</div>
 
@@ -449,7 +450,7 @@
 							{/if}
 						</button>
 					{:else}
-						<div class="px-2 py-3 text-xs text-gray-500">{i18n.t('No repositories found')}</div>
+						<div class="px-2 py-3 text-xs text-gray-500">{$i18n.t('No repositories found')}</div>
 					{/each}
 				{/if}
 			</div>
@@ -526,11 +527,11 @@
 							class="text-[11px] px-2 py-0.5 rounded-lg bg-gray-200/60 dark:bg-gray-700/60 hover:bg-gray-200 dark:hover:bg-gray-700"
 							on:click={() => {
 								if (fileBinary) {
-									toast.error(i18n.t('Binary files cannot be attached'));
+									toast.error($i18n.t('Binary files cannot be attached'));
 									return;
 								}
 								dispatch('attach', { path: selectedPath, content: fileContent });
-							}}>{i18n.t('Attach file to context')}</button
+							}}>{$i18n.t('Attach file to context')}</button
 						>
 						<button
 							type="button"
@@ -546,7 +547,7 @@
 					<div class="px-3 py-3 text-xs text-gray-500">...</div>
 				{:else if fileBinary}
 					<div class="px-3 py-3 text-xs text-gray-500">
-						{i18n.t('Binary file — content is not shown')}
+						{$i18n.t('Binary file — content is not shown')}
 					</div>
 				{:else}
 					<pre

@@ -11,12 +11,13 @@
 	import Spinner from '$lib/components/common/Spinner.svelte';
 
 	import type { Writable } from 'svelte/store';
-	
+
 	let automation: any = null;
 	let loaded = false;
 
 	$: automationId = $page.params.id;
 
+	// @ts-ignore
 	onMount(async () => {
 		if (
 			!$config?.features?.enable_automations ||

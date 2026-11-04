@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import hljs from 'highlight.js';
 	import { toast } from 'svelte-sonner';
@@ -33,9 +33,9 @@
 
 	export let id: any = '';
 	export let edit: any = true;
-	export let onSave = (e: any) => {};
-	export let onUpdate = (e: any) => {};
-	export let onPreview = (e: any) => {};
+	export let onSave: any = (e: any) => {};
+	export let onUpdate: any = (e: any) => {};
+	export let onPreview: any = (e: any) => {};
 
 	export let save: any = false;
 	export let run: any = true;
@@ -44,7 +44,7 @@
 	export let token: any;
 	export let lang: any = '';
 	export let code: any = '';
-	let attributes: Record<string, any> = {};
+	export let attributes: Record<string, any> = {};
 
 	export let className: any = '';
 	export let editorClassName: any = '';
@@ -371,7 +371,7 @@
 			} catch (error) {
 				console.error('Failed to render mermaid diagram:', error);
 				const errorMsg = error instanceof Error ? error.message : String(error);
-				renderError = i18n.t('Failed to render diagram') + `: ${errorMsg}`;
+				renderError = $i18n.t('Failed to render diagram') + `: ${errorMsg}`;
 				renderHTML = null;
 			}
 		} else if (
@@ -383,7 +383,7 @@
 			} catch (error) {
 				console.error('Failed to render Vega visualization:', error);
 				const errorMsg = error instanceof Error ? error.message : String(error);
-				renderError = i18n.t('Failed to render visualization') + `: ${errorMsg}`;
+				renderError = $i18n.t('Failed to render visualization') + `: ${errorMsg}`;
 				renderHTML = null;
 			}
 		}
@@ -418,6 +418,7 @@
 		}
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		if (token) {
 			onUpdate(token);
@@ -478,7 +479,7 @@
 						</div>
 
 						<div>
-							{collapsed ? i18n.t('Expand') : i18n.t('Collapse')}
+							{collapsed ? $i18n.t('Expand') : $i18n.t('Collapse')}
 						</div>
 					</button>
 
@@ -487,7 +488,7 @@
 							<div
 								class="run-code-button bg-none border-none p-0.5 cursor-not-allowed bg-white dark:bg-black"
 							>
-								{i18n.t('Running')}
+								{$i18n.t('Running')}
 							</div>
 						{:else if run}
 							<button
@@ -499,7 +500,7 @@
 								}}
 							>
 								<div>
-									{i18n.t('Run')}
+									{$i18n.t('Run')}
 								</div>
 							</button>
 						{/if}
@@ -510,13 +511,13 @@
 							class="save-code-button bg-none border-none transition rounded-md px-1.5 py-0.5 bg-white dark:bg-black"
 							on:click={saveCode}
 						>
-							{saved ? i18n.t('Saved') : i18n.t('Save')}
+							{saved ? $i18n.t('Saved') : $i18n.t('Save')}
 						</button>
 					{/if}
 
 					<button
 						class="copy-code-button bg-none border-none transition rounded-md px-1.5 py-0.5 bg-white dark:bg-black"
-						on:click={copyCode}>{copied ? i18n.t('Copied') : i18n.t('Copy')}</button
+						on:click={copyCode}>{copied ? $i18n.t('Copied') : $i18n.t('Copy')}</button
 					>
 
 					{#if preview && ['html', 'svg'].includes(lang)}
@@ -525,7 +526,7 @@
 							on:click={previewCode}
 						>
 							<div>
-								{i18n.t('Preview')}
+								{$i18n.t('Preview')}
 							</div>
 						</button>
 					{/if}
@@ -574,7 +575,7 @@
 						class="bg-white dark:bg-black dark:text-white rounded-b-2xl! pt-1 pb-2 px-4 flex flex-col gap-2 text-xs"
 					>
 						<span class="text-gray-500 italic">
-							{i18n.t('{{COUNT}} hidden lines', {
+							{$i18n.t('{{COUNT}} hidden lines', {
 								COUNT: code.split('\n').length
 							})}
 						</span>
@@ -594,13 +595,13 @@
 					>
 						{#if executing}
 							<div class=" ">
-								<div class=" text-gray-500 text-xs mb-1">{i18n.t('STDOUT/STDERR')}</div>
-								<div class="text-sm">{i18n.t('Running...')}</div>
+								<div class=" text-gray-500 text-xs mb-1">{$i18n.t('STDOUT/STDERR')}</div>
+								<div class="text-sm">{$i18n.t('Running...')}</div>
 							</div>
 						{:else}
 							{#if stdout || stderr}
 								<div class=" ">
-									<div class=" text-gray-500 text-xs mb-1">{i18n.t('STDOUT/STDERR')}</div>
+									<div class=" text-gray-500 text-xs mb-1">{$i18n.t('STDOUT/STDERR')}</div>
 									<div
 										class="text-sm font-mono whitespace-pre-wrap {stdout?.split('\n')?.length > 100
 											? `max-h-96`
@@ -612,7 +613,7 @@
 							{/if}
 							{#if result || files}
 								<div class=" ">
-									<div class=" text-gray-500 text-xs mb-1">{i18n.t('RESULT')}</div>
+									<div class=" text-gray-500 text-xs mb-1">{$i18n.t('RESULT')}</div>
 									{#if result}
 										<div class="text-sm">{`${JSON.stringify(result)}`}</div>
 									{/if}
@@ -681,7 +682,7 @@
 						</div>
 
 						<div>
-							{collapsed ? i18n.t('Expand') : i18n.t('Collapse')}
+							{collapsed ? $i18n.t('Expand') : $i18n.t('Collapse')}
 						</div>
 					</button>
 
@@ -690,7 +691,7 @@
 							<div
 								class="run-code-button bg-none border-none p-0.5 cursor-not-allowed bg-white dark:bg-black"
 							>
-								{i18n.t('Running')}
+								{$i18n.t('Running')}
 							</div>
 						{:else if run}
 							<button
@@ -702,7 +703,7 @@
 								}}
 							>
 								<div>
-									{i18n.t('Run')}
+									{$i18n.t('Run')}
 								</div>
 							</button>
 						{/if}
@@ -713,13 +714,13 @@
 							class="save-code-button bg-none border-none transition rounded-md px-1.5 py-0.5 bg-white dark:bg-black"
 							on:click={saveCode}
 						>
-							{saved ? i18n.t('Saved') : i18n.t('Save')}
+							{saved ? $i18n.t('Saved') : $i18n.t('Save')}
 						</button>
 					{/if}
 
 					<button
 						class="copy-code-button bg-none border-none transition rounded-md px-1.5 py-0.5 bg-white dark:bg-black"
-						on:click={copyCode}>{copied ? i18n.t('Copied') : i18n.t('Copy')}</button
+						on:click={copyCode}>{copied ? $i18n.t('Copied') : $i18n.t('Copy')}</button
 					>
 
 					{#if preview && ['html', 'svg'].includes(lang)}
@@ -728,7 +729,7 @@
 							on:click={previewCode}
 						>
 							<div>
-								{i18n.t('Preview')}
+								{$i18n.t('Preview')}
 							</div>
 						</button>
 					{/if}
@@ -777,7 +778,7 @@
 						class="bg-white dark:bg-black dark:text-white rounded-b-2xl! pt-1 pb-2 px-4 flex flex-col gap-2 text-xs"
 					>
 						<span class="text-gray-500 italic">
-							{i18n.t('{{COUNT}} hidden lines', {
+							{$i18n.t('{{COUNT}} hidden lines', {
 								COUNT: code.split('\n').length
 							})}
 						</span>
@@ -797,13 +798,13 @@
 					>
 						{#if executing}
 							<div class=" ">
-								<div class=" text-gray-500 text-xs mb-1">{i18n.t('STDOUT/STDERR')}</div>
-								<div class="text-sm">{i18n.t('Running...')}</div>
+								<div class=" text-gray-500 text-xs mb-1">{$i18n.t('STDOUT/STDERR')}</div>
+								<div class="text-sm">{$i18n.t('Running...')}</div>
 							</div>
 						{:else}
 							{#if stdout || stderr}
 								<div class=" ">
-									<div class=" text-gray-500 text-xs mb-1">{i18n.t('STDOUT/STDERR')}</div>
+									<div class=" text-gray-500 text-xs mb-1">{$i18n.t('STDOUT/STDERR')}</div>
 									<div
 										class="text-sm font-mono whitespace-pre-wrap {stdout?.split('\n')?.length > 100
 											? `max-h-96`
@@ -815,7 +816,7 @@
 							{/if}
 							{#if result || files}
 								<div class=" ">
-									<div class=" text-gray-500 text-xs mb-1">{i18n.t('RESULT')}</div>
+									<div class=" text-gray-500 text-xs mb-1">{$i18n.t('RESULT')}</div>
 									{#if result}
 										<div class="text-sm">{`${JSON.stringify(result)}`}</div>
 									{/if}

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Dropdown from '$lib/components/common/Dropdown.svelte';
 	import GarbageBin from '$lib/components/icons/GarbageBin.svelte';
@@ -22,13 +22,13 @@
 	import type { Writable } from 'svelte/store';
 
 	export let model: any;
-	export let exportHandler: Function;
-	export let hideHandler: Function;
-	export let pinModelHandler: Function;
-	export let copyLinkHandler: Function;
-	export let cloneHandler: Function;
+	export let exportHandler: any;
+	export let hideHandler: any;
+	export let pinModelHandler: any;
+	export let copyLinkHandler: any;
+	export let cloneHandler: any;
 
-	export let onClose: Function;
+	export let onClose: any;
 
 	let show = false;
 </script>
@@ -41,7 +41,7 @@
 		}
 	}}
 >
-	<Tooltip content={i18n.t('More')}>
+	<Tooltip content={$i18n.t('More')}>
 		<slot />
 	</Tooltip>
 
@@ -94,9 +94,9 @@
 
 				<div class="flex items-center">
 					{#if model?.meta?.hidden ?? false}
-						{i18n.t('Show Model')}
+						{$i18n.t('Show Model')}
 					{:else}
-						{i18n.t('Hide Model')}
+						{$i18n.t('Hide Model')}
 					{/if}
 				</div>
 			</button>
@@ -115,9 +115,9 @@
 
 				<div class="flex items-center">
 					{#if ($settings?.pinnedModels ?? []).includes(model?.id)}
-						{i18n.t('Hide from Sidebar')}
+						{$i18n.t('Hide from Sidebar')}
 					{:else}
-						{i18n.t('Keep in Sidebar')}
+						{$i18n.t('Keep in Sidebar')}
 					{/if}
 				</div>
 			</button>
@@ -130,7 +130,7 @@
 			>
 				<Link />
 
-				<div class="flex items-center">{i18n.t('Copy Link')}</div>
+				<div class="flex items-center">{$i18n.t('Copy Link')}</div>
 			</button>
 
 			{#if model?.is_active ?? true}
@@ -142,7 +142,7 @@
 				>
 					<DocumentDuplicate />
 
-					<div class="flex items-center">{i18n.t('Clone')}</div>
+					<div class="flex items-center">{$i18n.t('Clone')}</div>
 				</button>
 			{/if}
 
@@ -154,7 +154,7 @@
 			>
 				<Download />
 
-				<div class="flex items-center">{i18n.t('Export')}</div>
+				<div class="flex items-center">{$i18n.t('Export')}</div>
 			</button>
 		</div>
 	</div>
@@ -168,7 +168,7 @@
 		}
 	}}
 >
-	<Tooltip content={i18n.t('More')}>
+	<Tooltip content={$i18n.t('More')}>
 		<slot />
 	</Tooltip>
 
@@ -221,9 +221,9 @@
 
 				<div class="flex items-center">
 					{#if model?.meta?.hidden ?? false}
-						{i18n.t('Show Model')}
+						{$i18n.t('Show Model')}
 					{:else}
-						{i18n.t('Hide Model')}
+						{$i18n.t('Hide Model')}
 					{/if}
 				</div>
 			</button>
@@ -242,9 +242,9 @@
 
 				<div class="flex items-center">
 					{#if ($settings?.pinnedModels ?? []).includes(model?.id)}
-						{i18n.t('Hide from Sidebar')}
+						{$i18n.t('Hide from Sidebar')}
 					{:else}
-						{i18n.t('Keep in Sidebar')}
+						{$i18n.t('Keep in Sidebar')}
 					{/if}
 				</div>
 			</button>
@@ -257,7 +257,7 @@
 			>
 				<Link />
 
-				<div class="flex items-center">{i18n.t('Copy Link')}</div>
+				<div class="flex items-center">{$i18n.t('Copy Link')}</div>
 			</button>
 
 			{#if model?.is_active ?? true}
@@ -269,7 +269,7 @@
 				>
 					<DocumentDuplicate />
 
-					<div class="flex items-center">{i18n.t('Clone')}</div>
+					<div class="flex items-center">{$i18n.t('Clone')}</div>
 				</button>
 			{/if}
 
@@ -281,7 +281,7 @@
 			>
 				<Download />
 
-				<div class="flex items-center">{i18n.t('Export')}</div>
+				<div class="flex items-center">{$i18n.t('Export')}</div>
 			</button>
 		</div>
 	</div>

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { WEBUI_API_BASE_URL, WEBUI_BASE_URL } from '$lib/constants';
 	import { WEBUI_NAME, config, user as _user, showSidebar } from '$lib/stores';
@@ -26,10 +26,10 @@
 
 	import type { Writable } from 'svelte/store';
 
-	let channel: any = null;
+	export let channel: any = null;
 
-	let onAdd: any = null;
-	let onRemove: any = null;
+	export let onAdd: any = null;
+	export let onRemove: any = null;
 
 	export let search: any = true;
 	export let sort: any = true;
@@ -104,7 +104,7 @@
 		<div class="flex items-center justify-between px-2 mb-1">
 			<div class="flex gap-1 items-center">
 				<span class="text-sm">
-					{i18n.t('Members')}
+					{$i18n.t('Members')}
 				</span>
 				<span class="text-sm text-gray-500">{total}</span>
 			</div>
@@ -117,7 +117,7 @@
 						on:click={onAdd}
 					>
 						<Plus className="size-3.5 " />
-						<span>{i18n.t('Add Member')}</span>
+						<span>{$i18n.t('Add Member')}</span>
 					</button>
 				</div>
 			{/if}
@@ -146,7 +146,7 @@
 							class=" w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
 							bind:value={query}
 							on:input={handleSearchInput}
-							placeholder={i18n.t('Search')}
+							placeholder={$i18n.t('Search')}
 						/>
 					</div>
 				</div>
@@ -168,7 +168,7 @@
 								on:click={() => setSortKey('name')}
 							>
 								<div class="flex gap-1.5 items-center">
-									{i18n.t('Name')}
+									{$i18n.t('Name')}
 
 									{#if orderBy === 'name'}
 										<span class="font-normal"
@@ -192,7 +192,7 @@
 								on:click={() => setSortKey('role')}
 							>
 								<div class="flex gap-1.5 items-center">
-									{i18n.t('Role')}
+									{$i18n.t('Role')}
 
 									{#if orderBy === 'role'}
 										<span class="font-normal"
@@ -249,7 +249,7 @@
 												: user.role === 'user'
 													? 'success'
 													: 'muted'}
-											content={i18n.t(user.role)}
+											content={$i18n.t(user.role)}
 										/>
 									</div>
 
@@ -279,7 +279,7 @@
 			{/if}
 		{:else}
 			<div class="text-gray-500 text-xs text-center py-5 px-10">
-				{i18n.t('No users were found.')}
+				{$i18n.t('No users were found.')}
 			</div>
 		{/if}
 	{/if}
@@ -294,7 +294,7 @@
 		<div class="flex items-center justify-between px-2 mb-1">
 			<div class="flex gap-1 items-center">
 				<span class="text-sm">
-					{i18n.t('Members')}
+					{$i18n.t('Members')}
 				</span>
 				<span class="text-sm text-gray-500">{total}</span>
 			</div>
@@ -307,7 +307,7 @@
 						on:click={onAdd}
 					>
 						<Plus className="size-3.5 " />
-						<span>{i18n.t('Add Member')}</span>
+						<span>{$i18n.t('Add Member')}</span>
 					</button>
 				</div>
 			{/if}
@@ -336,7 +336,7 @@
 							class=" w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
 							bind:value={query}
 							on:input={handleSearchInput}
-							placeholder={i18n.t('Search')}
+							placeholder={$i18n.t('Search')}
 						/>
 					</div>
 				</div>
@@ -358,7 +358,7 @@
 								on:click={() => setSortKey('name')}
 							>
 								<div class="flex gap-1.5 items-center">
-									{i18n.t('Name')}
+									{$i18n.t('Name')}
 
 									{#if orderBy === 'name'}
 										<span class="font-normal"
@@ -382,7 +382,7 @@
 								on:click={() => setSortKey('role')}
 							>
 								<div class="flex gap-1.5 items-center">
-									{i18n.t('Role')}
+									{$i18n.t('Role')}
 
 									{#if orderBy === 'role'}
 										<span class="font-normal"
@@ -439,7 +439,7 @@
 												: user.role === 'user'
 													? 'success'
 													: 'muted'}
-											content={i18n.t(user.role)}
+											content={$i18n.t(user.role)}
 										/>
 									</div>
 
@@ -469,7 +469,7 @@
 			{/if}
 		{:else}
 			<div class="text-gray-500 text-xs text-center py-5 px-10">
-				{i18n.t('No users were found.')}
+				{$i18n.t('No users were found.')}
 			</div>
 		{/if}
 	{/if}

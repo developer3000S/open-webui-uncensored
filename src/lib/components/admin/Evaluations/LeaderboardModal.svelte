@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Modal from '$lib/components/common/Modal.svelte';
 	import { getModelHistory } from '$lib/apis/evaluations';
@@ -10,7 +10,7 @@
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 
 	export let show: any = false;
-	let model: any = null;
+	export let model: any = null;
 	export let onClose: () => void = () => {};
 
 	import type { Writable } from 'svelte/store';
@@ -79,7 +79,7 @@
 			<div class="mb-4">
 				<div class="flex items-center justify-between mb-2">
 					<div class="text-xs text-gray-500 font-medium uppercase tracking-wide">
-						{i18n.t('Activity')}
+						{$i18n.t('Activity')}
 					</div>
 					<div
 						class="inline-flex rounded-full bg-gray-100/80 p-0.5 dark:bg-gray-800/80 backdrop-blur-sm"
@@ -107,7 +107,7 @@
 
 			<div class="mb-4">
 				<div class="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">
-					{i18n.t('Tags')}
+					{$i18n.t('Tags')}
 				</div>
 				{#if topTags.length}
 					<div class="flex flex-wrap gap-1 -mx-1">
@@ -128,7 +128,7 @@
 					type="button"
 					on:click={close}
 				>
-					{i18n.t('Close')}
+					{$i18n.t('Close')}
 				</button>
 			</div>
 		</div>
@@ -152,7 +152,7 @@
 			<div class="mb-4">
 				<div class="flex items-center justify-between mb-2">
 					<div class="text-xs text-gray-500 font-medium uppercase tracking-wide">
-						{i18n.t('Activity')}
+						{$i18n.t('Activity')}
 					</div>
 					<div
 						class="inline-flex rounded-full bg-gray-100/80 p-0.5 dark:bg-gray-800/80 backdrop-blur-sm"
@@ -180,7 +180,7 @@
 
 			<div class="mb-4">
 				<div class="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">
-					{i18n.t('Tags')}
+					{$i18n.t('Tags')}
 				</div>
 				{#if topTags.length}
 					<div class="flex flex-wrap gap-1 -mx-1">
@@ -201,7 +201,7 @@
 					type="button"
 					on:click={close}
 				>
-					{i18n.t('Close')}
+					{$i18n.t('Close')}
 				</button>
 			</div>
 		</div>

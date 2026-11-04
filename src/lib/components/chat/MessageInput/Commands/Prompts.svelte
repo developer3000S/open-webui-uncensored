@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import { toast } from 'svelte-sonner';
@@ -11,10 +11,10 @@
 	import type { Writable } from 'svelte/store';
 
 	export let query: any = '';
-	export let onSelect = (e: any) => {};
+	export let onSelect: any = (e: any) => {};
 
 	let selectedPromptIdx = 0;
-	let filteredItems: any[] = [];
+	export let filteredItems: any[] = [];
 	let searchDebounceTimer: ReturnType<typeof setTimeout>;
 
 	let items: any = [];
@@ -61,7 +61,7 @@
 </script>
 
 <div class="px-2 text-xs text-gray-500 py-1">
-	{i18n.t('Prompts')}
+	{$i18n.t('Prompts')}
 </div>
 
 {#if filteredItems.length > 0}
@@ -96,7 +96,7 @@
 {/if}
 
 <div class="px-2 text-xs text-gray-500 py-1">
-	{i18n.t('Prompts')}
+	{$i18n.t('Prompts')}
 </div>
 
 {#if filteredItems.length > 0}

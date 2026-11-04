@@ -1,6 +1,6 @@
 import type { Writable } from 'svelte/store';
 import { v4 as uuidv4 } from 'uuid';
-import sha256 from 'js-sha256';
+import { sha256 } from 'js-sha256';
 import DOMPurify from 'dompurify';
 import { WEBUI_BASE_URL } from '$lib/constants';
 
@@ -234,21 +234,21 @@ export const sanitizeHistory = (history: any) => {
 	if (!history?.messages || typeof history.messages !== 'object') return;
 
 	// Purge entries that aren't usable objects
-	for (const [id, message] of Object.entries(history.messages)) {
+	for (const [id, message] of Object.entries(history.messages as Record<string, any>)) {
 		if (!message || typeof message !== 'object') {
 			delete history.messages[id];
 		}
 	}
 
 	// Ensure every surviving node has its canonical id and a childrenIds array
-	for (const [id, message] of Object.entries(history.messages)) {
+	for (const [id, message] of Object.entries(history.messages as Record<string, any>)) {
 		if (message.id !== id) message.id = id;
 		if (!Array.isArray(message.childrenIds)) message.childrenIds = [];
 	}
 
 	// Build reverse lookup: parent, indexed by child id
 	const parentByChildId: Record<string, any> = {};
-	for (const [id, message] of Object.entries(history.messages)) {
+	for (const [id, message] of Object.entries(history.messages as Record<string, any>)) {
 		for (const childId of message.childrenIds) {
 			parentByChildId[childId] = id;
 		}
@@ -261,7 +261,7 @@ export const sanitizeHistory = (history: any) => {
 		let latestLeafId: any = null;
 		let latestTimestamp = -1;
 
-		for (const [id, message] of Object.entries(history.messages)) {
+		for (const [id, message] of Object.entries(history.messages as Record<string, any>)) {
 			if (message.childrenIds.length === 0 && (message.timestamp ?? 0) > latestTimestamp) {
 				latestLeafId = id;
 				latestTimestamp = message.timestamp ?? 0;
@@ -272,7 +272,7 @@ export const sanitizeHistory = (history: any) => {
 	}
 
 	// Reconstruct missing parentId and role
-	for (const [id, message] of Object.entries(history.messages)) {
+	for (const [id, message] of Object.entries(history.messages as Record<string, any>)) {
 		// Well-formed: has role and explicit parentId (null is valid for root)
 		if (message.role && message.parentId !== undefined) continue;
 
@@ -294,7 +294,7 @@ export const sanitizeHistory = (history: any) => {
 	}
 
 	// Prune childrenIds referencing deleted/missing nodes
-	for (const message of Object.values(history.messages)) {
+	for (const message of Object.values(history.messages) as any[]) {
 		message.childrenIds = message.childrenIds.filter((childId) => history.messages[childId]);
 	}
 };
@@ -493,9 +493,9 @@ export const formatDate = (inputDate: any) => {
 	}
 };
 
-export const copyToClipboard = (text: any, html: any = null, formatted: any = false) => {
+export const copyToClipboard = async (text: any, html: any = null, formatted: any = false) => {
 	if (formatted) {
-		let styledHtml = '';
+		let styledHtml;
 		if (!html) {
 			const options = {
 				throwOnError: false,
@@ -724,8 +724,8 @@ export const calculateSHA256 = async (file: any) => {
 	const reader = new FileReader();
 
 	// Define a promise to handle the file reading
-	const readFile = new Promise((resolve, reject) => {
-		reader.onload = () => resolve(reader.result);
+	const readFile = new Promise<ArrayBuffer>((resolve, reject) => {
+		reader.onload = () => resolve(reader.result as ArrayBuffer);
 		reader.onerror = reject;
 	});
 
@@ -763,9 +763,9 @@ export const getImportOrigin = (_chats: any) => {
 	return 'webui';
 };
 
-export const getUserPosition = (raw: any = false) => {
+export const getUserPosition = async (raw: any = false) => {
 	// Get the user's location using the Geolocation API
-	const position = await new Promise((resolve, reject) => {
+	const position = await new Promise<GeolocationPosition>((resolve, reject) => {
 		navigator.geolocation.getCurrentPosition(resolve, reject);
 	}).catch((error) => {
 		console.error('Error getting user location:', error);
@@ -1086,7 +1086,7 @@ export const extractSentences = (text: string) => {
 	// Restore code blocks and process sentences
 	sentences = sentences.map((sentence) => {
 		// Check if the sentence includes a placeholder for a code block
-		return sentence.replace(/\u0000(\d+)\u0000/g, (_, idx) => codeBlocks[idx]);
+		return sentence.replace(new RegExp(String.fromCharCode(0) + "(\\d+)" + String.fromCharCode(0), "g"), (_, idx) => codeBlocks[idx]);
 	});
 
 	return sentences.map(cleanText).filter(Boolean);
@@ -1109,7 +1109,7 @@ export const extractParagraphsForAudio = (text: string) => {
 	// Restore code blocks and process paragraphs
 	paragraphs = paragraphs.map((paragraph) => {
 		// Check if the paragraph includes a placeholder for a code block
-		return paragraph.replace(/\u0000(\d+)\u0000/g, (_, idx) => codeBlocks[idx]);
+		return paragraph.replace(new RegExp(String.fromCharCode(0) + "(\\d+)" + String.fromCharCode(0), "g"), (_, idx) => codeBlocks[idx]);
 	});
 
 	return paragraphs.map(cleanText).filter(Boolean);
@@ -1296,7 +1296,7 @@ export const getTimeRange = (timestamp) => {
  */
 export const extractFrontmatter = (content) => {
 	const frontmatter: Record<string, any> = {};
-	let frontmatterStarted = false;
+	let frontmatterStarted;
 	let frontmatterEnded = false;
 	const frontmatterPattern = /^\s*([a-z_]+):\s*(.*)\s*$/i;
 
@@ -1315,7 +1315,6 @@ export const extractFrontmatter = (content) => {
 
 		if (line.includes('"""')) {
 			if (frontmatterStarted) {
-				frontmatterEnded = true;
 				break;
 			}
 		}
@@ -1333,11 +1332,11 @@ export const extractFrontmatter = (content) => {
 };
 
 // Function to determine the best matching language
-export const bestMatchingLanguage = (supportedLanguages, preferredLanguages, defaultLocale) => {
-	const languages = supportedLanguages.map((lang) => lang.code);
+export const bestMatchingLanguage = (supportedLanguages: any[], preferredLanguages: any[], defaultLocale: string) => {
+	const languages = supportedLanguages.map((lang: any) => lang.code);
 
 	const match = preferredLanguages
-		.map((prefLang) => languages.find((lang) => lang.startsWith(prefLang)))
+		.map((prefLang: any) => languages.find((lang: any) => lang.startsWith(prefLang)))
 		.find(Boolean);
 
 	return match || defaultLocale;
@@ -1375,7 +1374,7 @@ export const getWeekday = () => {
 	return weekdays[date.getDay()];
 };
 
-export const createMessagesList = (history, messageId) => {
+export const createMessagesList = (history: any, messageId: string) => {
 	const list: any[] = [];
 	let currentId = messageId;
 
@@ -1391,7 +1390,7 @@ export const createMessagesList = (history, messageId) => {
 	return list.reverse();
 };
 
-export const formatFileSize = (size) => {
+export const formatFileSize = (size: number) => {
 	if (size == null) return 'Unknown size';
 	if (typeof size !== 'number' || size < 0) return 'Invalid size';
 	if (size === 0) return '0 B';
@@ -1405,13 +1404,13 @@ export const formatFileSize = (size) => {
 	return `${size.toFixed(1)} ${units[unitIndex]}`;
 };
 
-export const getLineCount = (text) => {
+export const getLineCount = (text: string) => {
 	console.log(typeof text);
 	return text ? text.split('\n').length : 0;
 };
 
 // Helper function to recursively resolve OpenAPI schema into JSON schema format
-function resolveSchema(schemaRef, components, resolvedSchemas = new Set()) {
+function resolveSchema(schemaRef: any, components: any, resolvedSchemas: Set<string> = new Set()): any {
 	if (!schemaRef) return {};
 
 	if (schemaRef['$ref']) {
@@ -1428,7 +1427,7 @@ function resolveSchema(schemaRef, components, resolvedSchemas = new Set()) {
 	}
 
 	if (schemaRef.type) {
-		const schemaObj = { type: schemaRef.type };
+		const schemaObj: any = { type: schemaRef.type };
 
 		if (schemaRef.description) {
 			schemaObj.description = schemaRef.description;
@@ -1644,7 +1643,7 @@ export const extractInputVariables = (text: string): Record<string, any> => {
 	while ((match = regularRegex.exec(text)) !== null) {
 		const varName = match[1].trim();
 		// Only add if not already processed as custom variable
-		if (!variables.hasOwnProperty(varName)) {
+		if (!Object.prototype.hasOwnProperty.call(variables, varName)) {
 			variables[varName] = { type: 'text' }; // Default type for regular variables
 		}
 	}
@@ -1751,7 +1750,7 @@ export const parseJsonValue = (value: string): any => {
 	}
 
 	// Check if it starts with square or curly brackets (JSON)
-	if (/^[\[{]/.test(value)) {
+	if (value.startsWith('[') || value.startsWith('{')) {
 		try {
 			return JSON.parse(value);
 		} catch {
@@ -1889,7 +1888,7 @@ export const extractContentFromFile = async (file: File) => {
 	try {
 		return await readAsText(file);
 	} catch (err) {
-		throw new Error('Unsupported or non-text file type: ' + (file.name || type));
+		throw new Error('Unsupported or non-text file type: ' + (file.name || type), { cause: err });
 	}
 };
 

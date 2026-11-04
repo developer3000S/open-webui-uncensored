@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	const dispatch = createEventDispatcher();
 	import type { Writable } from 'svelte/store';
@@ -14,7 +14,7 @@
 </script>
 
 <Dropdown bind:show>
-	<Tooltip content={i18n.t('More')}>
+	<Tooltip content={$i18n.t('More')}>
 		<slot />
 	</Tooltip>
 
@@ -30,14 +30,14 @@
 				}}
 			>
 				<GarbageBin strokeWidth="2" />
-				<div class="flex items-center">{i18n.t('Delete')}</div>
+				<div class="flex items-center">{$i18n.t('Delete')}</div>
 			</button>
 		</div>
 	</div>
 </Dropdown>
 
 <Dropdown bind:show>
-	<Tooltip content={i18n.t('More')}>
+	<Tooltip content={$i18n.t('More')}>
 		<slot />
 	</Tooltip>
 
@@ -53,7 +53,7 @@
 				}}
 			>
 				<GarbageBin strokeWidth="2" />
-				<div class="flex items-center">{i18n.t('Delete')}</div>
+				<div class="flex items-center">{$i18n.t('Delete')}</div>
 			</button>
 		</div>
 	</div>

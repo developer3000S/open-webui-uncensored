@@ -32,11 +32,11 @@
 		sidebarWidth,
 		activeChatIds
 	} from '$lib/stores';
+	import type { Writable } from 'svelte/store';
+	import type { i18n as i18nType } from 'i18next';
 	import { onMount, getContext, tick, onDestroy } from 'svelte';
 
-import type { Writable } from 'svelte/store';
-import type i18nType from 'i18next';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	// Coder is a standalone application: when the user is on /coder (or opened it
 	// via window.open('/coder?standalone=1')) the main sidebar must stay hidden.
@@ -132,7 +132,7 @@ import type i18nType from 'i18next';
 	let showSharedFolders = false;
 	let showStudio = localStorage.getItem('studioSidebarOpen') !== 'false';
 
-	let folders = {};
+	let folders: any = {};
 	let folderRegistry = {};
 
 	let newFolderId = null;
@@ -210,11 +210,6 @@ import type i18nType from 'i18next';
 	const isStudioEnabled = () => $config?.features?.enable_studio;
 
 	const studioItemHref = (tab: string) => `/studio?tab=${tab}`;
-
-	const toggleStudioSection = () => {
-		showStudio = !showStudio;
-		localStorage.setItem('studioSidebarOpen', showStudio ? 'true' : 'false');
-	};
 
 	const initPinnedMenuSortable = () => {
 		const el = document.getElementById('pinned-menu-items-list');
@@ -311,17 +306,17 @@ import type i18nType from 'i18next';
 	const createFolder = async ({ name, data, parent_id }) => {
 		name = name?.trim();
 		if (!name) {
-			toast.error(i18n.t('Folder name cannot be empty.'));
+			toast.error($i18n.t('Folder name cannot be empty.'));
 			return;
 		}
 
 		// Check for duplicate names in the same parent
-		const siblings = Object.values(folders).filter((folder) => folder.parent_id === parent_id);
-		if (siblings.find((folder) => folder.name.toLowerCase() === name.toLowerCase())) {
+		const siblings = Object.values(folders).filter((folder: any) => folder.parent_id === parent_id);
+		if (siblings.find((folder: any) => folder.name.toLowerCase() === name.toLowerCase())) {
 			// If a folder with the same name already exists, append a number to the name
 			let i = 1;
 			while (
-				siblings.find((folder) => folder.name.toLowerCase() === `${name} ${i}`.toLowerCase())
+				siblings.find((folder: any) => folder.name.toLowerCase() === `${name} ${i}`.toLowerCase())
 			) {
 				i++;
 			}
@@ -435,7 +430,7 @@ import type i18nType from 'i18next';
 
 	const importChatHandler = async (items, pinned = false, folderId = null) => {
 		if (!canImportChats) {
-			toast.error(i18n.t('Access prohibited'));
+			toast.error($i18n.t('Access prohibited'));
 			return;
 		}
 
@@ -468,10 +463,10 @@ import type i18nType from 'i18next';
 				const content = e.target.result;
 
 				try {
-					const chatItems = JSON.parse(content);
+					const chatItems = JSON.parse(content as string);
 					importChatHandler(chatItems);
 				} catch {
-					toast.error(i18n.t(`Invalid file format.`));
+					toast.error($i18n.t(`Invalid file format.`));
 				}
 			};
 
@@ -532,7 +527,7 @@ import type i18nType from 'i18next';
 			if (touchend.screenX < touchstart.screenX) {
 				showSidebar.set(false);
 			}
-			if (touchend.screenX > touchstart.screenX && !isCoderRoute) {
+			if (touchend.screenX > touchstart.screenX) {
 				showSidebar.set(true);
 			}
 		}
@@ -601,6 +596,7 @@ import type i18nType from 'i18next';
 		document.documentElement.style.setProperty('--sidebar-width', `${newSidebarWidth}px`);
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		try {
 			const width = Number(localStorage.getItem('sidebarWidth'));
@@ -615,10 +611,6 @@ import type i18nType from 'i18next';
 		});
 
 		showSidebar.set(!$mobile ? localStorage.sidebar === 'true' : false);
-		// Coder is a standalone app — never auto-restore the sidebar on /coder
-		if (isCoderRoute) {
-			showSidebar.set(false);
-		}
 
 		const unsubscribers = [
 			mobile.subscribe((value) => {
@@ -764,31 +756,6 @@ import type i18nType from 'i18next';
 		}, 0);
 	};
 
-	// Обработчик клика для пунктов, открывающихся как отдельное приложение
-	// в новом окне браузера (например, Coder).
-	const openAppWindowHandler = (e, meta) => {
-		e.preventDefault();
-		e.stopPropagation();
-
-		const url = new URL(meta.href, window.location.origin).href;
-		const windowName = `${meta.label.replace(/\s+/g, '_').toLowerCase()}_app_window`;
-		const features = meta.windowFeatures ?? 'width=1400,height=900,resizable=yes,scrollbars=yes';
-
-		const appWindow = window.open(url, windowName, features);
-		if (appWindow) {
-			try {
-				appWindow.focus();
-			} catch (_) {
-				// some browsers block focus; ignore
-			}
-		} else {
-			// Popup blocked — fallback to normal navigation
-			goto(url);
-		}
-
-		itemClickHandler();
-	};
-
 	const itemClickHandler = async () => {
 		selectedChatId = null;
 		chatId.set('');
@@ -824,12 +791,12 @@ import type i18nType from 'i18next';
 
 		if (type === 'dm') {
 			if (!user_ids || user_ids.length === 0) {
-				toast.error(i18n.t('Please select at least one user for Direct Message channel.'));
+				toast.error($i18n.t('Please select at least one user for Direct Message channel.'));
 				return;
 			}
 		} else {
 			if (!name) {
-				toast.error(i18n.t('Channel name cannot be empty.'));
+				toast.error($i18n.t('Channel name cannot be empty.'));
 				return;
 			}
 		}
@@ -866,7 +833,7 @@ import type i18nType from 'i18next';
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 
-{#if $showSidebar && !isCoderRoute}
+{#if $showSidebar}
 	<div
 		class=" {$isApp
 			? ' ml-[4.5rem] md:ml-0'
@@ -874,7 +841,8 @@ import type i18nType from 'i18next';
 		on:mousedown={() => {
 			showSidebar.set(!$showSidebar);
 		}}
-	></div>
+	/>
+{/if}
 
 <SearchModal
 	bind:show={$showSearch}
@@ -886,14 +854,13 @@ import type i18nType from 'i18next';
 />
 
 <button
-	aria-label={i18n.t('New Chat')}
 	id="sidebar-new-chat-button"
 	class="hidden"
 	on:click={() => {
 		goto('/');
 		newChatHandler();
 	}}
-></button>
+/>
 
 <svelte:window
 	on:mousemove={(e) => {
@@ -905,7 +872,7 @@ import type i18nType from 'i18next';
 	}}
 />
 
-{#if !$mobile && !$showSidebar && !isCoderRoute}
+{#if !$mobile && !$showSidebar}
 	<div
 		class=" pt-[7px] pb-2 px-2 flex flex-col justify-between text-black dark:text-white hover:bg-gray-50/30 dark:hover:bg-gray-950/30 h-full z-10 transition-all border-e-[0.5px] border-gray-50 dark:border-gray-850/30"
 		id="sidebar"
@@ -918,14 +885,14 @@ import type i18nType from 'i18next';
 		>
 			<div class="pb-1.5">
 				<Tooltip
-					content={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
+					content={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
 					placement="right"
 				>
 					<button
 						class="flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-850 transition group {isWindows
 							? 'cursor-pointer'
 							: 'cursor-[e-resize]'}"
-						aria-label={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
+						aria-label={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
 					>
 						<div class=" self-center flex items-center justify-center size-9">
 							<img
@@ -935,12 +902,14 @@ import type i18nType from 'i18next';
 							/>
 
 							<Sidebar className="size-5 hidden group-hover:flex" />
+						</div>
 					</button>
 				</Tooltip>
+			</div>
 
 			<div class="-mt-[0.5px]">
 				<div class="">
-					<Tooltip content={i18n.t('New Chat')} placement="right">
+					<Tooltip content={$i18n.t('New Chat')} placement="right">
 						<a
 							class=" cursor-pointer flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-850 transition group"
 							href="/"
@@ -952,15 +921,17 @@ import type i18nType from 'i18next';
 								goto('/');
 								newChatHandler();
 							}}
-							aria-label={i18n.t('New Chat')}
+							aria-label={$i18n.t('New Chat')}
 						>
 							<div class=" self-center flex items-center justify-center size-9">
 								<PencilSquare className="size-4.5" />
+							</div>
 						</a>
 					</Tooltip>
+				</div>
 
 				<div>
-					<Tooltip content={i18n.t('Search')} placement="right">
+					<Tooltip content={$i18n.t('Search')} placement="right">
 						<button
 							class=" cursor-pointer flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-850 transition group"
 							on:click={(e) => {
@@ -970,33 +941,31 @@ import type i18nType from 'i18next';
 								showSearch.set(true);
 							}}
 							draggable="false"
-							aria-label={i18n.t('Search')}
+							aria-label={$i18n.t('Search')}
 						>
 							<div class=" self-center flex items-center justify-center size-9">
 								<Search className="size-4.5" />
+							</div>
 						</button>
 					</Tooltip>
+				</div>
 
 				{#each pinnedItems as itemId (itemId)}
 					{@const meta = getMenuItemMeta(itemId)}
 					{#if meta && isMenuItemVisible(itemId)}
 						<div class="">
-							<Tooltip content={i18n.t(meta.label)} placement="right">
+							<Tooltip content={$i18n.t(meta.label)} placement="right">
 								<a
 									class=" cursor-pointer flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-850 transition group"
 									href={meta.href}
 									on:click={async (e) => {
 										e.stopImmediatePropagation();
 										e.preventDefault();
-										if (meta.openInNewWindow) {
-											openAppWindowHandler(e, meta);
-											return;
-										}
 										goto(meta.href);
 										itemClickHandler();
 									}}
 									draggable="false"
-									aria-label={i18n.t(meta.label)}
+									aria-label={$i18n.t(meta.label)}
 								>
 									<div class=" self-center flex items-center justify-center size-9">
 										{#if itemId === 'notes'}
@@ -1046,83 +1015,15 @@ import type i18nType from 'i18next';
 													d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"
 												/>
 											</svg>
-										{:else if itemId === 'coder'}
-											<svg
-												xmlns="http://www.w3.org/2000/svg"
-												fill="none"
-												viewBox="0 0 24 24"
-												stroke-width="1.5"
-												stroke="currentColor"
-												class="size-4.5"
-											>
-												<path
-													stroke-linecap="round"
-													stroke-linejoin="round"
-													d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"
-												/>
-											</svg>
 										{:else if itemId === 'playground'}
 											<Code className="size-4.5" />
+										{/if}
 									</div>
 								</a>
 							</Tooltip>
 						</div>
+					{/if}
 				{/each}
-
-				{#if isStudioEnabled()}
-					<hr class=" border-gray-100/40 dark:border-gray-800/30 my-1.5 w-full" />
-
-					<Tooltip content={'AI Студия'} placement="right">
-						<button
-							class=" cursor-pointer flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-850 transition group"
-							on:click={(e) => {
-								e.stopImmediatePropagation();
-								e.preventDefault();
-								goto('/studio');
-								itemClickHandler();
-							}}
-							draggable="false"
-							aria-label={'AI Студия'}
-						>
-							<div class=" self-center flex items-center justify-center size-9">
-								<Sparkles className="size-4.5" />
-							</div>
-						</button>
-					</Tooltip>
-
-					{#each STUDIO_NAV_ITEMS as item (item.tab)}
-						<Tooltip content={item.label} placement="right">
-							<a
-								class=" cursor-pointer flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-850 transition group"
-								href={studioItemHref(item.tab)}
-								on:click={async (e) => {
-									e.stopImmediatePropagation();
-									e.preventDefault();
-									goto(studioItemHref(item.tab));
-									itemClickHandler();
-								}}
-								draggable="false"
-								aria-label={item.label}
-							>
-								<div class=" self-center flex items-center justify-center size-9">
-									{#if item.iconType === 'photo'}
-										<Photo className="size-4.5" />
-									{:else if item.iconType === 'chat'}
-										<ChatBubble className="size-4.5" />
-									{:else if item.iconType === 'agents'}
-										<Users className="size-4.5" />
-									{:else if item.iconType === 'mic'}
-										<Mic className="size-4.5" />
-									{:else if item.iconType === 'tts'}
-										<SoundHigh className="size-4.5" />
-									{:else if item.iconType === 'models'}
-										<FolderOpen className="size-4.5" />
-									{:else if item.iconType === 'settings'}
-										<Settings className="size-4.5" />
-								</div>
-							</a>
-						</Tooltip>
-					{/each}
 			</div>
 		</button>
 
@@ -1132,7 +1033,7 @@ import type i18nType from 'i18next';
 					{#if $user !== undefined && $user !== null}
 						<UserMenu
 							role={$user?.role}
-							profile={$config?.features?.enable_user_status ?? true}
+							profile={Boolean($config?.features?.enable_user_status ?? true)}
 							showActiveUsers={false}
 							on:show={(e) => {
 								if (e.detail === 'archived-chat') {
@@ -1143,14 +1044,14 @@ import type i18nType from 'i18next';
 							<button
 								type="button"
 								class=" cursor-pointer flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-850 transition group"
-								aria-label={i18n.t('User menu')}
+								aria-label={$i18n.t('User menu')}
 							>
 								<div class="self-center relative">
 									<img
 										src={`${WEBUI_API_BASE_URL}/users/${$user?.id}/profile/image`}
 										class=" size-7 object-cover rounded-full"
-										alt={i18n.t('Open User Profile Menu')}
-										aria-label={i18n.t('Open User Profile Menu')}
+										alt={$i18n.t('Open User Profile Menu')}
+										aria-label={$i18n.t('Open User Profile Menu')}
 									/>
 
 									{#if $config?.features?.enable_user_status}
@@ -1162,16 +1063,20 @@ import type i18nType from 'i18next';
 														: 'bg-gray-300 dark:bg-gray-700'} border-2 border-white dark:border-gray-900"
 												></span>
 											</span>
+										</div>
+									{/if}
 								</div>
 							</button>
 						</UserMenu>
+					{/if}
 				</div>
 			</div>
 		</div>
 	</div>
+{/if}
 
-<!-- {i18n.t('New Folder')} -->
-<!-- {i18n.t('Pinned')} -->
+<!-- {$i18n.t('New Folder')} -->
+<!-- {$i18n.t('Pinned')} -->
 
 {#if $showSidebar}
 	<div
@@ -1217,7 +1122,7 @@ import type i18nType from 'i18next';
 					</div>
 				</a>
 				<Tooltip
-					content={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
+					content={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
 					placement="bottom"
 				>
 					<button
@@ -1227,7 +1132,7 @@ import type i18nType from 'i18next';
 						on:click={() => {
 							showSidebar.set(!$showSidebar);
 						}}
-						aria-label={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
+						aria-label={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
 					>
 						<div class=" self-center p-1.5">
 							<Sidebar />
@@ -1239,14 +1144,16 @@ import type i18nType from 'i18next';
 					class="{scrollTop > 0
 						? 'visible'
 						: 'invisible'} sidebar-bg-gradient-to-b bg-linear-to-b from-gray-50 dark:from-gray-950 to-transparent from-50% pointer-events-none absolute inset-0 -z-10 -mb-6"
+				></div>
+			</div>
 
 			<div
 				class="relative flex flex-col flex-1 overflow-y-auto scrollbar-hidden pt-3 pb-3"
 				on:scroll={(e) => {
-					if (e.target.scrollTop === 0) {
+					if ((e.target as HTMLElement).scrollTop === 0) {
 						scrollTop = 0;
 					} else {
-						scrollTop = e.target.scrollTop;
+						scrollTop = (e.target as HTMLElement).scrollTop;
 					}
 				}}
 			>
@@ -1258,15 +1165,19 @@ import type i18nType from 'i18next';
 							href="/"
 							draggable="false"
 							on:click={newChatHandler}
-							aria-label={i18n.t('New Chat')}
+							aria-label={$i18n.t('New Chat')}
 						>
 							<div class="self-center">
 								<PencilSquare className=" size-4.5" strokeWidth="2" />
+							</div>
 
 							<div class="flex flex-1 self-center translate-y-[0.5px]">
+								<div class=" self-center text-sm font-primary">{$i18n.t('New Chat')}</div>
+							</div>
 
 							<HotkeyHint name="newChat" className=" group-hover:visible invisible" />
 						</a>
+					</div>
 
 					<div class="px-[0.4375rem] flex justify-center text-gray-800 dark:text-gray-200">
 						<button
@@ -1276,14 +1187,18 @@ import type i18nType from 'i18next';
 								showSearch.set(true);
 							}}
 							draggable="false"
-							aria-label={i18n.t('Search')}
+							aria-label={$i18n.t('Search')}
 						>
 							<div class="self-center">
 								<Search strokeWidth="2" className="size-4.5" />
+							</div>
 
 							<div class="flex flex-1 self-center translate-y-[0.5px]">
+								<div class=" self-center text-sm font-primary">{$i18n.t('Search')}</div>
+							</div>
 							<HotkeyHint name="search" className=" group-hover:visible invisible" />
 						</button>
+					</div>
 
 					<div id="pinned-menu-items-list">
 						{#each pinnedItems as itemId (itemId)}
@@ -1297,15 +1212,9 @@ import type i18nType from 'i18next';
 										id="sidebar-{itemId}-button"
 										class="grow flex items-center space-x-3 rounded-2xl px-2.5 py-2 hover:bg-gray-100 dark:hover:bg-gray-900 transition"
 										href={meta.href}
-										on:click={(e) => {
-											if (meta.openInNewWindow) {
-												openAppWindowHandler(e, meta);
-												return;
-											}
-											itemClickHandler();
-										}}
+										on:click={itemClickHandler}
 										draggable="false"
-										aria-label={i18n.t(meta.label)}
+										aria-label={$i18n.t(meta.label)}
 									>
 										<div class="self-center">
 											{#if itemId === 'notes'}
@@ -1355,141 +1264,40 @@ import type i18nType from 'i18next';
 														d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"
 													/>
 												</svg>
-											{:else if itemId === 'coder'}
-												<svg
-													xmlns="http://www.w3.org/2000/svg"
-													fill="none"
-													viewBox="0 0 24 24"
-													stroke-width="1.5"
-													stroke="currentColor"
-													class="size-4.5"
-												>
-													<path
-														stroke-linecap="round"
-														stroke-linejoin="round"
-														d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"
-													/>
-												</svg>
 											{:else if itemId === 'playground'}
 												<Code className="size-4.5" strokeWidth="2" />
+											{/if}
 										</div>
 
 										<div class="flex self-center translate-y-[0.5px]">
-											<div class=" self-center text-sm font-primary">{i18n.t(meta.label)}</div>
+											<div class=" self-center text-sm font-primary">{$i18n.t(meta.label)}</div>
 										</div>
 									</a>
 								</div>
+							{/if}
 						{/each}
 					</div>
 				</div>
-
-				{#if isStudioEnabled()}
-					<div class="mt-1.5">
-						<button
-							type="button"
-							class="w-full flex items-center px-2 py-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-900 transition"
-							on:click={() => toggleStudioSection()}
-							aria-expanded={showStudio}
-							aria-label="AI Студия"
-						>
-							<div class="self-center mr-3 shrink-0 text-gray-600 dark:text-gray-400">
-								<Sparkles className="size-4.5" strokeWidth="2" />
-							</div>
-							<div
-								class="flex-1 self-center text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide truncate"
-							>
-								AI Студия
-							</div>
-							<div class="self-center text-gray-400 dark:text-gray-600">
-								{#if showStudio}
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										fill="none"
-										viewBox="0 0 24 24"
-										stroke-width="2"
-										stroke="currentColor"
-										class="size-4"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											d="m4.5 15.75 7.5-7.5 7.5 7.5"
-										/>
-									</svg>
-								{:else}
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										fill="none"
-										viewBox="0 0 24 24"
-										stroke-width="2"
-										stroke="currentColor"
-										class="size-4"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											d="m19.5 8.25-7.5 7.5-7.5-7.5"
-										/>
-									</svg>
-							</div>
-						</button>
-
-						{#if showStudio}
-							<div
-								class="ml-3 pl-1 mt-[1px] flex flex-col border-s border-gray-100 dark:border-gray-900 text-gray-900 dark:text-gray-200"
-								transition:slide={{ duration: 150 }}
-							>
-								{#each STUDIO_NAV_ITEMS as item (item.tab)}
-									<a
-										id="sidebar-studio-{item.tab}-button"
-										class="group flex items-center space-x-3 rounded-xl px-2.5 py-2 hover:bg-gray-100 dark:hover:bg-gray-900 transition cursor-pointer select-none"
-										href={studioItemHref(item.tab)}
-										on:click={itemClickHandler}
-										draggable="false"
-										aria-label={item.label}
-									>
-										<div class="self-center text-gray-600 dark:text-gray-400">
-											{#if item.iconType === 'photo'}
-												<Photo className="size-4.5" strokeWidth="1.5" />
-											{:else if item.iconType === 'chat'}
-												<ChatBubble className="size-4.5" strokeWidth="1.5" />
-											{:else if item.iconType === 'agents'}
-												<Users className="size-4.5" strokeWidth="1.5" />
-											{:else if item.iconType === 'mic'}
-												<Mic className="size-4.5" strokeWidth="1.5" />
-											{:else if item.iconType === 'tts'}
-												<SoundHigh className="size-4.5" strokeWidth="1.5" />
-											{:else if item.iconType === 'models'}
-												<FolderOpen className="size-4.5" strokeWidth="1.5" />
-											{:else if item.iconType === 'settings'}
-												<Settings className="size-4.5" strokeWidth="1.5" />
-										</div>
-										<div class="flex-1 self-center text-sm font-primary truncate">
-											{item.label}
-										</div>
-									</a>
-								{/each}
-							</div>
-					</div>
 
 				{#if ($models ?? []).length > 0 && (($settings?.pinnedModels ?? []).length > 0 || $config?.default_pinned_models)}
 					<Folder
 						id="sidebar-models"
 						bind:open={showPinnedModels}
 						className="px-2 mt-0.5"
-						name={i18n.t('Models')}
+						name={$i18n.t('Models')}
 						chevron={false}
 						dragAndDrop={false}
 					>
 						<PinnedModelList bind:selectedChatId {shiftKey} />
 					</Folder>
+				{/if}
 
 				{#if ($config?.features?.enable_notes ?? false) && ($user?.role === 'admin' || ($user?.permissions?.features?.notes ?? true)) && $pinnedNotes.length > 0}
 					<Folder
 						id="sidebar-pinned-notes"
 						bind:open={showPinnedNotes}
 						className="px-2 mt-0.5"
-						name={i18n.t('Notes')}
+						name={$i18n.t('Notes')}
 						chevron={false}
 						dragAndDrop={false}
 						onAdd={async () => {
@@ -1498,17 +1306,18 @@ import type i18nType from 'i18next';
 								goto(`/notes/${note.id}`);
 							}
 						}}
-						onAddLabel={i18n.t('New Note')}
+						onAddLabel={$i18n.t('New Note')}
 					>
 						<PinnedNoteList bind:selectedChatId />
 					</Folder>
+				{/if}
 
 				{#if $config?.features?.enable_channels && ($user?.role === 'admin' || ($user?.permissions?.features?.channels ?? true))}
 					<Folder
 						id="sidebar-channels"
 						bind:open={showChannels}
 						className="px-2 mt-0.5"
-						name={i18n.t('Channels')}
+						name={$i18n.t('Channels')}
 						chevron={false}
 						dragAndDrop={false}
 						onAdd={$user?.role === 'admin' || ($user?.permissions?.features?.channels ?? true)
@@ -1520,7 +1329,7 @@ import type i18nType from 'i18next';
 									}, 0);
 								}
 							: null}
-						onAddLabel={i18n.t('Create Channel')}
+						onAddLabel={$i18n.t('Create Channel')}
 					>
 						{#each $channels as channel, channelIdx (`${channel?.id}`)}
 							<ChannelItem
@@ -1533,20 +1342,22 @@ import type i18nType from 'i18next';
 							{#if channelIdx < $channels.length - 1 && channel.type !== $channels[channelIdx + 1]?.type}<hr
 									class=" border-gray-100/40 dark:border-gray-800/10 my-1.5 w-full"
 								/>
+							{/if}
 						{/each}
 					</Folder>
+				{/if}
 
 				{#if $config?.features?.enable_folders && ($user?.role === 'admin' || ($user?.permissions?.features?.folders ?? true))}
 					<Folder
 						id="sidebar-folders"
 						bind:open={showFolders}
 						className="px-2 mt-0.5"
-						name={i18n.t('Folders')}
+						name={$i18n.t('Folders')}
 						chevron={false}
 						onAdd={() => {
 							showCreateFolderModal = true;
 						}}
-						onAddLabel={i18n.t('New Folder')}
+						onAddLabel={$i18n.t('New Folder')}
 						on:drop={async (e) => {
 							const { type, id, item } = e.detail;
 
@@ -1588,11 +1399,12 @@ import type i18nType from 'i18next';
 							}}
 						/>
 					</Folder>
+				{/if}
 
 				<Folder
 					id="sidebar-chats"
 					className="px-2 mt-0.5"
-					name={i18n.t('Chats')}
+					name={$i18n.t('Chats')}
 					chevron={false}
 					on:change={async (e) => {
 						selectedFolder.set(null);
@@ -1609,7 +1421,7 @@ import type i18nType from 'i18next';
 							});
 							if (!chat && item) {
 								if (!canImportChats) {
-									toast.error(i18n.t('Access prohibited'));
+									toast.error($i18n.t('Access prohibited'));
 									return;
 								}
 
@@ -1680,7 +1492,7 @@ import type i18nType from 'i18next';
 											});
 											if (!chat && item) {
 												if (!canImportChats) {
-													toast.error(i18n.t('Access prohibited'));
+													toast.error($i18n.t('Access prohibited'));
 													return;
 												}
 
@@ -1717,7 +1529,7 @@ import type i18nType from 'i18next';
 											}
 										}
 									}}
-									name={i18n.t('Pinned')}
+									name={$i18n.t('Pinned')}
 								>
 									<div
 										class="ml-3 pl-1 mt-[1px] flex flex-col overflow-y-auto scrollbar-hidden border-s border-gray-100 dark:border-gray-900 text-gray-900 dark:text-gray-200"
@@ -1751,6 +1563,7 @@ import type i18nType from 'i18next';
 								</Folder>
 							</div>
 						</div>
+					{/if}
 
 					<div class=" flex-1 flex flex-col overflow-y-auto scrollbar-hidden">
 						<div class="pt-1.5">
@@ -1763,26 +1576,27 @@ import type i18nType from 'i18next';
 												? ''
 												: 'pt-5'} pb-1.5"
 										>
-											{i18n.t(chat.time_range)}
+											{$i18n.t(chat.time_range)}
 											<!-- localisation keys for time_range to be recognized from the i18next parser (so they don't get automatically removed):
-							{i18n.t('Today')}
-							{i18n.t('Yesterday')}
-							{i18n.t('Previous 7 days')}
-							{i18n.t('Previous 30 days')}
-							{i18n.t('January')}
-							{i18n.t('February')}
-							{i18n.t('March')}
-							{i18n.t('April')}
-							{i18n.t('May')}
-							{i18n.t('June')}
-							{i18n.t('July')}
-							{i18n.t('August')}
-							{i18n.t('September')}
-							{i18n.t('October')}
-							{i18n.t('November')}
-							{i18n.t('December')}
+							{$i18n.t('Today')}
+							{$i18n.t('Yesterday')}
+							{$i18n.t('Previous 7 days')}
+							{$i18n.t('Previous 30 days')}
+							{$i18n.t('January')}
+							{$i18n.t('February')}
+							{$i18n.t('March')}
+							{$i18n.t('April')}
+							{$i18n.t('May')}
+							{$i18n.t('June')}
+							{$i18n.t('July')}
+							{$i18n.t('August')}
+							{$i18n.t('September')}
+							{$i18n.t('October')}
+							{$i18n.t('November')}
+							{$i18n.t('December')}
 							-->
 										</div>
+									{/if}
 
 									<ChatItem
 										className=""
@@ -1821,16 +1635,18 @@ import type i18nType from 'i18next';
 											class="w-full flex justify-center py-1 text-xs animate-pulse items-center gap-2"
 										>
 											<Spinner className=" size-4" />
-											<div class=" ">{i18n.t('Loading...')}</div>
+											<div class=" ">{$i18n.t('Loading...')}</div>
 										</div>
 									</Loader>
+								{/if}
 							{:else}
 								<div
 									class="w-full flex justify-center py-1 text-xs animate-pulse items-center gap-2"
 								>
 									<Spinner className=" size-4" />
-									<div class=" ">{i18n.t('Loading...')}</div>
+									<div class=" ">{$i18n.t('Loading...')}</div>
 								</div>
+							{/if}
 						</div>
 					</div>
 				</Folder>
@@ -1844,7 +1660,7 @@ import type i18nType from 'i18next';
 					{#if $user !== undefined && $user !== null}
 						<UserMenu
 							role={$user?.role}
-							profile={$config?.features?.enable_user_status ?? true}
+							profile={Boolean($config?.features?.enable_user_status ?? true)}
 							showActiveUsers={false}
 							className="w-[calc(var(--sidebar-width)-1rem)]"
 							on:show={(e) => {
@@ -1856,14 +1672,14 @@ import type i18nType from 'i18next';
 							<button
 								type="button"
 								class=" flex items-center rounded-2xl py-2 px-1.5 w-full hover:bg-gray-100/50 dark:hover:bg-gray-900/50 transition"
-								aria-label={i18n.t('User menu')}
+								aria-label={$i18n.t('User menu')}
 							>
 								<div class=" self-center mr-3 relative flex-shrink-0">
 									<img
 										src={`${WEBUI_API_BASE_URL}/users/${$user?.id}/profile/image`}
 										class=" size-7 object-cover rounded-full"
-										alt={i18n.t('Open User Profile Menu')}
-										aria-label={i18n.t('Open User Profile Menu')}
+										alt={$i18n.t('Open User Profile Menu')}
+										aria-label={$i18n.t('Open User Profile Menu')}
 									/>
 
 									{#if $config?.features?.enable_user_status}
@@ -1876,45 +1692,27 @@ import type i18nType from 'i18next';
 												></span>
 											</span>
 										</div>
+									{/if}
 								</div>
 								<div class=" self-center font-medium truncate">{$user?.name}</div>
 							</button>
 						</UserMenu>
+					{/if}
 				</div>
 			</div>
 		</div>
+	</div>
+
+	{#if !$mobile}
+		<div
+			class="relative flex items-center justify-center group border-l border-gray-50 dark:border-gray-850/30 hover:border-gray-200 dark:hover:border-gray-800 transition z-20"
+			id="sidebar-resizer"
+			on:mousedown={resizeStartHandler}
+			role="separator"
+		>
+			<div
 				class=" absolute -left-1.5 -right-1.5 -top-0 -bottom-0 z-20 cursor-col-resize bg-transparent"
-<script lang="ts">
-    // ... (остальной скрипт остается без изменений)
-</script>
-
-<!-- ... (остальной HTML остается без изменений) -->
-
-{#if !$mobile}
-<script lang="ts">
-// Оставляем скрипт без изменений
-</script>
-
-<!-- ... остальной HTML без изменений, кроме исправления ошибки -->
-
-{#if !$mobile}
-    <button
-        class="relative flex items-center justify-center group border-l border-gray-50 dark:border-gray-850/30 hover:border-gray-200 dark:hover:border-gray-800 transition z-20"
-        id="sidebar-resizer"
-        on:mousedown={resizeStartHandler}
-        role="separator"
-        aria-label="Resize sidebar"
-    >
-        <div
-            class="absolute -left-1.5 -right-1.5 -top-0 -bottom-0 z-20 cursor-col-resize bg-transparent"
-        ></div>
-    </button>
-        class="relative flex items-center justify-center group border-l border-gray-50 dark:border-gray-850/30 hover:border-gray-200 dark:hover:border-gray-800 transition z-20"
-        id="sidebar-resizer"
-        on:mousedown={resizeStartHandler}
-        role="separator"
-        aria-label="Resize sidebar"
-    >
-        <div
-            class="absolute -left-1.5 -right-1.5 -top-0 -bottom-0 z-20 cursor-col-resize bg-transparent"
-    </button>
+			/>
+		</div>
+	{/if}
+{/if}

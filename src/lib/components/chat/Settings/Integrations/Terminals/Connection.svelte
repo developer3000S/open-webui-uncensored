@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
@@ -41,19 +41,19 @@
 			<div
 				class="flex-1 relative flex gap-1.5 items-center {!connection?.enabled ? 'opacity-50' : ''}"
 			>
-				<Tooltip content={i18n.t('Terminal')}>
+				<Tooltip content={$i18n.t('Terminal')}>
 					<Cloud className="size-4" strokeWidth="1.5" />
 				</Tooltip>
 
 				<div class="outline-hidden w-full bg-transparent text-sm">
-					{connection.name || connection.url || i18n.t('New Terminal')}
+					{connection.name || connection.url || $i18n.t('New Terminal')}
 				</div>
 			</div>
 		</div>
 	</Tooltip>
 
 	<div class="flex gap-1 items-center">
-		<Tooltip content={i18n.t('Configure')}>
+		<Tooltip content={$i18n.t('Configure')}>
 			<button
 				class="self-center p-1 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition"
 				on:click={() => {
@@ -65,7 +65,7 @@
 			</button>
 		</Tooltip>
 
-		<Tooltip content={connection?.enabled ? i18n.t('Enabled') : i18n.t('Disabled')}>
+		<Tooltip content={connection?.enabled ? $i18n.t('Enabled') : $i18n.t('Disabled')}>
 			<Switch
 				state={connection?.enabled}
 				on:change={() => (connection?.enabled ? onDisable() : onEnable())}
@@ -95,19 +95,19 @@
 			<div
 				class="flex-1 relative flex gap-1.5 items-center {!connection?.enabled ? 'opacity-50' : ''}"
 			>
-				<Tooltip content={i18n.t('Terminal')}>
+				<Tooltip content={$i18n.t('Terminal')}>
 					<Cloud className="size-4" strokeWidth="1.5" />
 				</Tooltip>
 
 				<div class="outline-hidden w-full bg-transparent text-sm">
-					{connection.name || connection.url || i18n.t('New Terminal')}
+					{connection.name || connection.url || $i18n.t('New Terminal')}
 				</div>
 			</div>
 		</div>
 	</Tooltip>
 
 	<div class="flex gap-1 items-center">
-		<Tooltip content={i18n.t('Configure')}>
+		<Tooltip content={$i18n.t('Configure')}>
 			<button
 				class="self-center p-1 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition"
 				on:click={() => {
@@ -119,7 +119,7 @@
 			</button>
 		</Tooltip>
 
-		<Tooltip content={connection?.enabled ? i18n.t('Enabled') : i18n.t('Disabled')}>
+		<Tooltip content={connection?.enabled ? $i18n.t('Enabled') : $i18n.t('Disabled')}>
 			<Switch
 				state={connection?.enabled}
 				on:change={() => (connection?.enabled ? onDisable() : onEnable())}

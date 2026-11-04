@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Modal from '$lib/components/common/Modal.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
@@ -107,8 +107,8 @@
 						<Tooltip
 							className="w-fit"
 							content={document.source?.url?.includes('http')
-								? i18n.t('Open link')
-								: i18n.t('Open file')}
+								? $i18n.t('Open link')
+								: $i18n.t('Open file')}
 							placement="top-start"
 							tippyOptions={{ duration: [500, 0] }}
 						>
@@ -128,12 +128,12 @@
 						{decodeString(citation?.source?.name)}
 					{/if}
 				{:else}
-					{i18n.t('Citation')}
+					{$i18n.t('Citation')}
 				{/if}
 			</div>
 			<button
 				class="self-center"
-				aria-label={i18n.t('Close citation modal')}
+				aria-label={$i18n.t('Close citation modal')}
 				on:click={() => {
 					show = false;
 				}}
@@ -151,7 +151,7 @@
 						{#if document.metadata?.parameters}
 							<div>
 								<div class="text-sm font-medium dark:text-gray-300 mb-1">
-									{i18n.t('Parameters')}
+									{$i18n.t('Parameters')}
 								</div>
 
 								<Textarea readonly value={JSON.stringify(document.metadata.parameters, null, 2)}
@@ -170,19 +170,19 @@
 											href={snippetUrl}
 											target="_blank"
 											class="underline hover:text-gray-500 dark:hover:text-gray-100"
-											>{i18n.t('Content')}</a
+											>{$i18n.t('Content')}</a
 										>
 									{:else}
-										{i18n.t('Content')}
+										{$i18n.t('Content')}
 									{/if}
 								{:else}
-									{i18n.t('Content')}
+									{$i18n.t('Content')}
 								{/if}
 
 								{#if showRelevance && document.distance !== undefined}
 									<Tooltip
 										className="w-fit"
-										content={i18n.t('Relevance')}
+										content={$i18n.t('Relevance')}
 										placement="top-start"
 										tippyOptions={{ duration: [500, 0] }}
 									>
@@ -208,7 +208,7 @@
 
 								{#if Number.isInteger(document?.metadata?.page)}
 									<span class="text-sm text-gray-500 dark:text-gray-400">
-										({i18n.t('page')}
+										({$i18n.t('page')}
 										{document.metadata.page + 1})
 									</span>
 								{/if}
@@ -222,7 +222,7 @@
 										? ' allow-same-origin'
 										: ''}"
 									srcdoc={injectCsp(document.document, $config?.ui?.iframe_csp ?? '')}
-									title={i18n.t('Content')}
+									title={$i18n.t('Content')}
 								></iframe>
 							{:else}
 								{@const rawContent = document.document.trim().replace(/\n\n+/g, '\n\n')}
@@ -249,7 +249,7 @@
 												expandedDocs = expandedDocs;
 											}}
 										>
-											{i18n.t('Show all ({{COUNT}} characters)', {
+											{$i18n.t('Show all ({{COUNT}} characters)', {
 												COUNT: rawContent.length.toLocaleString()
 											})}
 										</button>
@@ -276,8 +276,8 @@
 						<Tooltip
 							className="w-fit"
 							content={document.source?.url?.includes('http')
-								? i18n.t('Open link')
-								: i18n.t('Open file')}
+								? $i18n.t('Open link')
+								: $i18n.t('Open file')}
 							placement="top-start"
 							tippyOptions={{ duration: [500, 0] }}
 						>
@@ -297,12 +297,12 @@
 						{decodeString(citation?.source?.name)}
 					{/if}
 				{:else}
-					{i18n.t('Citation')}
+					{$i18n.t('Citation')}
 				{/if}
 			</div>
 			<button
 				class="self-center"
-				aria-label={i18n.t('Close citation modal')}
+				aria-label={$i18n.t('Close citation modal')}
 				on:click={() => {
 					show = false;
 				}}
@@ -320,7 +320,7 @@
 						{#if document.metadata?.parameters}
 							<div>
 								<div class="text-sm font-medium dark:text-gray-300 mb-1">
-									{i18n.t('Parameters')}
+									{$i18n.t('Parameters')}
 								</div>
 
 								<Textarea readonly value={JSON.stringify(document.metadata.parameters, null, 2)}
@@ -339,19 +339,19 @@
 											href={snippetUrl}
 											target="_blank"
 											class="underline hover:text-gray-500 dark:hover:text-gray-100"
-											>{i18n.t('Content')}</a
+											>{$i18n.t('Content')}</a
 										>
 									{:else}
-										{i18n.t('Content')}
+										{$i18n.t('Content')}
 									{/if}
 								{:else}
-									{i18n.t('Content')}
+									{$i18n.t('Content')}
 								{/if}
 
 								{#if showRelevance && document.distance !== undefined}
 									<Tooltip
 										className="w-fit"
-										content={i18n.t('Relevance')}
+										content={$i18n.t('Relevance')}
 										placement="top-start"
 										tippyOptions={{ duration: [500, 0] }}
 									>
@@ -377,7 +377,7 @@
 
 								{#if Number.isInteger(document?.metadata?.page)}
 									<span class="text-sm text-gray-500 dark:text-gray-400">
-										({i18n.t('page')}
+										({$i18n.t('page')}
 										{document.metadata.page + 1})
 									</span>
 								{/if}
@@ -391,7 +391,7 @@
 										? ' allow-same-origin'
 										: ''}"
 									srcdoc={injectCsp(document.document, $config?.ui?.iframe_csp ?? '')}
-									title={i18n.t('Content')}
+									title={$i18n.t('Content')}
 								></iframe>
 							{:else}
 								{@const rawContent = document.document.trim().replace(/\n\n+/g, '\n\n')}
@@ -418,7 +418,7 @@
 												expandedDocs = expandedDocs;
 											}}
 										>
-											{i18n.t('Show all ({{COUNT}} characters)', {
+											{$i18n.t('Show all ({{COUNT}} characters)', {
 												COUNT: rawContent.length.toLocaleString()
 											})}
 										</button>

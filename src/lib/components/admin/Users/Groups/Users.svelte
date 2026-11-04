@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
@@ -27,6 +27,7 @@
 	import Spinner from '$lib/components/common/Spinner.svelte';
 
 	export let groupId: string;
+	export let userCount: any = 0;
 
 	let users: any = null;
 	let total: any = null;
@@ -50,7 +51,8 @@
 
 	const getUserList = async () => {
 		try {
-			const res = await getUsers(localStorage.token, query, orderBy, direction, page).catch(async (error)=> {
+			const res = await getUsers(localStorage.token, query, orderBy, direction, page).catch(
+				async (error) => {
 					toast.error(`${error}`);
 					return null;
 				}
@@ -67,7 +69,7 @@
 
 	const toggleMember = async (userId: any, state: any) => {
 		if (state === 'checked') {
-			await addUserToGroup(localStorage.token, groupId, [userId]).catch(async (error)=> {
+			await addUserToGroup(localStorage.token, groupId, [userId]).catch(async (error) => {
 				toast.error(`${error}`);
 				return null;
 			});
@@ -111,7 +113,7 @@
 				class=" w-full text-sm pr-4 rounded-r-xl outline-hidden bg-transparent"
 				bind:value={query}
 				on:input={handleSearchInput}
-				placeholder={i18n.t('Search')}
+				placeholder={$i18n.t('Search')}
 			/>
 		</div>
 	</div>
@@ -134,7 +136,7 @@
 								on:click={() => setSortKey(`group_id:${groupId}`)}
 							>
 								<div class="flex gap-1.5 items-center">
-									{i18n.t('MBR')}
+									{$i18n.t('MBR')}
 
 									{#if orderBy === `group_id:${groupId}`}
 										<span class="font-normal"
@@ -158,7 +160,7 @@
 								on:click={() => setSortKey('role')}
 							>
 								<div class="flex gap-1.5 items-center">
-									{i18n.t('Role')}
+									{$i18n.t('Role')}
 
 									{#if orderBy === 'role'}
 										<span class="font-normal"
@@ -181,7 +183,7 @@
 								on:click={() => setSortKey('name')}
 							>
 								<div class="flex gap-1.5 items-center">
-									{i18n.t('Name')}
+									{$i18n.t('Name')}
 
 									{#if orderBy === 'name'}
 										<span class="font-normal"
@@ -205,7 +207,7 @@
 								on:click={() => setSortKey('last_active_at')}
 							>
 								<div class="flex gap-1.5 items-center">
-									{i18n.t('Last Active')}
+									{$i18n.t('Last Active')}
 
 									{#if orderBy === 'last_active_at'}
 										<span class="font-normal"
@@ -245,7 +247,7 @@
 												: user.role === 'user'
 													? 'success'
 													: 'muted'}
-											content={i18n.t(user.role)}
+											content={$i18n.t(user.role)}
 										/>
 									</div>
 								</td>
@@ -273,7 +275,7 @@
 			</div>
 		{:else}
 			<div class="text-gray-500 text-xs text-center py-2 px-10">
-				{i18n.t('No users were found.')}
+				{$i18n.t('No users were found.')}
 			</div>
 		{/if}
 
@@ -293,7 +295,7 @@
 				class=" w-full text-sm pr-4 rounded-r-xl outline-hidden bg-transparent"
 				bind:value={query}
 				on:input={handleSearchInput}
-				placeholder={i18n.t('Search')}
+				placeholder={$i18n.t('Search')}
 			/>
 		</div>
 	</div>
@@ -316,7 +318,7 @@
 								on:click={() => setSortKey(`group_id:${groupId}`)}
 							>
 								<div class="flex gap-1.5 items-center">
-									{i18n.t('MBR')}
+									{$i18n.t('MBR')}
 
 									{#if orderBy === `group_id:${groupId}`}
 										<span class="font-normal"
@@ -340,7 +342,7 @@
 								on:click={() => setSortKey('role')}
 							>
 								<div class="flex gap-1.5 items-center">
-									{i18n.t('Role')}
+									{$i18n.t('Role')}
 
 									{#if orderBy === 'role'}
 										<span class="font-normal"
@@ -363,7 +365,7 @@
 								on:click={() => setSortKey('name')}
 							>
 								<div class="flex gap-1.5 items-center">
-									{i18n.t('Name')}
+									{$i18n.t('Name')}
 
 									{#if orderBy === 'name'}
 										<span class="font-normal"
@@ -387,7 +389,7 @@
 								on:click={() => setSortKey('last_active_at')}
 							>
 								<div class="flex gap-1.5 items-center">
-									{i18n.t('Last Active')}
+									{$i18n.t('Last Active')}
 
 									{#if orderBy === 'last_active_at'}
 										<span class="font-normal"
@@ -427,7 +429,7 @@
 												: user.role === 'user'
 													? 'success'
 													: 'muted'}
-											content={i18n.t(user.role)}
+											content={$i18n.t(user.role)}
 										/>
 									</div>
 								</td>
@@ -455,7 +457,7 @@
 			</div>
 		{:else}
 			<div class="text-gray-500 text-xs text-center py-2 px-10">
-				{i18n.t('No users were found.')}
+				{$i18n.t('No users were found.')}
 			</div>
 		{/if}
 

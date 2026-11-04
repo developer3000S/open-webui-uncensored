@@ -8,7 +8,7 @@
 	import { updateUserSettings } from '$lib/apis/users';
 	import PinnedModelItem from './PinnedModelItem.svelte';
 
-	let selectedChatId: any = null;
+	export let selectedChatId: any = null;
 	export let shiftKey: any = false;
 	let pinnedModels: any[] = [];
 
@@ -17,7 +17,7 @@
 		if (pinnedModelsList && !$mobile) {
 			new Sortable(pinnedModelsList, {
 				animation: 150,
-				setData: (dataTransfer: any, dragEl: any)  => {
+				setData: (dataTransfer: any, dragEl: any) => {
 					dataTransfer.setData(
 						'text/plain',
 						JSON.stringify({
@@ -26,7 +26,7 @@
 						})
 					);
 				},
-				onUpdate: async (event: any)  => {
+				onUpdate: async (event: any) => {
 					const modelId = event.item.dataset.id;
 					const newIndex = event.newIndex;
 
@@ -59,6 +59,7 @@
 		}
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		pinnedModels = $settings?.pinnedModels ?? [];
 

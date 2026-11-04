@@ -2,6 +2,12 @@ import { WEBUI_BASE_URL } from '$lib/constants';
 import { convertOpenApiToToolPayload } from '$lib/utils';
 import { getOpenAIModelsDirect } from './openai';
 
+interface ConnectionConfig {
+	OPENAI_API_BASE_URLS?: Record<string, string>;
+	OPENAI_API_KEYS?: Record<string, string>;
+	OPENAI_API_CONFIGS?: Record<string, any>;
+}
+
 const TOOL_SERVER_FETCH_TIMEOUT = 10000;
 
 // Valid HTTP methods per OpenAPI 3.x – used to skip extension keys (x-*)
@@ -62,9 +68,10 @@ export const getModels = async (
 		let localModels: any = [];
 
 		if (connections) {
-			const OPENAI_API_BASE_URLS = connections.OPENAI_API_BASE_URLS;
-			const OPENAI_API_KEYS = connections.OPENAI_API_KEYS;
-			const OPENAI_API_CONFIGS = connections.OPENAI_API_CONFIGS;
+			const config: ConnectionConfig = connections;
+const OPENAI_API_BASE_URLS = config.OPENAI_API_BASE_URLS || {};
+			const OPENAI_API_KEYS = config.OPENAI_API_KEYS || {};
+			const OPENAI_API_CONFIGS = config.OPENAI_API_CONFIGS || {};
 
 			const requests: any[] = [];
 			for (const idx in OPENAI_API_BASE_URLS) {
@@ -430,8 +437,7 @@ export const getToolServersData = async (servers: object[]) => {
 	return (
 		await Promise.all(
 			servers
-				.filter((server) => server?.config?.enable)
-				.map((server: any)  => {
+				.map(async (server: any) => {
 					let error: any = null;
 
 					let toolServerToken: any = null;
@@ -538,7 +544,7 @@ export const executeToolServer = async (
 	serverData: { openapi: any; info: any; specs: any },
 	sessionId?: string
 ) => {
-	let error: any = null;
+	let error: any;
 
 	try {
 		// Find the matching operationId in the OpenAPI spec (only valid HTTP methods)
@@ -595,7 +601,7 @@ export const executeToolServer = async (
 			const paramName = param?.name;
 			if (!paramName) continue;
 			const paramIn = param?.in;
-			if (params.hasOwnProperty(paramName)) {
+			if (Object.prototype.hasOwnProperty.call(params, paramName)) {
 				if (paramIn === 'path') {
 					pathParams[paramName] = params[paramName];
 				} else if (paramIn === 'query') {
@@ -1749,10 +1755,23 @@ export interface ModelConfig {
 }
 
 export interface ModelMeta {
-	toolIds: never[];
+	[key: string]: any;
+	id?: string;
+	name?: string;
+	toolIds?: any[];
 	description?: string;
 	capabilities?: object;
 	profile_image_url?: string;
+	hidden?: boolean;
+	defaultFeatureIds?: any[];
+	tags?: any[];
+	suggestion_prompts?: any;
+	skillIds?: any[];
+	knowledge?: any[];
+	terminalId?: string;
+	filterIds?: any[];
 }
 
-export interface ModelParams {}
+export interface ModelParams {
+	[key: string]: any;
+}

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext, onDestroy, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import dayjs from 'dayjs';
 
@@ -22,7 +22,7 @@
 	import type { Writable } from 'svelte/store';
 	const dispatch = createEventDispatcher();
 
-	export let onClose: Function = () => {};
+	export let onClose: any = () => {};
 
 	let show = false;
 
@@ -55,7 +55,7 @@
 	};
 
 	const getNoteItems = async () => {
-		const res = await searchNotes(localStorage.token, query).catch(async ()=> {
+		const res = await searchNotes(localStorage.token, query).catch(async () => {
 			return null;
 		});
 
@@ -72,7 +72,7 @@
 	};
 
 	const getKnowledgeItems = async () => {
-		const res = await searchKnowledgeBases(localStorage.token, query).catch(async ()=> {
+		const res = await searchKnowledgeBases(localStorage.token, query).catch(async () => {
 			return null;
 		});
 
@@ -103,6 +103,7 @@
 		}
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		getItems();
 	});
@@ -133,7 +134,7 @@
 						class=" w-full text-sm py-0.5 outline-hidden bg-transparent"
 						bind:value={query}
 						on:input={handleSearchInput}
-						placeholder={i18n.t('Search')}
+						placeholder={$i18n.t('Search')}
 					/>
 				</div>
 			</div>
@@ -141,18 +142,18 @@
 			<div class="max-h-56 overflow-y-scroll gap-0.5 flex flex-col">
 				{#if items.length === 0}
 					<div class="text-center text-xs text-gray-500 dark:text-gray-400 pt-4 pb-6">
-						{i18n.t('No knowledge found')}
+						{$i18n.t('No knowledge found')}
 					</div>
 				{:else}
 					{#each items as item, i}
 						{#if i === 0 || item?.type !== items[i - 1]?.type}
 							<div class="px-1.5 text-xs text-gray-500 py-0.5">
 								{#if item?.type === 'note'}
-									{i18n.t('Notes')}
+									{$i18n.t('Notes')}
 								{:else if item?.type === 'collection'}
-									{i18n.t('Collections')}
+									{$i18n.t('Collections')}
 								{:else if item?.type === 'file'}
-									{i18n.t('Files')}
+									{$i18n.t('Files')}
 								{/if}
 							</div>
 						{/if}
@@ -171,7 +172,7 @@
 								<div class="  text-black dark:text-gray-100 flex items-center gap-1 shrink-0">
 									{#if item.type === 'note'}
 										<Tooltip
-											content={i18n.t('Note')}
+											content={$i18n.t('Note')}
 											placement="top"
 											tippyOptions={{ zIndex: 100000 }}
 										>
@@ -179,7 +180,7 @@
 										</Tooltip>
 									{:else if item.type === 'collection'}
 										<Tooltip
-											content={i18n.t('Collection')}
+											content={$i18n.t('Collection')}
 											placement="top"
 											tippyOptions={{ zIndex: 100000 }}
 										>
@@ -187,7 +188,7 @@
 										</Tooltip>
 									{:else if item.type === 'file'}
 										<Tooltip
-											content={i18n.t('File')}
+											content={$i18n.t('File')}
 											placement="top"
 											tippyOptions={{ zIndex: 100000 }}
 										>
@@ -239,7 +240,7 @@
 						class=" w-full text-sm py-0.5 outline-hidden bg-transparent"
 						bind:value={query}
 						on:input={handleSearchInput}
-						placeholder={i18n.t('Search')}
+						placeholder={$i18n.t('Search')}
 					/>
 				</div>
 			</div>
@@ -247,18 +248,18 @@
 			<div class="max-h-56 overflow-y-scroll gap-0.5 flex flex-col">
 				{#if items.length === 0}
 					<div class="text-center text-xs text-gray-500 dark:text-gray-400 pt-4 pb-6">
-						{i18n.t('No knowledge found')}
+						{$i18n.t('No knowledge found')}
 					</div>
 				{:else}
 					{#each items as item, i}
 						{#if i === 0 || item?.type !== items[i - 1]?.type}
 							<div class="px-1.5 text-xs text-gray-500 py-0.5">
 								{#if item?.type === 'note'}
-									{i18n.t('Notes')}
+									{$i18n.t('Notes')}
 								{:else if item?.type === 'collection'}
-									{i18n.t('Collections')}
+									{$i18n.t('Collections')}
 								{:else if item?.type === 'file'}
-									{i18n.t('Files')}
+									{$i18n.t('Files')}
 								{/if}
 							</div>
 						{/if}
@@ -277,7 +278,7 @@
 								<div class="  text-black dark:text-gray-100 flex items-center gap-1 shrink-0">
 									{#if item.type === 'note'}
 										<Tooltip
-											content={i18n.t('Note')}
+											content={$i18n.t('Note')}
 											placement="top"
 											tippyOptions={{ zIndex: 100000 }}
 										>
@@ -285,7 +286,7 @@
 										</Tooltip>
 									{:else if item.type === 'collection'}
 										<Tooltip
-											content={i18n.t('Collection')}
+											content={$i18n.t('Collection')}
 											placement="top"
 											tippyOptions={{ zIndex: 100000 }}
 										>
@@ -293,7 +294,7 @@
 										</Tooltip>
 									{:else if item.type === 'file'}
 										<Tooltip
-											content={i18n.t('File')}
+											content={$i18n.t('File')}
 											placement="top"
 											tippyOptions={{ zIndex: 100000 }}
 										>

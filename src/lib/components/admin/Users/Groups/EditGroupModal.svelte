@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import type { Writable } from 'svelte/store';
@@ -20,13 +20,13 @@
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import XMark from '$lib/components/icons/XMark.svelte';
 
-	export let onSubmit: Function = () => {};
-	export let onDelete: Function = () => {};
+	export let onSubmit: any = () => {};
+	export let onDelete: any = () => {};
 
 	export let show: any = false;
 	export let edit: any = false;
-	let group: any = null;
-	let defaultPermissions: Record<string, any> = {};
+	export let group: any = null;
+	export let defaultPermissions: Record<string, any> = {};
 
 	export let custom: any = true;
 	export let tabs = ['general', 'permissions', 'users'];
@@ -40,7 +40,7 @@
 
 	export let name: any = '';
 	export let description: any = '';
-	let data: Record<string, any> = {};
+	export let data: Record<string, any> = {};
 
 	export let permissions = DEFAULT_PERMISSIONS;
 
@@ -76,7 +76,7 @@
 					features: { ...DEFAULT_PERMISSIONS.features, ...defaults.features },
 					settings: { ...DEFAULT_PERMISSIONS.settings, ...defaults.settings }
 				};
-				toast.success(i18n.t('Permissions reset to defaults'));
+				toast.success($i18n.t('Permissions reset to defaults'));
 			}
 		} catch (error) {
 			toast.error(`${error}`);
@@ -123,8 +123,8 @@
 
 <ConfirmDialog
 	bind:show={showResetConfirmDialog}
-	title={i18n.t('Reset to Defaults')}
-	message={i18n.t(
+	title={$i18n.t('Reset to Defaults')}
+	message={$i18n.t(
 		'Are you sure you want to reset all permissions to their default values? You will still need to save to apply the changes.'
 	)}
 	on:confirm={() => {
@@ -138,12 +138,12 @@
 			<div class=" text-lg font-medium self-center font-primary">
 				{#if custom}
 					{#if edit}
-						{i18n.t('Edit User Group')}
+						{$i18n.t('Edit User Group')}
 					{:else}
-						{i18n.t('Add User Group')}
+						{$i18n.t('Add User Group')}
 					{/if}
 				{:else}
-					{i18n.t('Edit Default Permissions')}
+					{$i18n.t('Edit Default Permissions')}
 				{/if}
 			</div>
 			<button
@@ -195,7 +195,7 @@
 											/>
 										</svg>
 									</div>
-									<div class=" self-center">{i18n.t('General')}</div>
+									<div class=" self-center">{$i18n.t('General')}</div>
 								</button>
 							{/if}
 
@@ -213,7 +213,7 @@
 									<div class=" self-center mr-2">
 										<WrenchSolid />
 									</div>
-									<div class=" self-center">{i18n.t('Permissions')}</div>
+									<div class=" self-center">{$i18n.t('Permissions')}</div>
 								</button>
 							{/if}
 
@@ -231,7 +231,7 @@
 									<div class=" self-center mr-2">
 										<UserPlusSolid />
 									</div>
-									<div class=" self-center">{i18n.t('Users')}</div>
+									<div class=" self-center">{$i18n.t('Users')}</div>
 								</button>
 							{/if}
 
@@ -261,7 +261,7 @@
 											/>
 										</svg>
 									</div>
-									<div class=" self-center">{i18n.t('Preview')}</div>
+									<div class=" self-center">{$i18n.t('Preview')}</div>
 								</button>
 							{/if}
 						</div>
@@ -293,10 +293,10 @@
 										{#if selectedTab === 'permissions'}
 											<Tooltip
 												content={custom
-													? i18n.t(
+													? $i18n.t(
 															'Reset group permissions to match the current default user permissions'
 														)
-													: i18n.t('Reset all permissions to their initial configuration values')}
+													: $i18n.t('Reset all permissions to their initial configuration values')}
 											>
 												<button
 													class="text-sm font-normal text-gray-500 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300 transition hover:underline"
@@ -305,7 +305,7 @@
 														showResetConfirmDialog = true;
 													}}
 												>
-													{i18n.t('Reset to Defaults')}
+													{$i18n.t('Reset to Defaults')}
 												</button>
 											</Tooltip>
 										{/if}
@@ -318,7 +318,7 @@
 										type="submit"
 										disabled={loading}
 									>
-										{i18n.t('Save')}
+										{$i18n.t('Save')}
 
 										{#if loading}
 											<span class="shrink-0">
@@ -345,7 +345,7 @@
 								}}
 								type="button"
 							>
-								{i18n.t('Display')}
+								{$i18n.t('Display')}
 							</button>
 						{/if}
 
@@ -360,7 +360,7 @@
 								}}
 								type="button"
 							>
-								{i18n.t('Permissions')}
+								{$i18n.t('Permissions')}
 							</button>
 						{/if}
 
@@ -375,7 +375,7 @@
 								}}
 								type="button"
 							>
-								{i18n.t('Users')} ({userIds.length})
+								{$i18n.t('Users')} ({userIds.length})
 							</button>
 						{/if}
 					</div> -->
@@ -395,8 +395,8 @@
 
 <ConfirmDialog
 	bind:show={showResetConfirmDialog}
-	title={i18n.t('Reset to Defaults')}
-	message={i18n.t(
+	title={$i18n.t('Reset to Defaults')}
+	message={$i18n.t(
 		'Are you sure you want to reset all permissions to their default values? You will still need to save to apply the changes.'
 	)}
 	on:confirm={() => {
@@ -410,12 +410,12 @@
 			<div class=" text-lg font-medium self-center font-primary">
 				{#if custom}
 					{#if edit}
-						{i18n.t('Edit User Group')}
+						{$i18n.t('Edit User Group')}
 					{:else}
-						{i18n.t('Add User Group')}
+						{$i18n.t('Add User Group')}
 					{/if}
 				{:else}
-					{i18n.t('Edit Default Permissions')}
+					{$i18n.t('Edit Default Permissions')}
 				{/if}
 			</div>
 			<button
@@ -467,7 +467,7 @@
 											/>
 										</svg>
 									</div>
-									<div class=" self-center">{i18n.t('General')}</div>
+									<div class=" self-center">{$i18n.t('General')}</div>
 								</button>
 							{/if}
 
@@ -485,7 +485,7 @@
 									<div class=" self-center mr-2">
 										<WrenchSolid />
 									</div>
-									<div class=" self-center">{i18n.t('Permissions')}</div>
+									<div class=" self-center">{$i18n.t('Permissions')}</div>
 								</button>
 							{/if}
 
@@ -503,7 +503,7 @@
 									<div class=" self-center mr-2">
 										<UserPlusSolid />
 									</div>
-									<div class=" self-center">{i18n.t('Users')}</div>
+									<div class=" self-center">{$i18n.t('Users')}</div>
 								</button>
 							{/if}
 
@@ -533,7 +533,7 @@
 											/>
 										</svg>
 									</div>
-									<div class=" self-center">{i18n.t('Preview')}</div>
+									<div class=" self-center">{$i18n.t('Preview')}</div>
 								</button>
 							{/if}
 						</div>
@@ -565,10 +565,10 @@
 										{#if selectedTab === 'permissions'}
 											<Tooltip
 												content={custom
-													? i18n.t(
+													? $i18n.t(
 															'Reset group permissions to match the current default user permissions'
 														)
-													: i18n.t('Reset all permissions to their initial configuration values')}
+													: $i18n.t('Reset all permissions to their initial configuration values')}
 											>
 												<button
 													class="text-sm font-normal text-gray-500 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300 transition hover:underline"
@@ -577,7 +577,7 @@
 														showResetConfirmDialog = true;
 													}}
 												>
-													{i18n.t('Reset to Defaults')}
+													{$i18n.t('Reset to Defaults')}
 												</button>
 											</Tooltip>
 										{/if}
@@ -590,7 +590,7 @@
 										type="submit"
 										disabled={loading}
 									>
-										{i18n.t('Save')}
+										{$i18n.t('Save')}
 
 										{#if loading}
 											<span class="shrink-0">
@@ -617,7 +617,7 @@
 								}}
 								type="button"
 							>
-								{i18n.t('Display')}
+								{$i18n.t('Display')}
 							</button>
 						{/if}
 
@@ -632,7 +632,7 @@
 								}}
 								type="button"
 							>
-								{i18n.t('Permissions')}
+								{$i18n.t('Permissions')}
 							</button>
 						{/if}
 
@@ -647,7 +647,7 @@
 								}}
 								type="button"
 							>
-								{i18n.t('Users')} ({userIds.length})
+								{$i18n.t('Users')} ({userIds.length})
 							</button>
 						{/if}
 					</div> -->

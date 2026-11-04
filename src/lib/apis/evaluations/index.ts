@@ -159,10 +159,10 @@ export const getFeedbackModelIds = async (token: string = '') => {
 };
 
 export const getFeedbackItems = async (
-	token: string = ''
-	orderBy: any
-	direction: any
-	page: any
+	token: string = '',
+	orderBy: any,
+	direction: any,
+	page: any,
 	modelId: string = ''
 ) => {
 	let error: any = null;

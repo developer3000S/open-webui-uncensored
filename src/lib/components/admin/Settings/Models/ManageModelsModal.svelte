@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 
@@ -21,6 +21,7 @@
 	let selected: any = null;
 	let ollamaConfig: any = null;
 
+	// @ts-ignore
 	onMount(async () => {
 		if ($user?.role === 'admin') {
 			await Promise.all([
@@ -43,7 +44,7 @@
 	<div>
 		<div class=" flex justify-between dark:text-gray-100 px-5 pt-4">
 			<div class=" text-lg font-medium self-center font-primary">
-				{i18n.t('Manage Models')}
+				{$i18n.t('Manage Models')}
 			</div>
 			<button
 				class="self-center"
@@ -60,7 +61,7 @@
 				{#if selected === ''}
 					<div class=" py-5 text-gray-400 text-xs">
 						<div>
-							{i18n.t('No inference engine with management support found')}
+							{$i18n.t('No inference engine with management support found')}
 						</div>
 					</div>
 				{:else if selected !== null}
@@ -74,7 +75,7 @@
 									: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition"
 								on:click={() => {
 									selected = 'ollama';
-								}}>{i18n.t('Ollama')}</button
+								}}>{$i18n.t('Ollama')}</button
 							>
 
 							<!-- <button
@@ -83,7 +84,7 @@
 									: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition"
 								on:click={() => {
 									selected = 'llamacpp';
-								}}>{i18n.t('Llama.cpp')}</button
+								}}>{$i18n.t('Llama.cpp')}</button
 							> -->
 						</div>
 
@@ -107,7 +108,7 @@
 	<div>
 		<div class=" flex justify-between dark:text-gray-100 px-5 pt-4">
 			<div class=" text-lg font-medium self-center font-primary">
-				{i18n.t('Manage Models')}
+				{$i18n.t('Manage Models')}
 			</div>
 			<button
 				class="self-center"
@@ -124,7 +125,7 @@
 				{#if selected === ''}
 					<div class=" py-5 text-gray-400 text-xs">
 						<div>
-							{i18n.t('No inference engine with management support found')}
+							{$i18n.t('No inference engine with management support found')}
 						</div>
 					</div>
 				{:else if selected !== null}
@@ -138,7 +139,7 @@
 									: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition"
 								on:click={() => {
 									selected = 'ollama';
-								}}>{i18n.t('Ollama')}</button
+								}}>{$i18n.t('Ollama')}</button
 							>
 
 							<!-- <button
@@ -147,7 +148,7 @@
 									: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition"
 								on:click={() => {
 									selected = 'llamacpp';
-								}}>{i18n.t('Llama.cpp')}</button
+								}}>{$i18n.t('Llama.cpp')}</button
 							> -->
 						</div>
 

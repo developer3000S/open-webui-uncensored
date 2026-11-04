@@ -75,7 +75,5 @@ export default defineConfig({
   worker: {
     format: 'es'
   },
-  esbuild: {
-    pure: process.env.ENV === 'dev' ? [] : ['console.log', 'console.debug', 'console.error']
-  }
+  esbuild: {}
 });

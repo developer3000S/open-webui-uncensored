@@ -6,7 +6,11 @@
 
 	import View from './Overview/View.svelte';
 
-	export let history: { messages?: Record<string, any>; currentId?: string | null; [key: string]: any } = {};
+	export let history: {
+		messages?: Record<string, any>;
+		currentId?: string | null;
+		[key: string]: any;
+	} = {};
 	export let onClose: any;
 	export let onNodeClick: any;
 </script>

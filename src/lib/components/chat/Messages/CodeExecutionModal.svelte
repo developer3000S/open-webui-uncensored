@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import CodeBlock from './CodeBlock.svelte';
 	import Modal from '$lib/components/common/Modal.svelte';
@@ -39,9 +39,9 @@
 
 					<div>
 						{#if codeExecution?.name}
-							{i18n.t('Code execution')}: {codeExecution?.name}
+							{$i18n.t('Code execution')}: {codeExecution?.name}
 						{:else}
-							{i18n.t('Code execution')}
+							{$i18n.t('Code execution')}
 						{/if}
 					</div>
 				</div>
@@ -72,6 +72,7 @@
 							? 'rounded-b-none'
 							: ''}
 						run={false}
+						token=""
 					/>
 				</div>
 
@@ -79,13 +80,13 @@
 					<div class="dark:bg-[#202123] dark:text-white px-4 py-4 rounded-b-lg flex flex-col gap-3">
 						{#if codeExecution?.result?.error}
 							<div>
-								<div class=" text-gray-500 text-xs mb-1">{i18n.t('ERROR')}</div>
+								<div class=" text-gray-500 text-xs mb-1">{$i18n.t('ERROR')}</div>
 								<div class="text-sm">{codeExecution?.result?.error}</div>
 							</div>
 						{/if}
 						{#if codeExecution?.result?.output}
 							<div>
-								<div class=" text-gray-500 text-xs mb-1">{i18n.t('OUTPUT')}</div>
+								<div class=" text-gray-500 text-xs mb-1">{$i18n.t('OUTPUT')}</div>
 								<div class="text-sm">{codeExecution?.result?.output}</div>
 							</div>
 						{/if}
@@ -95,7 +96,7 @@
 					<div class="flex flex-col w-full">
 						<hr class="border-gray-100/30 dark:border-gray-850/30 my-2" />
 						<div class=" text-sm font-medium dark:text-gray-300">
-							{i18n.t('Files')}
+							{$i18n.t('Files')}
 						</div>
 						<ul class="mt-1 list-disc pl-4 text-xs">
 							{#each codeExecution?.result?.files as file}
@@ -136,9 +137,9 @@
 
 					<div>
 						{#if codeExecution?.name}
-							{i18n.t('Code execution')}: {codeExecution?.name}
+							{$i18n.t('Code execution')}: {codeExecution?.name}
 						{:else}
-							{i18n.t('Code execution')}
+							{$i18n.t('Code execution')}
 						{/if}
 					</div>
 				</div>
@@ -169,6 +170,7 @@
 							? 'rounded-b-none'
 							: ''}
 						run={false}
+						token=""
 					/>
 				</div>
 
@@ -176,13 +178,13 @@
 					<div class="dark:bg-[#202123] dark:text-white px-4 py-4 rounded-b-lg flex flex-col gap-3">
 						{#if codeExecution?.result?.error}
 							<div>
-								<div class=" text-gray-500 text-xs mb-1">{i18n.t('ERROR')}</div>
+								<div class=" text-gray-500 text-xs mb-1">{$i18n.t('ERROR')}</div>
 								<div class="text-sm">{codeExecution?.result?.error}</div>
 							</div>
 						{/if}
 						{#if codeExecution?.result?.output}
 							<div>
-								<div class=" text-gray-500 text-xs mb-1">{i18n.t('OUTPUT')}</div>
+								<div class=" text-gray-500 text-xs mb-1">{$i18n.t('OUTPUT')}</div>
 								<div class="text-sm">{codeExecution?.result?.output}</div>
 							</div>
 						{/if}
@@ -192,7 +194,7 @@
 					<div class="flex flex-col w-full">
 						<hr class="border-gray-100/30 dark:border-gray-850/30 my-2" />
 						<div class=" text-sm font-medium dark:text-gray-300">
-							{i18n.t('Files')}
+							{$i18n.t('Files')}
 						</div>
 						<ul class="mt-1 list-disc pl-4 text-xs">
 							{#each codeExecution?.result?.files as file}

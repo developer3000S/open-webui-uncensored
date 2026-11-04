@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Select from '$lib/components/common/Select.svelte';
 	import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
@@ -12,8 +12,8 @@
 	export let value: any = '';
 	export let placeholder: any = 'Select an option';
 	export let items = [
-		{ value: 'new', label: i18n.t('New') },
-		{ value: 'top', label: i18n.t('Top') }
+		{ value: 'new', label: $i18n.t('New') },
+		{ value: 'top', label: $i18n.t('Top') }
 	];
 
 	export let onChange: (value: string) => void = () => {};

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Sortable from 'sortablejs';
 
@@ -12,7 +12,7 @@
 
 	import type { Writable } from 'svelte/store';
 
-	let selectedChatId: any = null;
+	export let selectedChatId: any = null;
 
 	$: sortedPinnedNotes = (() => {
 		const order = $settings?.pinnedNotesOrder;
@@ -30,7 +30,7 @@
 		if (pinnedNotesList && !$mobile) {
 			new Sortable(pinnedNotesList, {
 				animation: 150,
-				setData: (dataTransfer: any, dragEl: any)  => {
+				setData: (dataTransfer: any, dragEl: any) => {
 					dataTransfer.setData(
 						'text/plain',
 						JSON.stringify({
@@ -40,7 +40,7 @@
 					);
 					dataTransfer.setData('application/x-open-webui-drag', '');
 				},
-				onUpdate: async (event: any)  => {
+				onUpdate: async (event: any) => {
 					const noteId = event.item.dataset.id;
 					const newIndex = event.newIndex;
 					const current = sortedPinnedNotes.map((n) => n.id);
@@ -54,6 +54,7 @@
 		}
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		await tick();
 		initPinnedNotesSortable();
@@ -93,7 +94,7 @@
 					const _pinnedNotes = await getPinnedNoteList(localStorage.token).catch(() => []);
 					pinnedNotes.set(_pinnedNotes);
 				}}
-				aria-label={i18n.t('Unpin')}
+				aria-label={$i18n.t('Unpin')}
 			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -143,7 +144,7 @@
 					const _pinnedNotes = await getPinnedNoteList(localStorage.token).catch(() => []);
 					pinnedNotes.set(_pinnedNotes);
 				}}
-				aria-label={i18n.t('Unpin')}
+				aria-label={$i18n.t('Unpin')}
 			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"

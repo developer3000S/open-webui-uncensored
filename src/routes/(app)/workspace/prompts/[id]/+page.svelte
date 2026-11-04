@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
@@ -27,7 +27,7 @@
 		});
 
 		if (updatedPrompt) {
-			toast.success(i18n.t('Prompt updated successfully'));
+			toast.success($i18n.t('Prompt updated successfully'));
 			// Update local prompt state to reflect the new version
 			prompt = {
 				id: updatedPrompt.id,
@@ -42,6 +42,7 @@
 		}
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		if (promptId) {
 			const _prompt = await getPromptById(localStorage.token, promptId).catch((error) => {

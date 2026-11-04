@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { saveAs } from 'file-saver';
 	import { toast } from 'svelte-sonner';
@@ -32,7 +32,7 @@
 <div class=" space-y-3">
 	<div class="flex w-full justify-between mb-1.5">
 		<div class=" self-center text-xs flex-1 shrink-0 w-full">
-			{i18n.t('Default Prompt Suggestions')}
+			{$i18n.t('Default Prompt Suggestions')}
 		</div>
 
 		<div class="flex justify-end gap-2">
@@ -50,7 +50,7 @@
 					console.log(files);
 
 					let reader = new FileReader();
-					reader.onload = (event: any) {
+					reader.onload = (event: any) => {
 						try {
 							let suggestions = JSON.parse(event.target.result);
 
@@ -66,7 +66,7 @@
 
 							promptSuggestions = [...promptSuggestions, ...suggestions];
 						} catch (error) {
-							toast.error(i18n.t('Invalid JSON file'));
+							toast.error($i18n.t('Invalid JSON file'));
 							return;
 						}
 					};
@@ -88,7 +88,7 @@
 				}}
 			>
 				<div class=" self-center font-medium line-clamp-1">
-					{i18n.t('Import')}
+					{$i18n.t('Import')}
 				</div>
 			</button>
 
@@ -104,7 +104,7 @@
 					}}
 				>
 					<div class=" self-center font-medium line-clamp-1">
-						{i18n.t('Export')}
+						{$i18n.t('Export')}
 					</div>
 				</button>
 			{/if}
@@ -131,18 +131,18 @@
 				>
 					<div class="flex flex-col md:flex-row w-full gap-1 md:gap-2 px-2">
 						<div class="gap-0.5 min-w-60">
-							<Tooltip content={i18n.t('e.g. Tell me a fun fact')} placement="top-start">
+							<Tooltip content={$i18n.t('e.g. Tell me a fun fact')} placement="top-start">
 								<input
 									class="text-sm w-full bg-transparent outline-hidden"
-									placeholder={i18n.t('Title')}
+									placeholder={$i18n.t('Title')}
 									bind:value={prompt.title[0]}
 								/>
 							</Tooltip>
 
-							<Tooltip content={i18n.t('e.g. about the Roman Empire')} placement="top-start">
+							<Tooltip content={$i18n.t('e.g. about the Roman Empire')} placement="top-start">
 								<input
 									class="text-sm w-full bg-transparent outline-hidden text-gray-600 dark:text-gray-400"
-									placeholder={i18n.t('Subtitle')}
+									placeholder={$i18n.t('Subtitle')}
 									bind:value={prompt.title[1]}
 								/>
 							</Tooltip>
@@ -150,12 +150,12 @@
 
 						<Tooltip
 							className="w-full self-center items-center flex"
-							content={i18n.t('e.g. Tell me a fun fact about the Roman Empire')}
+							content={$i18n.t('e.g. Tell me a fun fact about the Roman Empire')}
 							placement="top-start"
 						>
 							<textarea
 								class="text-sm w-full bg-transparent outline-hidden resize-none"
-								placeholder={i18n.t('Prompt')}
+								placeholder={$i18n.t('Prompt')}
 								rows="2"
 								bind:value={prompt.content}
 							></textarea>
@@ -163,7 +163,7 @@
 					</div>
 
 					<button
-						aria-label={i18n.t('Delete')}
+						aria-label={$i18n.t('Delete')}
 						class="p-1 self-start"
 						type="button"
 						on:click={() => {
@@ -187,7 +187,7 @@
 		</div>
 	{:else}
 		<div class="text-xs text-center w-full text-gray-500 mb-1.5">
-			{i18n.t('No suggestion prompts')}
+			{$i18n.t('No suggestion prompts')}
 		</div>
 	{/if}
 </div>
@@ -195,7 +195,7 @@
 <div class=" space-y-3">
 	<div class="flex w-full justify-between mb-1.5">
 		<div class=" self-center text-xs flex-1 shrink-0 w-full">
-			{i18n.t('Default Prompt Suggestions')}
+			{$i18n.t('Default Prompt Suggestions')}
 		</div>
 
 		<div class="flex justify-end gap-2">
@@ -213,7 +213,7 @@
 					console.log(files);
 
 					let reader = new FileReader();
-					reader.onload = (event: any) {
+					reader.onload = (event: any) => {
 						try {
 							let suggestions = JSON.parse(event.target.result);
 
@@ -229,7 +229,7 @@
 
 							promptSuggestions = [...promptSuggestions, ...suggestions];
 						} catch (error) {
-							toast.error(i18n.t('Invalid JSON file'));
+							toast.error($i18n.t('Invalid JSON file'));
 							return;
 						}
 					};
@@ -251,7 +251,7 @@
 				}}
 			>
 				<div class=" self-center font-medium line-clamp-1">
-					{i18n.t('Import')}
+					{$i18n.t('Import')}
 				</div>
 			</button>
 
@@ -267,7 +267,7 @@
 					}}
 				>
 					<div class=" self-center font-medium line-clamp-1">
-						{i18n.t('Export')}
+						{$i18n.t('Export')}
 					</div>
 				</button>
 			{/if}
@@ -294,18 +294,18 @@
 				>
 					<div class="flex flex-col md:flex-row w-full gap-1 md:gap-2 px-2">
 						<div class="gap-0.5 min-w-60">
-							<Tooltip content={i18n.t('e.g. Tell me a fun fact')} placement="top-start">
+							<Tooltip content={$i18n.t('e.g. Tell me a fun fact')} placement="top-start">
 								<input
 									class="text-sm w-full bg-transparent outline-hidden"
-									placeholder={i18n.t('Title')}
+									placeholder={$i18n.t('Title')}
 									bind:value={prompt.title[0]}
 								/>
 							</Tooltip>
 
-							<Tooltip content={i18n.t('e.g. about the Roman Empire')} placement="top-start">
+							<Tooltip content={$i18n.t('e.g. about the Roman Empire')} placement="top-start">
 								<input
 									class="text-sm w-full bg-transparent outline-hidden text-gray-600 dark:text-gray-400"
-									placeholder={i18n.t('Subtitle')}
+									placeholder={$i18n.t('Subtitle')}
 									bind:value={prompt.title[1]}
 								/>
 							</Tooltip>
@@ -313,12 +313,12 @@
 
 						<Tooltip
 							className="w-full self-center items-center flex"
-							content={i18n.t('e.g. Tell me a fun fact about the Roman Empire')}
+							content={$i18n.t('e.g. Tell me a fun fact about the Roman Empire')}
 							placement="top-start"
 						>
 							<textarea
 								class="text-sm w-full bg-transparent outline-hidden resize-none"
-								placeholder={i18n.t('Prompt')}
+								placeholder={$i18n.t('Prompt')}
 								rows="2"
 								bind:value={prompt.content}
 							></textarea>
@@ -326,7 +326,7 @@
 					</div>
 
 					<button
-						aria-label={i18n.t('Delete')}
+						aria-label={$i18n.t('Delete')}
 						class="p-1 self-start"
 						type="button"
 						on:click={() => {
@@ -350,7 +350,7 @@
 		</div>
 	{:else}
 		<div class="text-xs text-center w-full text-gray-500 mb-1.5">
-			{i18n.t('No suggestion prompts')}
+			{$i18n.t('No suggestion prompts')}
 		</div>
 	{/if}
 </div>

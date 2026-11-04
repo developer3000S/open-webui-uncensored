@@ -1,15 +1,13 @@
-<script lang="ts" context="module">
-	import type i18nType from 'i18next';
-	import { getContext, onDestroy, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
-
-	import type { Writable } from 'svelte/store';
+<script context="module">
 	// Persists across mount/unmount cycles (module-level, not per-instance)
 	let savedPath = '/';
 </script>
 
 <script lang="ts">
+	import type { i18n as i18nType } from 'i18next';
+	import type { Writable } from 'svelte/store';
 	import { toast } from 'svelte-sonner';
+	import { getContext, onMount, onDestroy, tick } from 'svelte';
 	import {
 		terminalServers,
 		settings,
@@ -51,7 +49,10 @@
 	import PortPreview from './FileNav/PortPreview.svelte';
 	import XTerminal from './XTerminal.svelte';
 
-	export let overlay: any = false;
+	const i18n = getContext<Writable<i18nType>>('i18n');
+
+	export let onAttach: ((blob: Blob, name: string, contentType: string) => void) | null = null;
+	export let overlay = false;
 	export let chatId: string | null = null;
 
 	// ── Terminal panel state ────────────────────────────────────────────
@@ -271,7 +272,7 @@
 			if (chatChanged && chatId && !oldChatId) {
 				// Chat just got created (null → real ID): persist the current
 				// browsed path as the new session's cwd — don't re-fetch.
-				setCwd(terminal.url, terminal.key, currentPath, chatId);
+				setCwd(terminal.url, terminal.key, savedPath, chatId);
 			} else if (terminalChanged || chatChanged) {
 				// Terminal switched, new chat started, or switched between
 				// existing chats — re-fetch the session cwd.
@@ -284,7 +285,8 @@
 						terminalEnabled = config?.features?.terminal !== false;
 					}
 
-					applyCwdAndLoad(await getCwd(terminal.url, terminal.key, chatId ?? undefined));
+					savedPath = applyCwd(await getCwd(terminal.url, terminal.key, chatId ?? undefined));
+					loadDir(savedPath);
 				})();
 			}
 		}
@@ -328,13 +330,6 @@
 	const clampToFileRoot = (path: string) => {
 		if (!fileRoot) return asDirectoryPath(path);
 		return isInsideFileRoot(path) ? asDirectoryPath(path) : fileRoot.path;
-	};
-
-	// Wraps the module-level `savedPath` assignment so reactive statements never
-	// read or write module-scope variables directly.
-	const applyCwdAndLoad = (cwd: TerminalCwd | null) => {
-		savedPath = applyCwd(cwd);
-		loadDir(savedPath);
 	};
 
 	const applyCwd = (cwd: TerminalCwd | null) => {
@@ -610,7 +605,7 @@
 			chatId ?? undefined
 		);
 		toast[result ? 'success' : 'error'](
-			i18n.t(result ? 'Folder created' : 'Failed to create folder')
+			$i18n.t(result ? 'Folder created' : 'Failed to create folder')
 		);
 		await loadDir(currentPath);
 	};
@@ -634,7 +629,7 @@
 
 		const emptyFile = new File([''], name, { type: 'application/octet-stream' });
 		const result = await uploadToTerminal(terminal.url, terminal.key, currentPath, emptyFile);
-		toast[result ? 'success' : 'error'](i18n.t(result ? 'File created' : 'Failed to create file'));
+		toast[result ? 'success' : 'error']($i18n.t(result ? 'File created' : 'Failed to create file'));
 		await loadDir(currentPath);
 	};
 
@@ -645,7 +640,7 @@
 
 		const result = await deleteEntry(terminal.url, terminal.key, path, chatId ?? undefined);
 		toast[result ? 'success' : 'error'](
-			i18n.t(result ? '{{name}} deleted' : 'Failed to delete {{name}}', { name })
+			$i18n.t(result ? '{{name}} deleted' : 'Failed to delete {{name}}', { name })
 		);
 		await loadDir(currentPath);
 	};
@@ -679,7 +674,7 @@
 		if ('error' in result) {
 			toast.error(result.error);
 		} else {
-			toast.success(i18n.t('Moved {{name}}', { name: fileName }));
+			toast.success($i18n.t('Moved {{name}}', { name: fileName }));
 		}
 		await loadDir(currentPath);
 	};
@@ -704,7 +699,7 @@
 		if ('error' in result) {
 			toast.error(result.error);
 		} else {
-			toast.success(i18n.t('Renamed to {{name}}', { name: newName }));
+			toast.success($i18n.t('Renamed to {{name}}', { name: newName }));
 		}
 		await loadDir(currentPath);
 	};
@@ -784,7 +779,7 @@
 			if (result) ok++;
 		}
 		toast[ok > 0 ? 'success' : 'error'](
-			i18n.t('Deleted {{ok}} of {{total}} items', { ok, total: paths.length })
+			$i18n.t('Deleted {{ok}} of {{total}} items', { ok, total: paths.length })
 		);
 		clearSelection();
 		await loadDir(currentPath);
@@ -830,13 +825,14 @@
 	};
 
 	// ── Lifecycle ────────────────────────────────────────────────────────
+	// @ts-ignore
 	onMount(async () => {
 		const terminal = getTerminal();
 		if (!terminal) return;
 
 		let handledDisplayFile = false;
 
-		const unsubFileNav = showFileNavPath.subscribe((filePath: any) => {
+		const unsubFileNav = showFileNavPath.subscribe(async (filePath) => {
 			if (!filePath || !selectedTerminal) return;
 			handledDisplayFile = true;
 			showFileNavPath.set(null);
@@ -863,7 +859,7 @@
 			}
 		});
 
-		const unsubFileNavDir = showFileNavDir.subscribe((filePath: any) {
+		const unsubFileNavDir = showFileNavDir.subscribe(async (filePath) => {
 			if (!filePath || !selectedTerminal) return;
 			showFileNavDir.set(null);
 			filePath = normalizePath(filePath);
@@ -954,16 +950,16 @@
 	}}
 />
 
-<svelte:window on:keydown={handleKeydown} on:click={handleWindowClick} on:keydown={handleKeydown} on:click={handleWindowClick} />
+<svelte:window on:keydown={handleKeydown} on:click={handleWindowClick} />
 
 {#if !selectedTerminal}
 	<div class="flex-1 flex flex-col items-center justify-center p-6 text-center">
 		<Folder className="size-6 text-gray-300 dark:text-gray-600 mb-2" />
 		<div class="text-xs text-gray-500 dark:text-gray-400 mb-1">
-			{i18n.t('No Terminal connection configured.')}
+			{$i18n.t('No Terminal connection configured.')}
 		</div>
 		<div class="text-[10px] text-gray-400 dark:text-gray-500">
-			{i18n.t('Add your Open Terminal URL and API key in Settings → Integrations.')}
+			{$i18n.t('Add your Open Terminal URL and API key in Settings → Integrations.')}
 		</div>
 	</div>
 {:else}
@@ -974,7 +970,7 @@
 		on:dragleave={() => (isDragOver = false)}
 		on:drop={handleDrop}
 		role="region"
-		aria-label={i18n.t('File browser')}
+		aria-label={$i18n.t('File browser')}
 	>
 		{#if isDragOver}
 			<div
@@ -1026,36 +1022,36 @@
 				onSort={toggleSort}
 			>
 				{#if fileImageUrl !== null || (fileOfficeSlides !== null && fileOfficeSlides.length > 0)}
-					<Tooltip content={i18n.t('Reset view')}>
+					<Tooltip content={$i18n.t('Reset view')}>
 						<button
 							class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 							on:click={() => filePreviewRef?.resetImageView()}
-							aria-label={i18n.t('Reset view')}
+							aria-label={$i18n.t('Reset view')}
 						>
 							<ZoomReset className="size-3.5" />
 						</button>
 					</Tooltip>
 				{/if}
 				{#if filePdfData !== null}
-					<Tooltip content={i18n.t('Reset view')}>
+					<Tooltip content={$i18n.t('Reset view')}>
 						<button
 							class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 							on:click={() => filePreviewRef?.resetPdfView()}
-							aria-label={i18n.t('Reset view')}
+							aria-label={$i18n.t('Reset view')}
 						>
 							<ZoomReset className="size-3.5" />
 						</button>
 					</Tooltip>
 				{/if}
 				{#if (isMarkdown || isCsv || isHtml || isJson || isSvg || isNotebook) && fileContent !== null && !editing}
-					<Tooltip content={showRaw ? i18n.t('Preview') : i18n.t('Source')}>
+					<Tooltip content={showRaw ? $i18n.t('Preview') : $i18n.t('Source')}>
 						<button
 							class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 							on:click={() => {
 								if (editing) filePreviewRef?.cancelEdit();
 								showRaw = !showRaw;
 							}}
-							aria-label={showRaw ? i18n.t('Preview') : i18n.t('Source')}
+							aria-label={showRaw ? $i18n.t('Preview') : $i18n.t('Source')}
 						>
 							{#if showRaw}
 								<svg
@@ -1098,12 +1094,12 @@
 				{/if}
 				{#if isTextFile}
 					{#if isHtml && showRaw}
-						<Tooltip content={i18n.t('Save')}>
+						<Tooltip content={$i18n.t('Save')}>
 							<button
 								class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 								on:click={() => filePreviewRef?.saveCodeFile()}
 								disabled={saving}
-								aria-label={i18n.t('Save')}
+								aria-label={$i18n.t('Save')}
 							>
 								{#if saving}
 									<Spinner className="size-3.5" />
@@ -1126,12 +1122,12 @@
 					{:else if isHtml}
 						<!-- HTML preview mode: no edit/save buttons -->
 					{:else if isMarkdown && showRaw}
-						<Tooltip content={i18n.t('Save')}>
+						<Tooltip content={$i18n.t('Save')}>
 							<button
 								class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 								on:click={() => filePreviewRef?.saveCodeFile()}
 								disabled={saving}
-								aria-label={i18n.t('Save')}
+								aria-label={$i18n.t('Save')}
 							>
 								{#if saving}
 									<Spinner className="size-3.5" />
@@ -1154,12 +1150,12 @@
 					{:else if isMarkdown}
 						<!-- Markdown preview mode: no edit/save buttons -->
 					{:else if isCode}
-						<Tooltip content={i18n.t('Save')}>
+						<Tooltip content={$i18n.t('Save')}>
 							<button
 								class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 								on:click={() => filePreviewRef?.saveCodeFile()}
 								disabled={saving}
-								aria-label={i18n.t('Save')}
+								aria-label={$i18n.t('Save')}
 							>
 								{#if saving}
 									<Spinner className="size-3.5" />
@@ -1180,11 +1176,11 @@
 							</button>
 						</Tooltip>
 					{:else if editing}
-						<Tooltip content={i18n.t('Cancel')}>
+						<Tooltip content={$i18n.t('Cancel')}>
 							<button
 								class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 								on:click={() => filePreviewRef?.cancelEdit()}
-								aria-label={i18n.t('Cancel')}
+								aria-label={$i18n.t('Cancel')}
 							>
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
@@ -1198,12 +1194,12 @@
 								</svg>
 							</button>
 						</Tooltip>
-						<Tooltip content={i18n.t('Save')}>
+						<Tooltip content={$i18n.t('Save')}>
 							<button
 								class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 								on:click={() => filePreviewRef?.saveEdit()}
 								disabled={saving}
-								aria-label={i18n.t('Save')}
+								aria-label={$i18n.t('Save')}
 							>
 								{#if saving}
 									<Spinner className="size-3.5" />
@@ -1224,11 +1220,11 @@
 							</button>
 						</Tooltip>
 					{:else}
-						<Tooltip content={i18n.t('Edit')}>
+						<Tooltip content={$i18n.t('Edit')}>
 							<button
 								class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 								on:click={() => filePreviewRef?.startEdit()}
-								aria-label={i18n.t('Edit')}
+								aria-label={$i18n.t('Edit')}
 							>
 								<PenAlt className="size-3.5" />
 							</button>
@@ -1237,14 +1233,14 @@
 				{/if}
 
 				{#if fileContent !== null}
-					<Tooltip content={i18n.t('Copy')}>
+					<Tooltip content={$i18n.t('Copy')}>
 						<button
 							class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 							on:click={async () => {
 								await navigator.clipboard.writeText(fileContent ?? '');
-								toast.success(i18n.t('Copied to clipboard'));
+								toast.success($i18n.t('Copied to clipboard'));
 							}}
-							aria-label={i18n.t('Copy')}
+							aria-label={$i18n.t('Copy')}
 						>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -1263,11 +1259,11 @@
 						</button>
 					</Tooltip>
 				{/if}
-				<Tooltip content={i18n.t('Download')}>
+				<Tooltip content={$i18n.t('Download')}>
 					<button
 						class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 						on:click={() => downloadFile(selectedFile)}
-						aria-label={i18n.t('Download')}
+						aria-label={$i18n.t('Download')}
 					>
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
@@ -1304,10 +1300,7 @@
 		{/if}
 
 		<!-- Content -->
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
-			role="presentation"
 			class="flex-1 overflow-y-auto min-h-0 min-w-0"
 			on:click={(e) => {
 				if (e.target === e.currentTarget && selectedCount > 0) clearSelection();
@@ -1341,7 +1334,7 @@
 					{fileOfficeSlides}
 					{excelSheetNames}
 					{selectedExcelSheet}
-					onSheetChange={async (sheet: any) => {
+					onSheetChange={async (sheet) => {
 						if (!excelWorkbook) return;
 						selectedExcelSheet = sheet;
 						const { excelToTable } = await import('$lib/utils/excelToTable');
@@ -1352,7 +1345,7 @@
 					baseUrl={selectedTerminal?.url ?? ''}
 					apiKey={selectedTerminal?.key ?? ''}
 					overlay={overlay || isDraggingHandle}
-					onSave={async (content: any) => {
+					onSave={async (content) => {
 						const terminal = selectedTerminal;
 						if (!terminal || !selectedFile) return;
 						const fileName = selectedFile.split('/').pop() ?? 'file';
@@ -1360,7 +1353,7 @@
 						const file = new File([content], fileName, { type: 'text/plain' });
 						const result = await uploadToTerminal(terminal.url, terminal.key, dir, file);
 						toast[result ? 'success' : 'error'](
-							i18n.t(result ? 'File saved' : 'Failed to save file')
+							$i18n.t(result ? 'File saved' : 'Failed to save file')
 						);
 						if (result) fileContent = content;
 					}}
@@ -1369,7 +1362,7 @@
 				{#if uploading}
 					<div class="flex items-center justify-center gap-2 p-4 text-xs text-gray-500">
 						<Spinner className="size-4" />
-						{i18n.t('Uploading...')}
+						{$i18n.t('Uploading...')}
 					</div>
 				{:else if loading}
 					<div class="flex justify-center pt-8"><Spinner className="size-4" /></div>
@@ -1379,10 +1372,10 @@
 					<div class="flex flex-col items-center justify-center gap-1.5 py-12 text-center">
 						<Folder className="size-6 text-gray-200 dark:text-gray-700" />
 						<div class="text-xs text-gray-400 dark:text-gray-500">
-							{i18n.t('This folder is empty')}
+							{$i18n.t('This folder is empty')}
 						</div>
 						<div class="text-[11px] text-gray-300 dark:text-gray-600">
-							{i18n.t('Drop files here to upload')}
+							{$i18n.t('Drop files here to upload')}
 						</div>
 					</div>
 				{/if}
@@ -1395,7 +1388,7 @@
 								bind:this={newFolderInput}
 								bind:value={newFolderName}
 								class="flex-1 text-xs bg-transparent border border-gray-200 dark:border-gray-700 rounded px-1.5 py-0.5 outline-none focus:border-blue-400 dark:focus:border-blue-500"
-								placeholder={i18n.t('Folder name')}
+								placeholder={$i18n.t('Folder name')}
 								on:keydown={(e) => {
 									if (e.key === 'Enter') submitNewFolder();
 									if (e.key === 'Escape') {
@@ -1414,7 +1407,7 @@
 								bind:this={newFileInput}
 								bind:value={newFileName}
 								class="flex-1 text-xs bg-transparent border border-gray-200 dark:border-gray-700 rounded px-1.5 py-0.5 outline-none focus:border-blue-400 dark:focus:border-blue-500"
-								placeholder={i18n.t('File name')}
+								placeholder={$i18n.t('File name')}
 								on:keydown={(e) => {
 									if (e.key === 'Enter') submitNewFile();
 									if (e.key === 'Escape') {
@@ -1482,8 +1475,8 @@
 					<div class="relative cursor-row-resize group" on:mousedown={onHandleMouseDown}>
 						<div
 							class="h-px bg-transparent group-hover:bg-black/10 dark:group-hover:bg-white/10 transition"
-						></div>
-						<div class="absolute inset-x-0 -top-1.5 -bottom-1.5"></div>
+						/>
+						<div class="absolute inset-x-0 -top-1.5 -bottom-1.5" />
 					</div>
 				{/if}
 
@@ -1504,7 +1497,7 @@
 							clip-rule="evenodd"
 						/>
 					</svg>
-					<span class="font-medium">{i18n.t('Terminal')}</span>
+					<span class="font-medium">{$i18n.t('Terminal')}</span>
 
 					{#if terminalExpanded}
 						<div
@@ -1513,612 +1506,7 @@
 								: terminalConnecting
 									? 'bg-yellow-500 animate-pulse'
 									: 'bg-gray-400'}"
-						></div>
-					{/if}
-
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						viewBox="0 0 20 20"
-						fill="currentColor"
-						class="size-3 ml-auto transition-transform {terminalExpanded ? 'rotate-180' : ''}"
-					>
-						<path
-							fill-rule="evenodd"
-							d="M9.47 6.47a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 1 1-1.06 1.06L10 8.06l-3.72 3.72a.75.75 0 0 1-1.06-1.06l4.25-4.25Z"
-							clip-rule="evenodd"
 						/>
-					</svg>
-				</button>
-
-				{#if terminalExpanded}
-					<div style="height: {terminalHeight}px" class="min-h-0">
-						<XTerminal
-							overlay={overlay || isDraggingHandle}
-							bind:connected={terminalConnected}
-							bind:connecting={terminalConnecting}
-							{chatId}
-						/>
-					</div>
-				{/if}
-			</div>
-		{/if}
-	</div>
-{/if}
-
-<ConfirmDialog
-	bind:show={showDeleteConfirm}
-	on:confirm={() => {
-		if (deleteTarget) {
-			if (deleteTarget.path === '__bulk__') {
-				bulkDelete();
-			} else {
-				handleDelete(deleteTarget.path, deleteTarget.name);
-			}
-			deleteTarget = null;
-		}
-	}}
-/>
-
-
-
-{#if !selectedTerminal}
-	<div class="flex-1 flex flex-col items-center justify-center p-6 text-center">
-		<Folder className="size-6 text-gray-300 dark:text-gray-600 mb-2" />
-		<div class="text-xs text-gray-500 dark:text-gray-400 mb-1">
-			{i18n.t('No Terminal connection configured.')}
-		</div>
-		<div class="text-[10px] text-gray-400 dark:text-gray-500">
-			{i18n.t('Add your Open Terminal URL and API key in Settings → Integrations.')}
-		</div>
-	</div>
-{:else}
-	<div
-		bind:this={containerEl}
-		class="flex flex-col h-full min-h-0 min-w-0 relative"
-		on:dragover={handleDragOver}
-		on:dragleave={() => (isDragOver = false)}
-		on:drop={handleDrop}
-		role="region"
-		aria-label={i18n.t('File browser')}
-	>
-		{#if isDragOver}
-			<div
-				class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/80 dark:bg-gray-850/80 backdrop-blur-sm pointer-events-none gap-1.5"
-			>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="1.5"
-					class="size-5 text-gray-400 dark:text-gray-500"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
-					/>
-				</svg>
-				<span class="text-xs text-gray-400 dark:text-gray-500">{currentPath}</span>
-			</div>
-		{/if}
-
-		{#if previewPort === null}
-			<FileNavToolbar
-				breadcrumbs={buildBreadcrumbs(currentPath)}
-				{selectedFile}
-				{loading}
-				{canGoBack}
-				{canGoForward}
-				{sortBy}
-				{sortAsc}
-				onGoBack={goBack}
-				onGoForward={goForward}
-				onNavigate={loadDir}
-				onRefresh={() => {
-					if (selectedFile) {
-						const fileName = selectedFile.split('/').pop() ?? '';
-						openEntry({ name: fileName, type: 'file', size: 0 });
-					} else {
-						loadDir(currentPath);
-					}
-				}}
-				onNewFolder={startNewFolder}
-				onNewFile={startNewFile}
-				onUploadFiles={handleUploadFiles}
-				onDownloadDir={() => downloadFile(currentPath)}
-				onMove={handleMove}
-				onSort={toggleSort}
-			>
-				{#if fileImageUrl !== null || (fileOfficeSlides !== null && fileOfficeSlides.length > 0)}
-					<Tooltip content={i18n.t('Reset view')}>
-						<button
-							class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
-							on:click={() => filePreviewRef?.resetImageView()}
-							aria-label={i18n.t('Reset view')}
-						>
-							<ZoomReset className="size-3.5" />
-						</button>
-					</Tooltip>
-				{/if}
-				{#if filePdfData !== null}
-					<Tooltip content={i18n.t('Reset view')}>
-						<button
-							class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
-							on:click={() => filePreviewRef?.resetPdfView()}
-							aria-label={i18n.t('Reset view')}
-						>
-							<ZoomReset className="size-3.5" />
-						</button>
-					</Tooltip>
-				{/if}
-				{#if (isMarkdown || isCsv || isHtml || isJson || isSvg || isNotebook) && fileContent !== null && !editing}
-					<Tooltip content={showRaw ? i18n.t('Preview') : i18n.t('Source')}>
-						<button
-							class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
-							on:click={() => {
-								if (editing) filePreviewRef?.cancelEdit();
-								showRaw = !showRaw;
-							}}
-							aria-label={showRaw ? i18n.t('Preview') : i18n.t('Source')}
-						>
-							{#if showRaw}
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="1.5"
-									class="size-3.5"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
-									/>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-									/>
-								</svg>
-							{:else}
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="1.5"
-									class="size-3.5"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"
-									/>
-								</svg>
-							{/if}
-						</button>
-					</Tooltip>
-				{/if}
-				{#if isTextFile}
-					{#if isHtml && showRaw}
-						<Tooltip content={i18n.t('Save')}>
-							<button
-								class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
-								on:click={() => filePreviewRef?.saveCodeFile()}
-								disabled={saving}
-								aria-label={i18n.t('Save')}
-							>
-								{#if saving}
-									<Spinner className="size-3.5" />
-								{:else}
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										viewBox="0 0 20 20"
-										fill="currentColor"
-										class="size-3.5"
-									>
-										<path
-											fill-rule="evenodd"
-											d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"
-											clip-rule="evenodd"
-										/>
-									</svg>
-								{/if}
-							</button>
-						</Tooltip>
-					{:else if isHtml}
-						<!-- HTML preview mode: no edit/save buttons -->
-					{:else if isMarkdown && showRaw}
-						<Tooltip content={i18n.t('Save')}>
-							<button
-								class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
-								on:click={() => filePreviewRef?.saveCodeFile()}
-								disabled={saving}
-								aria-label={i18n.t('Save')}
-							>
-								{#if saving}
-									<Spinner className="size-3.5" />
-								{:else}
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										viewBox="0 0 20 20"
-										fill="currentColor"
-										class="size-3.5"
-									>
-										<path
-											fill-rule="evenodd"
-											d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"
-											clip-rule="evenodd"
-										/>
-									</svg>
-								{/if}
-							</button>
-						</Tooltip>
-					{:else if isMarkdown}
-						<!-- Markdown preview mode: no edit/save buttons -->
-					{:else if isCode}
-						<Tooltip content={i18n.t('Save')}>
-							<button
-								class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
-								on:click={() => filePreviewRef?.saveCodeFile()}
-								disabled={saving}
-								aria-label={i18n.t('Save')}
-							>
-								{#if saving}
-									<Spinner className="size-3.5" />
-								{:else}
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										viewBox="0 0 20 20"
-										fill="currentColor"
-										class="size-3.5"
-									>
-										<path
-											fill-rule="evenodd"
-											d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"
-											clip-rule="evenodd"
-										/>
-									</svg>
-								{/if}
-							</button>
-						</Tooltip>
-					{:else if editing}
-						<Tooltip content={i18n.t('Cancel')}>
-							<button
-								class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
-								on:click={() => filePreviewRef?.cancelEdit()}
-								aria-label={i18n.t('Cancel')}
-							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									viewBox="0 0 20 20"
-									fill="currentColor"
-									class="size-3.5"
-								>
-									<path
-										d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"
-									/>
-								</svg>
-							</button>
-						</Tooltip>
-						<Tooltip content={i18n.t('Save')}>
-							<button
-								class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
-								on:click={() => filePreviewRef?.saveEdit()}
-								disabled={saving}
-								aria-label={i18n.t('Save')}
-							>
-								{#if saving}
-									<Spinner className="size-3.5" />
-								{:else}
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										viewBox="0 0 20 20"
-										fill="currentColor"
-										class="size-3.5"
-									>
-										<path
-											fill-rule="evenodd"
-											d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"
-											clip-rule="evenodd"
-										/>
-									</svg>
-								{/if}
-							</button>
-						</Tooltip>
-					{:else}
-						<Tooltip content={i18n.t('Edit')}>
-							<button
-								class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
-								on:click={() => filePreviewRef?.startEdit()}
-								aria-label={i18n.t('Edit')}
-							>
-								<PenAlt className="size-3.5" />
-							</button>
-						</Tooltip>
-					{/if}
-				{/if}
-
-				{#if fileContent !== null}
-					<Tooltip content={i18n.t('Copy')}>
-						<button
-							class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
-							on:click={async () => {
-								await navigator.clipboard.writeText(fileContent ?? '');
-								toast.success(i18n.t('Copied to clipboard'));
-							}}
-							aria-label={i18n.t('Copy')}
-						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="1.5"
-								class="size-3.5"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9.75a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184"
-								/>
-							</svg>
-						</button>
-					</Tooltip>
-				{/if}
-				<Tooltip content={i18n.t('Download')}>
-					<button
-						class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
-						on:click={() => downloadFile(selectedFile)}
-						aria-label={i18n.t('Download')}
-					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="1.5"
-							class="size-3.5"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
-							/>
-						</svg>
-					</button>
-				</Tooltip>
-			</FileNavToolbar>
-
-			<!-- Bulk action bar -->
-			{#if selectedCount > 0}
-				<BulkActionBar
-					count={selectedCount}
-					hasFiles={hasSelectedFiles}
-					onDelete={() => {
-						deleteTarget = { path: '__bulk__', name: `${selectedCount} items` };
-						showDeleteConfirm = true;
-					}}
-					onDownload={bulkDownload}
-					onSelectAll={selectAll}
-					onClear={clearSelection}
-				/>
-			{/if}
-		{/if}
-
-		<!-- Content -->
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div
-			role="presentation"
-			class="flex-1 overflow-y-auto min-h-0 min-w-0"
-			on:click={(e) => {
-				if (e.target === e.currentTarget && selectedCount > 0) clearSelection();
-			}}
-		>
-			{#if previewPort !== null}
-				<PortPreview
-					baseUrl={selectedTerminal?.url ?? ''}
-					port={previewPort}
-					overlay={overlay || isDraggingHandle}
-					onClose={() => {
-						previewPort = null;
-					}}
-				/>
-			{:else if selectedFile !== null}
-				<FilePreview
-					bind:this={filePreviewRef}
-					bind:editing
-					bind:showRaw
-					bind:saving
-					bind:currentSlide
-					{selectedFile}
-					{fileLoading}
-					{fileImageUrl}
-					{fileVideoUrl}
-					{fileAudioUrl}
-					{filePdfData}
-					{fileSqliteData}
-					{fileContent}
-					{fileOfficeHtml}
-					{fileOfficeSlides}
-					{excelSheetNames}
-					{selectedExcelSheet}
-					onSheetChange={async (sheet: any) => {
-						if (!excelWorkbook) return;
-						selectedExcelSheet = sheet;
-						const { excelToTable } = await import('$lib/utils/excelToTable');
-						const result = await excelToTable(excelWorkbook.Sheets[sheet]);
-						const DOMPurify = (await import('dompurify')).default;
-						fileOfficeHtml = DOMPurify.sanitize(result.html);
-					}}
-					baseUrl={selectedTerminal?.url ?? ''}
-					apiKey={selectedTerminal?.key ?? ''}
-					overlay={overlay || isDraggingHandle}
-					onSave={async (content: any) => {
-						const terminal = selectedTerminal;
-						if (!terminal || !selectedFile) return;
-						const fileName = selectedFile.split('/').pop() ?? 'file';
-						const dir = selectedFile.substring(0, selectedFile.lastIndexOf('/') + 1) || '/';
-						const file = new File([content], fileName, { type: 'text/plain' });
-						const result = await uploadToTerminal(terminal.url, terminal.key, dir, file);
-						toast[result ? 'success' : 'error'](
-							i18n.t(result ? 'File saved' : 'Failed to save file')
-						);
-						if (result) fileContent = content;
-					}}
-				/>
-			{:else}
-				{#if uploading}
-					<div class="flex items-center justify-center gap-2 p-4 text-xs text-gray-500">
-						<Spinner className="size-4" />
-						{i18n.t('Uploading...')}
-					</div>
-				{:else if loading}
-					<div class="flex justify-center pt-8"><Spinner className="size-4" /></div>
-				{:else if error}
-					<div class="p-4 text-xs">{error}</div>
-				{:else if entries.length === 0 && !creatingFolder && !creatingFile}
-					<div class="flex flex-col items-center justify-center gap-1.5 py-12 text-center">
-						<Folder className="size-6 text-gray-200 dark:text-gray-700" />
-						<div class="text-xs text-gray-400 dark:text-gray-500">
-							{i18n.t('This folder is empty')}
-						</div>
-						<div class="text-[11px] text-gray-300 dark:text-gray-600">
-							{i18n.t('Drop files here to upload')}
-						</div>
-					</div>
-				{/if}
-
-				{#if !loading && !error && !uploading}
-					{#if creatingFolder}
-						<div class="flex items-center gap-2 px-3 py-1.5">
-							<Folder className="size-4 shrink-0 text-blue-400 dark:text-blue-300" />
-							<input
-								bind:this={newFolderInput}
-								bind:value={newFolderName}
-								class="flex-1 text-xs bg-transparent border border-gray-200 dark:border-gray-700 rounded px-1.5 py-0.5 outline-none focus:border-blue-400 dark:focus:border-blue-500"
-								placeholder={i18n.t('Folder name')}
-								on:keydown={(e) => {
-									if (e.key === 'Enter') submitNewFolder();
-									if (e.key === 'Escape') {
-										creatingFolder = false;
-										newFolderName = '';
-									}
-								}}
-								on:blur={submitNewFolder}
-							/>
-						</div>
-					{/if}
-					{#if creatingFile}
-						<div class="flex items-center gap-2 px-3 py-1.5">
-							<Document className="size-4 shrink-0 text-gray-400 dark:text-gray-500" />
-							<input
-								bind:this={newFileInput}
-								bind:value={newFileName}
-								class="flex-1 text-xs bg-transparent border border-gray-200 dark:border-gray-700 rounded px-1.5 py-0.5 outline-none focus:border-blue-400 dark:focus:border-blue-500"
-								placeholder={i18n.t('File name')}
-								on:keydown={(e) => {
-									if (e.key === 'Enter') submitNewFile();
-									if (e.key === 'Escape') {
-										creatingFile = false;
-										newFileName = '';
-									}
-								}}
-								on:blur={submitNewFile}
-							/>
-						</div>
-					{/if}
-
-					{#if entries.length > 0 || creatingFolder || creatingFile}
-						<ul>
-							{#each entries as entry}
-								<FileEntryRow
-									{entry}
-									{currentPath}
-									terminalUrl={selectedTerminal.url}
-									terminalKey={selectedTerminal.key}
-									selected={selectedEntries.has(
-										entry.type === 'directory'
-											? `${currentPath}${entry.name}/`
-											: `${currentPath}${entry.name}`
-									)}
-									{selectionMode}
-									selectedPaths={selectedEntries}
-									onOpen={openEntry}
-									onDownload={downloadFile}
-									onDelete={requestDelete}
-									onMove={handleMove}
-									onRename={handleRename}
-									onSelect={handleSelect}
-									onLongPress={enterSelectionMode}
-									showDate={sortBy === 'date'}
-								/>
-							{/each}
-						</ul>
-					{/if}
-				{/if}
-			{/if}
-		</div>
-
-		<!-- Port detection -->
-		{#if selectedTerminal && !selectedFile && previewPort === null}
-			<div class="shrink-0 border-t border-gray-100 dark:border-gray-800">
-				<PortList
-					baseUrl={selectedTerminal.url}
-					apiKey={selectedTerminal.key}
-					on:previewPort={(e) => {
-						selectedFile = null;
-						clearFilePreview();
-						previewPort = e.detail;
-					}}
-				/>
-			</div>
-		{/if}
-
-		<!-- Terminal bottom panel -->
-		{#if terminalEnabled}
-			<div class="shrink-0 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-850">
-				{#if terminalExpanded}
-					<!-- Drag handle (at top of panel) -->
-					<!-- svelte-ignore a11y-no-static-element-interactions -->
-					<div class="relative cursor-row-resize group" on:mousedown={onHandleMouseDown}>
-						<div
-							class="h-px bg-transparent group-hover:bg-black/10 dark:group-hover:bg-white/10 transition"
-						></div>
-						<div class="absolute inset-x-0 -top-1.5 -bottom-1.5"></div>
-					</div>
-				{/if}
-
-				<!-- Toggle header (full-width button) -->
-				<button
-					class="w-full flex items-center gap-2 px-3 py-1 mb-0.5 text-xs text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition"
-					on:click={toggleTerminal}
-				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						viewBox="0 0 20 20"
-						fill="currentColor"
-						class="size-3.5"
-					>
-						<path
-							fill-rule="evenodd"
-							d="M3.25 3A2.25 2.25 0 0 0 1 5.25v9.5A2.25 2.25 0 0 0 3.25 17h13.5A2.25 2.25 0 0 0 19 14.75v-9.5A2.25 2.25 0 0 0 16.75 3H3.25Zm.943 8.752a.75.75 0 0 1 .055-1.06L6.128 9l-1.88-1.693a.75.75 0 1 1 1.004-1.114l2.5 2.25a.75.75 0 0 1 0 1.114l-2.5 2.25a.75.75 0 0 1-1.06-.055ZM9.75 10.25a.75.75 0 0 0 0 1.5h2.5a.75.75 0 0 0 0-1.5h-2.5Z"
-							clip-rule="evenodd"
-						/>
-					</svg>
-					<span class="font-medium">{i18n.t('Terminal')}</span>
-
-					{#if terminalExpanded}
-						<div
-							class="w-1.5 h-1.5 rounded-full transition-colors {terminalConnected
-								? 'bg-emerald-500'
-								: terminalConnecting
-									? 'bg-yellow-500 animate-pulse'
-									: 'bg-gray-400'}"
-						></div>
 					{/if}
 
 					<svg

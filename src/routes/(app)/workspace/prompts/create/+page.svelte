@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
@@ -22,17 +22,18 @@
 	let clone = false;
 
 	const onSubmit = async (_prompt: any) => {
-		const res = await createNewPrompt(localStorage.token, _prompt).catch(async (error)=> {
+		const res = await createNewPrompt(localStorage.token, _prompt).catch(async (error) => {
 			toast.error(`${error}`);
 			return null;
 		});
 
 		if (res) {
-			toast.success(i18n.t('Prompt created successfully'));
+			toast.success($i18n.t('Prompt created successfully'));
 			await goto('/workspace/prompts');
 		}
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		window.addEventListener('message', async (event: any) => {
 			console.log(event);

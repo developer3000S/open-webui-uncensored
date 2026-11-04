@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
@@ -16,7 +16,7 @@
 	import Emoji from '$lib/components/common/Emoji.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 
-	let user: any = null;
+	export let user: any = null;
 
 	const directMessageHandler = async () => {
 		if (!user) {
@@ -61,7 +61,7 @@
 							</span>
 						</div>
 
-						<span class="text-xs"> {i18n.t('Active')} </span>
+						<span class="text-xs"> {$i18n.t('Active')} </span>
 					{:else}
 						<div>
 							<span class="relative flex size-2">
@@ -69,7 +69,7 @@
 							</span>
 						</div>
 
-						<span class="text-xs"> {i18n.t('Away')} </span>
+						<span class="text-xs"> {$i18n.t('Away')} </span>
 					{/if}
 				</div>
 			</div>
@@ -132,7 +132,7 @@
 					</div>
 
 					<div class="font-medium">
-						{i18n.t('Message')}
+						{$i18n.t('Message')}
 					</div>
 				</button>
 			</div>
@@ -167,7 +167,7 @@
 							</span>
 						</div>
 
-						<span class="text-xs"> {i18n.t('Active')} </span>
+						<span class="text-xs"> {$i18n.t('Active')} </span>
 					{:else}
 						<div>
 							<span class="relative flex size-2">
@@ -175,7 +175,7 @@
 							</span>
 						</div>
 
-						<span class="text-xs"> {i18n.t('Away')} </span>
+						<span class="text-xs"> {$i18n.t('Away')} </span>
 					{/if}
 				</div>
 			</div>
@@ -238,7 +238,7 @@
 					</div>
 
 					<div class="font-medium">
-						{i18n.t('Message')}
+						{$i18n.t('Message')}
 					</div>
 				</button>
 			</div>

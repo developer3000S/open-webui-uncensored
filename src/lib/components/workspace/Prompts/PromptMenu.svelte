@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { config, user } from '$lib/stores';
 
@@ -14,12 +14,12 @@
 
 	import type { Writable } from 'svelte/store';
 
-	export let editHandler: Function;
-	export let shareHandler: Function;
-	export let cloneHandler: Function;
-	export let exportHandler: Function;
-	export let deleteHandler: Function;
-	export let onClose: Function;
+	export let editHandler: any;
+	export let shareHandler: any;
+	export let cloneHandler: any;
+	export let exportHandler: any;
+	export let deleteHandler: any;
+	export let onClose: any;
 
 	let show = false;
 </script>
@@ -32,7 +32,7 @@
 		}
 	}}
 >
-	<Tooltip content={i18n.t('More')}>
+	<Tooltip content={$i18n.t('More')}>
 		<slot />
 	</Tooltip>
 
@@ -62,7 +62,7 @@
 					/>
 				</svg>
 
-				<div class="flex items-center">{i18n.t('Edit')}</div>
+				<div class="flex items-center">{$i18n.t('Edit')}</div>
 			</button>
 
 			{#if $config.features.enable_community_sharing}
@@ -74,7 +74,7 @@
 					}}
 				>
 					<Share />
-					<div class="flex items-center">{i18n.t('Share')}</div>
+					<div class="flex items-center">{$i18n.t('Share')}</div>
 				</button>
 			{/if}
 
@@ -86,7 +86,7 @@
 				}}
 			>
 				<DocumentDuplicate />
-				<div class="flex items-center">{i18n.t('Clone')}</div>
+				<div class="flex items-center">{$i18n.t('Clone')}</div>
 			</button>
 
 			{#if $user?.role === 'admin' || $user?.permissions?.workspace?.prompts_export}
@@ -98,7 +98,7 @@
 					}}
 				>
 					<Download />
-					<div class="flex items-center">{i18n.t('Export')}</div>
+					<div class="flex items-center">{$i18n.t('Export')}</div>
 				</button>
 			{/if}
 
@@ -112,7 +112,7 @@
 				}}
 			>
 				<GarbageBin />
-				<div class="flex items-center">{i18n.t('Delete')}</div>
+				<div class="flex items-center">{$i18n.t('Delete')}</div>
 			</button>
 		</div>
 	</div>
@@ -126,7 +126,7 @@
 		}
 	}}
 >
-	<Tooltip content={i18n.t('More')}>
+	<Tooltip content={$i18n.t('More')}>
 		<slot />
 	</Tooltip>
 
@@ -156,7 +156,7 @@
 					/>
 				</svg>
 
-				<div class="flex items-center">{i18n.t('Edit')}</div>
+				<div class="flex items-center">{$i18n.t('Edit')}</div>
 			</button>
 
 			{#if $config.features.enable_community_sharing}
@@ -168,7 +168,7 @@
 					}}
 				>
 					<Share />
-					<div class="flex items-center">{i18n.t('Share')}</div>
+					<div class="flex items-center">{$i18n.t('Share')}</div>
 				</button>
 			{/if}
 
@@ -180,7 +180,7 @@
 				}}
 			>
 				<DocumentDuplicate />
-				<div class="flex items-center">{i18n.t('Clone')}</div>
+				<div class="flex items-center">{$i18n.t('Clone')}</div>
 			</button>
 
 			{#if $user?.role === 'admin' || $user?.permissions?.workspace?.prompts_export}
@@ -192,7 +192,7 @@
 					}}
 				>
 					<Download />
-					<div class="flex items-center">{i18n.t('Export')}</div>
+					<div class="flex items-center">{$i18n.t('Export')}</div>
 				</button>
 			{/if}
 
@@ -206,7 +206,7 @@
 				}}
 			>
 				<GarbageBin />
-				<div class="flex items-center">{i18n.t('Delete')}</div>
+				<div class="flex items-center">{$i18n.t('Delete')}</div>
 			</button>
 		</div>
 	</div>

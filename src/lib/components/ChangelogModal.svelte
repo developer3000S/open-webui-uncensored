@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import DOMPurify from 'dompurify';
 
@@ -41,16 +41,16 @@
 	<div class="px-6 pt-5 dark:text-white text-black">
 		<div class="flex justify-between items-start">
 			<h2 class="text-xl font-medium m-0">
-				{i18n.t("What's New in")}
+				{$i18n.t("What's New in")}
 				{$WEBUI_NAME}
 				<Confetti x={[-1, -0.25]} y={[0, 0.5]} />
 			</h2>
-			<button class="self-center" on:click={closeModal} aria-label={i18n.t('Close')}>
+			<button class="self-center" on:click={closeModal} aria-label={$i18n.t('Close')}>
 				<XMark className={'size-5'} />
 			</button>
 		</div>
 		<div class="flex items-center mt-1">
-			<div class="text-sm dark:text-gray-200">{i18n.t('Release Notes')}</div>
+			<div class="text-sm dark:text-gray-200">{$i18n.t('Release Notes')}</div>
 			<div class="flex self-center w-[1px] h-6 mx-2.5 bg-gray-50/50 dark:bg-gray-850/50"></div>
 			<div class="text-sm dark:text-gray-200">
 				v{WEBUI_VERSION}
@@ -105,7 +105,7 @@
 				on:click={closeModal}
 				class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 			>
-				<span class="relative">{i18n.t("Okay, Let's Go!")}</span>
+				<span class="relative">{$i18n.t("Okay, Let's Go!")}</span>
 			</button>
 		</div>
 	</div>
@@ -115,16 +115,16 @@
 	<div class="px-6 pt-5 dark:text-white text-black">
 		<div class="flex justify-between items-start">
 			<h2 class="text-xl font-medium m-0">
-				{i18n.t("What's New in")}
+				{$i18n.t("What's New in")}
 				{$WEBUI_NAME}
 				<Confetti x={[-1, -0.25]} y={[0, 0.5]} />
 			</h2>
-			<button class="self-center" on:click={closeModal} aria-label={i18n.t('Close')}>
+			<button class="self-center" on:click={closeModal} aria-label={$i18n.t('Close')}>
 				<XMark className={'size-5'} />
 			</button>
 		</div>
 		<div class="flex items-center mt-1">
-			<div class="text-sm dark:text-gray-200">{i18n.t('Release Notes')}</div>
+			<div class="text-sm dark:text-gray-200">{$i18n.t('Release Notes')}</div>
 			<div class="flex self-center w-[1px] h-6 mx-2.5 bg-gray-50/50 dark:bg-gray-850/50"></div>
 			<div class="text-sm dark:text-gray-200">
 				v{WEBUI_VERSION}
@@ -179,7 +179,7 @@
 				on:click={closeModal}
 				class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 			>
-				<span class="relative">{i18n.t("Okay, Let's Go!")}</span>
+				<span class="relative">{$i18n.t("Okay, Let's Go!")}</span>
 			</button>
 		</div>
 	</div>

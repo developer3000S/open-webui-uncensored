@@ -1,13 +1,13 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
 	import ManageOllama from './ManageOllama.svelte';
 
-	let ollamaConfig: any = null;
+	export let ollamaConfig: any = null;
 
 	let selectedUrlIdx = 0;
 </script>
@@ -17,7 +17,7 @@
 		<select
 			class="w-full py-2 px-4 text-sm outline-hidden bg-transparent"
 			bind:value={selectedUrlIdx}
-			placeholder={i18n.t('Select an Ollama instance')}
+			placeholder={$i18n.t('Select an Ollama instance')}
 		>
 			{#each ollamaConfig.OLLAMA_BASE_URLS as url, idx}
 				<option value={idx}>{url}</option>
@@ -35,7 +35,7 @@
 		<select
 			class="w-full py-2 px-4 text-sm outline-hidden bg-transparent"
 			bind:value={selectedUrlIdx}
-			placeholder={i18n.t('Select an Ollama instance')}
+			placeholder={$i18n.t('Select an Ollama instance')}
 		>
 			{#each ollamaConfig.OLLAMA_BASE_URLS as url, idx}
 				<option value={idx}>{url}</option>

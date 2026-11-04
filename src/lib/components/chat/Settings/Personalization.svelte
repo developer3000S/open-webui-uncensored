@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Switch from '$lib/components/common/Switch.svelte';
 	import { config, settings } from '$lib/stores';
@@ -11,13 +11,14 @@
 
 	import type { Writable } from 'svelte/store';
 
-	export let saveSettings: Function;
+	export let saveSettings: any;
 
 	let showManageModal = false;
 
 	// Addons
 	let enableMemory = false;
 
+	// @ts-ignore
 	onMount(async () => {
 		enableMemory = $settings?.memory ?? $config?.features?.enable_memories ?? false;
 	});
@@ -36,15 +37,15 @@
 		<div>
 			<div class="flex items-center justify-between mb-1">
 				<Tooltip
-					content={i18n.t(
+					content={$i18n.t(
 						'This is an experimental feature, it may not function as expected and is subject to change at any time.'
 					)}
 				>
 					<div class="flex items-center gap-2 text-sm font-medium">
-						{i18n.t('Memory')}
+						{$i18n.t('Memory')}
 						<span
 							class="text-[0.65rem] font-medium uppercase px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
-							>{i18n.t('Experimental')}</span
+							>{$i18n.t('Experimental')}</span
 						>
 					</div>
 				</Tooltip>
@@ -62,7 +63,7 @@
 
 		<div class="text-xs text-gray-600 dark:text-gray-400">
 			<div>
-				{i18n.t(
+				{$i18n.t(
 					"You can personalize your interactions with LLMs by adding memories through the 'Manage' button below, making them more helpful and tailored to you."
 				)}
 			</div>
@@ -76,7 +77,7 @@
 					showManageModal = true;
 				}}
 			>
-				{i18n.t('Manage')}
+				{$i18n.t('Manage')}
 			</button>
 		</div>
 	</div>
@@ -86,7 +87,7 @@
 			class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 			type="submit"
 		>
-			{i18n.t('Save')}
+			{$i18n.t('Save')}
 		</button>
 	</div>
 </form>
@@ -104,15 +105,15 @@
 		<div>
 			<div class="flex items-center justify-between mb-1">
 				<Tooltip
-					content={i18n.t(
+					content={$i18n.t(
 						'This is an experimental feature, it may not function as expected and is subject to change at any time.'
 					)}
 				>
 					<div class="flex items-center gap-2 text-sm font-medium">
-						{i18n.t('Memory')}
+						{$i18n.t('Memory')}
 						<span
 							class="text-[0.65rem] font-medium uppercase px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
-							>{i18n.t('Experimental')}</span
+							>{$i18n.t('Experimental')}</span
 						>
 					</div>
 				</Tooltip>
@@ -130,7 +131,7 @@
 
 		<div class="text-xs text-gray-600 dark:text-gray-400">
 			<div>
-				{i18n.t(
+				{$i18n.t(
 					"You can personalize your interactions with LLMs by adding memories through the 'Manage' button below, making them more helpful and tailored to you."
 				)}
 			</div>
@@ -144,7 +145,7 @@
 					showManageModal = true;
 				}}
 			>
-				{i18n.t('Manage')}
+				{$i18n.t('Manage')}
 			</button>
 		</div>
 	</div>
@@ -154,7 +155,7 @@
 			class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 			type="submit"
 		>
-			{i18n.t('Save')}
+			{$i18n.t('Save')}
 		</button>
 	</div>
 </form>

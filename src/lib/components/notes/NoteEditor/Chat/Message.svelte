@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
@@ -23,11 +23,11 @@
 <div class="flex flex-col gap-1 group">
 	<div class="flex items-center justify-between pt-1">
 		<div class="py-1 text-sm font-semibold uppercase min-w-[6rem] text-left rounded-lg transition">
-			{i18n.t(message.role)}
+			{$i18n.t(message.role)}
 		</div>
 
 		<div class="flex items-center gap-2">
-			<Tooltip placement="top" content={i18n.t('Insert')}>
+			<Tooltip placement="top" content={$i18n.t('Insert')}>
 				<button
 					class=" text-transparent group-hover:text-gray-500 dark:hover:text-gray-300 transition"
 					on:click={() => {
@@ -38,7 +38,7 @@
 				</button>
 			</Tooltip>
 
-			<Tooltip placement="top" content={i18n.t('Edit')}>
+			<Tooltip placement="top" content={$i18n.t('Edit')}>
 				<button
 					class=" text-transparent group-hover:text-gray-500 dark:hover:text-gray-300 transition"
 					on:click={() => {
@@ -49,9 +49,9 @@
 				</button>
 			</Tooltip>
 
-			<Tooltip placement="top" content={i18n.t('Delete')}>
+			<Tooltip placement="top" content={$i18n.t('Delete')}>
 				<button
-					aria-label={i18n.t('Delete')}
+					aria-label={$i18n.t('Delete')}
 					class=" text-transparent group-hover:text-gray-500 dark:hover:text-gray-300 transition"
 					on:click={() => {
 						onDelete();
@@ -77,8 +77,8 @@
 	</div>
 
 	<div class="flex-1">
-		<!-- i18n.t('a user') -->
-		<!-- i18n.t('an assistant') -->
+		<!-- $i18n.t('a user') -->
+		<!-- $i18n.t('an assistant') -->
 
 		{#if !(message?.done ?? true) && message?.content === ''}
 			<div class="">
@@ -87,8 +87,8 @@
 		{:else if message?.edit === true}
 			<Textarea
 				className="w-full bg-transparent outline-hidden text-sm resize-none overflow-hidden"
-				placeholder={i18n.t(`Enter {{role}} message here`, {
-					role: message.role === 'user' ? i18n.t('a user') : i18n.t('an assistant')
+				placeholder={$i18n.t(`Enter {{role}} message here`, {
+					role: message.role === 'user' ? $i18n.t('a user') : $i18n.t('an assistant')
 				})}
 				bind:value={message.content}
 				onBlur={() => {
@@ -106,11 +106,11 @@
 <div class="flex flex-col gap-1 group">
 	<div class="flex items-center justify-between pt-1">
 		<div class="py-1 text-sm font-semibold uppercase min-w-[6rem] text-left rounded-lg transition">
-			{i18n.t(message.role)}
+			{$i18n.t(message.role)}
 		</div>
 
 		<div class="flex items-center gap-2">
-			<Tooltip placement="top" content={i18n.t('Insert')}>
+			<Tooltip placement="top" content={$i18n.t('Insert')}>
 				<button
 					class=" text-transparent group-hover:text-gray-500 dark:hover:text-gray-300 transition"
 					on:click={() => {
@@ -121,7 +121,7 @@
 				</button>
 			</Tooltip>
 
-			<Tooltip placement="top" content={i18n.t('Edit')}>
+			<Tooltip placement="top" content={$i18n.t('Edit')}>
 				<button
 					class=" text-transparent group-hover:text-gray-500 dark:hover:text-gray-300 transition"
 					on:click={() => {
@@ -132,9 +132,9 @@
 				</button>
 			</Tooltip>
 
-			<Tooltip placement="top" content={i18n.t('Delete')}>
+			<Tooltip placement="top" content={$i18n.t('Delete')}>
 				<button
-					aria-label={i18n.t('Delete')}
+					aria-label={$i18n.t('Delete')}
 					class=" text-transparent group-hover:text-gray-500 dark:hover:text-gray-300 transition"
 					on:click={() => {
 						onDelete();
@@ -160,8 +160,8 @@
 	</div>
 
 	<div class="flex-1">
-		<!-- i18n.t('a user') -->
-		<!-- i18n.t('an assistant') -->
+		<!-- $i18n.t('a user') -->
+		<!-- $i18n.t('an assistant') -->
 
 		{#if !(message?.done ?? true) && message?.content === ''}
 			<div class="">
@@ -170,8 +170,8 @@
 		{:else if message?.edit === true}
 			<Textarea
 				className="w-full bg-transparent outline-hidden text-sm resize-none overflow-hidden"
-				placeholder={i18n.t(`Enter {{role}} message here`, {
-					role: message.role === 'user' ? i18n.t('a user') : i18n.t('an assistant')
+				placeholder={$i18n.t(`Enter {{role}} message here`, {
+					role: message.role === 'user' ? $i18n.t('a user') : $i18n.t('an assistant')
 				})}
 				bind:value={message.content}
 				onBlur={() => {

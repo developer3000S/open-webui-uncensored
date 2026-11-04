@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
@@ -120,11 +120,11 @@
 		try {
 			const result = await deleteCalendar(localStorage.token, id);
 			if (result) {
-				toast.success(i18n.t('Calendar deleted'));
+				toast.success($i18n.t('Calendar deleted'));
 				await loadCalendars();
 				await refresh();
 			} else {
-				toast.error(i18n.t('Failed to delete calendar'));
+				toast.error($i18n.t('Failed to delete calendar'));
 			}
 		} catch (err) {
 			toast.error(`${err}`);
@@ -201,6 +201,7 @@
 			? `${DAY_NAMES[currentDate.getDay()]}, ${MONTH_NAMES[currentDate.getMonth()]} ${currentDate.getDate()}, ${currentDate.getFullYear()}`
 			: `${MONTH_NAMES[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
 
+	// @ts-ignore
 	onMount(async () => {
 		await loadCalendars();
 		await refresh();
@@ -209,9 +210,9 @@
 </script>
 
 <svelte:head>
-			<title>{i18n.t('Calendar')} • {$WEBUI_NAME}</title>
-			<title>{i18n.t('Calendar')} • {$WEBUI_NAME}</title>
-		</svelte:head>
+	<title>{$i18n.t('Calendar')} • {$WEBUI_NAME}</title>
+	<title>{$i18n.t('Calendar')} • {$WEBUI_NAME}</title>
+</svelte:head>
 
 <CalendarEventModal
 	bind:show={showEventModal}
@@ -237,7 +238,7 @@
 				{#if $mobile}
 					<div class="{$showSidebar ? 'md:hidden' : ''} flex flex-none items-center">
 						<Tooltip
-							content={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
+							content={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
 							interactive={true}
 						>
 							<button
@@ -301,15 +302,15 @@
 							class="hidden sm:inline text-xs px-2 py-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-850 transition text-gray-500 hover:text-gray-700 dark:hover:text-white"
 							on:click={goToToday}
 						>
-							{i18n.t('Today')}
+							{$i18n.t('Today')}
 						</button>
 
 						<Select
 							bind:value={view}
 							items={[
-								{ value: 'day', label: i18n.t('Day') },
-								{ value: 'week', label: i18n.t('Week') },
-								{ value: 'month', label: i18n.t('Month') }
+								{ value: 'day', label: $i18n.t('Day') },
+								{ value: 'week', label: $i18n.t('Week') },
+								{ value: 'month', label: $i18n.t('Month') }
 							]}
 							onChange={() => handleNavigate()}
 							triggerClass="relative flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 dark:bg-gray-850 rounded-xl text-xs"
@@ -351,7 +352,7 @@
 								/></svg
 							>
 
-							<span class="hidden sm:inline">{i18n.t('New Event')}</span>
+							<span class="hidden sm:inline">{$i18n.t('New Event')}</span>
 						</button>
 					</div>
 				</div>
@@ -394,8 +395,6 @@
 	{/if}
 </div>
 
-
-
 <CalendarEventModal
 	bind:show={showEventModal}
 	event={editEvent}
@@ -420,7 +419,7 @@
 				{#if $mobile}
 					<div class="{$showSidebar ? 'md:hidden' : ''} flex flex-none items-center">
 						<Tooltip
-							content={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
+							content={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
 							interactive={true}
 						>
 							<button
@@ -484,15 +483,15 @@
 							class="hidden sm:inline text-xs px-2 py-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-850 transition text-gray-500 hover:text-gray-700 dark:hover:text-white"
 							on:click={goToToday}
 						>
-							{i18n.t('Today')}
+							{$i18n.t('Today')}
 						</button>
 
 						<Select
 							bind:value={view}
 							items={[
-								{ value: 'day', label: i18n.t('Day') },
-								{ value: 'week', label: i18n.t('Week') },
-								{ value: 'month', label: i18n.t('Month') }
+								{ value: 'day', label: $i18n.t('Day') },
+								{ value: 'week', label: $i18n.t('Week') },
+								{ value: 'month', label: $i18n.t('Month') }
 							]}
 							onChange={() => handleNavigate()}
 							triggerClass="relative flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 dark:bg-gray-850 rounded-xl text-xs"
@@ -534,7 +533,7 @@
 								/></svg
 							>
 
-							<span class="hidden sm:inline">{i18n.t('New Event')}</span>
+							<span class="hidden sm:inline">{$i18n.t('New Event')}</span>
 						</button>
 					</div>
 				</div>

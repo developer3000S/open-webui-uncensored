@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
@@ -20,14 +20,15 @@
 	$: skillId = $page.url.searchParams.get('id');
 
 	const onSubmit = async (_skill: any) => {
-		const updatedSkill = await updateSkillById(localStorage.token, skillId, _skill).catch(async (error)=> {
+		const updatedSkill = await updateSkillById(localStorage.token, skillId, _skill).catch(
+			async (error) => {
 				toast.error(`${error}`);
 				return null;
 			}
 		);
 
 		if (updatedSkill) {
-			toast.success(i18n.t('Skill updated successfully'));
+			toast.success($i18n.t('Skill updated successfully'));
 			await skills.set(await getSkills(localStorage.token));
 			skill = {
 				id: updatedSkill.id,
@@ -40,6 +41,7 @@
 		}
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		if (skillId) {
 			const _skill = await getSkillById(localStorage.token, skillId).catch((error) => {
@@ -48,7 +50,7 @@
 			});
 
 			if (_skill) {
-				disabled = !_skill.write_access ?? true;
+				disabled = !_skill.write_access;
 				skill = {
 					id: _skill.id,
 					name: _skill.name,

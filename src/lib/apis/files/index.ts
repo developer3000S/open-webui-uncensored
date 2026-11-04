@@ -68,7 +68,7 @@ export const uploadFile = async (
 			}
 
 			xhr.onload = () => {
-				let parsed: any = null;
+				let parsed: any;
 				try {
 					parsed = xhr.responseText ? JSON.parse(xhr.responseText) : null;
 				} catch {
@@ -144,7 +144,7 @@ export const uploadFile = async (
 			file_id: res.id
 		});
 
-		let status: any = null;
+		let status: any;
 		try {
 			status = await getFileProcessStatus(token, res.id);
 		} catch {

@@ -155,7 +155,8 @@ async function getToken(
 		} catch (popupError) {
 			throw new Error(
 				'Failed to login: ' +
-					(popupError instanceof Error ? popupError.message : String(popupError))
+					(popupError instanceof Error ? popupError.message : String(popupError)),
+				{ cause: popupError }
 			);
 		}
 	}

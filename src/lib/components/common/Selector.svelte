@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import ChevronDown from '../icons/ChevronDown.svelte';
 	import Check from '../icons/Check.svelte';
@@ -11,9 +11,9 @@
 	import type { Writable } from 'svelte/store';
 
 	export let value: any = '';
-	export let placeholder = i18n.t('Select a model');
+	export let placeholder = $i18n.t('Select a model');
 	export let searchEnabled: any = true;
-	export let searchPlaceholder = i18n.t('Search a model');
+	export let searchPlaceholder = $i18n.t('Search a model');
 
 	export let items = [
 		{ value: 'mango', label: 'Mango' },
@@ -86,7 +86,7 @@
 				{:else}
 					<div>
 						<div class="block px-5 py-2 text-sm text-gray-700 dark:text-gray-100">
-							{i18n.t('No results found')}
+							{$i18n.t('No results found')}
 						</div>
 					</div>
 				{/each}
@@ -150,7 +150,7 @@
 				{:else}
 					<div>
 						<div class="block px-5 py-2 text-sm text-gray-700 dark:text-gray-100">
-							{i18n.t('No results found')}
+							{$i18n.t('No results found')}
 						</div>
 					</div>
 				{/each}

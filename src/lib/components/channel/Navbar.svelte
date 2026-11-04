@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 
@@ -49,8 +49,8 @@
 	};
 
 	export let channel: any;
-	export let onPin = (messageId: any, pinned: any) => {};
-	export let onUpdate = () => {};
+	export let onPin: any = (messageId: any, pinned: any) => {};
+	export let onUpdate: any = () => {};
 </script>
 
 <PinnedMessagesModal bind:show={showChannelPinnedMessagesModal} {channel} {onPin} />
@@ -70,7 +70,7 @@
 						: ''} mr-1.5 mt-0.5 self-start flex flex-none items-center text-gray-600 dark:text-gray-400"
 				>
 					<Tooltip
-						content={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
+						content={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
 						interactive={true}
 					>
 						<button
@@ -159,7 +159,7 @@
 				class="self-start flex flex-none items-center text-gray-600 dark:text-gray-400 gap-1 shrink-0"
 			>
 				{#if channel}
-					<Tooltip content={i18n.t('Pinned Messages')}>
+					<Tooltip content={$i18n.t('Pinned Messages')}>
 						<button
 							class=" flex cursor-pointer py-1.5 px-1.5 border dark:border-gray-850 border-gray-50 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-850 transition"
 							aria-label="Pinned Messages"
@@ -175,7 +175,7 @@
 					</Tooltip>
 
 					{#if channel?.user_count !== undefined}
-						<Tooltip content={i18n.t('Users')}>
+						<Tooltip content={$i18n.t('Users')}>
 							<button
 								class=" flex cursor-pointer shrink-0 py-1 px-1.5 border dark:border-gray-850 border-gray-50 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-850 transition"
 								aria-label="User Count"
@@ -246,7 +246,7 @@
 						: ''} mr-1.5 mt-0.5 self-start flex flex-none items-center text-gray-600 dark:text-gray-400"
 				>
 					<Tooltip
-						content={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
+						content={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
 						interactive={true}
 					>
 						<button
@@ -335,7 +335,7 @@
 				class="self-start flex flex-none items-center text-gray-600 dark:text-gray-400 gap-1 shrink-0"
 			>
 				{#if channel}
-					<Tooltip content={i18n.t('Pinned Messages')}>
+					<Tooltip content={$i18n.t('Pinned Messages')}>
 						<button
 							class=" flex cursor-pointer py-1.5 px-1.5 border dark:border-gray-850 border-gray-50 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-850 transition"
 							aria-label="Pinned Messages"
@@ -351,7 +351,7 @@
 					</Tooltip>
 
 					{#if channel?.user_count !== undefined}
-						<Tooltip content={i18n.t('Users')}>
+						<Tooltip content={$i18n.t('Users')}>
 							<button
 								class=" flex cursor-pointer shrink-0 py-1 px-1.5 border dark:border-gray-850 border-gray-50 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-850 transition"
 								aria-label="User Count"

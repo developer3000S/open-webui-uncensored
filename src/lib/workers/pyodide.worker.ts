@@ -13,6 +13,8 @@ declare global {
 	}
 }
 
+const fsUploadFiles: any = (..._args: any[]) => {};
+
 // ---------------------------------------------------------------------------
 // Pyodide bootstrap
 // ---------------------------------------------------------------------------
@@ -239,7 +241,7 @@ matplotlib.pyplot.show = show`);
 // Message handler
 // ---------------------------------------------------------------------------
 
-self.onmessage = (event: any)  => {
+async (event: any) => {
 	const data = event.data;
 	const { id, type } = data;
 

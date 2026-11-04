@@ -9,9 +9,9 @@
 	export let query: any = '';
 	export let command: (payload: { id: string; label: string }) => void;
 
-	export let onSelect = (e: any) => {};
-	export let onUpload = (e: any) => {};
-	export let insertTextHandler = (text: any) => {};
+	export let onSelect: any = (e: any) => {};
+	export let onUpload: any = (e: any) => {};
+	export let insertTextHandler: any = (text: any) => {};
 
 	let suggestionElement: any = null;
 	let filteredItems: any = [];

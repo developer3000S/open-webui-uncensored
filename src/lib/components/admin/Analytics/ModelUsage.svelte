@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { models } from '$lib/stores';
 	import { getModelAnalytics } from '$lib/apis/analytics';
@@ -58,8 +58,8 @@
 	class="pt-0.5 pb-1 gap-1 flex flex-col md:flex-row justify-between sticky top-0 z-10 bg-white dark:bg-gray-900"
 >
 	<div class="flex items-center text-xl font-medium px-0.5 gap-2 shrink-0">
-		{i18n.t('Model Usage')}
-		<span class="text-lg text-gray-500">{totalMessages} {i18n.t('messages')}</span>
+		{$i18n.t('Model Usage')}
+		<span class="text-lg text-gray-500">{totalMessages} {$i18n.t('messages')}</span>
 	</div>
 </div>
 
@@ -75,7 +75,7 @@
 	{/if}
 
 	{#if !modelStats.length && !loading}
-		<div class="text-center text-xs text-gray-500 py-1">{i18n.t('No data found')}</div>
+		<div class="text-center text-xs text-gray-500 py-1">{$i18n.t('No data found')}</div>
 	{:else if modelStats.length}
 		<table
 			class="w-full text-sm text-left text-gray-500 dark:text-gray-400 {loading
@@ -91,7 +91,7 @@
 						on:click={() => toggleSort('name')}
 					>
 						<div class="flex gap-1.5 items-center">
-							{i18n.t('Model')}
+							{$i18n.t('Model')}
 							{#if orderBy === 'name'}
 								{#if direction === 'asc'}<ChevronUp className="size-2" />{:else}<ChevronDown
 										className="size-2"
@@ -107,7 +107,7 @@
 						on:click={() => toggleSort('count')}
 					>
 						<div class="flex gap-1.5 items-center justify-end">
-							{i18n.t('Messages')}
+							{$i18n.t('Messages')}
 							{#if orderBy === 'count'}
 								{#if direction === 'asc'}<ChevronUp className="size-2" />{:else}<ChevronDown
 										className="size-2"
@@ -123,7 +123,7 @@
 						on:click={() => toggleSort('percentage')}
 					>
 						<div class="flex gap-1.5 items-center justify-end">
-							{i18n.t('Share')}
+							{$i18n.t('Share')}
 							{#if orderBy === 'percentage'}
 								{#if direction === 'asc'}<ChevronUp className="size-2" />{:else}<ChevronDown
 										className="size-2"
@@ -171,7 +171,7 @@
 
 <div class="text-gray-500 text-xs mt-1.5 w-full flex justify-end">
 	<div class="text-right">
-		ⓘ {i18n.t('Message counts are based on assistant responses.')}
+		ⓘ {$i18n.t('Message counts are based on assistant responses.')}
 	</div>
 </div>
 
@@ -179,8 +179,8 @@
 	class="pt-0.5 pb-1 gap-1 flex flex-col md:flex-row justify-between sticky top-0 z-10 bg-white dark:bg-gray-900"
 >
 	<div class="flex items-center text-xl font-medium px-0.5 gap-2 shrink-0">
-		{i18n.t('Model Usage')}
-		<span class="text-lg text-gray-500">{totalMessages} {i18n.t('messages')}</span>
+		{$i18n.t('Model Usage')}
+		<span class="text-lg text-gray-500">{totalMessages} {$i18n.t('messages')}</span>
 	</div>
 </div>
 
@@ -196,7 +196,7 @@
 	{/if}
 
 	{#if !modelStats.length && !loading}
-		<div class="text-center text-xs text-gray-500 py-1">{i18n.t('No data found')}</div>
+		<div class="text-center text-xs text-gray-500 py-1">{$i18n.t('No data found')}</div>
 	{:else if modelStats.length}
 		<table
 			class="w-full text-sm text-left text-gray-500 dark:text-gray-400 {loading
@@ -212,7 +212,7 @@
 						on:click={() => toggleSort('name')}
 					>
 						<div class="flex gap-1.5 items-center">
-							{i18n.t('Model')}
+							{$i18n.t('Model')}
 							{#if orderBy === 'name'}
 								{#if direction === 'asc'}<ChevronUp className="size-2" />{:else}<ChevronDown
 										className="size-2"
@@ -228,7 +228,7 @@
 						on:click={() => toggleSort('count')}
 					>
 						<div class="flex gap-1.5 items-center justify-end">
-							{i18n.t('Messages')}
+							{$i18n.t('Messages')}
 							{#if orderBy === 'count'}
 								{#if direction === 'asc'}<ChevronUp className="size-2" />{:else}<ChevronDown
 										className="size-2"
@@ -244,7 +244,7 @@
 						on:click={() => toggleSort('percentage')}
 					>
 						<div class="flex gap-1.5 items-center justify-end">
-							{i18n.t('Share')}
+							{$i18n.t('Share')}
 							{#if orderBy === 'percentage'}
 								{#if direction === 'asc'}<ChevronUp className="size-2" />{:else}<ChevronDown
 										className="size-2"
@@ -292,6 +292,6 @@
 
 <div class="text-gray-500 text-xs mt-1.5 w-full flex justify-end">
 	<div class="text-right">
-		ⓘ {i18n.t('Message counts are based on assistant responses.')}
+		ⓘ {$i18n.t('Message counts are based on assistant responses.')}
 	</div>
 </div>

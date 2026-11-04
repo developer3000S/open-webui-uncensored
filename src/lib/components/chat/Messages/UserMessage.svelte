@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import dayjs from 'dayjs';
 	import { toast } from 'svelte-sonner';
@@ -27,15 +27,19 @@
 
 	export let user: any;
 	export let chatId: any;
-	export let history: { messages?: Record<string, any>; currentId?: string | null; [key: string]: any } = {};
+	export let history: {
+		messages?: Record<string, any>;
+		currentId?: string | null;
+		[key: string]: any;
+	} = {};
 	export let messageId: any;
 	export let siblings: any;
-	export let gotoMessage: Function;
-	export let showPreviousMessage: Function;
-	export let showNextMessage: Function;
+	export let gotoMessage: any;
+	export let showPreviousMessage: any;
+	export let showNextMessage: any;
 
-	export let editMessage: Function;
-	export let deleteMessage: Function;
+	export let editMessage: any;
+	export let deleteMessage: any;
 
 	export let isFirstMessage: boolean;
 	export let readOnly: boolean;
@@ -67,7 +71,7 @@
 	const copyToClipboard = async (text: any) => {
 		const res = await _copyToClipboard(text);
 		if (res) {
-			toast.success(i18n.t('Copying to clipboard was successful!'));
+			toast.success($i18n.t('Copying to clipboard was successful!'));
 		}
 	};
 
@@ -92,7 +96,7 @@
 
 	const editMessageConfirmHandler = (submit: any = true) => {
 		if (!editedContent && (editedFiles ?? []).length === 0) {
-			toast.error(i18n.t('Please enter a message or attach a file.'));
+			toast.error($i18n.t('Please enter a message or attach a file.'));
 			return;
 		}
 
@@ -120,7 +124,7 @@
 
 <DeleteConfirmDialog
 	bind:show={showDeleteConfirm}
-	title={i18n.t('Delete message?')}
+	title={$i18n.t('Delete message?')}
 	on:confirm={() => {
 		deleteMessageHandler();
 	}}
@@ -128,7 +132,7 @@
 
 <div
 	class=" flex w-full user-message group"
-	dir={$settings.chatDirection}
+	dir={$settings.chatDirection as any}
 	id="message-{message.id}"
 	style="scroll-margin-top: 3rem;"
 >
@@ -147,12 +151,12 @@
 			<div>
 				<Name>
 					{#if message.user}
-						{i18n.t('You')}
+						{$i18n.t('You')}
 						<span class=" text-gray-500 text-sm font-medium">{message?.user ?? ''}</span>
 					{:else if $settings.showUsername || $_user?.name !== user?.name}
-						{user?.name ?? i18n.t('You')}
+						{user?.name ?? $i18n.t('You')}
 					{:else}
-						{i18n.t('You')}
+						{$i18n.t('You')}
 					{/if}
 
 					{#if message.timestamp}
@@ -163,12 +167,12 @@
 								: 'invisible group-hover:visible transition'}"
 						>
 							<Tooltip content={dayjs(message.timestamp * 1000).format('LLLL')}>
-								<!-- i18n.t('Today at {{LOCALIZED_TIME}}') -->
-								<!-- i18n.t('Yesterday at {{LOCALIZED_TIME}}') -->
-								<!-- i18n.t('{{LOCALIZED_DATE}} at {{LOCALIZED_TIME}}') -->
+								<!-- $i18n.t('Today at {{LOCALIZED_TIME}}') -->
+								<!-- $i18n.t('Yesterday at {{LOCALIZED_TIME}}') -->
+								<!-- $i18n.t('{{LOCALIZED_DATE}} at {{LOCALIZED_TIME}}') -->
 
 								<span class="line-clamp-1"
-									>{i18n.t(formatDate(message.timestamp * 1000), {
+									>{$i18n.t(formatDate(message.timestamp * 1000), {
 										LOCALIZED_TIME: dayjs(message.timestamp * 1000).format('LT'),
 										LOCALIZED_DATE: dayjs(message.timestamp * 1000).format('L')
 									})}</span
@@ -188,7 +192,7 @@
 				>
 					<Tooltip content={dayjs(message.timestamp * 1000).format('LLLL')}>
 						<span class="line-clamp-1"
-							>{i18n.t(formatDate(message.timestamp * 1000), {
+							>{$i18n.t(formatDate(message.timestamp * 1000), {
 								LOCALIZED_TIME: dayjs(message.timestamp * 1000).format('LT'),
 								LOCALIZED_DATE: dayjs(message.timestamp * 1000).format('L')
 							})}</span
@@ -203,7 +207,7 @@
 				{#if message.files}
 					<div
 						class="mb-1 w-full flex flex-col justify-end overflow-x-auto gap-1 flex-wrap"
-						dir={$settings?.chatDirection ?? 'auto'}
+						dir={($settings?.chatDirection ?? 'auto') as any}
 					>
 						{#each message.files as file}
 							{@const fileUrl =
@@ -249,7 +253,7 @@
 										</div>
 										<div class=" absolute -top-1 -right-1">
 											<button
-												aria-label={i18n.t('Remove File')}
+												aria-label={$i18n.t('Remove File')}
 												class=" bg-white text-black border border-white rounded-full {($settings?.highContrastMode ??
 												false)
 													? ''
@@ -338,7 +342,7 @@
 									editMessageConfirmHandler(false);
 								}}
 							>
-								{i18n.t('Save')}
+								{$i18n.t('Save')}
 							</button>
 						</div>
 
@@ -350,7 +354,7 @@
 									cancelEditMessage();
 								}}
 							>
-								{i18n.t('Cancel')}
+								{$i18n.t('Cancel')}
 							</button>
 
 							<button
@@ -360,7 +364,7 @@
 									editMessageConfirmHandler();
 								}}
 							>
-								{i18n.t('Send')}
+								{$i18n.t('Send')}
 							</button>
 						</div>
 					</div>
@@ -384,7 +388,10 @@
 										{topPadding}
 									/>
 								{:else}
-									<div class="whitespace-pre-wrap" dir={$settings?.chatDirection ?? 'auto'}>
+									<div
+										class="whitespace-pre-wrap"
+										dir={($settings?.chatDirection ?? 'auto') as any}
+									>
 										{message.content}
 									</div>
 								{/if}
@@ -404,7 +411,7 @@
 						{#if siblings.length > 1}
 							<div class="flex self-center" dir="ltr">
 								<button
-									aria-label={i18n.t('Previous Message')}
+									aria-label={$i18n.t('Previous Message')}
 									class="self-center p-1 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-white hover:text-black rounded-md transition"
 									on:click={() => {
 										showPreviousMessage(message);
@@ -472,7 +479,7 @@
 								{/if}
 
 								<button
-									aria-label={i18n.t('Next Message')}
+									aria-label={$i18n.t('Next Message')}
 									class="self-center p-1 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-white hover:text-black rounded-md transition"
 									on:click={() => {
 										showNextMessage(message);
@@ -497,9 +504,9 @@
 						{/if}
 					{/if}
 					{#if !readOnly}
-						<Tooltip content={i18n.t('Edit')} placement="bottom">
+						<Tooltip content={$i18n.t('Edit')} placement="bottom">
 							<button
-								aria-label={i18n.t('Edit')}
+								aria-label={$i18n.t('Edit')}
 								class="{($settings?.highContrastMode ?? false)
 									? ''
 									: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg dark:hover:text-white hover:text-black transition edit-user-message-button"
@@ -526,9 +533,9 @@
 					{/if}
 
 					{#if message?.content}
-						<Tooltip content={i18n.t('Copy')} placement="bottom">
+						<Tooltip content={$i18n.t('Copy')} placement="bottom">
 							<button
-								aria-label={i18n.t('Copy')}
+								aria-label={$i18n.t('Copy')}
 								class="{($settings?.highContrastMode ?? false)
 									? ''
 									: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg dark:hover:text-white hover:text-black transition"
@@ -556,9 +563,9 @@
 
 					{#if $_user?.role === 'admin' || ($_user?.permissions?.chat?.delete_message ?? false)}
 						{#if !readOnly && (!isFirstMessage || siblings.length > 1)}
-							<Tooltip content={i18n.t('Delete')} placement="bottom">
+							<Tooltip content={$i18n.t('Delete')} placement="bottom">
 								<button
-									aria-label={i18n.t('Delete')}
+									aria-label={$i18n.t('Delete')}
 									class="{($settings?.highContrastMode ?? false)
 										? ''
 										: 'invisible group-hover:visible'} p-1 rounded-sm dark:hover:text-white hover:text-black transition"
@@ -593,7 +600,7 @@
 						{#if siblings.length > 1}
 							<div class="flex self-center" dir="ltr">
 								<button
-									aria-label={i18n.t('Previous Message')}
+									aria-label={$i18n.t('Previous Message')}
 									class="self-center p-1 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-white hover:text-black rounded-md transition"
 									on:click={() => {
 										showPreviousMessage(message);
@@ -661,7 +668,7 @@
 								{/if}
 
 								<button
-									aria-label={i18n.t('Next Message')}
+									aria-label={$i18n.t('Next Message')}
 									class="self-center p-1 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-white hover:text-black rounded-md transition"
 									on:click={() => {
 										showNextMessage(message);
@@ -693,7 +700,7 @@
 
 <DeleteConfirmDialog
 	bind:show={showDeleteConfirm}
-	title={i18n.t('Delete message?')}
+	title={$i18n.t('Delete message?')}
 	on:confirm={() => {
 		deleteMessageHandler();
 	}}
@@ -701,7 +708,7 @@
 
 <div
 	class=" flex w-full user-message group"
-	dir={$settings.chatDirection}
+	dir={$settings.chatDirection as any}
 	id="message-{message.id}"
 	style="scroll-margin-top: 3rem;"
 >
@@ -720,12 +727,12 @@
 			<div>
 				<Name>
 					{#if message.user}
-						{i18n.t('You')}
+						{$i18n.t('You')}
 						<span class=" text-gray-500 text-sm font-medium">{message?.user ?? ''}</span>
 					{:else if $settings.showUsername || $_user?.name !== user?.name}
-						{user?.name ?? i18n.t('You')}
+						{user?.name ?? $i18n.t('You')}
 					{:else}
-						{i18n.t('You')}
+						{$i18n.t('You')}
 					{/if}
 
 					{#if message.timestamp}
@@ -736,12 +743,12 @@
 								: 'invisible group-hover:visible transition'}"
 						>
 							<Tooltip content={dayjs(message.timestamp * 1000).format('LLLL')}>
-								<!-- i18n.t('Today at {{LOCALIZED_TIME}}') -->
-								<!-- i18n.t('Yesterday at {{LOCALIZED_TIME}}') -->
-								<!-- i18n.t('{{LOCALIZED_DATE}} at {{LOCALIZED_TIME}}') -->
+								<!-- $i18n.t('Today at {{LOCALIZED_TIME}}') -->
+								<!-- $i18n.t('Yesterday at {{LOCALIZED_TIME}}') -->
+								<!-- $i18n.t('{{LOCALIZED_DATE}} at {{LOCALIZED_TIME}}') -->
 
 								<span class="line-clamp-1"
-									>{i18n.t(formatDate(message.timestamp * 1000), {
+									>{$i18n.t(formatDate(message.timestamp * 1000), {
 										LOCALIZED_TIME: dayjs(message.timestamp * 1000).format('LT'),
 										LOCALIZED_DATE: dayjs(message.timestamp * 1000).format('L')
 									})}</span
@@ -761,7 +768,7 @@
 				>
 					<Tooltip content={dayjs(message.timestamp * 1000).format('LLLL')}>
 						<span class="line-clamp-1"
-							>{i18n.t(formatDate(message.timestamp * 1000), {
+							>{$i18n.t(formatDate(message.timestamp * 1000), {
 								LOCALIZED_TIME: dayjs(message.timestamp * 1000).format('LT'),
 								LOCALIZED_DATE: dayjs(message.timestamp * 1000).format('L')
 							})}</span
@@ -776,7 +783,7 @@
 				{#if message.files}
 					<div
 						class="mb-1 w-full flex flex-col justify-end overflow-x-auto gap-1 flex-wrap"
-						dir={$settings?.chatDirection ?? 'auto'}
+						dir={($settings?.chatDirection ?? 'auto') as any}
 					>
 						{#each message.files as file}
 							{@const fileUrl =
@@ -822,7 +829,7 @@
 										</div>
 										<div class=" absolute -top-1 -right-1">
 											<button
-												aria-label={i18n.t('Remove File')}
+												aria-label={$i18n.t('Remove File')}
 												class=" bg-white text-black border border-white rounded-full {($settings?.highContrastMode ??
 												false)
 													? ''
@@ -911,7 +918,7 @@
 									editMessageConfirmHandler(false);
 								}}
 							>
-								{i18n.t('Save')}
+								{$i18n.t('Save')}
 							</button>
 						</div>
 
@@ -923,7 +930,7 @@
 									cancelEditMessage();
 								}}
 							>
-								{i18n.t('Cancel')}
+								{$i18n.t('Cancel')}
 							</button>
 
 							<button
@@ -933,7 +940,7 @@
 									editMessageConfirmHandler();
 								}}
 							>
-								{i18n.t('Send')}
+								{$i18n.t('Send')}
 							</button>
 						</div>
 					</div>
@@ -957,7 +964,10 @@
 										{topPadding}
 									/>
 								{:else}
-									<div class="whitespace-pre-wrap" dir={$settings?.chatDirection ?? 'auto'}>
+									<div
+										class="whitespace-pre-wrap"
+										dir={($settings?.chatDirection ?? 'auto') as any}
+									>
 										{message.content}
 									</div>
 								{/if}
@@ -977,7 +987,7 @@
 						{#if siblings.length > 1}
 							<div class="flex self-center" dir="ltr">
 								<button
-									aria-label={i18n.t('Previous Message')}
+									aria-label={$i18n.t('Previous Message')}
 									class="self-center p-1 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-white hover:text-black rounded-md transition"
 									on:click={() => {
 										showPreviousMessage(message);
@@ -1045,7 +1055,7 @@
 								{/if}
 
 								<button
-									aria-label={i18n.t('Next Message')}
+									aria-label={$i18n.t('Next Message')}
 									class="self-center p-1 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-white hover:text-black rounded-md transition"
 									on:click={() => {
 										showNextMessage(message);
@@ -1070,9 +1080,9 @@
 						{/if}
 					{/if}
 					{#if !readOnly}
-						<Tooltip content={i18n.t('Edit')} placement="bottom">
+						<Tooltip content={$i18n.t('Edit')} placement="bottom">
 							<button
-								aria-label={i18n.t('Edit')}
+								aria-label={$i18n.t('Edit')}
 								class="{($settings?.highContrastMode ?? false)
 									? ''
 									: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg dark:hover:text-white hover:text-black transition edit-user-message-button"
@@ -1099,9 +1109,9 @@
 					{/if}
 
 					{#if message?.content}
-						<Tooltip content={i18n.t('Copy')} placement="bottom">
+						<Tooltip content={$i18n.t('Copy')} placement="bottom">
 							<button
-								aria-label={i18n.t('Copy')}
+								aria-label={$i18n.t('Copy')}
 								class="{($settings?.highContrastMode ?? false)
 									? ''
 									: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg dark:hover:text-white hover:text-black transition"
@@ -1129,9 +1139,9 @@
 
 					{#if $_user?.role === 'admin' || ($_user?.permissions?.chat?.delete_message ?? false)}
 						{#if !readOnly && (!isFirstMessage || siblings.length > 1)}
-							<Tooltip content={i18n.t('Delete')} placement="bottom">
+							<Tooltip content={$i18n.t('Delete')} placement="bottom">
 								<button
-									aria-label={i18n.t('Delete')}
+									aria-label={$i18n.t('Delete')}
 									class="{($settings?.highContrastMode ?? false)
 										? ''
 										: 'invisible group-hover:visible'} p-1 rounded-sm dark:hover:text-white hover:text-black transition"
@@ -1166,7 +1176,7 @@
 						{#if siblings.length > 1}
 							<div class="flex self-center" dir="ltr">
 								<button
-									aria-label={i18n.t('Previous Message')}
+									aria-label={$i18n.t('Previous Message')}
 									class="self-center p-1 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-white hover:text-black rounded-md transition"
 									on:click={() => {
 										showPreviousMessage(message);
@@ -1234,7 +1244,7 @@
 								{/if}
 
 								<button
-									aria-label={i18n.t('Next Message')}
+									aria-label={$i18n.t('Next Message')}
 									class="self-center p-1 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-white hover:text-black rounded-md transition"
 									on:click={() => {
 										showNextMessage(message);

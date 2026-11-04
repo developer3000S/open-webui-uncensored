@@ -5,7 +5,7 @@
 
 	export let show: any = false;
 	export let className: any = '';
-	export let onClose = () => {};
+	export let onClose: any = () => {};
 
 	let modalElement: any = null;
 	let mounted = false;

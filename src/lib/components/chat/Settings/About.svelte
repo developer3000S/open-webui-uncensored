@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { getVersionUpdates } from '$lib/apis';
 	import { getOllamaVersion } from '$lib/apis/ollama';
@@ -23,7 +23,7 @@
 
 	const checkForVersionUpdates = async () => {
 		updateAvailable = null;
-		version = await getVersionUpdates(localStorage.token).catch(async (error)=> {
+		version = await getVersionUpdates(localStorage.token).catch(async (error) => {
 			return {
 				current: WEBUI_VERSION,
 				latest: WEBUI_VERSION
@@ -36,6 +36,7 @@
 		console.log(updateAvailable);
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		ollamaVersion = await getOllamaVersion(localStorage.token).catch((error) => {
 			return '';
@@ -53,7 +54,7 @@
 			<div class=" mb-2.5 text-sm font-medium flex space-x-2 items-center">
 				<div>
 					{$WEBUI_NAME}
-					{i18n.t('Version')}
+					{$i18n.t('Version')}
 				</div>
 			</div>
 			<div class="flex w-full justify-between items-center">
@@ -69,10 +70,10 @@
 								target="_blank"
 							>
 								{updateAvailable === null
-									? i18n.t('Checking for updates...')
+									? $i18n.t('Checking for updates...')
 									: updateAvailable
-										? `(v${version.latest} ${i18n.t('available!')})`
-										: i18n.t('(latest)')}
+										? `(v${version.latest} ${$i18n.t('available!')})`
+										: $i18n.t('(latest)')}
 							</a>
 						{/if}
 					</div>
@@ -83,7 +84,7 @@
 							showChangelog.set(true);
 						}}
 					>
-						<div>{i18n.t("See what's new")}</div>
+						<div>{$i18n.t("See what's new")}</div>
 					</button>
 				</div>
 
@@ -94,7 +95,7 @@
 							checkForVersionUpdates();
 						}}
 					>
-						{i18n.t('Check for updates')}
+						{$i18n.t('Check for updates')}
 					</button>
 				{/if}
 			</div>
@@ -104,7 +105,7 @@
 			<hr class=" border-gray-100/30 dark:border-gray-850/30" />
 
 			<div>
-				<div class=" mb-2.5 text-sm font-medium">{i18n.t('Ollama Version')}</div>
+				<div class=" mb-2.5 text-sm font-medium">{$i18n.t('Ollama Version')}</div>
 				<div class="flex w-full">
 					<div class="flex-1 text-xs text-gray-700 dark:text-gray-200">
 						{ollamaVersion ?? 'N/A'}
@@ -169,7 +170,7 @@
 		</div>
 
 		<div class="mt-2 text-xs text-gray-400 dark:text-gray-500">
-			{i18n.t('Created by')}
+			{$i18n.t('Created by')}
 			<a
 				class=" text-gray-500 dark:text-gray-300 font-medium"
 				href="https://github.com/tjbck"
@@ -185,7 +186,7 @@
 			<div class=" mb-2.5 text-sm font-medium flex space-x-2 items-center">
 				<div>
 					{$WEBUI_NAME}
-					{i18n.t('Version')}
+					{$i18n.t('Version')}
 				</div>
 			</div>
 			<div class="flex w-full justify-between items-center">
@@ -201,10 +202,10 @@
 								target="_blank"
 							>
 								{updateAvailable === null
-									? i18n.t('Checking for updates...')
+									? $i18n.t('Checking for updates...')
 									: updateAvailable
-										? `(v${version.latest} ${i18n.t('available!')})`
-										: i18n.t('(latest)')}
+										? `(v${version.latest} ${$i18n.t('available!')})`
+										: $i18n.t('(latest)')}
 							</a>
 						{/if}
 					</div>
@@ -215,7 +216,7 @@
 							showChangelog.set(true);
 						}}
 					>
-						<div>{i18n.t("See what's new")}</div>
+						<div>{$i18n.t("See what's new")}</div>
 					</button>
 				</div>
 
@@ -226,7 +227,7 @@
 							checkForVersionUpdates();
 						}}
 					>
-						{i18n.t('Check for updates')}
+						{$i18n.t('Check for updates')}
 					</button>
 				{/if}
 			</div>
@@ -236,7 +237,7 @@
 			<hr class=" border-gray-100/30 dark:border-gray-850/30" />
 
 			<div>
-				<div class=" mb-2.5 text-sm font-medium">{i18n.t('Ollama Version')}</div>
+				<div class=" mb-2.5 text-sm font-medium">{$i18n.t('Ollama Version')}</div>
 				<div class="flex w-full">
 					<div class="flex-1 text-xs text-gray-700 dark:text-gray-200">
 						{ollamaVersion ?? 'N/A'}
@@ -301,7 +302,7 @@
 		</div>
 
 		<div class="mt-2 text-xs text-gray-400 dark:text-gray-500">
-			{i18n.t('Created by')}
+			{$i18n.t('Created by')}
 			<a
 				class=" text-gray-500 dark:text-gray-300 font-medium"
 				href="https://github.com/tjbck"

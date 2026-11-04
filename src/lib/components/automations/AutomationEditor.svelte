@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
@@ -67,24 +67,24 @@
 		const weeks = Math.floor(days / 7);
 		const years = Math.floor(days / 365);
 
-		if (years > 0) return i18n.t('{{COUNT}}y', { COUNT: years, context: 'time_ago' });
-		if (weeks > 0) return i18n.t('{{COUNT}}w', { COUNT: weeks, context: 'time_ago' });
-		if (days > 0) return i18n.t('{{COUNT}}d', { COUNT: days, context: 'time_ago' });
-		if (hours > 0) return i18n.t('{{COUNT}}h', { COUNT: hours, context: 'time_ago' });
-		if (minutes > 0) return i18n.t('{{COUNT}}m', { COUNT: minutes, context: 'time_ago' });
-		return i18n.t('1m', { context: 'time_ago' });
+		if (years > 0) return $i18n.t('{{COUNT}}y', { COUNT: years, context: 'time_ago' });
+		if (weeks > 0) return $i18n.t('{{COUNT}}w', { COUNT: weeks, context: 'time_ago' });
+		if (days > 0) return $i18n.t('{{COUNT}}d', { COUNT: days, context: 'time_ago' });
+		if (hours > 0) return $i18n.t('{{COUNT}}h', { COUNT: hours, context: 'time_ago' });
+		if (minutes > 0) return $i18n.t('{{COUNT}}m', { COUNT: minutes, context: 'time_ago' });
+		return $i18n.t('1m', { context: 'time_ago' });
 	};
 
 	const formatNextRun = (ts: number | null): string => {
-		if (!ts) return i18n.t('Not scheduled');
+		if (!ts) return $i18n.t('Not scheduled');
 		const d = dayjs(ts / 1_000_000);
-		if (d.isSame(dayjs(), 'day')) return `${i18n.t('Today at')} ${d.format('LT')}`;
+		if (d.isSame(dayjs(), 'day')) return `${$i18n.t('Today at')} ${d.format('LT')}`;
 		return d.format('L LT');
 	};
 
 	const saveHandler = async () => {
 		if (!name.trim() || !prompt.trim() || !model_id.trim()) {
-			toast.error(i18n.t('Name, prompt, and model are required'));
+			toast.error($i18n.t('Name, prompt, and model are required'));
 			return;
 		}
 		saving = true;
@@ -102,7 +102,7 @@
 			if (updated) {
 				automation = updated;
 				isDirty = false;
-				toast.success(i18n.t('Automation updated'));
+				toast.success($i18n.t('Automation updated'));
 			}
 		} catch (e: any) {
 			toast.error(e?.detail ?? `${e}` ?? 'Failed to save');
@@ -112,7 +112,7 @@
 	};
 
 	const toggleHandler = async () => {
-		const res = await toggleAutomationById(localStorage.token, automation.id).catch(async (err)=> {
+		const res = await toggleAutomationById(localStorage.token, automation.id).catch(async (err) => {
 			toast.error(`${err}`);
 			return null;
 		});
@@ -124,12 +124,12 @@
 
 	const runNowHandler = async () => {
 		loading = true;
-		const res = await runAutomationById(localStorage.token, automation.id).catch(async (err)=> {
+		const res = await runAutomationById(localStorage.token, automation.id).catch(async (err) => {
 			toast.error(`${err}`);
 			return null;
 		});
 		if (res) {
-			toast.success(i18n.t('Automation triggered'));
+			toast.success($i18n.t('Automation triggered'));
 			setTimeout(() => loadRuns(false), 2000);
 		}
 		loading = false;
@@ -141,7 +141,7 @@
 			return null;
 		});
 		if (res) {
-			toast.success(i18n.t(`Deleted {{name}}`, { name: automation.name }));
+			toast.success($i18n.t(`Deleted {{name}}`, { name: automation.name }));
 			goto('/automations');
 		}
 	};
@@ -188,6 +188,7 @@
 		}
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		name = automation.name;
 		prompt = automation.data.prompt;
@@ -203,17 +204,17 @@
 </script>
 
 <svelte:head>
-			<title>{name || i18n.t('Automation')} • {$WEBUI_NAME}</title>
-			<title>{name || i18n.t('Automation')} • {$WEBUI_NAME}</title>
-		</svelte:head>
+	<title>{name || $i18n.t('Automation')} • {$WEBUI_NAME}</title>
+	<title>{name || $i18n.t('Automation')} • {$WEBUI_NAME}</title>
+</svelte:head>
 
 <DeleteConfirmDialog
 	bind:show={showDeleteConfirm}
-	title={i18n.t('Delete automation?')}
+	title={$i18n.t('Delete automation?')}
 	on:confirm={deleteHandler}
 >
 	<div class="text-sm text-gray-500 truncate">
-		{i18n.t('This will delete')} <span class="">{automation.name}</span>.
+		{$i18n.t('This will delete')} <span class="">{automation.name}</span>.
 	</div>
 </DeleteConfirmDialog>
 
@@ -227,10 +228,10 @@
 		<div class="flex items-start justify-between gap-4 shrink-0 mb-0.5">
 			<div class="flex-1 min-w-0">
 				<div class="flex items-center gap-1.5 mb-1.5">
-					<Tooltip content={i18n.t('Back')}>
+					<Tooltip content={$i18n.t('Back')}>
 						<button
 							class="text-sm p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition"
-							aria-label={i18n.t('Back')}
+							aria-label={$i18n.t('Back')}
 							on:click={() => goto('/automations')}
 							type="button"
 						>
@@ -239,7 +240,7 @@
 					</Tooltip>
 					<input
 						class="text-2xl w-full bg-transparent outline-hidden"
-						placeholder={i18n.t('Automation Name')}
+						placeholder={$i18n.t('Automation Name')}
 						bind:value={name}
 						on:input={markDirty}
 					/>
@@ -247,7 +248,7 @@
 			</div>
 
 			<div class="flex items-center gap-2 shrink-0">
-				<Tooltip content={i18n.t('Delete')}>
+				<Tooltip content={$i18n.t('Delete')}>
 					<button
 						class="p-2 rounded-full bg-transparent hover:bg-gray-50 dark:hover:bg-gray-850 text-gray-500 hover:text-black dark:hover:text-white transition"
 						on:click={() => (showDeleteConfirm = true)}
@@ -264,7 +265,7 @@
 						disabled={saving}
 						type="button"
 					>
-						{i18n.t('Save')}
+						{$i18n.t('Save')}
 						{#if saving}
 							<Spinner className="size-3" />
 						{/if}
@@ -287,7 +288,7 @@
 							d="M6.3 2.84A1.5 1.5 0 0 0 4 4.11v11.78a1.5 1.5 0 0 0 2.3 1.27l9.344-5.891a1.5 1.5 0 0 0 0-2.538L6.3 2.841Z"
 						/>
 					</svg>
-					<div class="hidden md:block">{i18n.t('Run now')}</div>
+					<div class="hidden md:block">{$i18n.t('Run now')}</div>
 					{#if loading}
 						<Spinner className="size-3" />
 					{/if}
@@ -300,7 +301,7 @@
 			<!-- Main Input Column -->
 			<div class="flex-1 flex flex-col min-h-0 overflow-hidden">
 				<div class="flex items-center justify-between mb-2 shrink-0 px-1">
-					<div class="text-gray-500 text-xs">{i18n.t('Instructions')}</div>
+					<div class="text-gray-500 text-xs">{$i18n.t('Instructions')}</div>
 				</div>
 				<div class="relative flex-1 min-h-0">
 					<div
@@ -310,7 +311,7 @@
 							class="w-full h-full text-sm bg-transparent outline-hidden resize-none placeholder:text-gray-300 dark:placeholder:text-gray-700"
 							bind:value={prompt}
 							on:input={markDirty}
-							placeholder={i18n.t('Enter the prompt instructions for this automation...')}
+							placeholder={$i18n.t('Enter the prompt instructions for this automation...')}
 						></textarea>
 					</div>
 				</div>
@@ -319,11 +320,11 @@
 			<!-- Sidebar Configuration Column -->
 			<div class="hidden md:flex w-full md:w-66 shrink-0 overflow-y-auto px-1 flex-col gap-5">
 				<div>
-					<div class="text-gray-500 text-xs mb-3">{i18n.t('Configuration')}</div>
+					<div class="text-gray-500 text-xs mb-3">{$i18n.t('Configuration')}</div>
 					<div class="space-y-1">
 						<!-- Schedule -->
 						<div class="flex items-center justify-between text-xs">
-							<span class="text-gray-600 dark:text-gray-400">{i18n.t('Repeats')}</span>
+							<span class="text-gray-600 dark:text-gray-400">{$i18n.t('Repeats')}</span>
 							<ScheduleDropdown
 								bind:this={scheduleDropdown}
 								side="bottom"
@@ -334,7 +335,7 @@
 
 						<!-- Model -->
 						<div class="flex items-center justify-between text-xs">
-							<span class="text-gray-600 dark:text-gray-400">{i18n.t('Model')}</span>
+							<span class="text-gray-600 dark:text-gray-400">{$i18n.t('Model')}</span>
 							<ModelDropdown bind:model_id side="bottom" align="end" onChange={markDirty} />
 						</div>
 					</div>
@@ -342,10 +343,10 @@
 
 				<!-- Status section -->
 				<div>
-					<div class="text-gray-500 text-xs mb-3">{i18n.t('Status')}</div>
+					<div class="text-gray-500 text-xs mb-3">{$i18n.t('Status')}</div>
 					<div class="space-y-2.5">
 						<div class="flex items-center justify-between text-xs">
-							<span class="text-gray-600 dark:text-gray-400">{i18n.t('State')}</span>
+							<span class="text-gray-600 dark:text-gray-400">{$i18n.t('State')}</span>
 							<span
 								class="flex items-center gap-1.5 text-xs {is_active
 									? 'text-emerald-700 dark:text-emerald-400'
@@ -356,23 +357,23 @@
 										? 'bg-emerald-500'
 										: 'bg-gray-400'}"
 								></span>
-								{is_active ? i18n.t('Active') : i18n.t('Paused')}
+								{is_active ? $i18n.t('Active') : $i18n.t('Paused')}
 							</span>
 						</div>
 
 						<div class="flex items-center justify-between text-xs">
-							<span class="text-gray-600 dark:text-gray-400">{i18n.t('Next run')}</span>
+							<span class="text-gray-600 dark:text-gray-400">{$i18n.t('Next run')}</span>
 							<span class=" text-gray-700 dark:text-gray-300"
 								>{formatNextRun(automation.next_runs?.[0] ?? automation.next_run_at)}</span
 							>
 						</div>
 
 						<div class="flex items-center justify-between text-xs">
-							<span class="text-gray-600 dark:text-gray-400">{i18n.t('Last ran')}</span>
+							<span class="text-gray-600 dark:text-gray-400">{$i18n.t('Last ran')}</span>
 							<span class=" text-gray-700 dark:text-gray-300"
 								>{automation.last_run_at
 									? formatNextRun(automation.last_run_at)
-									: i18n.t('Never')}</span
+									: $i18n.t('Never')}</span
 							>
 						</div>
 					</div>
@@ -380,7 +381,7 @@
 
 				<div class="flex-1 flex flex-col min-h-0 -mx-1">
 					<div class="text-gray-500 text-xs mb-2 mx-1 shrink-0">
-						{i18n.t('Execution Logs')}
+						{$i18n.t('Execution Logs')}
 					</div>
 					<div class="flex-1 overflow-y-auto scrollbar-hidden w-full" on:scroll={onScroll}>
 						{#if runsLoading && runs.length === 0}
@@ -389,7 +390,7 @@
 							</div>
 						{:else if runs.length === 0}
 							<div class="text-xs text-gray-400 py-4 tabular-nums">
-								{i18n.t('No execution logs available yet')}
+								{$i18n.t('No execution logs available yet')}
 							</div>
 						{:else}
 							<div class="space-y-0.5 w-full">
@@ -465,15 +466,13 @@
 	</div>
 </div>
 
-
-
 <DeleteConfirmDialog
 	bind:show={showDeleteConfirm}
-	title={i18n.t('Delete automation?')}
+	title={$i18n.t('Delete automation?')}
 	on:confirm={deleteHandler}
 >
 	<div class="text-sm text-gray-500 truncate">
-		{i18n.t('This will delete')} <span class="">{automation.name}</span>.
+		{$i18n.t('This will delete')} <span class="">{automation.name}</span>.
 	</div>
 </DeleteConfirmDialog>
 
@@ -487,10 +486,10 @@
 		<div class="flex items-start justify-between gap-4 shrink-0 mb-0.5">
 			<div class="flex-1 min-w-0">
 				<div class="flex items-center gap-1.5 mb-1.5">
-					<Tooltip content={i18n.t('Back')}>
+					<Tooltip content={$i18n.t('Back')}>
 						<button
 							class="text-sm p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition"
-							aria-label={i18n.t('Back')}
+							aria-label={$i18n.t('Back')}
 							on:click={() => goto('/automations')}
 							type="button"
 						>
@@ -499,7 +498,7 @@
 					</Tooltip>
 					<input
 						class="text-2xl w-full bg-transparent outline-hidden"
-						placeholder={i18n.t('Automation Name')}
+						placeholder={$i18n.t('Automation Name')}
 						bind:value={name}
 						on:input={markDirty}
 					/>
@@ -507,7 +506,7 @@
 			</div>
 
 			<div class="flex items-center gap-2 shrink-0">
-				<Tooltip content={i18n.t('Delete')}>
+				<Tooltip content={$i18n.t('Delete')}>
 					<button
 						class="p-2 rounded-full bg-transparent hover:bg-gray-50 dark:hover:bg-gray-850 text-gray-500 hover:text-black dark:hover:text-white transition"
 						on:click={() => (showDeleteConfirm = true)}
@@ -524,7 +523,7 @@
 						disabled={saving}
 						type="button"
 					>
-						{i18n.t('Save')}
+						{$i18n.t('Save')}
 						{#if saving}
 							<Spinner className="size-3" />
 						{/if}
@@ -547,7 +546,7 @@
 							d="M6.3 2.84A1.5 1.5 0 0 0 4 4.11v11.78a1.5 1.5 0 0 0 2.3 1.27l9.344-5.891a1.5 1.5 0 0 0 0-2.538L6.3 2.841Z"
 						/>
 					</svg>
-					<div class="hidden md:block">{i18n.t('Run now')}</div>
+					<div class="hidden md:block">{$i18n.t('Run now')}</div>
 					{#if loading}
 						<Spinner className="size-3" />
 					{/if}
@@ -560,7 +559,7 @@
 			<!-- Main Input Column -->
 			<div class="flex-1 flex flex-col min-h-0 overflow-hidden">
 				<div class="flex items-center justify-between mb-2 shrink-0 px-1">
-					<div class="text-gray-500 text-xs">{i18n.t('Instructions')}</div>
+					<div class="text-gray-500 text-xs">{$i18n.t('Instructions')}</div>
 				</div>
 				<div class="relative flex-1 min-h-0">
 					<div
@@ -570,7 +569,7 @@
 							class="w-full h-full text-sm bg-transparent outline-hidden resize-none placeholder:text-gray-300 dark:placeholder:text-gray-700"
 							bind:value={prompt}
 							on:input={markDirty}
-							placeholder={i18n.t('Enter the prompt instructions for this automation...')}
+							placeholder={$i18n.t('Enter the prompt instructions for this automation...')}
 						></textarea>
 					</div>
 				</div>
@@ -579,11 +578,11 @@
 			<!-- Sidebar Configuration Column -->
 			<div class="hidden md:flex w-full md:w-66 shrink-0 overflow-y-auto px-1 flex-col gap-5">
 				<div>
-					<div class="text-gray-500 text-xs mb-3">{i18n.t('Configuration')}</div>
+					<div class="text-gray-500 text-xs mb-3">{$i18n.t('Configuration')}</div>
 					<div class="space-y-1">
 						<!-- Schedule -->
 						<div class="flex items-center justify-between text-xs">
-							<span class="text-gray-600 dark:text-gray-400">{i18n.t('Repeats')}</span>
+							<span class="text-gray-600 dark:text-gray-400">{$i18n.t('Repeats')}</span>
 							<ScheduleDropdown
 								bind:this={scheduleDropdown}
 								side="bottom"
@@ -594,7 +593,7 @@
 
 						<!-- Model -->
 						<div class="flex items-center justify-between text-xs">
-							<span class="text-gray-600 dark:text-gray-400">{i18n.t('Model')}</span>
+							<span class="text-gray-600 dark:text-gray-400">{$i18n.t('Model')}</span>
 							<ModelDropdown bind:model_id side="bottom" align="end" onChange={markDirty} />
 						</div>
 					</div>
@@ -602,10 +601,10 @@
 
 				<!-- Status section -->
 				<div>
-					<div class="text-gray-500 text-xs mb-3">{i18n.t('Status')}</div>
+					<div class="text-gray-500 text-xs mb-3">{$i18n.t('Status')}</div>
 					<div class="space-y-2.5">
 						<div class="flex items-center justify-between text-xs">
-							<span class="text-gray-600 dark:text-gray-400">{i18n.t('State')}</span>
+							<span class="text-gray-600 dark:text-gray-400">{$i18n.t('State')}</span>
 							<span
 								class="flex items-center gap-1.5 text-xs {is_active
 									? 'text-emerald-700 dark:text-emerald-400'
@@ -616,23 +615,23 @@
 										? 'bg-emerald-500'
 										: 'bg-gray-400'}"
 								></span>
-								{is_active ? i18n.t('Active') : i18n.t('Paused')}
+								{is_active ? $i18n.t('Active') : $i18n.t('Paused')}
 							</span>
 						</div>
 
 						<div class="flex items-center justify-between text-xs">
-							<span class="text-gray-600 dark:text-gray-400">{i18n.t('Next run')}</span>
+							<span class="text-gray-600 dark:text-gray-400">{$i18n.t('Next run')}</span>
 							<span class=" text-gray-700 dark:text-gray-300"
 								>{formatNextRun(automation.next_runs?.[0] ?? automation.next_run_at)}</span
 							>
 						</div>
 
 						<div class="flex items-center justify-between text-xs">
-							<span class="text-gray-600 dark:text-gray-400">{i18n.t('Last ran')}</span>
+							<span class="text-gray-600 dark:text-gray-400">{$i18n.t('Last ran')}</span>
 							<span class=" text-gray-700 dark:text-gray-300"
 								>{automation.last_run_at
 									? formatNextRun(automation.last_run_at)
-									: i18n.t('Never')}</span
+									: $i18n.t('Never')}</span
 							>
 						</div>
 					</div>
@@ -640,7 +639,7 @@
 
 				<div class="flex-1 flex flex-col min-h-0 -mx-1">
 					<div class="text-gray-500 text-xs mb-2 mx-1 shrink-0">
-						{i18n.t('Execution Logs')}
+						{$i18n.t('Execution Logs')}
 					</div>
 					<div class="flex-1 overflow-y-auto scrollbar-hidden w-full" on:scroll={onScroll}>
 						{#if runsLoading && runs.length === 0}
@@ -649,7 +648,7 @@
 							</div>
 						{:else if runs.length === 0}
 							<div class="text-xs text-gray-400 py-4 tabular-nums">
-								{i18n.t('No execution logs available yet')}
+								{$i18n.t('No execution logs available yet')}
 							</div>
 						{:else}
 							<div class="space-y-0.5 w-full">

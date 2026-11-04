@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import { getModels as _getModels } from '$lib/apis';
@@ -19,7 +19,7 @@
 
 	import AddConnectionModal from '$lib/components/AddConnectionModal.svelte';
 
-	export let saveSettings: Function;
+	export let saveSettings: any;
 
 	let config: any = null;
 
@@ -61,6 +61,7 @@
 		});
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		config = $settings?.directConnections ?? {
 			OPENAI_API_BASE_URLS: [],
@@ -85,12 +86,12 @@
 				<div class="pr-1.5">
 					<div class="">
 						<div class="flex justify-between items-center mb-0.5">
-							<div class="font-medium">{i18n.t('Manage Direct Connections')}</div>
+							<div class="font-medium">{$i18n.t('Manage Direct Connections')}</div>
 
-							<Tooltip content={i18n.t(`Add Connection`)}>
+							<Tooltip content={$i18n.t(`Add Connection`)}>
 								<button
 									class="px-1"
-									aria-label={i18n.t('Add Connection')}
+									aria-label={$i18n.t('Add Connection')}
 									on:click={() => {
 										showConnectionModal = true;
 									}}
@@ -136,9 +137,9 @@
 								? 'text-gray-800 dark:text-gray-100'
 								: 'text-gray-500'}"
 						>
-							{i18n.t('Connect to your own OpenAI compatible API endpoints.')}
+							{$i18n.t('Connect to your own OpenAI compatible API endpoints.')}
 							<br />
-							{i18n.t(
+							{$i18n.t(
 								'CORS must be properly configured by the provider to allow requests from Open WebUI.'
 							)}
 						</div>
@@ -159,7 +160,7 @@
 			class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 			type="submit"
 		>
-			{i18n.t('Save')}
+			{$i18n.t('Save')}
 		</button>
 	</div>
 </form>
@@ -179,12 +180,12 @@
 				<div class="pr-1.5">
 					<div class="">
 						<div class="flex justify-between items-center mb-0.5">
-							<div class="font-medium">{i18n.t('Manage Direct Connections')}</div>
+							<div class="font-medium">{$i18n.t('Manage Direct Connections')}</div>
 
-							<Tooltip content={i18n.t(`Add Connection`)}>
+							<Tooltip content={$i18n.t(`Add Connection`)}>
 								<button
 									class="px-1"
-									aria-label={i18n.t('Add Connection')}
+									aria-label={$i18n.t('Add Connection')}
 									on:click={() => {
 										showConnectionModal = true;
 									}}
@@ -230,9 +231,9 @@
 								? 'text-gray-800 dark:text-gray-100'
 								: 'text-gray-500'}"
 						>
-							{i18n.t('Connect to your own OpenAI compatible API endpoints.')}
+							{$i18n.t('Connect to your own OpenAI compatible API endpoints.')}
 							<br />
-							{i18n.t(
+							{$i18n.t(
 								'CORS must be properly configured by the provider to allow requests from Open WebUI.'
 							)}
 						</div>
@@ -253,7 +254,7 @@
 			class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 			type="submit"
 		>
-			{i18n.t('Save')}
+			{$i18n.t('Save')}
 		</button>
 	</div>
 </form>

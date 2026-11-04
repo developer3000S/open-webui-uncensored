@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import { config, settings } from '$lib/stores';
@@ -23,8 +23,8 @@
 	export let noiseSuppression: any = true;
 	export let autoGainControl: any = true;
 	export let className: any = ' p-2.5 w-full max-w-full';
-	export let onCancel = () => {};
-	export let onConfirm = (data: any) => {};
+	export let onCancel: any = () => {};
+	export let onConfirm: any = (data: any) => {};
 
 	let loading = false;
 	let confirmed = false;
@@ -187,7 +187,7 @@
 				localStorage.token,
 				file,
 				$settings?.audio?.stt?.language
-			).catch(async (error)=> {
+			).catch(async (error) => {
 				toast.error(`${error}`);
 				return null;
 			});
@@ -232,7 +232,7 @@
 			}
 		} catch (err) {
 			console.error('Error accessing media devices.', err);
-			toast.error(i18n.t('Error accessing media devices.'));
+			toast.error($i18n.t('Error accessing media devices.'));
 			loading = false;
 			recording = false;
 			return;
@@ -291,7 +291,7 @@
 			mediaRecorder.start();
 		} catch (error) {
 			console.error('Error starting recording:', error);
-			toast.error(i18n.t('Error starting recording.'));
+			toast.error($i18n.t('Error starting recording.'));
 			loading = false;
 			recording = false;
 			return;
@@ -350,7 +350,7 @@
 					// Event triggered when an error occurs
 					speechRecognition.onerror = function (event: any) {
 						console.log(event);
-						toast.error(i18n.t(`Speech recognition error: {{error}}`, { error: event.error }));
+						toast.error($i18n.t(`Speech recognition error: {{error}}`, { error: event.error }));
 						onCancel();
 
 						stopRecording();
@@ -564,16 +564,16 @@
 									transform: rotate(360deg);
 								}
 							}
-						
-	.visualizer {
-		display: flex;
-		height: 100%;
-	}
 
-	.visualizer-bar {
-		width: 2px;
-		background-color: #4a5aba; /* or whatever color you need */
-	}
+							.visualizer {
+								display: flex;
+								height: 100%;
+							}
+
+							.visualizer-bar {
+								width: 2px;
+								background-color: #4a5aba; /* or whatever color you need */
+							}
 
 							.spinner_OSmW {
 								transform-origin: center;
@@ -617,17 +617,17 @@
 									transform: rotate(360deg);
 								}
 							}
-						
-	.visualizer {
-		display: flex;
-		height: 100%;
-	}
 
-	.visualizer-bar {
-		width: 2px;
-		background-color: #4a5aba; /* or whatever color you need */
-	}
-</style><g class="spinner_OSmW"
+							.visualizer {
+								display: flex;
+								height: 100%;
+							}
+
+							.visualizer-bar {
+								width: 2px;
+								background-color: #4a5aba; /* or whatever color you need */
+							}
+						</style><g class="spinner_OSmW"
 							><rect x="11" y="1" width="2" height="5" opacity=".14" /><rect
 								x="11"
 								y="1"
@@ -669,7 +669,7 @@
 				</div>
 			{:else}
 				<button
-					aria-label={i18n.t('Confirm Recording')}
+					aria-label={$i18n.t('Confirm Recording')}
 					id="confirm-recording-button"
 					type="button"
 					class="p-1.5 bg-indigo-500 text-white dark:bg-indigo-500 dark:text-blue-950 rounded-full"
@@ -692,8 +692,6 @@
 		</div>
 	</div>
 </div>
-
-
 
 <div
 	bind:clientWidth={containerWidth}
@@ -808,7 +806,7 @@
 				</div>
 			{:else}
 				<button
-					aria-label={i18n.t('Confirm Recording')}
+					aria-label={$i18n.t('Confirm Recording')}
 					id="confirm-recording-button"
 					type="button"
 					class="p-1.5 bg-indigo-500 text-white dark:bg-indigo-500 dark:text-blue-950 rounded-full"
@@ -831,5 +829,3 @@
 		</div>
 	</div>
 </div>
-
-

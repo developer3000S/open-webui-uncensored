@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Modal from '$lib/components/common/Modal.svelte';
 	import { getModelChats, getModelOverview } from '$lib/apis/analytics';
@@ -201,7 +201,7 @@
 						: 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}"
 					on:click={() => selectTab('overview')}
 				>
-					{i18n.t('Overview')}
+					{$i18n.t('Overview')}
 				</button>
 				{#if $config?.features?.enable_admin_chat_access}
 					<button
@@ -210,7 +210,7 @@
 							: 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}"
 						on:click={() => selectTab('chats')}
 					>
-						{i18n.t('Chats')}
+						{$i18n.t('Chats')}
 					</button>
 				{/if}
 			</div>
@@ -221,9 +221,9 @@
 				<!-- Activity Chart -->
 				<div class="mb-4 mt-3">
 					<div class="flex items-center justify-between mb-2">
-						<Tooltip content={i18n.t('Thumbs up/down ratings from users on model responses')}>
+						<Tooltip content={$i18n.t('Thumbs up/down ratings from users on model responses')}>
 							<div class="text-xs text-gray-500 font-medium uppercase tracking-wide cursor-help">
-								{i18n.t('Feedback Activity')}
+								{$i18n.t('Feedback Activity')}
 							</div>
 						</Tooltip>
 						<div
@@ -253,7 +253,7 @@
 				<!-- Tags -->
 				<div class="mb-4">
 					<div class="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">
-						{i18n.t('Tags')}
+						{$i18n.t('Tags')}
 					</div>
 					{#if tags.length}
 						<div class="flex flex-wrap gap-1 -mx-1">
@@ -290,7 +290,7 @@
 					type="button"
 					on:click={close}
 				>
-					{i18n.t('Close')}
+					{$i18n.t('Close')}
 				</button>
 			</div>
 		</div>
@@ -319,7 +319,7 @@
 						: 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}"
 					on:click={() => selectTab('overview')}
 				>
-					{i18n.t('Overview')}
+					{$i18n.t('Overview')}
 				</button>
 				{#if $config?.features?.enable_admin_chat_access}
 					<button
@@ -328,7 +328,7 @@
 							: 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}"
 						on:click={() => selectTab('chats')}
 					>
-						{i18n.t('Chats')}
+						{$i18n.t('Chats')}
 					</button>
 				{/if}
 			</div>
@@ -339,9 +339,9 @@
 				<!-- Activity Chart -->
 				<div class="mb-4 mt-3">
 					<div class="flex items-center justify-between mb-2">
-						<Tooltip content={i18n.t('Thumbs up/down ratings from users on model responses')}>
+						<Tooltip content={$i18n.t('Thumbs up/down ratings from users on model responses')}>
 							<div class="text-xs text-gray-500 font-medium uppercase tracking-wide cursor-help">
-								{i18n.t('Feedback Activity')}
+								{$i18n.t('Feedback Activity')}
 							</div>
 						</Tooltip>
 						<div
@@ -371,7 +371,7 @@
 				<!-- Tags -->
 				<div class="mb-4">
 					<div class="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">
-						{i18n.t('Tags')}
+						{$i18n.t('Tags')}
 					</div>
 					{#if tags.length}
 						<div class="flex flex-wrap gap-1 -mx-1">
@@ -408,7 +408,7 @@
 					type="button"
 					on:click={close}
 				>
-					{i18n.t('Close')}
+					{$i18n.t('Close')}
 				</button>
 			</div>
 		</div>

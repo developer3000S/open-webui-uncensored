@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
@@ -24,18 +24,19 @@
 	let clone = false;
 
 	const onSubmit = async (_skill: any) => {
-		const res = await createNewSkill(localStorage.token, _skill).catch(async (error)=> {
+		const res = await createNewSkill(localStorage.token, _skill).catch(async (error) => {
 			toast.error(`${error}`);
 			return null;
 		});
 
 		if (res) {
-			toast.success(i18n.t('Skill created successfully'));
+			toast.success($i18n.t('Skill created successfully'));
 			await skills.set(await getSkills(localStorage.token));
 			await goto('/workspace/skills');
 		}
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		if (sessionStorage.skill) {
 			const _skill = JSON.parse(sessionStorage.skill);

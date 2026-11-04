@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Dropdown from '$lib/components/common/Dropdown.svelte';
 	import GarbageBin from '$lib/components/icons/GarbageBin.svelte';
@@ -15,14 +15,14 @@
 	import type { Writable } from 'svelte/store';
 
 	export let func: any;
-	export let editHandler: Function;
-	export let shareHandler: Function;
-	export let cloneHandler: Function;
-	export let exportHandler: Function;
-	export let deleteHandler: Function;
-	export let toggleGlobalHandler: Function;
+	export let editHandler: any;
+	export let shareHandler: any;
+	export let cloneHandler: any;
+	export let exportHandler: any;
+	export let deleteHandler: any;
+	export let toggleGlobalHandler: any;
 
-	export let onClose: Function;
+	export let onClose: any;
 
 	let show = false;
 </script>
@@ -35,7 +35,7 @@
 		}
 	}}
 >
-	<Tooltip content={i18n.t('More')}>
+	<Tooltip content={$i18n.t('More')}>
 		<slot />
 	</Tooltip>
 
@@ -49,11 +49,11 @@
 				>
 					<div class="flex gap-2 items-center">
 						<GlobeAlt />
-						<div class="flex items-center">{i18n.t('Global')}</div>
+						<div class="flex items-center">{$i18n.t('Global')}</div>
 					</div>
 
 					<div>
-						<Switch on:change={toggleGlobalHandler} bind:state={func.is_global} />
+						<Switch on:change={(e) => toggleGlobalHandler(e)} bind:state={func.is_global} />
 					</div>
 				</div>
 
@@ -81,7 +81,7 @@
 					/>
 				</svg>
 
-				<div class="flex items-center">{i18n.t('Edit')}</div>
+				<div class="flex items-center">{$i18n.t('Edit')}</div>
 			</button>
 
 			<button
@@ -91,7 +91,7 @@
 				}}
 			>
 				<Share />
-				<div class="flex items-center">{i18n.t('Share')}</div>
+				<div class="flex items-center">{$i18n.t('Share')}</div>
 			</button>
 
 			<button
@@ -101,7 +101,7 @@
 				}}
 			>
 				<DocumentDuplicate />
-				<div class="flex items-center">{i18n.t('Clone')}</div>
+				<div class="flex items-center">{$i18n.t('Clone')}</div>
 			</button>
 
 			<button
@@ -111,7 +111,7 @@
 				}}
 			>
 				<Download />
-				<div class="flex items-center">{i18n.t('Export')}</div>
+				<div class="flex items-center">{$i18n.t('Export')}</div>
 			</button>
 
 			<hr class="border-gray-50 dark:border-gray-850/30 my-1" />
@@ -123,7 +123,7 @@
 				}}
 			>
 				<GarbageBin strokeWidth="2" />
-				<div class="flex items-center">{i18n.t('Delete')}</div>
+				<div class="flex items-center">{$i18n.t('Delete')}</div>
 			</button>
 		</div>
 	</div>
@@ -137,7 +137,7 @@
 		}
 	}}
 >
-	<Tooltip content={i18n.t('More')}>
+	<Tooltip content={$i18n.t('More')}>
 		<slot />
 	</Tooltip>
 
@@ -151,11 +151,11 @@
 				>
 					<div class="flex gap-2 items-center">
 						<GlobeAlt />
-						<div class="flex items-center">{i18n.t('Global')}</div>
+						<div class="flex items-center">{$i18n.t('Global')}</div>
 					</div>
 
 					<div>
-						<Switch on:change={toggleGlobalHandler} bind:state={func.is_global} />
+						<Switch on:change={(e) => toggleGlobalHandler(e)} bind:state={func.is_global} />
 					</div>
 				</div>
 
@@ -183,7 +183,7 @@
 					/>
 				</svg>
 
-				<div class="flex items-center">{i18n.t('Edit')}</div>
+				<div class="flex items-center">{$i18n.t('Edit')}</div>
 			</button>
 
 			<button
@@ -193,7 +193,7 @@
 				}}
 			>
 				<Share />
-				<div class="flex items-center">{i18n.t('Share')}</div>
+				<div class="flex items-center">{$i18n.t('Share')}</div>
 			</button>
 
 			<button
@@ -203,7 +203,7 @@
 				}}
 			>
 				<DocumentDuplicate />
-				<div class="flex items-center">{i18n.t('Clone')}</div>
+				<div class="flex items-center">{$i18n.t('Clone')}</div>
 			</button>
 
 			<button
@@ -213,7 +213,7 @@
 				}}
 			>
 				<Download />
-				<div class="flex items-center">{i18n.t('Export')}</div>
+				<div class="flex items-center">{$i18n.t('Export')}</div>
 			</button>
 
 			<hr class="border-gray-50 dark:border-gray-850/30 my-1" />
@@ -225,7 +225,7 @@
 				}}
 			>
 				<GarbageBin strokeWidth="2" />
-				<div class="flex items-center">{i18n.t('Delete')}</div>
+				<div class="flex items-center">{$i18n.t('Delete')}</div>
 			</button>
 		</div>
 	</div>

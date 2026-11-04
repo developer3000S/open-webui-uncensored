@@ -9,7 +9,7 @@
 	export let initialHeight: number | null = null; // initial height in px, null = auto
 
 	export let iframeClassName: any = 'w-full rounded-2xl';
-	let args: any = null;
+	export let args: any = null;
 
 	export let allowScripts: any = true;
 	export let allowForms: any = false;
@@ -197,7 +197,7 @@ window.Chart = parent.Chart; // Chart previously assigned on parent
 		width="100%"
 		frameborder="0"
 		{sandbox}
-		{allowFullscreen}
+		allowfullscreen={allowFullscreen}
 		on:load={onLoad}
 	></iframe>
 {:else if iframeSrc}
@@ -211,7 +211,7 @@ window.Chart = parent.Chart; // Chart previously assigned on parent
 		frameborder="0"
 		{sandbox}
 		referrerpolicy={referrerPolicy}
-		{allowFullscreen}
+		allowfullscreen={allowFullscreen}
 		on:load={onLoad}
 	></iframe>
 {/if}

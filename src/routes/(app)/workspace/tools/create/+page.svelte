@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { goto } from '$app/navigation';
 	import { createNewTool, getTools } from '$lib/apis/tools';
@@ -24,7 +24,7 @@
 		if (compareVersion(manifest?.required_open_webui_version ?? '0.0.0', WEBUI_VERSION)) {
 			console.log('Version is lower than required');
 			toast.error(
-				i18n.t(
+				$i18n.t(
 					'Open WebUI version (v{{OPEN_WEBUI_VERSION}}) is lower than required version (v{{REQUIRED_VERSION}})',
 					{
 						OPEN_WEBUI_VERSION: WEBUI_VERSION,
@@ -41,13 +41,13 @@
 			meta: data.meta,
 			content: data.content,
 			access_grants: data.access_grants
-		}).catch(async (error)=> {
+		}).catch(async (error) => {
 			toast.error(`${error}`);
 			return null;
 		});
 
 		if (res) {
-			toast.success(i18n.t('Tool created successfully'));
+			toast.success($i18n.t('Tool created successfully'));
 			tools.set(await getTools(localStorage.token));
 
 			await goto('/workspace/tools');

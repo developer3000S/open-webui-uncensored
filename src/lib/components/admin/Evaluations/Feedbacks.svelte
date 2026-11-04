@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import fileSaver from 'file-saver';
@@ -84,7 +84,7 @@
 				direction,
 				page,
 				selectedModelId
-			).catch(async (error)=> {
+			).catch(async (error) => {
 				toast.error(`${error}`);
 				return null;
 			});
@@ -119,17 +119,17 @@
 			return null;
 		});
 		if (response) {
-			toast.success(i18n.t('Feedback deleted successfully'));
+			toast.success($i18n.t('Feedback deleted successfully'));
 			page = 1;
 			getFeedbacks();
 		}
 	};
 
 	const shareHandler = async () => {
-		toast.success(i18n.t('Redirecting you to Open WebUI Community'));
+		toast.success($i18n.t('Redirecting you to Open WebUI Community'));
 
 		// remove snapshot from feedbacks
-		const feedbacksToShare = feedbacks.map((f) => {
+		const feedbacksToShare = (items ?? []).map((f) => {
 			const { snapshot, user, ...rest } = f;
 			return rest;
 		});
@@ -222,7 +222,7 @@
 		<div class="flex justify-between items-center">
 			<div class="flex items-center md:self-center text-xl font-medium px-0.5 gap-2 shrink-0">
 				<div>
-					{i18n.t('Feedback History')}
+					{$i18n.t('Feedback History')}
 				</div>
 
 				<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
@@ -237,7 +237,7 @@
 							class="flex text-xs items-center space-x-1 px-3 py-1.5 rounded-xl bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 dark:text-gray-200 transition"
 						>
 							<div class="self-center font-medium line-clamp-1">
-								{i18n.t('Export')}
+								{$i18n.t('Export')}
 							</div>
 							<ChevronDown className="size-3" strokeWidth="2.5" />
 						</button>
@@ -251,7 +251,7 @@
 									type="button"
 									on:click={() => exportHandler('json')}
 								>
-									{i18n.t('Export as JSON')}
+									{$i18n.t('Export as JSON')}
 								</button>
 
 								<button
@@ -259,7 +259,7 @@
 									type="button"
 									on:click={() => exportHandler('csv')}
 								>
-									{i18n.t('Export as CSV')}
+									{$i18n.t('Export as CSV')}
 								</button>
 							</div>
 						</div>
@@ -288,10 +288,10 @@
 					<Select
 						bind:value={selectedModelId}
 						items={[
-							{ value: '', label: i18n.t('All') },
+							{ value: '', label: $i18n.t('All') },
 							...modelIds.map((mid) => ({ value: mid, label: mid }))
 						]}
-						placeholder={i18n.t('All')}
+						placeholder={$i18n.t('All')}
 						triggerClass="relative w-full flex items-center gap-0.5 px-2.5 py-1.5 bg-gray-50 dark:bg-gray-850 rounded-xl"
 						onChange={() => {
 							page = 1;
@@ -323,9 +323,9 @@
 				<div class="w-full h-full flex flex-col justify-center items-center my-16 mb-24">
 					<div class="max-w-md text-center">
 						<div class="text-3xl mb-3">😕</div>
-						<div class="text-lg font-medium mb-1">{i18n.t('No feedback found')}</div>
+						<div class="text-lg font-medium mb-1">{$i18n.t('No feedback found')}</div>
 						<div class="text-gray-500 text-center text-xs">
-							{i18n.t('Try adjusting your search or filter to find what you are looking for.')}
+							{$i18n.t('Try adjusting your search or filter to find what you are looking for.')}
 						</div>
 					</div>
 				</div>
@@ -341,7 +341,7 @@
 								on:click={() => setSortKey('user')}
 							>
 								<div class="flex gap-1.5 items-center justify-end">
-									{i18n.t('User')}
+									{$i18n.t('User')}
 									{#if orderBy === 'user'}
 										<span class="font-normal">
 											{#if direction === 'asc'}
@@ -364,7 +364,7 @@
 								on:click={() => setSortKey('model_id')}
 							>
 								<div class="flex gap-1.5 items-center">
-									{i18n.t('Models')}
+									{$i18n.t('Models')}
 									{#if orderBy === 'model_id'}
 										<span class="font-normal">
 											{#if direction === 'asc'}
@@ -387,7 +387,7 @@
 								on:click={() => setSortKey('rating')}
 							>
 								<div class="flex gap-1.5 items-center justify-end">
-									{i18n.t('Result')}
+									{$i18n.t('Result')}
 									{#if orderBy === 'rating'}
 										<span class="font-normal">
 											{#if direction === 'asc'}
@@ -410,7 +410,7 @@
 								on:click={() => setSortKey('updated_at')}
 							>
 								<div class="flex gap-1.5 items-center justify-end">
-									{i18n.t('Updated At')}
+									{$i18n.t('Updated At')}
 									{#if orderBy === 'updated_at'}
 										<span class="font-normal">
 											{#if direction === 'asc'}
@@ -467,8 +467,8 @@
 														class=" text-[0.65rem] text-gray-600 dark:text-gray-400 line-clamp-1"
 													>
 														{#if feedback.data.sibling_model_ids.length > 2}
-															<!-- {i18n.t('and {{COUNT}} more')} -->
-															{feedback.data.sibling_model_ids.slice(0, 2).join(', ')}, {i18n.t(
+															<!-- {$i18n.t('and {{COUNT}} more')} -->
+															{feedback.data.sibling_model_ids.slice(0, 2).join(', ')}, {$i18n.t(
 																'and {{COUNT}} more',
 																{ COUNT: feedback.data.sibling_model_ids.length - 2 }
 															)}
@@ -494,11 +494,11 @@
 									<td class="px-3 py-1 text-right font-medium text-gray-900 dark:text-white w-max">
 										<div class=" flex justify-end">
 											{#if feedback?.data?.rating.toString() === '1'}
-												<Badge type="info" content={i18n.t('Won')} />
+												<Badge type="info" content={$i18n.t('Won')} />
 											{:else if feedback?.data?.rating.toString() === '0'}
-												<Badge type="muted" content={i18n.t('Draw')} />
+												<Badge type="muted" content={$i18n.t('Draw')} />
 											{:else if feedback?.data?.rating.toString() === '-1'}
-												<Badge type="error" content={i18n.t('Lost')} />
+												<Badge type="error" content={$i18n.t('Lost')} />
 											{/if}
 										</div>
 									</td>
@@ -545,7 +545,7 @@
 		<div class="flex justify-between items-center">
 			<div class="flex items-center md:self-center text-xl font-medium px-0.5 gap-2 shrink-0">
 				<div>
-					{i18n.t('Feedback History')}
+					{$i18n.t('Feedback History')}
 				</div>
 
 				<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
@@ -560,7 +560,7 @@
 							class="flex text-xs items-center space-x-1 px-3 py-1.5 rounded-xl bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 dark:text-gray-200 transition"
 						>
 							<div class="self-center font-medium line-clamp-1">
-								{i18n.t('Export')}
+								{$i18n.t('Export')}
 							</div>
 							<ChevronDown className="size-3" strokeWidth="2.5" />
 						</button>
@@ -574,7 +574,7 @@
 									type="button"
 									on:click={() => exportHandler('json')}
 								>
-									{i18n.t('Export as JSON')}
+									{$i18n.t('Export as JSON')}
 								</button>
 
 								<button
@@ -582,7 +582,7 @@
 									type="button"
 									on:click={() => exportHandler('csv')}
 								>
-									{i18n.t('Export as CSV')}
+									{$i18n.t('Export as CSV')}
 								</button>
 							</div>
 						</div>
@@ -611,10 +611,10 @@
 					<Select
 						bind:value={selectedModelId}
 						items={[
-							{ value: '', label: i18n.t('All') },
+							{ value: '', label: $i18n.t('All') },
 							...modelIds.map((mid) => ({ value: mid, label: mid }))
 						]}
-						placeholder={i18n.t('All')}
+						placeholder={$i18n.t('All')}
 						triggerClass="relative w-full flex items-center gap-0.5 px-2.5 py-1.5 bg-gray-50 dark:bg-gray-850 rounded-xl"
 						onChange={() => {
 							page = 1;
@@ -646,9 +646,9 @@
 				<div class="w-full h-full flex flex-col justify-center items-center my-16 mb-24">
 					<div class="max-w-md text-center">
 						<div class="text-3xl mb-3">😕</div>
-						<div class="text-lg font-medium mb-1">{i18n.t('No feedback found')}</div>
+						<div class="text-lg font-medium mb-1">{$i18n.t('No feedback found')}</div>
 						<div class="text-gray-500 text-center text-xs">
-							{i18n.t('Try adjusting your search or filter to find what you are looking for.')}
+							{$i18n.t('Try adjusting your search or filter to find what you are looking for.')}
 						</div>
 					</div>
 				</div>
@@ -664,7 +664,7 @@
 								on:click={() => setSortKey('user')}
 							>
 								<div class="flex gap-1.5 items-center justify-end">
-									{i18n.t('User')}
+									{$i18n.t('User')}
 									{#if orderBy === 'user'}
 										<span class="font-normal">
 											{#if direction === 'asc'}
@@ -687,7 +687,7 @@
 								on:click={() => setSortKey('model_id')}
 							>
 								<div class="flex gap-1.5 items-center">
-									{i18n.t('Models')}
+									{$i18n.t('Models')}
 									{#if orderBy === 'model_id'}
 										<span class="font-normal">
 											{#if direction === 'asc'}
@@ -710,7 +710,7 @@
 								on:click={() => setSortKey('rating')}
 							>
 								<div class="flex gap-1.5 items-center justify-end">
-									{i18n.t('Result')}
+									{$i18n.t('Result')}
 									{#if orderBy === 'rating'}
 										<span class="font-normal">
 											{#if direction === 'asc'}
@@ -733,7 +733,7 @@
 								on:click={() => setSortKey('updated_at')}
 							>
 								<div class="flex gap-1.5 items-center justify-end">
-									{i18n.t('Updated At')}
+									{$i18n.t('Updated At')}
 									{#if orderBy === 'updated_at'}
 										<span class="font-normal">
 											{#if direction === 'asc'}
@@ -790,8 +790,8 @@
 														class=" text-[0.65rem] text-gray-600 dark:text-gray-400 line-clamp-1"
 													>
 														{#if feedback.data.sibling_model_ids.length > 2}
-															<!-- {i18n.t('and {{COUNT}} more')} -->
-															{feedback.data.sibling_model_ids.slice(0, 2).join(', ')}, {i18n.t(
+															<!-- {$i18n.t('and {{COUNT}} more')} -->
+															{feedback.data.sibling_model_ids.slice(0, 2).join(', ')}, {$i18n.t(
 																'and {{COUNT}} more',
 																{ COUNT: feedback.data.sibling_model_ids.length - 2 }
 															)}
@@ -817,11 +817,11 @@
 									<td class="px-3 py-1 text-right font-medium text-gray-900 dark:text-white w-max">
 										<div class=" flex justify-end">
 											{#if feedback?.data?.rating.toString() === '1'}
-												<Badge type="info" content={i18n.t('Won')} />
+												<Badge type="info" content={$i18n.t('Won')} />
 											{:else if feedback?.data?.rating.toString() === '0'}
-												<Badge type="muted" content={i18n.t('Draw')} />
+												<Badge type="muted" content={$i18n.t('Draw')} />
 											{:else if feedback?.data?.rating.toString() === '-1'}
-												<Badge type="error" content={i18n.t('Lost')} />
+												<Badge type="error" content={$i18n.t('Lost')} />
 											{/if}
 										</div>
 									</td>

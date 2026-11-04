@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { Switch } from 'bits-ui';
 
@@ -22,8 +22,8 @@
 		? tooltip
 		: typeof tooltip === 'boolean' && tooltip
 			? state
-				? i18n.t('Enabled')
-				: i18n.t('Disabled')
+				? $i18n.t('Enabled')
+				: $i18n.t('Disabled')
 			: ''}
 	placement="top"
 >
@@ -54,8 +54,8 @@
 		? tooltip
 		: typeof tooltip === 'boolean' && tooltip
 			? state
-				? i18n.t('Enabled')
-				: i18n.t('Disabled')
+				? $i18n.t('Enabled')
+				: $i18n.t('Disabled')
 			: ''}
 	placement="top"
 >

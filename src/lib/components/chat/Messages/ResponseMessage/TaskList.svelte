@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { slide } from 'svelte/transition';
 	import TaskListIcon from '$lib/components/icons/TaskList.svelte';
@@ -30,9 +30,9 @@
 				<TaskListIcon className="w-3.5 h-3.5" />
 				<span>
 					{completedCount}
-					{i18n.t('out of')}
+					{$i18n.t('out of')}
 					{totalCount}
-					{i18n.t('tasks completed')}
+					{$i18n.t('tasks completed')}
 				</span>
 			</div>
 
@@ -124,9 +124,9 @@
 				<TaskListIcon className="w-3.5 h-3.5" />
 				<span>
 					{completedCount}
-					{i18n.t('out of')}
+					{$i18n.t('out of')}
 					{totalCount}
-					{i18n.t('tasks completed')}
+					{$i18n.t('tasks completed')}
 				</span>
 			</div>
 

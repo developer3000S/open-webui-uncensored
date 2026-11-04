@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { decode } from 'html-entities';
 	import { v4 as uuidv4 } from 'uuid';
@@ -48,7 +48,6 @@
 		// Iteratively unwrap nested JSON-encoded strings. Same result as the previous
 		// recursive form, but without the stack-overflow-and-recover path it hit on
 		// scalar values (e.g. JSON.parse('5') -> 5 -> infinite self-recursion).
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		let value: any = str;
 		while (typeof value === 'string') {
 			try {
@@ -157,14 +156,14 @@
 						{#if isDone}
 							<Markdown
 								id={`${componentId}-tool-call-title`}
-								content={i18n.t('View Result from **{{NAME}}**', {
+								content={$i18n.t('View Result from **{{NAME}}**', {
 									NAME: attributes.name
 								})}
 							/>
 						{:else}
 							<Markdown
 								id={`${componentId}-tool-call-executing`}
-								content={i18n.t('Executing **{{NAME}}**...', {
+								content={$i18n.t('Executing **{{NAME}}**...', {
 									NAME: attributes.name
 								})}
 							/>
@@ -192,7 +191,7 @@
 							<div
 								class="text-[10px] uppercase tracking-wider font-medium text-gray-400 dark:text-gray-500 mb-1.5 px-1"
 							>
-								{i18n.t('Input')}
+								{$i18n.t('Input')}
 							</div>
 
 							{#if parsedArgs}
@@ -225,7 +224,7 @@
 							<div
 								class="text-[10px] uppercase tracking-wider font-medium text-gray-400 dark:text-gray-500 mb-1.5 px-1"
 							>
-								{i18n.t('Output')}
+								{$i18n.t('Output')}
 							</div>
 							<div class="w-full max-w-none!">
 								{#if typeof parsedResult === 'object' && parsedResult !== null}
@@ -249,7 +248,7 @@
 												expandedResult = true;
 											}}
 										>
-											{i18n.t('Show all ({{COUNT}} characters)', {
+											{$i18n.t('Show all ({{COUNT}} characters)', {
 												COUNT: resultStr.length.toLocaleString()
 											})}
 										</button>
@@ -339,14 +338,14 @@
 						{#if isDone}
 							<Markdown
 								id={`${componentId}-tool-call-title`}
-								content={i18n.t('View Result from **{{NAME}}**', {
+								content={$i18n.t('View Result from **{{NAME}}**', {
 									NAME: attributes.name
 								})}
 							/>
 						{:else}
 							<Markdown
 								id={`${componentId}-tool-call-executing`}
-								content={i18n.t('Executing **{{NAME}}**...', {
+								content={$i18n.t('Executing **{{NAME}}**...', {
 									NAME: attributes.name
 								})}
 							/>
@@ -374,7 +373,7 @@
 							<div
 								class="text-[10px] uppercase tracking-wider font-medium text-gray-400 dark:text-gray-500 mb-1.5 px-1"
 							>
-								{i18n.t('Input')}
+								{$i18n.t('Input')}
 							</div>
 
 							{#if parsedArgs}
@@ -407,7 +406,7 @@
 							<div
 								class="text-[10px] uppercase tracking-wider font-medium text-gray-400 dark:text-gray-500 mb-1.5 px-1"
 							>
-								{i18n.t('Output')}
+								{$i18n.t('Output')}
 							</div>
 							<div class="w-full max-w-none!">
 								{#if typeof parsedResult === 'object' && parsedResult !== null}
@@ -431,7 +430,7 @@
 												expandedResult = true;
 											}}
 										>
-											{i18n.t('Show all ({{COUNT}} characters)', {
+											{$i18n.t('Show all ({{COUNT}} characters)', {
 												COUNT: resultStr.length.toLocaleString()
 											})}
 										</button>

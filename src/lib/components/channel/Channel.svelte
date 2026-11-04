@@ -1,5 +1,4 @@
 <script lang="ts">
-
 	import { toast } from 'svelte-sonner';
 	import { Pane, PaneGroup, PaneResizer } from 'paneforge';
 
@@ -114,7 +113,7 @@
 		typingUsers = [];
 		typingUsersTimeout = {};
 
-		channel = await getChannelById(localStorage.token, id).catch(async (error)=> {
+		channel = await getChannelById(localStorage.token, id).catch(async (error) => {
 			return null;
 		});
 
@@ -296,7 +295,7 @@
 </script>
 
 <svelte:head>
-			{#if channel?.type === 'dm'}
+	{#if channel?.type === 'dm'}
 		<title
 			>{channel?.name.trim() ||
 				channel?.users.reduce((a, e, i, arr) => {
@@ -314,7 +313,7 @@
 	{:else}
 		<title>#{channel?.name ?? 'Channel'} • Open WebUI</title>
 	{/if}
-			{#if channel?.type === 'dm'}
+	{#if channel?.type === 'dm'}
 		<title
 			>{channel?.name.trim() ||
 				channel?.users.reduce((a, e, i, arr) => {
@@ -332,7 +331,7 @@
 	{:else}
 		<title>#{channel?.name ?? 'Channel'} • Open WebUI</title>
 	{/if}
-		</svelte:head>
+</svelte:head>
 
 <div
 	class="h-screen max-h-[100dvh] transition-width duration-200 ease-in-out {$showSidebar
@@ -407,8 +406,8 @@
 						channelSuggestions={true}
 						disabled={!channel?.write_access}
 						placeholder={!channel?.write_access
-							? i18n.t('You do not have permission to send messages in this channel.')
-							: i18n.t('Type here...')}
+							? $i18n.t('You do not have permission to send messages in this channel.')
+							: $i18n.t('Type here...')}
 						{onChange}
 						onSubmit={submitHandler}
 						{scrollToBottom}
@@ -470,8 +469,6 @@
 	</PaneGroup>
 </div>
 
-
-
 <div
 	class="h-screen max-h-[100dvh] transition-width duration-200 ease-in-out {$showSidebar
 		? 'md:max-w-[calc(100%-var(--sidebar-width))]'
@@ -545,8 +542,8 @@
 						channelSuggestions={true}
 						disabled={!channel?.write_access}
 						placeholder={!channel?.write_access
-							? i18n.t('You do not have permission to send messages in this channel.')
-							: i18n.t('Type here...')}
+							? $i18n.t('You do not have permission to send messages in this channel.')
+							: $i18n.t('Type here...')}
 						{onChange}
 						onSubmit={submitHandler}
 						{scrollToBottom}

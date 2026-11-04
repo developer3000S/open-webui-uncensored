@@ -3,10 +3,10 @@
 	import { getContext } from 'svelte';
 
 	import type { Writable } from 'svelte/store';
-		import UserStatus from './UserStatus.svelte';
+	import UserStatus from './UserStatus.svelte';
 	import UserStatusLinkPreview from './UserStatusLinkPreview.svelte';
 
-	let user: any = null;
+	export let user: any = null;
 
 	export let align: any = 'center';
 	export let side: any = 'right';

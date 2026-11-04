@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import { openDB, deleteDB } from 'idb';
@@ -129,7 +129,7 @@
 		toolServersData = toolServersData.filter((data) => {
 			if (!data || data.error) {
 				toast.error(
-					i18n.t(`Failed to connect to {{URL}} OpenAPI tool server`, {
+					$i18n.t(`Failed to connect to {{URL}} OpenAPI tool server`, {
 						URL: data?.url
 					})
 				);
@@ -155,7 +155,7 @@
 				.filter((data) => {
 					if (!data || data.error) {
 						toast.error(
-							i18n.t(`Failed to connect to {{URL}} terminal server`, {
+							$i18n.t(`Failed to connect to {{URL}} terminal server`, {
 								URL: data?.url
 							})
 						);
@@ -197,6 +197,7 @@
 		tools.set(toolsData);
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		if ($user === undefined || $user === null) {
 			await goto('/auth');
@@ -209,8 +210,8 @@
 		clearChatInputStorage();
 		await Promise.all([
 			checkLocalDBChats(),
-			setBanners().catch(async (e)=> console.error('Failed to load banners:', e)),
-			setTools().catch(async (e)=> console.error('Failed to load tools:', e)),
+			setBanners().catch(async (e) => console.error('Failed to load banners:', e)),
+			setTools().catch(async (e) => console.error('Failed to load tools:', e)),
 			setUserSettings(async () => {
 				await setModels().catch((e) => console.error('Failed to load models:', e));
 			}).catch((e) => console.error('Failed to load user settings:', e))
@@ -247,7 +248,7 @@
 		};
 
 		const setupKeyboardShortcuts = () => {
-			document.addEventListener('keydown', async (event: any)  => {
+			document.addEventListener('keydown', async (event: any) => {
 				if (isShortcutMatch(event, shortcuts[Shortcut.SEARCH])) {
 					console.log('Shortcut triggered: SEARCH');
 					event.preventDefault();
@@ -342,7 +343,7 @@
 				const dismissedUpdateToast = new Date(Number(localStorage.dismissedUpdateToast));
 				const now = new Date();
 
-				if (now - dismissedUpdateToast > 24 * 60 * 60 * 1000) {
+				if (now.getTime() - Number(dismissedUpdateToast ?? 0) > 24 * 60 * 60 * 1000) {
 					checkForVersionUpdates();
 				}
 			} else {
@@ -412,17 +413,17 @@
 							<div class="m-auto pb-44 flex flex-col justify-center">
 								<div class="max-w-md">
 									<div class="text-center dark:text-white text-2xl font-medium z-50">
-										{i18n.t('Important Update')}<br />
-										{i18n.t('Action Required for Chat Log Storage')}
+										{$i18n.t('Important Update')}<br />
+										{$i18n.t('Action Required for Chat Log Storage')}
 									</div>
 
 									<div class=" mt-4 text-center text-sm dark:text-gray-200 w-full">
-										{i18n.t(
+										{$i18n.t(
 											"Saving chat logs directly to your browser's storage is no longer supported. Please take a moment to download and delete your chat logs by clicking the button below. Don't worry, you can easily re-import your chat logs to the backend through"
 										)}
 										<span class="font-medium dark:text-white"
-											>{i18n.t('Settings')} > {i18n.t('Chats')} > {i18n.t('Import Chats')}</span
-										>. {i18n.t(
+											>{$i18n.t('Settings')} > {$i18n.t('Chats')} > {$i18n.t('Import Chats')}</span
+										>. {$i18n.t(
 											'This ensures that your valuable conversations are securely saved to your backend database. Thank you!'
 										)}
 									</div>
@@ -443,14 +444,14 @@
 												localDBChats = [];
 											}}
 										>
-											{i18n.t('Download & Delete')}
+											{$i18n.t('Download & Delete')}
 										</button>
 
 										<button
 											class="text-xs text-center w-full mt-2 text-gray-400 underline"
 											on:click={async () => {
 												localDBChats = [];
-											}}>{i18n.t('Close')}</button
+											}}>{$i18n.t('Close')}</button
 										>
 									</div>
 								</div>
@@ -476,10 +477,6 @@
 		</div>
 	</div>
 {/if}
-
-<style>
-
-</style>
 
 <SettingsModal bind:show={$showSettings} />
 <ChangelogModal bind:show={$showChangelog} />
@@ -512,17 +509,17 @@
 							<div class="m-auto pb-44 flex flex-col justify-center">
 								<div class="max-w-md">
 									<div class="text-center dark:text-white text-2xl font-medium z-50">
-										{i18n.t('Important Update')}<br />
-										{i18n.t('Action Required for Chat Log Storage')}
+										{$i18n.t('Important Update')}<br />
+										{$i18n.t('Action Required for Chat Log Storage')}
 									</div>
 
 									<div class=" mt-4 text-center text-sm dark:text-gray-200 w-full">
-										{i18n.t(
+										{$i18n.t(
 											"Saving chat logs directly to your browser's storage is no longer supported. Please take a moment to download and delete your chat logs by clicking the button below. Don't worry, you can easily re-import your chat logs to the backend through"
 										)}
 										<span class="font-medium dark:text-white"
-											>{i18n.t('Settings')} > {i18n.t('Chats')} > {i18n.t('Import Chats')}</span
-										>. {i18n.t(
+											>{$i18n.t('Settings')} > {$i18n.t('Chats')} > {$i18n.t('Import Chats')}</span
+										>. {$i18n.t(
 											'This ensures that your valuable conversations are securely saved to your backend database. Thank you!'
 										)}
 									</div>
@@ -543,14 +540,14 @@
 												localDBChats = [];
 											}}
 										>
-											{i18n.t('Download & Delete')}
+											{$i18n.t('Download & Delete')}
 										</button>
 
 										<button
 											class="text-xs text-center w-full mt-2 text-gray-400 underline"
 											on:click={async () => {
 												localDBChats = [];
-											}}>{i18n.t('Close')}</button
+											}}>{$i18n.t('Close')}</button
 										>
 									</div>
 								</div>
@@ -577,4 +574,5 @@
 	</div>
 {/if}
 
-
+<style>
+</style>

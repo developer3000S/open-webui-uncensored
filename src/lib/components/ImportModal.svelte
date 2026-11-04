@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import type { Writable } from 'svelte/store';
@@ -12,9 +12,9 @@
 	import { extractFrontmatter, nameToId } from '$lib/utils';
 
 	export let show: any = false;
-	export let onImport = (e: any) => {};
+	export let onImport: any = (e: any) => {};
 
-	export let loadUrlHandler: Function = () => {};
+	export let loadUrlHandler: any = () => {};
 	export let successMessage: string = '';
 
 	let loading = false;
@@ -24,7 +24,7 @@
 		loading = true;
 
 		if (!url) {
-			toast.error(i18n.t('Please enter a valid URL'));
+			toast.error($i18n.t('Please enter a valid URL'));
 			loading = false;
 			return;
 		}
@@ -37,7 +37,7 @@
 
 		if (res) {
 			if (!successMessage) {
-				successMessage = i18n.t('Function imported successfully');
+				successMessage = $i18n.t('Function imported successfully');
 			}
 
 			toast.success(successMessage);
@@ -65,10 +65,10 @@
 <Modal size="sm" bind:show>
 	<div>
 		<div class=" flex justify-between dark:text-gray-300 px-5 pt-4 pb-2">
-			<div class=" text-lg font-medium self-center">{i18n.t('Import')}</div>
+			<div class=" text-lg font-medium self-center">{$i18n.t('Import')}</div>
 			<button
 				class="self-center"
-				aria-label={i18n.t('Close')}
+				aria-label={$i18n.t('Close')}
 				on:click={() => {
 					show = false;
 				}}
@@ -87,18 +87,18 @@
 				>
 					<div class="px-1">
 						<div class="flex flex-col w-full">
-							<div class=" mb-1 text-xs text-gray-500">{i18n.t('URL')}</div>
+							<div class=" mb-1 text-xs text-gray-500">{$i18n.t('URL')}</div>
 
 							<div class="flex-1">
 								<input
 									class="w-full text-sm bg-transparent disabled:text-gray-500 dark:disabled:text-gray-500 outline-hidden"
 									type="url"
 									bind:value={url}
-									placeholder={i18n.t('Enter the URL to import')}
+									placeholder={$i18n.t('Enter the URL to import')}
 									required
 								/>
 
-								<!-- i18n.t('Enter the URL of the function to import') -->
+								<!-- $i18n.t('Enter the URL of the function to import') -->
 							</div>
 						</div>
 					</div>
@@ -111,7 +111,7 @@
 							type="submit"
 							disabled={loading}
 						>
-							{i18n.t('Import')}
+							{$i18n.t('Import')}
 
 							{#if loading}
 								<span class="shrink-0">
@@ -129,10 +129,10 @@
 <Modal size="sm" bind:show>
 	<div>
 		<div class=" flex justify-between dark:text-gray-300 px-5 pt-4 pb-2">
-			<div class=" text-lg font-medium self-center">{i18n.t('Import')}</div>
+			<div class=" text-lg font-medium self-center">{$i18n.t('Import')}</div>
 			<button
 				class="self-center"
-				aria-label={i18n.t('Close')}
+				aria-label={$i18n.t('Close')}
 				on:click={() => {
 					show = false;
 				}}
@@ -151,18 +151,18 @@
 				>
 					<div class="px-1">
 						<div class="flex flex-col w-full">
-							<div class=" mb-1 text-xs text-gray-500">{i18n.t('URL')}</div>
+							<div class=" mb-1 text-xs text-gray-500">{$i18n.t('URL')}</div>
 
 							<div class="flex-1">
 								<input
 									class="w-full text-sm bg-transparent disabled:text-gray-500 dark:disabled:text-gray-500 outline-hidden"
 									type="url"
 									bind:value={url}
-									placeholder={i18n.t('Enter the URL to import')}
+									placeholder={$i18n.t('Enter the URL to import')}
 									required
 								/>
 
-								<!-- i18n.t('Enter the URL of the function to import') -->
+								<!-- $i18n.t('Enter the URL of the function to import') -->
 							</div>
 						</div>
 					</div>
@@ -175,7 +175,7 @@
 							type="submit"
 							disabled={loading}
 						>
-							{i18n.t('Import')}
+							{$i18n.t('Import')}
 
 							{#if loading}
 								<span class="shrink-0">

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onDestroy, onMount, tick, getContext } from 'svelte';
 	import type { Writable } from 'svelte/store';
-	
+
 	import Markdown from './Markdown.svelte';
 	import StructuredOutputRenderer from './StructuredOutputRenderer.svelte';
 	import {
@@ -70,21 +70,21 @@
 	export let id: any;
 	export let content: any;
 	/** @type {import('./structuredOutput').OutputItem[]} */
-	let output: any[] = [];
+	export let output: any[] = [];
 
 	export let done: any = true;
-	let model: any = null;
-	let sources: any = null;
+	export let model: any = null;
+	export let sources: any = null;
 
 	export let save: any = false;
 	export let preview: any = false;
 	export let floatingButtons: any = true;
 	export let editCodeBlock: any = true;
 	export let topPadding: any = false;
-	export let onSave = (e: any) => {};
-	export let onSourceClick = (e: any) => {};
-	export let onTaskClick = (e: any) => {};
-	export let onSetInputText = (text: any) => {};
+	export let onSave: any = (e: any) => {};
+	export let onSourceClick: any = (e: any) => {};
+	export let onTaskClick: any = (e: any) => {};
+	export let onSetInputText: any = (text: any) => {};
 
 	let contentContainerElement;
 	let floatingButtonsElement;

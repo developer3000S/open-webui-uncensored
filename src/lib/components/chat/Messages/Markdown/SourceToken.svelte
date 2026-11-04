@@ -4,8 +4,9 @@
 	import Source from './Source.svelte';
 
 	export let token: any;
+	export let id: any = undefined;
 	export let sourceIds: any = [];
-	export let onClick: Function = () => {};
+	export let onClick: any = () => {};
 
 	let containerElement;
 	let openPreview = false;
@@ -60,7 +61,12 @@
 				</button>
 			</LinkPreview.Trigger>
 			<LinkPreview.Portal>
-				<LinkPreview.Content class="z-[999]" align="start" strategy="fixed" sideOffset={6}>
+				<LinkPreview.Content
+					class="z-[999]"
+					align="start"
+					{...{ strategy: 'fixed' } as any}
+					sideOffset={6}
+				>
 					<div class="bg-gray-50 dark:bg-gray-850 rounded-xl p-1 cursor-pointer">
 						{#each token.citationIdentifiers ?? token.ids as identifier}
 							{@const id =

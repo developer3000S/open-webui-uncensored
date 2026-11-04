@@ -3,9 +3,9 @@
 	import Message from './Message.svelte';
 
 	import type { Writable } from 'svelte/store';
-	
+
 	export let messages: any = [];
-	export let onInsert = (content: string) => {};
+	export let onInsert: any = (content: string) => {};
 </script>
 
 <div class="space-y-3 pb-12">

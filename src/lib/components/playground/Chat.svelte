@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import fileSaver from 'file-saver';
 	const { saveAs } = fileSaver;
@@ -90,7 +90,7 @@
 
 	const chatCompletionHandler = async () => {
 		if (selectedModelId === '') {
-			toast.error(i18n.t('Please select a model.'));
+			toast.error($i18n.t('Please select a model.'));
 			return;
 		}
 
@@ -281,7 +281,7 @@
 			type: 'application/json'
 		});
 		saveAs(blob, `playground-chat-${Date.now()}.json`);
-		toast.success(i18n.t('Chat exported successfully'));
+		toast.success($i18n.t('Chat exported successfully'));
 	};
 
 	const downloadTxt = () => {
@@ -301,9 +301,10 @@
 			type: 'text/plain'
 		});
 		saveAs(blob, `playground-chat-${Date.now()}.txt`);
-		toast.success(i18n.t('Chat exported successfully'));
+		toast.success($i18n.t('Chat exported successfully'));
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		if ($user?.role !== 'admin') {
 			await goto('/');
@@ -323,10 +324,10 @@
 <Modal size="sm" bind:show={showControls}>
 	<div class="text-gray-700 dark:text-gray-100">
 		<div class="flex justify-between px-4.5 pt-4.5 pb-2">
-			<div class="text-lg font-medium self-center">{i18n.t('Controls')}</div>
+			<div class="text-lg font-medium self-center">{$i18n.t('Controls')}</div>
 			<button
 				class="self-center"
-				aria-label={i18n.t('Close')}
+				aria-label={$i18n.t('Close')}
 				on:click={() => {
 					showControls = false;
 				}}
@@ -352,7 +353,7 @@
 				>
 					<div class="flex gap-2 justify-between items-center">
 						<div class=" shrink-0 font-medium ml-1.5">
-							{i18n.t('System Instructions')}
+							{$i18n.t('System Instructions')}
 						</div>
 
 						{#if !showSystem && system.trim()}
@@ -378,7 +379,7 @@
 								bind:this={systemTextareaElement}
 								class="w-full h-full bg-transparent resize-none outline-hidden text-sm"
 								bind:value={system}
-								placeholder={i18n.t("You're a helpful assistant.")}
+								placeholder={$i18n.t("You're a helpful assistant.")}
 								on:input={() => {
 									resizeSystemTextarea();
 								}}
@@ -391,7 +392,7 @@
 				<Dropdown>
 					<button
 						class="p-1.5 text-sm font-medium bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition rounded-lg"
-						aria-label={i18n.t('More options')}
+						aria-label={$i18n.t('More options')}
 					>
 						<EllipsisHorizontal className="size-4" />
 					</button>
@@ -406,7 +407,7 @@
 									class="flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl select-none w-full"
 								>
 									<Download strokeWidth="1.5" />
-									<div class="flex items-center">{i18n.t('Download')}</div>
+									<div class="flex items-center">{$i18n.t('Download')}</div>
 								</button>
 								<button
 									class="flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl select-none w-full"
@@ -416,7 +417,7 @@
 									}}
 								>
 									<div class="flex items-center line-clamp-1">
-										{i18n.t('Export chat (.json)')}
+										{$i18n.t('Export chat (.json)')}
 									</div>
 								</button>
 								<button
@@ -426,7 +427,7 @@
 										downloadTxt();
 									}}
 								>
-									<div class="flex items-center line-clamp-1">{i18n.t('Plain text (.txt)')}</div>
+									<div class="flex items-center line-clamp-1">{$i18n.t('Plain text (.txt)')}</div>
 								</button>
 							</DropdownSub>
 						</div>
@@ -451,13 +452,13 @@
 					class="border border-gray-100/30 dark:border-gray-850/30 w-full px-3 py-2.5 rounded-xl"
 				>
 					<div class="py-0.5">
-						<!-- i18n.t('a user') -->
-						<!-- i18n.t('an assistant') -->
+						<!-- $i18n.t('a user') -->
+						<!-- $i18n.t('an assistant') -->
 						<textarea
 							bind:value={message}
 							class=" w-full h-full bg-transparent resize-none outline-hidden text-sm"
-							placeholder={i18n.t(`Enter {{role}} message here`, {
-								role: role === 'user' ? i18n.t('a user') : i18n.t('an assistant')
+							placeholder={$i18n.t(`Enter {{role}} message here`, {
+								role: role === 'user' ? $i18n.t('a user') : $i18n.t('an assistant')
 							})}
 							on:input={(e) => {
 								e.target.style.height = '';
@@ -479,7 +480,7 @@
 								type="button"
 								class="px-3.5 py-1.5 text-sm font-medium bg-gray-50 hover:bg-gray-100 text-gray-900 dark:bg-gray-850 dark:hover:bg-gray-800 dark:text-gray-200 transition rounded-lg shrink-0 outline-hidden"
 								aria-pressed={role === 'assistant'}
-								aria-label={i18n.t(
+								aria-label={$i18n.t(
 									role === 'user' ? 'Switch to Assistant role' : 'Switch to User role'
 								)}
 								on:click={() => {
@@ -487,9 +488,9 @@
 								}}
 							>
 								{#if role === 'user'}
-									{i18n.t('User')}
+									{$i18n.t('User')}
 								{:else}
-									{i18n.t('Assistant')}
+									{$i18n.t('Assistant')}
 								{/if}
 							</button>
 						</div>
@@ -512,7 +513,7 @@
 								class="p-1.5 text-sm font-medium bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 transition rounded-lg {showControls
 									? 'text-black dark:text-white'
 									: 'text-gray-500 dark:text-gray-400'}"
-								aria-label={i18n.t('Controls')}
+								aria-label={$i18n.t('Controls')}
 								id="playground-controls-toggle"
 								on:click={() => {
 									showControls = !showControls;
@@ -531,7 +532,7 @@
 											role = role === 'user' ? 'assistant' : 'user';
 										}}
 									>
-										{i18n.t('Add')}
+										{$i18n.t('Add')}
 									</button>
 
 									<button
@@ -540,7 +541,7 @@
 											submitHandler();
 										}}
 									>
-										{i18n.t('Run')}
+										{$i18n.t('Run')}
 									</button>
 								{:else}
 									<button
@@ -549,7 +550,7 @@
 											stopResponse();
 										}}
 									>
-										{i18n.t('Cancel')}
+										{$i18n.t('Cancel')}
 									</button>
 								{/if}
 							</div>
@@ -564,10 +565,10 @@
 <Modal size="sm" bind:show={showControls}>
 	<div class="text-gray-700 dark:text-gray-100">
 		<div class="flex justify-between px-4.5 pt-4.5 pb-2">
-			<div class="text-lg font-medium self-center">{i18n.t('Controls')}</div>
+			<div class="text-lg font-medium self-center">{$i18n.t('Controls')}</div>
 			<button
 				class="self-center"
-				aria-label={i18n.t('Close')}
+				aria-label={$i18n.t('Close')}
 				on:click={() => {
 					showControls = false;
 				}}
@@ -593,7 +594,7 @@
 				>
 					<div class="flex gap-2 justify-between items-center">
 						<div class=" shrink-0 font-medium ml-1.5">
-							{i18n.t('System Instructions')}
+							{$i18n.t('System Instructions')}
 						</div>
 
 						{#if !showSystem && system.trim()}
@@ -619,7 +620,7 @@
 								bind:this={systemTextareaElement}
 								class="w-full h-full bg-transparent resize-none outline-hidden text-sm"
 								bind:value={system}
-								placeholder={i18n.t("You're a helpful assistant.")}
+								placeholder={$i18n.t("You're a helpful assistant.")}
 								on:input={() => {
 									resizeSystemTextarea();
 								}}
@@ -632,7 +633,7 @@
 				<Dropdown>
 					<button
 						class="p-1.5 text-sm font-medium bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition rounded-lg"
-						aria-label={i18n.t('More options')}
+						aria-label={$i18n.t('More options')}
 					>
 						<EllipsisHorizontal className="size-4" />
 					</button>
@@ -647,7 +648,7 @@
 									class="flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl select-none w-full"
 								>
 									<Download strokeWidth="1.5" />
-									<div class="flex items-center">{i18n.t('Download')}</div>
+									<div class="flex items-center">{$i18n.t('Download')}</div>
 								</button>
 								<button
 									class="flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl select-none w-full"
@@ -657,7 +658,7 @@
 									}}
 								>
 									<div class="flex items-center line-clamp-1">
-										{i18n.t('Export chat (.json)')}
+										{$i18n.t('Export chat (.json)')}
 									</div>
 								</button>
 								<button
@@ -667,7 +668,7 @@
 										downloadTxt();
 									}}
 								>
-									<div class="flex items-center line-clamp-1">{i18n.t('Plain text (.txt)')}</div>
+									<div class="flex items-center line-clamp-1">{$i18n.t('Plain text (.txt)')}</div>
 								</button>
 							</DropdownSub>
 						</div>
@@ -692,13 +693,13 @@
 					class="border border-gray-100/30 dark:border-gray-850/30 w-full px-3 py-2.5 rounded-xl"
 				>
 					<div class="py-0.5">
-						<!-- i18n.t('a user') -->
-						<!-- i18n.t('an assistant') -->
+						<!-- $i18n.t('a user') -->
+						<!-- $i18n.t('an assistant') -->
 						<textarea
 							bind:value={message}
 							class=" w-full h-full bg-transparent resize-none outline-hidden text-sm"
-							placeholder={i18n.t(`Enter {{role}} message here`, {
-								role: role === 'user' ? i18n.t('a user') : i18n.t('an assistant')
+							placeholder={$i18n.t(`Enter {{role}} message here`, {
+								role: role === 'user' ? $i18n.t('a user') : $i18n.t('an assistant')
 							})}
 							on:input={(e) => {
 								e.target.style.height = '';
@@ -720,7 +721,7 @@
 								type="button"
 								class="px-3.5 py-1.5 text-sm font-medium bg-gray-50 hover:bg-gray-100 text-gray-900 dark:bg-gray-850 dark:hover:bg-gray-800 dark:text-gray-200 transition rounded-lg shrink-0 outline-hidden"
 								aria-pressed={role === 'assistant'}
-								aria-label={i18n.t(
+								aria-label={$i18n.t(
 									role === 'user' ? 'Switch to Assistant role' : 'Switch to User role'
 								)}
 								on:click={() => {
@@ -728,9 +729,9 @@
 								}}
 							>
 								{#if role === 'user'}
-									{i18n.t('User')}
+									{$i18n.t('User')}
 								{:else}
-									{i18n.t('Assistant')}
+									{$i18n.t('Assistant')}
 								{/if}
 							</button>
 						</div>
@@ -753,7 +754,7 @@
 								class="p-1.5 text-sm font-medium bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 transition rounded-lg {showControls
 									? 'text-black dark:text-white'
 									: 'text-gray-500 dark:text-gray-400'}"
-								aria-label={i18n.t('Controls')}
+								aria-label={$i18n.t('Controls')}
 								id="playground-controls-toggle"
 								on:click={() => {
 									showControls = !showControls;
@@ -772,7 +773,7 @@
 											role = role === 'user' ? 'assistant' : 'user';
 										}}
 									>
-										{i18n.t('Add')}
+										{$i18n.t('Add')}
 									</button>
 
 									<button
@@ -781,7 +782,7 @@
 											submitHandler();
 										}}
 									>
-										{i18n.t('Run')}
+										{$i18n.t('Run')}
 									</button>
 								{:else}
 									<button
@@ -790,7 +791,7 @@
 											stopResponse();
 										}}
 									>
-										{i18n.t('Cancel')}
+										{$i18n.t('Cancel')}
 									</button>
 								{/if}
 							</div>

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import fileSaver from 'file-saver';
 	const { saveAs } = fileSaver;
@@ -72,7 +72,7 @@
 
 			<div>
 				<button
-					aria-label={i18n.t('Download Image')}
+					aria-label={$i18n.t('Download Image')}
 					class=" p-5 z-999"
 					on:click={() => {
 						if (src.startsWith('data:image/')) {
@@ -83,7 +83,8 @@
 
 							const mimeType = blob.type || 'image/png';
 							// create file name based on the MIME type, alt should be a valid file name with extension
-							const fileName = `${i18n.t('Generated Image')
+							const fileName = `${$i18n
+								.t('Generated Image')
 								.toLowerCase()
 								.replace(/ /g, '_')}.${mimeType.split('/')[1]}`;
 
@@ -102,7 +103,8 @@
 									const blobWithType = new Blob([blob], { type: mimeType });
 
 									// create file name based on the MIME type, alt should be a valid file name with extension
-									const fileName = `${i18n.t('Generated Image')
+									const fileName = `${$i18n
+										.t('Generated Image')
 										.toLowerCase()
 										.replace(/ /g, '_')}.${mimeType.split('/')[1]}`;
 
@@ -129,7 +131,8 @@
 									const blobWithType = new Blob([blob], { type: mimeType });
 
 									// create file name based on the MIME type, alt should be a valid file name with extension
-									const fileName = `${i18n.t('Generated Image')
+									const fileName = `${$i18n
+										.t('Generated Image')
 										.toLowerCase()
 										.replace(/ /g, '_')}.${mimeType.split('/')[1]}`;
 
@@ -191,7 +194,7 @@
 
 			<div>
 				<button
-					aria-label={i18n.t('Download Image')}
+					aria-label={$i18n.t('Download Image')}
 					class=" p-5 z-999"
 					on:click={() => {
 						if (src.startsWith('data:image/')) {
@@ -202,7 +205,8 @@
 
 							const mimeType = blob.type || 'image/png';
 							// create file name based on the MIME type, alt should be a valid file name with extension
-							const fileName = `${i18n.t('Generated Image')
+							const fileName = `${$i18n
+								.t('Generated Image')
 								.toLowerCase()
 								.replace(/ /g, '_')}.${mimeType.split('/')[1]}`;
 
@@ -221,7 +225,8 @@
 									const blobWithType = new Blob([blob], { type: mimeType });
 
 									// create file name based on the MIME type, alt should be a valid file name with extension
-									const fileName = `${i18n.t('Generated Image')
+									const fileName = `${$i18n
+										.t('Generated Image')
 										.toLowerCase()
 										.replace(/ /g, '_')}.${mimeType.split('/')[1]}`;
 
@@ -248,7 +253,8 @@
 									const blobWithType = new Blob([blob], { type: mimeType });
 
 									// create file name based on the MIME type, alt should be a valid file name with extension
-									const fileName = `${i18n.t('Generated Image')
+									const fileName = `${$i18n
+										.t('Generated Image')
 										.toLowerCase()
 										.replace(/ /g, '_')}.${mimeType.split('/')[1]}`;
 

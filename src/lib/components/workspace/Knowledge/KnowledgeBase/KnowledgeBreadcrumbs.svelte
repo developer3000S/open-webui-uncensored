@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { afterUpdate, getContext } from 'svelte';
 	import type { Writable } from 'svelte/store';
-	
+
 	import ChevronRight from '$lib/components/icons/ChevronRight.svelte';
 
 	export let rootLabel: string = 'Root';

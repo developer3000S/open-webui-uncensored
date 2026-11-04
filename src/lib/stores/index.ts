@@ -36,8 +36,8 @@ export const USAGE_POOL: Writable<null | string[]> = writable(null);
 
 export const theme = writable('system');
 
-export const shortCodesToEmojis = writable(
-	Object.entries(emojiShortCodes).reduce((acc, [key, value]) => {
+export const shortCodesToEmojis = writable<Record<string, string>>(
+	Object.entries(emojiShortCodes).reduce<Record<string, string>>((acc, [key, value]) => {
 		if (typeof value === 'string') {
 			acc[value] = key;
 		} else {
@@ -184,8 +184,8 @@ type OllamaModelDetails = {
 
 type Settings = {
 	[key: string]: any;
-	pinnedModels?: never[];
-	toolServers?: never[];
+	pinnedModels?: any[];
+	toolServers?: any[];
 	detectArtifacts?: boolean;
 	showUpdateToast?: boolean;
 	showChangelog?: boolean;
@@ -219,7 +219,7 @@ type Settings = {
 	iframeSandboxAllowSameOrigin?: boolean;
 	scrollOnBranchChange?: boolean;
 	showFilesOnTerminalSelect?: boolean;
-	directConnections?: null;
+	directConnections?: any;
 	chatBubble?: boolean;
 	copyFormatted?: boolean;
 	models?: string[];
@@ -255,7 +255,7 @@ type Settings = {
 };
 
 type ModelOptions = {
-	stop?: boolean;
+	stop?: any;
 };
 
 type AudioSettings = {
@@ -329,13 +329,13 @@ export type Config = {
 		auto_redirect?: boolean;
 	};
 	ui?: {
+		[key: string]: any;
 		pending_user_overlay_title?: string;
 		pending_user_overlay_content?: string;
 		iframe_csp?: string;
 	};
 	onboarding?: boolean;
 	metadata?: Record<string, unknown>;
-	[key: string]: unknown;
 };
 
 type PromptSuggestion = {
@@ -350,4 +350,9 @@ export type SessionUser = {
 	name: string;
 	role: string;
 	profile_image_url: string;
+	expires_at?: any;
+	token?: string;
+	is_active?: boolean;
+	status_emoji?: string;
+	status_message?: string;
 };

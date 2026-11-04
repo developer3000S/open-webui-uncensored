@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { getModels, getTaskConfig, updateTaskConfig } from '$lib/apis';
 	import { getChatConfig, updateChatConfig } from '$lib/apis/chats';
@@ -90,11 +90,12 @@
 			console.debug('models', models);
 		} catch (err) {
 			console.error('Failed to initialize Interface settings:', err);
-			toast.error(err?.detail ?? err?.message ?? i18n.t('Failed to load Interface settings'));
+			toast.error(err?.detail ?? err?.message ?? $i18n.t('Failed to load Interface settings'));
 			models = [];
 		}
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		await init();
 	});
@@ -110,14 +111,14 @@
 	>
 		<div class="  overflow-y-scroll scrollbar-hidden h-full pr-1.5">
 			<div class="mb-3.5">
-				<div class=" mt-0.5 mb-2.5 text-base font-medium">{i18n.t('Tasks')}</div>
+				<div class=" mt-0.5 mb-2.5 text-base font-medium">{$i18n.t('Tasks')}</div>
 
 				<hr class=" border-gray-100/30 dark:border-gray-850/30 my-2" />
 
 				<div class=" mb-2 font-medium flex items-center">
-					<div class=" text-xs mr-1">{i18n.t('Task Model')}</div>
+					<div class=" text-xs mr-1">{$i18n.t('Task Model')}</div>
 					<Tooltip
-						content={i18n.t(
+						content={$i18n.t(
 							'A task model is used when performing tasks such as generating titles for chats and web search queries'
 						)}
 					>
@@ -140,11 +141,11 @@
 
 				<div class=" mb-2.5 flex w-full gap-2">
 					<div class="flex-1">
-						<div class=" text-xs mb-1">{i18n.t('Local Task Model')}</div>
+						<div class=" text-xs mb-1">{$i18n.t('Local Task Model')}</div>
 						<select
 							class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 							bind:value={taskConfig.TASK_MODEL}
-							placeholder={i18n.t('Select a model')}
+							placeholder={$i18n.t('Select a model')}
 							on:change={() => {
 								if (taskConfig.TASK_MODEL) {
 									const model = models.find((m) => m.id === taskConfig.TASK_MODEL);
@@ -159,7 +160,7 @@
 											)
 										) {
 											toast.error(
-												i18n.t(
+												$i18n.t(
 													'This model is not publicly available. Please select another model.'
 												)
 											);
@@ -172,22 +173,22 @@
 								}
 							}}
 						>
-							<option value="" selected>{i18n.t('Current Model')}</option>
+							<option value="" selected>{$i18n.t('Current Model')}</option>
 							{#each models as model}
 								<option value={model.id} class="bg-gray-100 dark:bg-gray-700">
 									{model.name}
-									{model?.connection_type === 'local' ? `(${i18n.t('Local')})` : ''}
+									{model?.connection_type === 'local' ? `(${$i18n.t('Local')})` : ''}
 								</option>
 							{/each}
 						</select>
 					</div>
 
 					<div class="flex-1">
-						<div class=" text-xs mb-1">{i18n.t('External Task Model')}</div>
+						<div class=" text-xs mb-1">{$i18n.t('External Task Model')}</div>
 						<select
 							class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 							bind:value={taskConfig.TASK_MODEL_EXTERNAL}
-							placeholder={i18n.t('Select a model')}
+							placeholder={$i18n.t('Select a model')}
 							on:change={() => {
 								if (taskConfig.TASK_MODEL_EXTERNAL) {
 									const model = models.find((m) => m.id === taskConfig.TASK_MODEL_EXTERNAL);
@@ -202,7 +203,7 @@
 											)
 										) {
 											toast.error(
-												i18n.t(
+												$i18n.t(
 													'This model is not publicly available. Please select another model.'
 												)
 											);
@@ -215,11 +216,11 @@
 								}
 							}}
 						>
-							<option value="" selected>{i18n.t('Current Model')}</option>
+							<option value="" selected>{$i18n.t('Current Model')}</option>
 							{#each models as model}
 								<option value={model.id} class="bg-gray-100 dark:bg-gray-700">
 									{model.name}
-									{model?.connection_type === 'local' ? `(${i18n.t('Local')})` : ''}
+									{model?.connection_type === 'local' ? `(${$i18n.t('Local')})` : ''}
 								</option>
 							{/each}
 						</select>
@@ -230,7 +231,7 @@
 
 				<div class="mb-2.5 flex w-full items-center justify-between">
 					<div class=" self-center text-xs font-medium">
-						{i18n.t('Context Compaction')}
+						{$i18n.t('Context Compaction')}
 					</div>
 
 					<Switch bind:state={chatConfig.ENABLE_CONTEXT_COMPACTION} />
@@ -238,10 +239,10 @@
 
 				{#if chatConfig.ENABLE_CONTEXT_COMPACTION}
 					<div class="mb-2.5">
-						<div class=" mb-1 text-xs font-medium">{i18n.t('Token Threshold')}</div>
+						<div class=" mb-1 text-xs font-medium">{$i18n.t('Token Threshold')}</div>
 
 						<Tooltip
-							content={i18n.t(
+							content={$i18n.t(
 								'Older messages are summarized when estimated context exceeds this token limit.'
 							)}
 							placement="top-start"
@@ -257,21 +258,21 @@
 					</div>
 
 					<div class="mb-2.5">
-						<div class=" mb-1 text-xs font-medium">{i18n.t('Context Compaction Prompt')}</div>
+						<div class=" mb-1 text-xs font-medium">{$i18n.t('Context Compaction Prompt')}</div>
 
 						<Tooltip
-							content={i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
+							content={$i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
 							placement="top-start"
 						>
 							<Textarea
 								bind:value={chatConfig.CONTEXT_COMPACTION_PROMPT_TEMPLATE}
-								placeholder={i18n.t(
+								placeholder={$i18n.t(
 									'Leave empty to use the default prompt, or enter a custom prompt'
 								)}
 							/>
 						</Tooltip>
 						<div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-							{i18n.t('Available variables')}:
+							{$i18n.t('Available variables')}:
 							<code>{'{{PREVIOUS_SUMMARY}}'}</code>,
 							<code>{'{{COMPACTED_MESSAGES}}'}</code>,
 							<code>{'{{RECENT_MESSAGES}}'}</code>,
@@ -285,7 +286,7 @@
 
 				<div class="mb-2.5 flex w-full items-center justify-between">
 					<div class=" self-center text-xs font-medium">
-						{i18n.t('Title Generation')}
+						{$i18n.t('Title Generation')}
 					</div>
 
 					<Switch bind:state={taskConfig.ENABLE_TITLE_GENERATION} />
@@ -293,15 +294,15 @@
 
 				{#if taskConfig.ENABLE_TITLE_GENERATION}
 					<div class="mb-2.5">
-						<div class=" mb-1 text-xs font-medium">{i18n.t('Title Generation Prompt')}</div>
+						<div class=" mb-1 text-xs font-medium">{$i18n.t('Title Generation Prompt')}</div>
 
 						<Tooltip
-							content={i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
+							content={$i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
 							placement="top-start"
 						>
 							<Textarea
 								bind:value={taskConfig.TITLE_GENERATION_PROMPT_TEMPLATE}
-								placeholder={i18n.t(
+								placeholder={$i18n.t(
 									'Leave empty to use the default prompt, or enter a custom prompt'
 								)}
 							/>
@@ -311,7 +312,7 @@
 
 				<div class="mb-2.5 flex w-full items-center justify-between">
 					<div class=" self-center text-xs font-medium">
-						{i18n.t('Voice Mode Prompt')}
+						{$i18n.t('Voice Mode Prompt')}
 					</div>
 
 					<Switch bind:state={taskConfig.ENABLE_VOICE_MODE_PROMPT} />
@@ -319,15 +320,15 @@
 
 				{#if taskConfig.ENABLE_VOICE_MODE_PROMPT}
 					<div class="mb-2.5">
-						<div class=" mb-1 text-xs font-medium">{i18n.t('Prompt Template')}</div>
+						<div class=" mb-1 text-xs font-medium">{$i18n.t('Prompt Template')}</div>
 
 						<Tooltip
-							content={i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
+							content={$i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
 							placement="top-start"
 						>
 							<Textarea
 								bind:value={taskConfig.VOICE_MODE_PROMPT_TEMPLATE}
-								placeholder={i18n.t(
+								placeholder={$i18n.t(
 									'Leave empty to use the default prompt, or enter a custom prompt'
 								)}
 							/>
@@ -337,7 +338,7 @@
 
 				<div class="mb-2.5 flex w-full items-center justify-between">
 					<div class=" self-center text-xs font-medium">
-						{i18n.t('Follow Up Generation')}
+						{$i18n.t('Follow Up Generation')}
 					</div>
 
 					<Switch bind:state={taskConfig.ENABLE_FOLLOW_UP_GENERATION} />
@@ -345,15 +346,15 @@
 
 				{#if taskConfig.ENABLE_FOLLOW_UP_GENERATION}
 					<div class="mb-2.5">
-						<div class=" mb-1 text-xs font-medium">{i18n.t('Follow Up Generation Prompt')}</div>
+						<div class=" mb-1 text-xs font-medium">{$i18n.t('Follow Up Generation Prompt')}</div>
 
 						<Tooltip
-							content={i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
+							content={$i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
 							placement="top-start"
 						>
 							<Textarea
 								bind:value={taskConfig.FOLLOW_UP_GENERATION_PROMPT_TEMPLATE}
-								placeholder={i18n.t(
+								placeholder={$i18n.t(
 									'Leave empty to use the default prompt, or enter a custom prompt'
 								)}
 							/>
@@ -363,7 +364,7 @@
 
 				<div class="mb-2.5 flex w-full items-center justify-between">
 					<div class=" self-center text-xs font-medium">
-						{i18n.t('Tags Generation')}
+						{$i18n.t('Tags Generation')}
 					</div>
 
 					<Switch bind:state={taskConfig.ENABLE_TAGS_GENERATION} />
@@ -371,15 +372,15 @@
 
 				{#if taskConfig.ENABLE_TAGS_GENERATION}
 					<div class="mb-2.5">
-						<div class=" mb-1 text-xs font-medium">{i18n.t('Tags Generation Prompt')}</div>
+						<div class=" mb-1 text-xs font-medium">{$i18n.t('Tags Generation Prompt')}</div>
 
 						<Tooltip
-							content={i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
+							content={$i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
 							placement="top-start"
 						>
 							<Textarea
 								bind:value={taskConfig.TAGS_GENERATION_PROMPT_TEMPLATE}
-								placeholder={i18n.t(
+								placeholder={$i18n.t(
 									'Leave empty to use the default prompt, or enter a custom prompt'
 								)}
 							/>
@@ -389,7 +390,7 @@
 
 				<div class="mb-2.5 flex w-full items-center justify-between">
 					<div class=" self-center text-xs font-medium">
-						{i18n.t('Retrieval Query Generation')}
+						{$i18n.t('Retrieval Query Generation')}
 					</div>
 
 					<Switch bind:state={taskConfig.ENABLE_RETRIEVAL_QUERY_GENERATION} />
@@ -397,22 +398,22 @@
 
 				<div class="mb-2.5 flex w-full items-center justify-between">
 					<div class=" self-center text-xs font-medium">
-						{i18n.t('Web Search Query Generation')}
+						{$i18n.t('Web Search Query Generation')}
 					</div>
 
 					<Switch bind:state={taskConfig.ENABLE_SEARCH_QUERY_GENERATION} />
 				</div>
 
 				<div class="mb-2.5">
-					<div class=" mb-1 text-xs font-medium">{i18n.t('Query Generation Prompt')}</div>
+					<div class=" mb-1 text-xs font-medium">{$i18n.t('Query Generation Prompt')}</div>
 
 					<Tooltip
-						content={i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
+						content={$i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
 						placement="top-start"
 					>
 						<Textarea
 							bind:value={taskConfig.QUERY_GENERATION_PROMPT_TEMPLATE}
-							placeholder={i18n.t(
+							placeholder={$i18n.t(
 								'Leave empty to use the default prompt, or enter a custom prompt'
 							)}
 						/>
@@ -421,10 +422,10 @@
 
 				<div class="mb-2.5 flex w-full items-center justify-between">
 					<div class=" self-center text-xs font-medium">
-						{i18n.t('Autocomplete Generation')}
+						{$i18n.t('Autocomplete Generation')}
 					</div>
 
-					<Tooltip content={i18n.t('Enable autocomplete generation for chat messages')}>
+					<Tooltip content={$i18n.t('Enable autocomplete generation for chat messages')}>
 						<Switch bind:state={taskConfig.ENABLE_AUTOCOMPLETE_GENERATION} />
 					</Tooltip>
 				</div>
@@ -432,30 +433,30 @@
 				{#if taskConfig.ENABLE_AUTOCOMPLETE_GENERATION}
 					<div class="mb-2.5">
 						<div class=" mb-1 text-xs font-medium">
-							{i18n.t('Autocomplete Generation Input Max Length')}
+							{$i18n.t('Autocomplete Generation Input Max Length')}
 						</div>
 
 						<Tooltip
-							content={i18n.t('Character limit for autocomplete generation input')}
+							content={$i18n.t('Character limit for autocomplete generation input')}
 							placement="top-start"
 						>
 							<input
 								class="w-full outline-hidden bg-transparent"
 								bind:value={taskConfig.AUTOCOMPLETE_GENERATION_INPUT_MAX_LENGTH}
-								placeholder={i18n.t('-1 for no limit, or a positive integer for a specific limit')}
+								placeholder={$i18n.t('-1 for no limit, or a positive integer for a specific limit')}
 							/>
 						</Tooltip>
 					</div>
 					<div class="mb-2.5">
-						<div class=" mb-1 text-xs font-medium">{i18n.t('Autocomplete Generation Prompt')}</div>
+						<div class=" mb-1 text-xs font-medium">{$i18n.t('Autocomplete Generation Prompt')}</div>
 
 						<Tooltip
-							content={i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
+							content={$i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
 							placement="top-start"
 						>
 							<Textarea
 								bind:value={taskConfig.AUTOCOMPLETE_GENERATION_PROMPT_TEMPLATE}
-								placeholder={i18n.t(
+								placeholder={$i18n.t(
 									'Leave empty to use the default prompt, or enter a custom prompt'
 								)}
 							/>
@@ -464,15 +465,15 @@
 				{/if}
 
 				<div class="mb-2.5">
-					<div class=" mb-1 text-xs font-medium">{i18n.t('Image Prompt Generation Prompt')}</div>
+					<div class=" mb-1 text-xs font-medium">{$i18n.t('Image Prompt Generation Prompt')}</div>
 
 					<Tooltip
-						content={i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
+						content={$i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
 						placement="top-start"
 					>
 						<Textarea
 							bind:value={taskConfig.IMAGE_PROMPT_GENERATION_PROMPT_TEMPLATE}
-							placeholder={i18n.t(
+							placeholder={$i18n.t(
 								'Leave empty to use the default prompt, or enter a custom prompt'
 							)}
 						/>
@@ -480,15 +481,15 @@
 				</div>
 
 				<div class="mb-2.5">
-					<div class=" mb-1 text-xs font-medium">{i18n.t('Tools Function Calling Prompt')}</div>
+					<div class=" mb-1 text-xs font-medium">{$i18n.t('Tools Function Calling Prompt')}</div>
 
 					<Tooltip
-						content={i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
+						content={$i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
 						placement="top-start"
 					>
 						<Textarea
 							bind:value={taskConfig.TOOLS_FUNCTION_CALLING_PROMPT_TEMPLATE}
-							placeholder={i18n.t(
+							placeholder={$i18n.t(
 								'Leave empty to use the default prompt, or enter a custom prompt'
 							)}
 						/>
@@ -502,7 +503,7 @@
 				class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 				type="submit"
 			>
-				{i18n.t('Save')}
+				{$i18n.t('Save')}
 			</button>
 		</div>
 	</form>
@@ -522,14 +523,14 @@
 	>
 		<div class="  overflow-y-scroll scrollbar-hidden h-full pr-1.5">
 			<div class="mb-3.5">
-				<div class=" mt-0.5 mb-2.5 text-base font-medium">{i18n.t('Tasks')}</div>
+				<div class=" mt-0.5 mb-2.5 text-base font-medium">{$i18n.t('Tasks')}</div>
 
 				<hr class=" border-gray-100/30 dark:border-gray-850/30 my-2" />
 
 				<div class=" mb-2 font-medium flex items-center">
-					<div class=" text-xs mr-1">{i18n.t('Task Model')}</div>
+					<div class=" text-xs mr-1">{$i18n.t('Task Model')}</div>
 					<Tooltip
-						content={i18n.t(
+						content={$i18n.t(
 							'A task model is used when performing tasks such as generating titles for chats and web search queries'
 						)}
 					>
@@ -552,11 +553,11 @@
 
 				<div class=" mb-2.5 flex w-full gap-2">
 					<div class="flex-1">
-						<div class=" text-xs mb-1">{i18n.t('Local Task Model')}</div>
+						<div class=" text-xs mb-1">{$i18n.t('Local Task Model')}</div>
 						<select
 							class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 							bind:value={taskConfig.TASK_MODEL}
-							placeholder={i18n.t('Select a model')}
+							placeholder={$i18n.t('Select a model')}
 							on:change={() => {
 								if (taskConfig.TASK_MODEL) {
 									const model = models.find((m) => m.id === taskConfig.TASK_MODEL);
@@ -571,7 +572,7 @@
 											)
 										) {
 											toast.error(
-												i18n.t(
+												$i18n.t(
 													'This model is not publicly available. Please select another model.'
 												)
 											);
@@ -584,22 +585,22 @@
 								}
 							}}
 						>
-							<option value="" selected>{i18n.t('Current Model')}</option>
+							<option value="" selected>{$i18n.t('Current Model')}</option>
 							{#each models as model}
 								<option value={model.id} class="bg-gray-100 dark:bg-gray-700">
 									{model.name}
-									{model?.connection_type === 'local' ? `(${i18n.t('Local')})` : ''}
+									{model?.connection_type === 'local' ? `(${$i18n.t('Local')})` : ''}
 								</option>
 							{/each}
 						</select>
 					</div>
 
 					<div class="flex-1">
-						<div class=" text-xs mb-1">{i18n.t('External Task Model')}</div>
+						<div class=" text-xs mb-1">{$i18n.t('External Task Model')}</div>
 						<select
 							class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 							bind:value={taskConfig.TASK_MODEL_EXTERNAL}
-							placeholder={i18n.t('Select a model')}
+							placeholder={$i18n.t('Select a model')}
 							on:change={() => {
 								if (taskConfig.TASK_MODEL_EXTERNAL) {
 									const model = models.find((m) => m.id === taskConfig.TASK_MODEL_EXTERNAL);
@@ -614,7 +615,7 @@
 											)
 										) {
 											toast.error(
-												i18n.t(
+												$i18n.t(
 													'This model is not publicly available. Please select another model.'
 												)
 											);
@@ -627,11 +628,11 @@
 								}
 							}}
 						>
-							<option value="" selected>{i18n.t('Current Model')}</option>
+							<option value="" selected>{$i18n.t('Current Model')}</option>
 							{#each models as model}
 								<option value={model.id} class="bg-gray-100 dark:bg-gray-700">
 									{model.name}
-									{model?.connection_type === 'local' ? `(${i18n.t('Local')})` : ''}
+									{model?.connection_type === 'local' ? `(${$i18n.t('Local')})` : ''}
 								</option>
 							{/each}
 						</select>
@@ -642,7 +643,7 @@
 
 				<div class="mb-2.5 flex w-full items-center justify-between">
 					<div class=" self-center text-xs font-medium">
-						{i18n.t('Context Compaction')}
+						{$i18n.t('Context Compaction')}
 					</div>
 
 					<Switch bind:state={chatConfig.ENABLE_CONTEXT_COMPACTION} />
@@ -650,10 +651,10 @@
 
 				{#if chatConfig.ENABLE_CONTEXT_COMPACTION}
 					<div class="mb-2.5">
-						<div class=" mb-1 text-xs font-medium">{i18n.t('Token Threshold')}</div>
+						<div class=" mb-1 text-xs font-medium">{$i18n.t('Token Threshold')}</div>
 
 						<Tooltip
-							content={i18n.t(
+							content={$i18n.t(
 								'Older messages are summarized when estimated context exceeds this token limit.'
 							)}
 							placement="top-start"
@@ -669,21 +670,21 @@
 					</div>
 
 					<div class="mb-2.5">
-						<div class=" mb-1 text-xs font-medium">{i18n.t('Context Compaction Prompt')}</div>
+						<div class=" mb-1 text-xs font-medium">{$i18n.t('Context Compaction Prompt')}</div>
 
 						<Tooltip
-							content={i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
+							content={$i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
 							placement="top-start"
 						>
 							<Textarea
 								bind:value={chatConfig.CONTEXT_COMPACTION_PROMPT_TEMPLATE}
-								placeholder={i18n.t(
+								placeholder={$i18n.t(
 									'Leave empty to use the default prompt, or enter a custom prompt'
 								)}
 							/>
 						</Tooltip>
 						<div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-							{i18n.t('Available variables')}:
+							{$i18n.t('Available variables')}:
 							<code>{'{{PREVIOUS_SUMMARY}}'}</code>,
 							<code>{'{{COMPACTED_MESSAGES}}'}</code>,
 							<code>{'{{RECENT_MESSAGES}}'}</code>,
@@ -697,7 +698,7 @@
 
 				<div class="mb-2.5 flex w-full items-center justify-between">
 					<div class=" self-center text-xs font-medium">
-						{i18n.t('Title Generation')}
+						{$i18n.t('Title Generation')}
 					</div>
 
 					<Switch bind:state={taskConfig.ENABLE_TITLE_GENERATION} />
@@ -705,15 +706,15 @@
 
 				{#if taskConfig.ENABLE_TITLE_GENERATION}
 					<div class="mb-2.5">
-						<div class=" mb-1 text-xs font-medium">{i18n.t('Title Generation Prompt')}</div>
+						<div class=" mb-1 text-xs font-medium">{$i18n.t('Title Generation Prompt')}</div>
 
 						<Tooltip
-							content={i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
+							content={$i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
 							placement="top-start"
 						>
 							<Textarea
 								bind:value={taskConfig.TITLE_GENERATION_PROMPT_TEMPLATE}
-								placeholder={i18n.t(
+								placeholder={$i18n.t(
 									'Leave empty to use the default prompt, or enter a custom prompt'
 								)}
 							/>
@@ -723,7 +724,7 @@
 
 				<div class="mb-2.5 flex w-full items-center justify-between">
 					<div class=" self-center text-xs font-medium">
-						{i18n.t('Voice Mode Prompt')}
+						{$i18n.t('Voice Mode Prompt')}
 					</div>
 
 					<Switch bind:state={taskConfig.ENABLE_VOICE_MODE_PROMPT} />
@@ -731,15 +732,15 @@
 
 				{#if taskConfig.ENABLE_VOICE_MODE_PROMPT}
 					<div class="mb-2.5">
-						<div class=" mb-1 text-xs font-medium">{i18n.t('Prompt Template')}</div>
+						<div class=" mb-1 text-xs font-medium">{$i18n.t('Prompt Template')}</div>
 
 						<Tooltip
-							content={i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
+							content={$i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
 							placement="top-start"
 						>
 							<Textarea
 								bind:value={taskConfig.VOICE_MODE_PROMPT_TEMPLATE}
-								placeholder={i18n.t(
+								placeholder={$i18n.t(
 									'Leave empty to use the default prompt, or enter a custom prompt'
 								)}
 							/>
@@ -749,7 +750,7 @@
 
 				<div class="mb-2.5 flex w-full items-center justify-between">
 					<div class=" self-center text-xs font-medium">
-						{i18n.t('Follow Up Generation')}
+						{$i18n.t('Follow Up Generation')}
 					</div>
 
 					<Switch bind:state={taskConfig.ENABLE_FOLLOW_UP_GENERATION} />
@@ -757,15 +758,15 @@
 
 				{#if taskConfig.ENABLE_FOLLOW_UP_GENERATION}
 					<div class="mb-2.5">
-						<div class=" mb-1 text-xs font-medium">{i18n.t('Follow Up Generation Prompt')}</div>
+						<div class=" mb-1 text-xs font-medium">{$i18n.t('Follow Up Generation Prompt')}</div>
 
 						<Tooltip
-							content={i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
+							content={$i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
 							placement="top-start"
 						>
 							<Textarea
 								bind:value={taskConfig.FOLLOW_UP_GENERATION_PROMPT_TEMPLATE}
-								placeholder={i18n.t(
+								placeholder={$i18n.t(
 									'Leave empty to use the default prompt, or enter a custom prompt'
 								)}
 							/>
@@ -775,7 +776,7 @@
 
 				<div class="mb-2.5 flex w-full items-center justify-between">
 					<div class=" self-center text-xs font-medium">
-						{i18n.t('Tags Generation')}
+						{$i18n.t('Tags Generation')}
 					</div>
 
 					<Switch bind:state={taskConfig.ENABLE_TAGS_GENERATION} />
@@ -783,15 +784,15 @@
 
 				{#if taskConfig.ENABLE_TAGS_GENERATION}
 					<div class="mb-2.5">
-						<div class=" mb-1 text-xs font-medium">{i18n.t('Tags Generation Prompt')}</div>
+						<div class=" mb-1 text-xs font-medium">{$i18n.t('Tags Generation Prompt')}</div>
 
 						<Tooltip
-							content={i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
+							content={$i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
 							placement="top-start"
 						>
 							<Textarea
 								bind:value={taskConfig.TAGS_GENERATION_PROMPT_TEMPLATE}
-								placeholder={i18n.t(
+								placeholder={$i18n.t(
 									'Leave empty to use the default prompt, or enter a custom prompt'
 								)}
 							/>
@@ -801,7 +802,7 @@
 
 				<div class="mb-2.5 flex w-full items-center justify-between">
 					<div class=" self-center text-xs font-medium">
-						{i18n.t('Retrieval Query Generation')}
+						{$i18n.t('Retrieval Query Generation')}
 					</div>
 
 					<Switch bind:state={taskConfig.ENABLE_RETRIEVAL_QUERY_GENERATION} />
@@ -809,22 +810,22 @@
 
 				<div class="mb-2.5 flex w-full items-center justify-between">
 					<div class=" self-center text-xs font-medium">
-						{i18n.t('Web Search Query Generation')}
+						{$i18n.t('Web Search Query Generation')}
 					</div>
 
 					<Switch bind:state={taskConfig.ENABLE_SEARCH_QUERY_GENERATION} />
 				</div>
 
 				<div class="mb-2.5">
-					<div class=" mb-1 text-xs font-medium">{i18n.t('Query Generation Prompt')}</div>
+					<div class=" mb-1 text-xs font-medium">{$i18n.t('Query Generation Prompt')}</div>
 
 					<Tooltip
-						content={i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
+						content={$i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
 						placement="top-start"
 					>
 						<Textarea
 							bind:value={taskConfig.QUERY_GENERATION_PROMPT_TEMPLATE}
-							placeholder={i18n.t(
+							placeholder={$i18n.t(
 								'Leave empty to use the default prompt, or enter a custom prompt'
 							)}
 						/>
@@ -833,10 +834,10 @@
 
 				<div class="mb-2.5 flex w-full items-center justify-between">
 					<div class=" self-center text-xs font-medium">
-						{i18n.t('Autocomplete Generation')}
+						{$i18n.t('Autocomplete Generation')}
 					</div>
 
-					<Tooltip content={i18n.t('Enable autocomplete generation for chat messages')}>
+					<Tooltip content={$i18n.t('Enable autocomplete generation for chat messages')}>
 						<Switch bind:state={taskConfig.ENABLE_AUTOCOMPLETE_GENERATION} />
 					</Tooltip>
 				</div>
@@ -844,30 +845,30 @@
 				{#if taskConfig.ENABLE_AUTOCOMPLETE_GENERATION}
 					<div class="mb-2.5">
 						<div class=" mb-1 text-xs font-medium">
-							{i18n.t('Autocomplete Generation Input Max Length')}
+							{$i18n.t('Autocomplete Generation Input Max Length')}
 						</div>
 
 						<Tooltip
-							content={i18n.t('Character limit for autocomplete generation input')}
+							content={$i18n.t('Character limit for autocomplete generation input')}
 							placement="top-start"
 						>
 							<input
 								class="w-full outline-hidden bg-transparent"
 								bind:value={taskConfig.AUTOCOMPLETE_GENERATION_INPUT_MAX_LENGTH}
-								placeholder={i18n.t('-1 for no limit, or a positive integer for a specific limit')}
+								placeholder={$i18n.t('-1 for no limit, or a positive integer for a specific limit')}
 							/>
 						</Tooltip>
 					</div>
 					<div class="mb-2.5">
-						<div class=" mb-1 text-xs font-medium">{i18n.t('Autocomplete Generation Prompt')}</div>
+						<div class=" mb-1 text-xs font-medium">{$i18n.t('Autocomplete Generation Prompt')}</div>
 
 						<Tooltip
-							content={i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
+							content={$i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
 							placement="top-start"
 						>
 							<Textarea
 								bind:value={taskConfig.AUTOCOMPLETE_GENERATION_PROMPT_TEMPLATE}
-								placeholder={i18n.t(
+								placeholder={$i18n.t(
 									'Leave empty to use the default prompt, or enter a custom prompt'
 								)}
 							/>
@@ -876,15 +877,15 @@
 				{/if}
 
 				<div class="mb-2.5">
-					<div class=" mb-1 text-xs font-medium">{i18n.t('Image Prompt Generation Prompt')}</div>
+					<div class=" mb-1 text-xs font-medium">{$i18n.t('Image Prompt Generation Prompt')}</div>
 
 					<Tooltip
-						content={i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
+						content={$i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
 						placement="top-start"
 					>
 						<Textarea
 							bind:value={taskConfig.IMAGE_PROMPT_GENERATION_PROMPT_TEMPLATE}
-							placeholder={i18n.t(
+							placeholder={$i18n.t(
 								'Leave empty to use the default prompt, or enter a custom prompt'
 							)}
 						/>
@@ -892,15 +893,15 @@
 				</div>
 
 				<div class="mb-2.5">
-					<div class=" mb-1 text-xs font-medium">{i18n.t('Tools Function Calling Prompt')}</div>
+					<div class=" mb-1 text-xs font-medium">{$i18n.t('Tools Function Calling Prompt')}</div>
 
 					<Tooltip
-						content={i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
+						content={$i18n.t('Leave empty to use the default prompt, or enter a custom prompt')}
 						placement="top-start"
 					>
 						<Textarea
 							bind:value={taskConfig.TOOLS_FUNCTION_CALLING_PROMPT_TEMPLATE}
-							placeholder={i18n.t(
+							placeholder={$i18n.t(
 								'Leave empty to use the default prompt, or enter a custom prompt'
 							)}
 						/>
@@ -914,7 +915,7 @@
 				class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 				type="submit"
 			>
-				{i18n.t('Save')}
+				{$i18n.t('Save')}
 			</button>
 		</div>
 	</form>

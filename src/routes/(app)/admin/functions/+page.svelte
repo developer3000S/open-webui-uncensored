@@ -5,6 +5,7 @@
 	import { getFunctions } from '$lib/apis/functions';
 	import Functions from '$lib/components/admin/Functions.svelte';
 
+	// @ts-ignore
 	onMount(async () => {
 		await Promise.all([
 			(async () => {

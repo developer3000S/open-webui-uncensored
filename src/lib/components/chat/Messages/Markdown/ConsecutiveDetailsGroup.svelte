@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { decode } from 'html-entities';
 	import { slide } from 'svelte/transition';
@@ -97,25 +97,25 @@
 
 		if (codeInterpreterCount > 0) {
 			if (codeInterpreterCount === 1) {
-				parts.push(i18n.t('Ran {{COUNT}} analysis', { COUNT: codeInterpreterCount }));
+				parts.push($i18n.t('Ran {{COUNT}} analysis', { COUNT: codeInterpreterCount }));
 			} else {
-				parts.push(i18n.t('Ran {{COUNT}} analyses', { COUNT: codeInterpreterCount }));
+				parts.push($i18n.t('Ran {{COUNT}} analyses', { COUNT: codeInterpreterCount }));
 			}
 		}
 
-		const prefix = hasPending ? i18n.t('Exploring') : i18n.t('Explored');
+		const prefix = hasPending ? $i18n.t('Exploring') : $i18n.t('Explored');
 		const detail = parts.join(', ');
 		return detail;
 	})();
 
-	$: prefixText = hasPending ? i18n.t('Exploring') : i18n.t('Explored');
+	$: prefixText = hasPending ? $i18n.t('Exploring') : $i18n.t('Explored');
 </script>
 
 <div {id} class="w-full">
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<button
 		class="w-fit text-left text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition cursor-pointer"
-		aria-label={i18n.t('Toggle details')}
+		aria-label={$i18n.t('Toggle details')}
 		aria-expanded={open}
 		on:click={() => {
 			open = !open;
@@ -186,7 +186,7 @@
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<button
 		class="w-fit text-left text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition cursor-pointer"
-		aria-label={i18n.t('Toggle details')}
+		aria-label={$i18n.t('Toggle details')}
 		aria-expanded={open}
 		on:click={() => {
 			open = !open;

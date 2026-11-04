@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Checkbox from '$lib/components/common/Checkbox.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
@@ -29,7 +29,7 @@
 
 <div>
 	<div class="flex w-full justify-between mb-1">
-		<div class=" self-center text-xs text-gray-500">{i18n.t('Tools')}</div>
+		<div class=" self-center text-xs text-gray-500">{$i18n.t('Tools')}</div>
 	</div>
 
 	<div class="flex flex-col mb-1">
@@ -38,7 +38,7 @@
 				id="model-tools-selector"
 				items={availableTools}
 				className="w-48 max-w-full"
-				placeholder={i18n.t('Search tools')}
+				placeholder={$i18n.t('Search tools')}
 				on:select={(e) => {
 					selectTool(e.detail);
 				}}
@@ -70,13 +70,13 @@
 	</div>
 
 	<div class=" text-xs dark:text-gray-700">
-		{i18n.t('To select toolkits here, add them to the "Tools" workspace first.')}
+		{$i18n.t('To select toolkits here, add them to the "Tools" workspace first.')}
 	</div>
 </div>
 
 <div>
 	<div class="flex w-full justify-between mb-1">
-		<div class=" self-center text-xs text-gray-500">{i18n.t('Tools')}</div>
+		<div class=" self-center text-xs text-gray-500">{$i18n.t('Tools')}</div>
 	</div>
 
 	<div class="flex flex-col mb-1">
@@ -85,7 +85,7 @@
 				id="model-tools-selector"
 				items={availableTools}
 				className="w-48 max-w-full"
-				placeholder={i18n.t('Search tools')}
+				placeholder={$i18n.t('Search tools')}
 				on:select={(e) => {
 					selectTool(e.detail);
 				}}
@@ -117,6 +117,6 @@
 	</div>
 
 	<div class=" text-xs dark:text-gray-700">
-		{i18n.t('To select toolkits here, add them to the "Tools" workspace first.')}
+		{$i18n.t('To select toolkits here, add them to the "Tools" workspace first.')}
 	</div>
 </div>

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Dropdown from '$lib/components/common/Dropdown.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
@@ -10,10 +10,10 @@
 
 	import type { Writable } from 'svelte/store';
 
-	export let createHandler: Function;
-	export let importFromLinkHandler: Function;
+	export let createHandler: any;
+	export let importFromLinkHandler: any;
 
-	export let onClose: Function = () => {};
+	export let onClose: any = () => {};
 
 	let show = false;
 </script>
@@ -27,7 +27,7 @@
 		}
 	}}
 >
-	<Tooltip content={i18n.t('Create')}>
+	<Tooltip content={$i18n.t('Create')}>
 		<slot />
 	</Tooltip>
 
@@ -45,7 +45,7 @@
 				<div class=" self-center mr-2">
 					<Pencil />
 				</div>
-				<div class=" self-center truncate">{i18n.t('New Tool')}</div>
+				<div class=" self-center truncate">{$i18n.t('New Tool')}</div>
 			</button>
 
 			<button
@@ -58,7 +58,7 @@
 				<div class=" self-center mr-2">
 					<Link />
 				</div>
-				<div class=" self-center truncate">{i18n.t('Import From Link')}</div>
+				<div class=" self-center truncate">{$i18n.t('Import From Link')}</div>
 			</button>
 		</div>
 	</div>
@@ -73,7 +73,7 @@
 		}
 	}}
 >
-	<Tooltip content={i18n.t('Create')}>
+	<Tooltip content={$i18n.t('Create')}>
 		<slot />
 	</Tooltip>
 
@@ -91,7 +91,7 @@
 				<div class=" self-center mr-2">
 					<Pencil />
 				</div>
-				<div class=" self-center truncate">{i18n.t('New Tool')}</div>
+				<div class=" self-center truncate">{$i18n.t('New Tool')}</div>
 			</button>
 
 			<button
@@ -104,7 +104,7 @@
 				<div class=" self-center mr-2">
 					<Link />
 				</div>
-				<div class=" self-center truncate">{i18n.t('Import From Link')}</div>
+				<div class=" self-center truncate">{$i18n.t('Import From Link')}</div>
 			</button>
 		</div>
 	</div>

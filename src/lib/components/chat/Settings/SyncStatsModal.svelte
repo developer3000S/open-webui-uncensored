@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { Confetti } from 'svelte-confetti';
 	import { toast } from 'svelte-sonner';
@@ -164,9 +164,11 @@
 					searchParams.updated_at = eventData.lastSyncedChatUpdatedAt;
 				}
 
-				const res = await exportChatStats(localStorage.token, page, searchParams).catch(async (err)=> {
-					throw new Error(err?.detail || err?.message || 'Failed to export chat stats');
-				});
+				const res = await exportChatStats(localStorage.token, page, searchParams).catch(
+					async (err) => {
+						throw new Error(err?.detail || err?.message || 'Failed to export chat stats');
+					}
+				);
 
 				if (!res) {
 					throw new Error('Failed to fetch stats data');
@@ -214,7 +216,7 @@
 
 		try {
 			// Get total count first (no filters for download - get all)
-			const initialRes = await exportChatStats(localStorage.token, 1, {}).catch(async ()=> null);
+			const initialRes = await exportChatStats(localStorage.token, 1, {}).catch(async () => null);
 
 			if (initialRes?.total) {
 				total = initialRes.total;
@@ -224,7 +226,7 @@
 			await tick();
 
 			// Get version for filename
-			const versionRes = await getVersion(localStorage.token).catch(async ()=> null);
+			const versionRes = await getVersion(localStorage.token).catch(async () => null);
 			const version = versionRes?.version ?? '0.0.0';
 			const filename = `open-webui-stats-${version}-${Date.now()}.json`;
 
@@ -321,9 +323,9 @@
 	<div class="w-full">
 		{#if completed}
 			<div class="px-5.5 py-5">
-				<div class="mb-1 text-xl font-medium">{i18n.t('Sync Complete!')}</div>
+				<div class="mb-1 text-xl font-medium">{$i18n.t('Sync Complete!')}</div>
 				<div class="mb-3 text-xs text-gray-500">
-					{i18n.t('Your usage stats have been successfully synced.')}
+					{$i18n.t('Your usage stats have been successfully synced.')}
 				</div>
 
 				<Confetti x={[-0.5, 0.5]} y={[0.25, 1]} />
@@ -333,15 +335,15 @@
 						class="flex items-center justify-center gap-2 rounded-full bg-black px-4 py-2 text-sm text-white transition hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100"
 						on:click={closeModal}
 					>
-						{i18n.t('Done')}
+						{$i18n.t('Done')}
 					</button>
 				</div>
 			</div>
 		{:else if error}
 			<div class="px-5.5 py-5">
-				<div class="mb-1 text-xl font-medium">{i18n.t('Sync Failed')}</div>
+				<div class="mb-1 text-xl font-medium">{$i18n.t('Sync Failed')}</div>
 				<div class="mb-3 text-xs text-gray-500">
-					{errorMessage || i18n.t('There was an error syncing your stats. Please try again.')}
+					{errorMessage || $i18n.t('There was an error syncing your stats. Please try again.')}
 				</div>
 
 				<div class="flex justify-end">
@@ -352,16 +354,16 @@
 							errorMessage = '';
 						}}
 					>
-						{i18n.t('Try Again')}
+						{$i18n.t('Try Again')}
 					</button>
 				</div>
 			</div>
 		{:else}
 			<div class="flex justify-between px-5 pt-4 pb-0.5">
-				<div class="text-lg font-medium self-center">{i18n.t('Sync Usage Stats')}</div>
+				<div class="text-lg font-medium self-center">{$i18n.t('Sync Usage Stats')}</div>
 				<button
 					class="self-center"
-					aria-label={i18n.t('Close modal')}
+					aria-label={$i18n.t('Close modal')}
 					on:click={() => {
 						show = false;
 					}}
@@ -373,41 +375,41 @@
 
 			<div class="px-5 pt-2 pb-5">
 				<div class="text-sm text-gray-500 dark:text-gray-400">
-					{i18n.t('Do you want to sync your usage stats with Open WebUI Community?')}
+					{$i18n.t('Do you want to sync your usage stats with Open WebUI Community?')}
 				</div>
 
 				<div class="mt-2 text-xs text-gray-500">
-					{i18n.t(
+					{$i18n.t(
 						'Participate in community leaderboards and evaluations! Syncing aggregated usage stats helps drive research and improvements to Open WebUI. Your privacy is paramount: no message content is ever shared.'
 					)}
 				</div>
 
 				<div class="mt-3 text-xs text-gray-500">
 					<div class="font-medium text-gray-900 dark:text-gray-100 mb-1">
-						{i18n.t('What is shared:')}
+						{$i18n.t('What is shared:')}
 					</div>
 					<ul class="list-disc list-inside space-y-0.5 ml-1 mb-2">
-						<li>{i18n.t('Open WebUI version')}</li>
-						<li>{i18n.t('Model names and usage frequency')}</li>
-						<li>{i18n.t('Message counts and response timestamps')}</li>
-						<li>{i18n.t('Content lengths (character counts only)')}</li>
-						<li>{i18n.t('User ratings (thumbs up/down)')}</li>
+						<li>{$i18n.t('Open WebUI version')}</li>
+						<li>{$i18n.t('Model names and usage frequency')}</li>
+						<li>{$i18n.t('Message counts and response timestamps')}</li>
+						<li>{$i18n.t('Content lengths (character counts only)')}</li>
+						<li>{$i18n.t('User ratings (thumbs up/down)')}</li>
 					</ul>
 
 					<div class="font-medium text-gray-900 dark:text-gray-100 mb-1">
-						{i18n.t('What is NOT shared:')}
+						{$i18n.t('What is NOT shared:')}
 					</div>
 					<ul class="list-disc list-inside space-y-0.5 ml-1">
-						<li>{i18n.t('Your message text or inputs')}</li>
-						<li>{i18n.t('Model responses or outputs')}</li>
-						<li>{i18n.t('Uploaded files or images')}</li>
+						<li>{$i18n.t('Your message text or inputs')}</li>
+						<li>{$i18n.t('Model responses or outputs')}</li>
+						<li>{$i18n.t('Uploaded files or images')}</li>
 					</ul>
 				</div>
 
 				{#if eventData?.lastSyncedChatUpdatedAt}
 					<div class="mt-3">
 						<Tooltip
-							content={i18n.t(
+							content={$i18n.t(
 								'Syncs only chats with updates after your last sync timestamp. Disable to re-sync all chats.'
 							)}
 							placement="top-start"
@@ -416,12 +418,13 @@
 								<input
 									type="checkbox"
 									checked={syncMode === 'incremental'}
-									on:change={(e) => (syncMode = (e.target as HTMLInputElement).checked ? 'incremental' : 'full')}
+									on:change={(e) =>
+										(syncMode = (e.target as HTMLInputElement).checked ? 'incremental' : 'full')}
 									disabled={syncing}
 									class="w-4 h-4 rounded border-gray-300 dark:border-gray-600"
 								/>
 								<span class="text-gray-700 dark:text-gray-300"
-									>{i18n.t('Only sync new/updated chats')}</span
+									>{$i18n.t('Only sync new/updated chats')}</span
 								>
 							</label>
 						</Tooltip>
@@ -432,7 +435,7 @@
 					<div class="mt-3 mx-1.5">
 						<div class="text-xs text-gray-500 mb-1 flex justify-between">
 							<div>
-								{downloading ? i18n.t('Downloading stats...') : i18n.t('Syncing stats...')}
+								{downloading ? $i18n.t('Downloading stats...') : $i18n.t('Syncing stats...')}
 							</div>
 							<div>
 								{#if total > 0}
@@ -463,7 +466,7 @@
 							on:click={downloadHandler}
 							disabled={syncing && !downloading}
 						>
-							{downloading ? i18n.t('Stop Download') : i18n.t('Download as JSON')}
+							{downloading ? $i18n.t('Stop Download') : $i18n.t('Download as JSON')}
 						</button>
 					</div>
 
@@ -477,7 +480,7 @@
 							}
 						}}
 					>
-						{i18n.t('Cancel')}
+						{$i18n.t('Cancel')}
 					</button>
 
 					<button
@@ -488,10 +491,10 @@
 						{#if syncing && !downloading}
 							<div class="flex items-center gap-2">
 								<Spinner className="size-3" />
-								<span>{i18n.t('Syncing...')}</span>
+								<span>{$i18n.t('Syncing...')}</span>
 							</div>
 						{:else}
-							{i18n.t('Sync')}
+							{$i18n.t('Sync')}
 						{/if}
 					</button>
 				</div>
@@ -504,9 +507,9 @@
 	<div class="w-full">
 		{#if completed}
 			<div class="px-5.5 py-5">
-				<div class="mb-1 text-xl font-medium">{i18n.t('Sync Complete!')}</div>
+				<div class="mb-1 text-xl font-medium">{$i18n.t('Sync Complete!')}</div>
 				<div class="mb-3 text-xs text-gray-500">
-					{i18n.t('Your usage stats have been successfully synced.')}
+					{$i18n.t('Your usage stats have been successfully synced.')}
 				</div>
 
 				<Confetti x={[-0.5, 0.5]} y={[0.25, 1]} />
@@ -516,15 +519,15 @@
 						class="flex items-center justify-center gap-2 rounded-full bg-black px-4 py-2 text-sm text-white transition hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100"
 						on:click={closeModal}
 					>
-						{i18n.t('Done')}
+						{$i18n.t('Done')}
 					</button>
 				</div>
 			</div>
 		{:else if error}
 			<div class="px-5.5 py-5">
-				<div class="mb-1 text-xl font-medium">{i18n.t('Sync Failed')}</div>
+				<div class="mb-1 text-xl font-medium">{$i18n.t('Sync Failed')}</div>
 				<div class="mb-3 text-xs text-gray-500">
-					{errorMessage || i18n.t('There was an error syncing your stats. Please try again.')}
+					{errorMessage || $i18n.t('There was an error syncing your stats. Please try again.')}
 				</div>
 
 				<div class="flex justify-end">
@@ -535,16 +538,16 @@
 							errorMessage = '';
 						}}
 					>
-						{i18n.t('Try Again')}
+						{$i18n.t('Try Again')}
 					</button>
 				</div>
 			</div>
 		{:else}
 			<div class="flex justify-between px-5 pt-4 pb-0.5">
-				<div class="text-lg font-medium self-center">{i18n.t('Sync Usage Stats')}</div>
+				<div class="text-lg font-medium self-center">{$i18n.t('Sync Usage Stats')}</div>
 				<button
 					class="self-center"
-					aria-label={i18n.t('Close modal')}
+					aria-label={$i18n.t('Close modal')}
 					on:click={() => {
 						show = false;
 					}}
@@ -556,41 +559,41 @@
 
 			<div class="px-5 pt-2 pb-5">
 				<div class="text-sm text-gray-500 dark:text-gray-400">
-					{i18n.t('Do you want to sync your usage stats with Open WebUI Community?')}
+					{$i18n.t('Do you want to sync your usage stats with Open WebUI Community?')}
 				</div>
 
 				<div class="mt-2 text-xs text-gray-500">
-					{i18n.t(
+					{$i18n.t(
 						'Participate in community leaderboards and evaluations! Syncing aggregated usage stats helps drive research and improvements to Open WebUI. Your privacy is paramount: no message content is ever shared.'
 					)}
 				</div>
 
 				<div class="mt-3 text-xs text-gray-500">
 					<div class="font-medium text-gray-900 dark:text-gray-100 mb-1">
-						{i18n.t('What is shared:')}
+						{$i18n.t('What is shared:')}
 					</div>
 					<ul class="list-disc list-inside space-y-0.5 ml-1 mb-2">
-						<li>{i18n.t('Open WebUI version')}</li>
-						<li>{i18n.t('Model names and usage frequency')}</li>
-						<li>{i18n.t('Message counts and response timestamps')}</li>
-						<li>{i18n.t('Content lengths (character counts only)')}</li>
-						<li>{i18n.t('User ratings (thumbs up/down)')}</li>
+						<li>{$i18n.t('Open WebUI version')}</li>
+						<li>{$i18n.t('Model names and usage frequency')}</li>
+						<li>{$i18n.t('Message counts and response timestamps')}</li>
+						<li>{$i18n.t('Content lengths (character counts only)')}</li>
+						<li>{$i18n.t('User ratings (thumbs up/down)')}</li>
 					</ul>
 
 					<div class="font-medium text-gray-900 dark:text-gray-100 mb-1">
-						{i18n.t('What is NOT shared:')}
+						{$i18n.t('What is NOT shared:')}
 					</div>
 					<ul class="list-disc list-inside space-y-0.5 ml-1">
-						<li>{i18n.t('Your message text or inputs')}</li>
-						<li>{i18n.t('Model responses or outputs')}</li>
-						<li>{i18n.t('Uploaded files or images')}</li>
+						<li>{$i18n.t('Your message text or inputs')}</li>
+						<li>{$i18n.t('Model responses or outputs')}</li>
+						<li>{$i18n.t('Uploaded files or images')}</li>
 					</ul>
 				</div>
 
 				{#if eventData?.lastSyncedChatUpdatedAt}
 					<div class="mt-3">
 						<Tooltip
-							content={i18n.t(
+							content={$i18n.t(
 								'Syncs only chats with updates after your last sync timestamp. Disable to re-sync all chats.'
 							)}
 							placement="top-start"
@@ -599,12 +602,13 @@
 								<input
 									type="checkbox"
 									checked={syncMode === 'incremental'}
-									on:change={(e) => (syncMode = (e.target as HTMLInputElement).checked ? 'incremental' : 'full')}
+									on:change={(e) =>
+										(syncMode = (e.target as HTMLInputElement).checked ? 'incremental' : 'full')}
 									disabled={syncing}
 									class="w-4 h-4 rounded border-gray-300 dark:border-gray-600"
 								/>
 								<span class="text-gray-700 dark:text-gray-300"
-									>{i18n.t('Only sync new/updated chats')}</span
+									>{$i18n.t('Only sync new/updated chats')}</span
 								>
 							</label>
 						</Tooltip>
@@ -615,7 +619,7 @@
 					<div class="mt-3 mx-1.5">
 						<div class="text-xs text-gray-500 mb-1 flex justify-between">
 							<div>
-								{downloading ? i18n.t('Downloading stats...') : i18n.t('Syncing stats...')}
+								{downloading ? $i18n.t('Downloading stats...') : $i18n.t('Syncing stats...')}
 							</div>
 							<div>
 								{#if total > 0}
@@ -646,7 +650,7 @@
 							on:click={downloadHandler}
 							disabled={syncing && !downloading}
 						>
-							{downloading ? i18n.t('Stop Download') : i18n.t('Download as JSON')}
+							{downloading ? $i18n.t('Stop Download') : $i18n.t('Download as JSON')}
 						</button>
 					</div>
 
@@ -660,7 +664,7 @@
 							}
 						}}
 					>
-						{i18n.t('Cancel')}
+						{$i18n.t('Cancel')}
 					</button>
 
 					<button
@@ -671,10 +675,10 @@
 						{#if syncing && !downloading}
 							<div class="flex items-center gap-2">
 								<Spinner className="size-3" />
-								<span>{i18n.t('Syncing...')}</span>
+								<span>{$i18n.t('Syncing...')}</span>
 							</div>
 						{:else}
-							{i18n.t('Sync')}
+							{$i18n.t('Sync')}
 						{/if}
 					</button>
 				</div>

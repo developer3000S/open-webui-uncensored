@@ -2,12 +2,12 @@
 	import { getContext } from 'svelte';
 
 	import type { Writable } from 'svelte/store';
-	
+
 	import XMark from '$lib/components/icons/XMark.svelte';
 
 	export let tag: any;
 	export let disabled: any = false;
-	export let onDelete = () => {};
+	export let onDelete: any = () => {};
 </script>
 
 {#if tag}

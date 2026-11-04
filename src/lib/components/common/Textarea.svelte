@@ -4,20 +4,22 @@
 	export let value: any = '';
 	export let placeholder: any = '';
 	export let rows: any = 1;
-	let minSize: any = null;
-	let maxSize: any = null;
+	export let minSize: any = null;
+	export let maxSize: any = null;
 	export let required: any = false;
 	export let readonly: any = false;
 	export let className: any =
 		'w-full rounded-lg px-3.5 py-2 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden  h-full';
-	let ariaLabel: any = null;
+	export let ariaLabel: any = null;
 
-	export let onInput = () => {};
-	export let onBlur = () => {};
+	export let onInput: (e?: any) => void = () => {};
+	export let onBlur: (e?: any) => void = () => {};
+	export let onKeydown: any = () => {};
 
 	let textareaElement;
 
 	// Adjust height on mount and after setting the element.
+	// @ts-ignore
 	onMount(async () => {
 		await tick();
 		resize();

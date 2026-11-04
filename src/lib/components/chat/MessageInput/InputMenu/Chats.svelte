@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import dayjs from 'dayjs';
 
@@ -15,7 +15,7 @@
 
 	import type { Writable } from 'svelte/store';
 
-	export let onSelect = (e: any) => {};
+	export let onSelect: any = (e: any) => {};
 
 	let loaded = false;
 
@@ -62,6 +62,7 @@
 		return res;
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		await getItemsPage();
 		await tick();
@@ -72,7 +73,7 @@
 
 {#if loaded}
 	{#if items.length === 0}
-		<div class="text-center text-xs text-gray-500 py-3">{i18n.t('No chats found')}</div>
+		<div class="text-center text-xs text-gray-500 py-3">{$i18n.t('No chats found')}</div>
 	{:else}
 		<div class="flex flex-col gap-0.5">
 			{#each items as item, idx}
@@ -115,7 +116,7 @@
 				>
 					<div class="w-full flex justify-center py-4 text-xs animate-pulse items-center gap-2">
 						<Spinner className=" size-4" />
-						<div class=" ">{i18n.t('Loading...')}</div>
+						<div class=" ">{$i18n.t('Loading...')}</div>
 					</div>
 				</Loader>
 			{/if}
@@ -129,7 +130,7 @@
 
 {#if loaded}
 	{#if items.length === 0}
-		<div class="text-center text-xs text-gray-500 py-3">{i18n.t('No chats found')}</div>
+		<div class="text-center text-xs text-gray-500 py-3">{$i18n.t('No chats found')}</div>
 	{:else}
 		<div class="flex flex-col gap-0.5">
 			{#each items as item, idx}
@@ -172,7 +173,7 @@
 				>
 					<div class="w-full flex justify-center py-4 text-xs animate-pulse items-center gap-2">
 						<Spinner className=" size-4" />
-						<div class=" ">{i18n.t('Loading...')}</div>
+						<div class=" ">{$i18n.t('Loading...')}</div>
 					</div>
 				</Loader>
 			{/if}

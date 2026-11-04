@@ -1,9 +1,9 @@
 <script context="module">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
-		let savedPyodidePath = '/mnt/uploads';
+	let savedPyodidePath = '/mnt/uploads';
 </script>
 
 <script lang="ts">
@@ -351,8 +351,8 @@
 
 <ConfirmDialog
 	bind:show={showDeleteConfirm}
-	title={i18n.t('Delete {{name}}', { name: deleteName })}
-	message={i18n.t('Are you sure you want to delete this?')}
+	title={$i18n.t('Delete {{name}}', { name: deleteName })}
+	message={$i18n.t('Are you sure you want to delete this?')}
 	on:confirm={doDelete}
 />
 
@@ -362,7 +362,7 @@
 	on:dragleave={() => (isDragOver = false)}
 	on:drop={handleDrop}
 	role="region"
-	aria-label={i18n.t('Pyodide file browser')}
+	aria-label={$i18n.t('Pyodide file browser')}
 >
 	{#if isDragOver}
 		<div
@@ -382,7 +382,7 @@
 					d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
 				/>
 			</svg>
-			<span class="text-xs text-gray-400 dark:text-gray-500">{i18n.t('Drop files here')}</span>
+			<span class="text-xs text-gray-400 dark:text-gray-500">{$i18n.t('Drop files here')}</span>
 		</div>
 	{/if}
 
@@ -420,7 +420,7 @@
 		<button
 			class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 			on:click={() => selectedFile && downloadFile(selectedFile)}
-			aria-label={i18n.t('Download')}
+			aria-label={$i18n.t('Download')}
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
@@ -454,7 +454,7 @@
 			<div class="flex flex-col items-center justify-center flex-1 p-6 text-center gap-2">
 				<Folder className="size-5 text-gray-300 dark:text-gray-600" />
 				<div class="text-xs text-gray-400 dark:text-gray-500">
-					{i18n.t('No files yet. Upload files or run Python code to create them.')}
+					{$i18n.t('No files yet. Upload files or run Python code to create them.')}
 				</div>
 			</div>
 		{/if}
@@ -467,7 +467,7 @@
 						bind:this={newFolderInput}
 						bind:value={newFolderName}
 						class="flex-1 text-xs bg-transparent border border-gray-200 dark:border-gray-700 rounded px-1.5 py-0.5 outline-none focus:border-blue-400 dark:focus:border-blue-500"
-						placeholder={i18n.t('Folder name')}
+						placeholder={$i18n.t('Folder name')}
 						on:keydown={(e) => {
 							if (e.key === 'Enter') submitNewFolder();
 							if (e.key === 'Escape') {
@@ -486,7 +486,7 @@
 						bind:this={newFileInput}
 						bind:value={newFileName}
 						class="flex-1 text-xs bg-transparent border border-gray-200 dark:border-gray-700 rounded px-1.5 py-0.5 outline-none focus:border-blue-400 dark:focus:border-blue-500"
-						placeholder={i18n.t('File name')}
+						placeholder={$i18n.t('File name')}
 						on:keydown={(e) => {
 							if (e.key === 'Enter') submitNewFile();
 							if (e.key === 'Escape') {
@@ -518,8 +518,8 @@
 
 <ConfirmDialog
 	bind:show={showDeleteConfirm}
-	title={i18n.t('Delete {{name}}', { name: deleteName })}
-	message={i18n.t('Are you sure you want to delete this?')}
+	title={$i18n.t('Delete {{name}}', { name: deleteName })}
+	message={$i18n.t('Are you sure you want to delete this?')}
 	on:confirm={doDelete}
 />
 
@@ -529,7 +529,7 @@
 	on:dragleave={() => (isDragOver = false)}
 	on:drop={handleDrop}
 	role="region"
-	aria-label={i18n.t('Pyodide file browser')}
+	aria-label={$i18n.t('Pyodide file browser')}
 >
 	{#if isDragOver}
 		<div
@@ -549,7 +549,7 @@
 					d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
 				/>
 			</svg>
-			<span class="text-xs text-gray-400 dark:text-gray-500">{i18n.t('Drop files here')}</span>
+			<span class="text-xs text-gray-400 dark:text-gray-500">{$i18n.t('Drop files here')}</span>
 		</div>
 	{/if}
 
@@ -587,7 +587,7 @@
 		<button
 			class="shrink-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 			on:click={() => selectedFile && downloadFile(selectedFile)}
-			aria-label={i18n.t('Download')}
+			aria-label={$i18n.t('Download')}
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
@@ -621,7 +621,7 @@
 			<div class="flex flex-col items-center justify-center flex-1 p-6 text-center gap-2">
 				<Folder className="size-5 text-gray-300 dark:text-gray-600" />
 				<div class="text-xs text-gray-400 dark:text-gray-500">
-					{i18n.t('No files yet. Upload files or run Python code to create them.')}
+					{$i18n.t('No files yet. Upload files or run Python code to create them.')}
 				</div>
 			</div>
 		{/if}
@@ -634,7 +634,7 @@
 						bind:this={newFolderInput}
 						bind:value={newFolderName}
 						class="flex-1 text-xs bg-transparent border border-gray-200 dark:border-gray-700 rounded px-1.5 py-0.5 outline-none focus:border-blue-400 dark:focus:border-blue-500"
-						placeholder={i18n.t('Folder name')}
+						placeholder={$i18n.t('Folder name')}
 						on:keydown={(e) => {
 							if (e.key === 'Enter') submitNewFolder();
 							if (e.key === 'Escape') {
@@ -653,7 +653,7 @@
 						bind:this={newFileInput}
 						bind:value={newFileName}
 						class="flex-1 text-xs bg-transparent border border-gray-200 dark:border-gray-700 rounded px-1.5 py-0.5 outline-none focus:border-blue-400 dark:focus:border-blue-500"
-						placeholder={i18n.t('File name')}
+						placeholder={$i18n.t('File name')}
 						on:keydown={(e) => {
 							if (e.key === 'Enter') submitNewFile();
 							if (e.key === 'Escape') {

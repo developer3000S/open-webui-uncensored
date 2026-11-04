@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { getSkillItems } from '$lib/apis/skills';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
@@ -10,7 +10,7 @@
 	import type { Writable } from 'svelte/store';
 
 	export let query: any = '';
-	export let onSelect = (e: any) => {};
+	export let onSelect: any = (e: any) => {};
 
 	let selectedIdx = 0;
 	export let filteredItems: any = [];
@@ -73,7 +73,7 @@
 </script>
 
 <div class="px-2 text-xs text-gray-500 py-1">
-	{i18n.t('Skills')}
+	{$i18n.t('Skills')}
 </div>
 
 {#if filteredItems.length > 0}
@@ -114,7 +114,7 @@
 {/if}
 
 <div class="px-2 text-xs text-gray-500 py-1">
-	{i18n.t('Skills')}
+	{$i18n.t('Skills')}
 </div>
 
 {#if filteredItems.length > 0}

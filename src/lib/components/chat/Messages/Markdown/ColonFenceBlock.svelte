@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
@@ -18,8 +18,8 @@
 	export let done: boolean = true;
 	export let editCodeBlock: boolean = true;
 	export let sourceIds: string[] = [];
-	export let onTaskClick: Function = () => {};
-	export let onSourceClick: Function = () => {};
+	export let onTaskClick: any = () => {};
+	export let onSourceClick: any = () => {};
 
 	const fenceType: string = token.fenceType ?? 'default';
 
@@ -44,7 +44,7 @@
 		</span>
 
 		<div class="invisible group-hover:visible flex gap-0.5">
-			<Tooltip content={copied ? i18n.t('Copied') : i18n.t('Copy')}>
+			<Tooltip content={copied ? $i18n.t('Copied') : $i18n.t('Copy')}>
 				<button
 					class="p-1 rounded-lg bg-transparent hover:bg-black/5 dark:hover:bg-white/5 transition"
 					on:click={(e) => {
@@ -93,7 +93,7 @@
 		</span>
 
 		<div class="invisible group-hover:visible flex gap-0.5">
-			<Tooltip content={copied ? i18n.t('Copied') : i18n.t('Copy')}>
+			<Tooltip content={copied ? $i18n.t('Copied') : $i18n.t('Copy')}>
 				<button
 					class="p-1 rounded-lg bg-transparent hover:bg-black/5 dark:hover:bg-white/5 transition"
 					on:click={(e) => {

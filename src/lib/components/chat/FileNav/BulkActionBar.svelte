@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import GarbageBin from '../../icons/GarbageBin.svelte';
 	import Tooltip from '../../common/Tooltip.svelte';
@@ -9,6 +9,7 @@
 	import type { Writable } from 'svelte/store';
 
 	export let count: number = 0;
+	export let hasFiles: any = false;
 
 	export let onDelete: () => void = () => {};
 	export let onDownload: () => void = () => {};
@@ -18,14 +19,14 @@
 
 <div class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 dark:bg-gray-800/50 shrink-0">
 	<span class="text-xs font-medium text-gray-600 dark:text-gray-400 flex-1 truncate">
-		{i18n.t('{{count}} selected', { count })}
+		{$i18n.t('{{count}} selected', { count })}
 	</span>
 
-	<Tooltip content={i18n.t('Select All')}>
+	<Tooltip content={$i18n.t('Select All')}>
 		<button
 			class="p-1 rounded transition text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-400"
 			on:click={onSelectAll}
-			aria-label={i18n.t('Select All')}
+			aria-label={$i18n.t('Select All')}
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
@@ -42,11 +43,11 @@
 		</button>
 	</Tooltip>
 
-	<Tooltip content={i18n.t('Download')}>
+	<Tooltip content={$i18n.t('Download')}>
 		<button
 			class="p-1 rounded transition text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-400"
 			on:click={onDownload}
-			aria-label={i18n.t('Download')}
+			aria-label={$i18n.t('Download')}
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
@@ -64,21 +65,21 @@
 		</button>
 	</Tooltip>
 
-	<Tooltip content={i18n.t('Delete')}>
+	<Tooltip content={$i18n.t('Delete')}>
 		<button
 			class="p-1 rounded transition text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-400"
 			on:click={onDelete}
-			aria-label={i18n.t('Delete')}
+			aria-label={$i18n.t('Delete')}
 		>
 			<GarbageBin className="size-3.5" />
 		</button>
 	</Tooltip>
 
-	<Tooltip content={i18n.t('Deselect')}>
+	<Tooltip content={$i18n.t('Deselect')}>
 		<button
 			class="p-1 rounded transition text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-400"
 			on:click={onClear}
-			aria-label={i18n.t('Deselect')}
+			aria-label={$i18n.t('Deselect')}
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
@@ -96,14 +97,14 @@
 
 <div class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 dark:bg-gray-800/50 shrink-0">
 	<span class="text-xs font-medium text-gray-600 dark:text-gray-400 flex-1 truncate">
-		{i18n.t('{{count}} selected', { count })}
+		{$i18n.t('{{count}} selected', { count })}
 	</span>
 
-	<Tooltip content={i18n.t('Select All')}>
+	<Tooltip content={$i18n.t('Select All')}>
 		<button
 			class="p-1 rounded transition text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-400"
 			on:click={onSelectAll}
-			aria-label={i18n.t('Select All')}
+			aria-label={$i18n.t('Select All')}
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
@@ -120,11 +121,11 @@
 		</button>
 	</Tooltip>
 
-	<Tooltip content={i18n.t('Download')}>
+	<Tooltip content={$i18n.t('Download')}>
 		<button
 			class="p-1 rounded transition text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-400"
 			on:click={onDownload}
-			aria-label={i18n.t('Download')}
+			aria-label={$i18n.t('Download')}
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
@@ -142,21 +143,21 @@
 		</button>
 	</Tooltip>
 
-	<Tooltip content={i18n.t('Delete')}>
+	<Tooltip content={$i18n.t('Delete')}>
 		<button
 			class="p-1 rounded transition text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-400"
 			on:click={onDelete}
-			aria-label={i18n.t('Delete')}
+			aria-label={$i18n.t('Delete')}
 		>
 			<GarbageBin className="size-3.5" />
 		</button>
 	</Tooltip>
 
-	<Tooltip content={i18n.t('Deselect')}>
+	<Tooltip content={$i18n.t('Deselect')}>
 		<button
 			class="p-1 rounded transition text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-400"
 			on:click={onClear}
-			aria-label={i18n.t('Deselect')}
+			aria-label={$i18n.t('Deselect')}
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
@@ -12,8 +12,8 @@
 	import AddToolServerModal from '$lib/components/AddToolServerModal.svelte';
 	import WrenchAlt from '$lib/components/icons/WrenchAlt.svelte';
 
-	export let onDelete = () => {};
-	export let onSubmit = () => {};
+	export let onDelete: any = () => {};
+	export let onSubmit: any = () => {};
 
 	export let connection: any = null;
 	export let direct: any = false;
@@ -43,7 +43,7 @@
 					? 'opacity-50'
 					: ''}"
 			>
-				<Tooltip content={connection?.type === 'mcp' ? i18n.t('MCP') : i18n.t('OpenAPI')}>
+				<Tooltip content={connection?.type === 'mcp' ? $i18n.t('MCP') : $i18n.t('OpenAPI')}>
 					<WrenchAlt />
 				</Tooltip>
 
@@ -62,7 +62,7 @@
 	</Tooltip>
 
 	<div class="flex gap-1 items-center">
-		<Tooltip content={i18n.t('Configure')} className="self-start">
+		<Tooltip content={$i18n.t('Configure')} className="self-start">
 			<button
 				class="self-center p-1 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition"
 				on:click={() => {
@@ -75,7 +75,7 @@
 		</Tooltip>
 
 		<Tooltip
-			content={(connection?.config?.enable ?? true) ? i18n.t('Enabled') : i18n.t('Disabled')}
+			content={(connection?.config?.enable ?? true) ? $i18n.t('Enabled') : $i18n.t('Disabled')}
 		>
 			<Switch
 				state={connection?.config?.enable ?? true}
@@ -112,7 +112,7 @@
 					? 'opacity-50'
 					: ''}"
 			>
-				<Tooltip content={connection?.type === 'mcp' ? i18n.t('MCP') : i18n.t('OpenAPI')}>
+				<Tooltip content={connection?.type === 'mcp' ? $i18n.t('MCP') : $i18n.t('OpenAPI')}>
 					<WrenchAlt />
 				</Tooltip>
 
@@ -131,7 +131,7 @@
 	</Tooltip>
 
 	<div class="flex gap-1 items-center">
-		<Tooltip content={i18n.t('Configure')} className="self-start">
+		<Tooltip content={$i18n.t('Configure')} className="self-start">
 			<button
 				class="self-center p-1 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition"
 				on:click={() => {
@@ -144,7 +144,7 @@
 		</Tooltip>
 
 		<Tooltip
-			content={(connection?.config?.enable ?? true) ? i18n.t('Enabled') : i18n.t('Disabled')}
+			content={(connection?.config?.enable ?? true) ? $i18n.t('Enabled') : $i18n.t('Disabled')}
 		>
 			<Switch
 				state={connection?.config?.enable ?? true}

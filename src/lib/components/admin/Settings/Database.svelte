@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import fileSaver from 'file-saver';
 	const { saveAs } = fileSaver;
@@ -45,6 +45,7 @@
 		saveAs(blob, 'users.csv');
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		// permissions = await getUserPermissions(localStorage.token);
 	});
@@ -58,7 +59,7 @@
 			type="file"
 			accept=".json"
 			on:change={async (e) => {
-				const file = e.target.files[0];
+				const file = (e.target as HTMLInputElement).files[0];
 				const reader = new FileReader();
 
 				reader.onload = async (e: any) => {
@@ -69,7 +70,7 @@
 					);
 
 					if (res) {
-						toast.success(i18n.t('Config imported successfully'));
+						toast.success($i18n.t('Config imported successfully'));
 					}
 					e.target.value = null;
 				};
@@ -79,11 +80,11 @@
 		/>
 
 		<div>
-			<div class="mb-1 text-sm font-medium">{i18n.t('Config')}</div>
+			<div class="mb-1 text-sm font-medium">{$i18n.t('Config')}</div>
 
 			<div>
 				<div class="py-0.5 flex w-full justify-between">
-					<div class="self-center text-xs">{i18n.t('Import Config')}</div>
+					<div class="self-center text-xs">{$i18n.t('Import Config')}</div>
 					<button
 						class="p-1 px-3 text-xs flex rounded-sm transition"
 						on:click={() => {
@@ -91,14 +92,14 @@
 						}}
 						type="button"
 					>
-						<span class="self-center">{i18n.t('Import')}</span>
+						<span class="self-center">{$i18n.t('Import')}</span>
 					</button>
 				</div>
 			</div>
 
 			<div>
 				<div class="py-0.5 flex w-full justify-between">
-					<div class="self-center text-xs">{i18n.t('Export Config')}</div>
+					<div class="self-center text-xs">{$i18n.t('Export Config')}</div>
 					<button
 						class="p-1 px-3 text-xs flex rounded-sm transition"
 						on:click={async () => {
@@ -110,7 +111,7 @@
 						}}
 						type="button"
 					>
-						<span class="self-center">{i18n.t('Export')}</span>
+						<span class="self-center">{$i18n.t('Export')}</span>
 					</button>
 				</div>
 			</div>
@@ -118,11 +119,11 @@
 
 		{#if $config?.features.enable_admin_export ?? true}
 			<div>
-				<div class="mb-1 text-sm font-medium">{i18n.t('Database')}</div>
+				<div class="mb-1 text-sm font-medium">{$i18n.t('Database')}</div>
 
 				<div>
 					<div class="py-0.5 flex w-full justify-between">
-						<div class="self-center text-xs">{i18n.t('Download Database')}</div>
+						<div class="self-center text-xs">{$i18n.t('Download Database')}</div>
 						<button
 							class="p-1 px-3 text-xs flex rounded-sm transition"
 							on:click={() => {
@@ -132,14 +133,14 @@
 							}}
 							type="button"
 						>
-							<span class="self-center">{i18n.t('Download')}</span>
+							<span class="self-center">{$i18n.t('Download')}</span>
 						</button>
 					</div>
 				</div>
 
 				<div>
 					<div class="py-0.5 flex w-full justify-between">
-						<div class="self-center text-xs">{i18n.t('Export All Chats (All Users)')}</div>
+						<div class="self-center text-xs">{$i18n.t('Export All Chats (All Users)')}</div>
 						<button
 							class="p-1 px-3 text-xs flex rounded-sm transition"
 							on:click={() => {
@@ -147,14 +148,14 @@
 							}}
 							type="button"
 						>
-							<span class="self-center">{i18n.t('Export')}</span>
+							<span class="self-center">{$i18n.t('Export')}</span>
 						</button>
 					</div>
 				</div>
 
 				<div>
 					<div class="py-0.5 flex w-full justify-between">
-						<div class="self-center text-xs">{i18n.t('Export Users')}</div>
+						<div class="self-center text-xs">{$i18n.t('Export Users')}</div>
 						<button
 							class="p-1 px-3 text-xs flex rounded-sm transition"
 							on:click={() => {
@@ -162,7 +163,7 @@
 							}}
 							type="button"
 						>
-							<span class="self-center">{i18n.t('Export')}</span>
+							<span class="self-center">{$i18n.t('Export')}</span>
 						</button>
 					</div>
 				</div>
@@ -179,7 +180,7 @@
 			type="file"
 			accept=".json"
 			on:change={async (e) => {
-				const file = e.target.files[0];
+				const file = (e.target as HTMLInputElement).files[0];
 				const reader = new FileReader();
 
 				reader.onload = async (e: any) => {
@@ -190,7 +191,7 @@
 					);
 
 					if (res) {
-						toast.success(i18n.t('Config imported successfully'));
+						toast.success($i18n.t('Config imported successfully'));
 					}
 					e.target.value = null;
 				};
@@ -200,11 +201,11 @@
 		/>
 
 		<div>
-			<div class="mb-1 text-sm font-medium">{i18n.t('Config')}</div>
+			<div class="mb-1 text-sm font-medium">{$i18n.t('Config')}</div>
 
 			<div>
 				<div class="py-0.5 flex w-full justify-between">
-					<div class="self-center text-xs">{i18n.t('Import Config')}</div>
+					<div class="self-center text-xs">{$i18n.t('Import Config')}</div>
 					<button
 						class="p-1 px-3 text-xs flex rounded-sm transition"
 						on:click={() => {
@@ -212,14 +213,14 @@
 						}}
 						type="button"
 					>
-						<span class="self-center">{i18n.t('Import')}</span>
+						<span class="self-center">{$i18n.t('Import')}</span>
 					</button>
 				</div>
 			</div>
 
 			<div>
 				<div class="py-0.5 flex w-full justify-between">
-					<div class="self-center text-xs">{i18n.t('Export Config')}</div>
+					<div class="self-center text-xs">{$i18n.t('Export Config')}</div>
 					<button
 						class="p-1 px-3 text-xs flex rounded-sm transition"
 						on:click={async () => {
@@ -231,7 +232,7 @@
 						}}
 						type="button"
 					>
-						<span class="self-center">{i18n.t('Export')}</span>
+						<span class="self-center">{$i18n.t('Export')}</span>
 					</button>
 				</div>
 			</div>
@@ -239,11 +240,11 @@
 
 		{#if $config?.features.enable_admin_export ?? true}
 			<div>
-				<div class="mb-1 text-sm font-medium">{i18n.t('Database')}</div>
+				<div class="mb-1 text-sm font-medium">{$i18n.t('Database')}</div>
 
 				<div>
 					<div class="py-0.5 flex w-full justify-between">
-						<div class="self-center text-xs">{i18n.t('Download Database')}</div>
+						<div class="self-center text-xs">{$i18n.t('Download Database')}</div>
 						<button
 							class="p-1 px-3 text-xs flex rounded-sm transition"
 							on:click={() => {
@@ -253,14 +254,14 @@
 							}}
 							type="button"
 						>
-							<span class="self-center">{i18n.t('Download')}</span>
+							<span class="self-center">{$i18n.t('Download')}</span>
 						</button>
 					</div>
 				</div>
 
 				<div>
 					<div class="py-0.5 flex w-full justify-between">
-						<div class="self-center text-xs">{i18n.t('Export All Chats (All Users)')}</div>
+						<div class="self-center text-xs">{$i18n.t('Export All Chats (All Users)')}</div>
 						<button
 							class="p-1 px-3 text-xs flex rounded-sm transition"
 							on:click={() => {
@@ -268,14 +269,14 @@
 							}}
 							type="button"
 						>
-							<span class="self-center">{i18n.t('Export')}</span>
+							<span class="self-center">{$i18n.t('Export')}</span>
 						</button>
 					</div>
 				</div>
 
 				<div>
 					<div class="py-0.5 flex w-full justify-between">
-						<div class="self-center text-xs">{i18n.t('Export Users')}</div>
+						<div class="self-center text-xs">{$i18n.t('Export Users')}</div>
 						<button
 							class="p-1 px-3 text-xs flex rounded-sm transition"
 							on:click={() => {
@@ -283,7 +284,7 @@
 							}}
 							type="button"
 						>
-							<span class="self-center">{i18n.t('Export')}</span>
+							<span class="self-center">{$i18n.t('Export')}</span>
 						</button>
 					</div>
 				</div>

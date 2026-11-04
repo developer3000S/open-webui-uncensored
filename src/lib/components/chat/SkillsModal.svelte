@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { skills } from '$lib/stores';
 
@@ -22,10 +22,10 @@
 <Modal bind:show size="md">
 	<div>
 		<div class=" flex justify-between dark:text-gray-300 px-5 pt-4 pb-0.5">
-			<div class=" text-lg font-medium self-center">{i18n.t('Available Skills')}</div>
+			<div class=" text-lg font-medium self-center">{$i18n.t('Available Skills')}</div>
 			<button
 				class="self-center"
-				aria-label={i18n.t('Close')}
+				aria-label={$i18n.t('Close')}
 				on:click={() => {
 					show = false;
 				}}
@@ -36,7 +36,7 @@
 
 		{#if selectedSkills.length > 0}
 			<div class=" flex justify-between dark:text-gray-300 px-5 pb-1">
-				<div class=" text-base font-medium self-center">{i18n.t('Skills')}</div>
+				<div class=" text-base font-medium self-center">{$i18n.t('Skills')}</div>
 			</div>
 
 			<div class="px-5 pb-5 w-full flex flex-col justify-center">
@@ -65,10 +65,10 @@
 <Modal bind:show size="md">
 	<div>
 		<div class=" flex justify-between dark:text-gray-300 px-5 pt-4 pb-0.5">
-			<div class=" text-lg font-medium self-center">{i18n.t('Available Skills')}</div>
+			<div class=" text-lg font-medium self-center">{$i18n.t('Available Skills')}</div>
 			<button
 				class="self-center"
-				aria-label={i18n.t('Close')}
+				aria-label={$i18n.t('Close')}
 				on:click={() => {
 					show = false;
 				}}
@@ -79,7 +79,7 @@
 
 		{#if selectedSkills.length > 0}
 			<div class=" flex justify-between dark:text-gray-300 px-5 pb-1">
-				<div class=" text-base font-medium self-center">{i18n.t('Skills')}</div>
+				<div class=" text-base font-medium self-center">{$i18n.t('Skills')}</div>
 			</div>
 
 			<div class="px-5 pb-5 w-full flex flex-col justify-center">

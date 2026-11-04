@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Checkbox from '$lib/components/common/Checkbox.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
@@ -27,7 +27,7 @@
 
 <div>
 	<div class="flex w-full justify-between mb-1">
-		<div class=" self-center text-xs text-gray-500">{i18n.t('Skills')}</div>
+		<div class=" self-center text-xs text-gray-500">{$i18n.t('Skills')}</div>
 	</div>
 
 	<div class="flex flex-col mb-1">
@@ -36,7 +36,7 @@
 				id="model-skills-selector"
 				items={availableSkills}
 				className="w-48 max-w-full"
-				placeholder={i18n.t('Search skills')}
+				placeholder={$i18n.t('Search skills')}
 				on:select={(e) => {
 					selectSkill(e.detail);
 				}}
@@ -68,13 +68,13 @@
 	</div>
 
 	<div class=" text-xs dark:text-gray-700">
-		{i18n.t('To select skills here, add them to the "Skills" workspace first.')}
+		{$i18n.t('To select skills here, add them to the "Skills" workspace first.')}
 	</div>
 </div>
 
 <div>
 	<div class="flex w-full justify-between mb-1">
-		<div class=" self-center text-xs text-gray-500">{i18n.t('Skills')}</div>
+		<div class=" self-center text-xs text-gray-500">{$i18n.t('Skills')}</div>
 	</div>
 
 	<div class="flex flex-col mb-1">
@@ -83,7 +83,7 @@
 				id="model-skills-selector"
 				items={availableSkills}
 				className="w-48 max-w-full"
-				placeholder={i18n.t('Search skills')}
+				placeholder={$i18n.t('Search skills')}
 				on:select={(e) => {
 					selectSkill(e.detail);
 				}}
@@ -115,6 +115,6 @@
 	</div>
 
 	<div class=" text-xs dark:text-gray-700">
-		{i18n.t('To select skills here, add them to the "Skills" workspace first.')}
+		{$i18n.t('To select skills here, add them to the "Skills" workspace first.')}
 	</div>
 </div>

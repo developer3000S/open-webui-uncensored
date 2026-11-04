@@ -6,9 +6,10 @@
 	import Dashboard from './Analytics/Dashboard.svelte';
 
 	import type { Writable } from 'svelte/store';
-	
+
 	let loaded = false;
 
+	// @ts-ignore
 	onMount(async () => {
 		if ($user?.role !== 'admin') {
 			await goto('/');

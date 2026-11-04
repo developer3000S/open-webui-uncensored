@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { goto } from '$app/navigation';
 
@@ -88,12 +88,12 @@
 		selectedSystemTerminal?.id ||
 		selectedDirectTerminal?.name ||
 		selectedDirectTerminal?.url?.replace(/^https?:\/\//, '') ||
-		i18n.t('Terminal');
+		$i18n.t('Terminal');
 </script>
 
 <div class="flex items-center translate-x-0.5">
 	<Dropdown bind:show align="end">
-		<Tooltip content={i18n.t('Terminal')} placement="top">
+		<Tooltip content={$i18n.t('Terminal')} placement="top">
 			<button
 				type="button"
 				class="flex items-center gap-1.5 translate-y-[1px] hover:bg-gray-50 dark:hover:bg-gray-850 text-sm transition rounded-lg cursor-pointer {$selectedTerminalId &&
@@ -119,16 +119,16 @@
 						<span
 							class="text-[10px] font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider"
 						>
-							{i18n.t('Direct')}
+							{$i18n.t('Direct')}
 						</span>
-						<Tooltip content={i18n.t('Add Terminal')} placement="top">
+						<Tooltip content={$i18n.t('Add Terminal')} placement="top">
 							<button
-								aria-label={i18n.t('Add Terminal')}
+								aria-label={$i18n.t('Add Terminal')}
 								type="button"
 								class="p-0.5 rounded-md text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition"
 								on:click|stopPropagation={() => {
 									show = false;
-									showSettings.set('tools');
+									showSettings.set('tools' as any);
 								}}
 							>
 								<svg
@@ -190,12 +190,12 @@
 						<span
 							class="text-[10px] font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider"
 						>
-							{i18n.t('System')}
+							{$i18n.t('System')}
 						</span>
 						{#if $user?.role === 'admin'}
-							<Tooltip content={i18n.t('Add Terminal')} placement="top">
+							<Tooltip content={$i18n.t('Add Terminal')} placement="top">
 								<button
-									aria-label={i18n.t('Add Terminal')}
+									aria-label={$i18n.t('Add Terminal')}
 									type="button"
 									class="p-0.5 rounded-md text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition"
 									on:click|stopPropagation={() => {
@@ -229,7 +229,7 @@
 						>
 							<div class="flex flex-1 gap-2 items-center truncate">
 								<Cloud className="size-4 shrink-0" strokeWidth="2" />
-								<span class="truncate">{terminal.name || i18n.t('Terminal')}</span>
+								<span class="truncate">{terminal.name || $i18n.t('Terminal')}</span>
 							</div>
 							{#if $selectedTerminalId === terminal.id}
 								<div class="shrink-0 text-emerald-600 dark:text-emerald-400">
@@ -257,7 +257,7 @@
 
 <div class="flex items-center translate-x-0.5">
 	<Dropdown bind:show align="end">
-		<Tooltip content={i18n.t('Terminal')} placement="top">
+		<Tooltip content={$i18n.t('Terminal')} placement="top">
 			<button
 				type="button"
 				class="flex items-center gap-1.5 translate-y-[1px] hover:bg-gray-50 dark:hover:bg-gray-850 text-sm transition rounded-lg cursor-pointer {$selectedTerminalId &&
@@ -283,16 +283,16 @@
 						<span
 							class="text-[10px] font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider"
 						>
-							{i18n.t('Direct')}
+							{$i18n.t('Direct')}
 						</span>
-						<Tooltip content={i18n.t('Add Terminal')} placement="top">
+						<Tooltip content={$i18n.t('Add Terminal')} placement="top">
 							<button
-								aria-label={i18n.t('Add Terminal')}
+								aria-label={$i18n.t('Add Terminal')}
 								type="button"
 								class="p-0.5 rounded-md text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition"
 								on:click|stopPropagation={() => {
 									show = false;
-									showSettings.set('tools');
+									showSettings.set('tools' as any);
 								}}
 							>
 								<svg
@@ -354,12 +354,12 @@
 						<span
 							class="text-[10px] font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider"
 						>
-							{i18n.t('System')}
+							{$i18n.t('System')}
 						</span>
 						{#if $user?.role === 'admin'}
-							<Tooltip content={i18n.t('Add Terminal')} placement="top">
+							<Tooltip content={$i18n.t('Add Terminal')} placement="top">
 								<button
-									aria-label={i18n.t('Add Terminal')}
+									aria-label={$i18n.t('Add Terminal')}
 									type="button"
 									class="p-0.5 rounded-md text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition"
 									on:click|stopPropagation={() => {
@@ -393,7 +393,7 @@
 						>
 							<div class="flex flex-1 gap-2 items-center truncate">
 								<Cloud className="size-4 shrink-0" strokeWidth="2" />
-								<span class="truncate">{terminal.name || i18n.t('Terminal')}</span>
+								<span class="truncate">{terminal.name || $i18n.t('Terminal')}</span>
 							</div>
 							{#if $selectedTerminalId === terminal.id}
 								<div class="shrink-0 text-emerald-600 dark:text-emerald-400">

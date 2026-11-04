@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Dropdown from '$lib/components/common/Dropdown.svelte';
 	import Mic from '../icons/Mic.svelte';
@@ -11,9 +11,9 @@
 	import type { Writable } from 'svelte/store';
 
 	export let show: any = false;
-	export let onRecord = () => {};
-	export let onCaptureAudio = () => {};
-	export let onUpload = () => {};
+	export let onRecord: any = () => {};
+	export let onCaptureAudio: any = () => {};
+	export let onUpload: any = () => {};
 
 	const dispatch = createEventDispatcher();
 </script>
@@ -41,7 +41,7 @@
 				<div class=" self-center mr-2">
 					<Mic className="size-4" strokeWidth="2" />
 				</div>
-				<div class=" self-center truncate">{i18n.t('Record')}</div>
+				<div class=" self-center truncate">{$i18n.t('Record')}</div>
 			</button>
 
 			<button
@@ -54,7 +54,7 @@
 				<div class=" self-center mr-2">
 					<CursorArrowRays className="size-4" strokeWidth="2" />
 				</div>
-				<div class=" self-center truncate">{i18n.t('Capture Audio')}</div>
+				<div class=" self-center truncate">{$i18n.t('Capture Audio')}</div>
 			</button>
 
 			<button
@@ -67,7 +67,7 @@
 				<div class=" self-center mr-2">
 					<CloudArrowUp className="size-4" strokeWidth="2" />
 				</div>
-				<div class=" self-center truncate">{i18n.t('Upload Audio')}</div>
+				<div class=" self-center truncate">{$i18n.t('Upload Audio')}</div>
 			</button>
 		</div>
 	</div>
@@ -96,7 +96,7 @@
 				<div class=" self-center mr-2">
 					<Mic className="size-4" strokeWidth="2" />
 				</div>
-				<div class=" self-center truncate">{i18n.t('Record')}</div>
+				<div class=" self-center truncate">{$i18n.t('Record')}</div>
 			</button>
 
 			<button
@@ -109,7 +109,7 @@
 				<div class=" self-center mr-2">
 					<CursorArrowRays className="size-4" strokeWidth="2" />
 				</div>
-				<div class=" self-center truncate">{i18n.t('Capture Audio')}</div>
+				<div class=" self-center truncate">{$i18n.t('Capture Audio')}</div>
 			</button>
 
 			<button
@@ -122,7 +122,7 @@
 				<div class=" self-center mr-2">
 					<CloudArrowUp className="size-4" strokeWidth="2" />
 				</div>
-				<div class=" self-center truncate">{i18n.t('Upload Audio')}</div>
+				<div class=" self-center truncate">{$i18n.t('Upload Audio')}</div>
 			</button>
 		</div>
 	</div>

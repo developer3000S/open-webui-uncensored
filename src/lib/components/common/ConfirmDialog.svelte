@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext, onDestroy, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import DOMPurify from 'dompurify';
 
@@ -18,10 +18,10 @@
 
 	export let title: any = '';
 	export let message: any = '';
-	export let cancelLabel = i18n.t('Cancel');
-	export let confirmLabel = i18n.t('Confirm');
+	export let cancelLabel = $i18n.t('Cancel');
+	export let confirmLabel = $i18n.t('Confirm');
 
-	export let onConfirm = () => {};
+	export let onConfirm: any = () => {};
 
 	export let input: any = false;
 	export let inputPlaceholder: any = '';
@@ -128,7 +128,7 @@
 					{#if title !== ''}
 						{title}
 					{:else}
-						{i18n.t('Confirm your action')}
+						{$i18n.t('Confirm your action')}
 					{/if}
 				</div>
 
@@ -138,7 +138,7 @@
 							{@const html = DOMPurify.sanitize(marked.parse(message))}
 							{@html html}
 						{:else}
-							{i18n.t('This action cannot be undone. Do you wish to continue?')}
+							{$i18n.t('This action cannot be undone. Do you wish to continue?')}
 						{/if}
 
 						{#if input}
@@ -150,7 +150,7 @@
 										id="event-confirm-input"
 										placeholder={inputPlaceholder
 											? inputPlaceholder
-											: i18n.t('Enter your message')}
+											: $i18n.t('Enter your message')}
 										bind:value={_inputValue}
 										required={true}
 									/>
@@ -160,13 +160,109 @@
 									className="w-full mt-2 rounded-lg py-2 px-4 text-sm dark:text-gray-300 dark:bg-gray-900 outline-hidden"
 									bind:value={_inputValue}
 									options={inputOptions}
-									placeholder={inputPlaceholder ? inputPlaceholder : i18n.t('Select an option')}
+									placeholder={inputPlaceholder ? inputPlaceholder : $i18n.t('Select an option')}
 									required
 								/>
 							{:else}
 								<textarea
 									bind:value={_inputValue}
-									placeholder={inputPlaceholder ? inputPlaceholder : i18n.t('Enter your message')}
+									placeholder={inputPlaceholder ? inputPlaceholder : $i18n.t('Enter your message')}
+									class="w-full mt-2 rounded-lg px-4 py-2 text-sm dark:text-gray-300 dark:bg-gray-900 outline-hidden resize-none"
+									rows="3"
+									required
+								></textarea>
+							{/if}
+						{/if}
+					</div>
+				</slot>
+
+				<div class="mt-6 flex justify-between gap-1.5">
+					<button
+						class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-gray-850 dark:hover:bg-gray-800 dark:text-white font-medium w-full py-2 rounded-3xl transition"
+						on:click={() => {
+							cancelHandler();
+						}}
+						type="button"
+					>
+						{cancelLabel}
+					</button>
+					<button
+						class="text-sm bg-gray-900 hover:bg-gray-850 text-gray-100 dark:bg-gray-100 dark:hover:bg-white dark:text-gray-800 font-medium w-full py-2 rounded-3xl transition"
+						on:click={() => {
+							confirmHandler();
+						}}
+						type="button"
+					>
+						{confirmLabel}
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+{/if}
+
+{#if show}
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<div
+		bind:this={modalElement}
+		class=" fixed top-0 right-0 left-0 bottom-0 bg-black/60 w-full h-screen max-h-[100dvh] flex justify-center z-99999999 overflow-hidden overscroll-contain"
+		in:fade={{ duration: 10 }}
+		on:mousedown={() => {
+			cancelHandler();
+		}}
+	>
+		<div
+			class=" m-auto max-w-full w-[32rem] mx-2 bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm rounded-4xl max-h-[100dvh] shadow-3xl border border-white dark:border-gray-900"
+			in:flyAndScale
+			on:mousedown={(e) => {
+				e.stopPropagation();
+			}}
+		>
+			<div class="px-[1.75rem] py-6 flex flex-col">
+				<div class=" text-lg font-medium dark:text-gray-200 mb-2.5">
+					{#if title !== ''}
+						{title}
+					{:else}
+						{$i18n.t('Confirm your action')}
+					{/if}
+				</div>
+
+				<slot>
+					<div class=" text-sm text-gray-500 flex-1">
+						{#if message !== ''}
+							{@const html = DOMPurify.sanitize(marked.parse(message))}
+							{@html html}
+						{:else}
+							{$i18n.t('This action cannot be undone. Do you wish to continue?')}
+						{/if}
+
+						{#if input}
+							{#if inputType === 'password'}
+								<div
+									class="w-full mt-2 rounded-lg px-4 py-2 text-sm dark:text-gray-300 dark:bg-gray-900"
+								>
+									<SensitiveInput
+										id="event-confirm-input"
+										placeholder={inputPlaceholder
+											? inputPlaceholder
+											: $i18n.t('Enter your message')}
+										bind:value={_inputValue}
+										required={true}
+									/>
+								</div>
+							{:else if inputType === 'select' && inputOptions.length}
+								<NativeSelect
+									className="w-full mt-2 rounded-lg py-2 px-4 text-sm dark:text-gray-300 dark:bg-gray-900 outline-hidden"
+									bind:value={_inputValue}
+									options={inputOptions}
+									placeholder={inputPlaceholder ? inputPlaceholder : $i18n.t('Select an option')}
+									required
+								/>
+							{:else}
+								<textarea
+									bind:value={_inputValue}
+									placeholder={inputPlaceholder ? inputPlaceholder : $i18n.t('Enter your message')}
 									class="w-full mt-2 rounded-lg px-4 py-2 text-sm dark:text-gray-300 dark:bg-gray-900 outline-hidden resize-none"
 									rows="3"
 									required
@@ -202,103 +298,4 @@
 {/if}
 
 <style>
-
 </style>
-
-{#if show}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
-	<div
-		bind:this={modalElement}
-		class=" fixed top-0 right-0 left-0 bottom-0 bg-black/60 w-full h-screen max-h-[100dvh] flex justify-center z-99999999 overflow-hidden overscroll-contain"
-		in:fade={{ duration: 10 }}
-		on:mousedown={() => {
-			cancelHandler();
-		}}
-	>
-		<div
-			class=" m-auto max-w-full w-[32rem] mx-2 bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm rounded-4xl max-h-[100dvh] shadow-3xl border border-white dark:border-gray-900"
-			in:flyAndScale
-			on:mousedown={(e) => {
-				e.stopPropagation();
-			}}
-		>
-			<div class="px-[1.75rem] py-6 flex flex-col">
-				<div class=" text-lg font-medium dark:text-gray-200 mb-2.5">
-					{#if title !== ''}
-						{title}
-					{:else}
-						{i18n.t('Confirm your action')}
-					{/if}
-				</div>
-
-				<slot>
-					<div class=" text-sm text-gray-500 flex-1">
-						{#if message !== ''}
-							{@const html = DOMPurify.sanitize(marked.parse(message))}
-							{@html html}
-						{:else}
-							{i18n.t('This action cannot be undone. Do you wish to continue?')}
-						{/if}
-
-						{#if input}
-							{#if inputType === 'password'}
-								<div
-									class="w-full mt-2 rounded-lg px-4 py-2 text-sm dark:text-gray-300 dark:bg-gray-900"
-								>
-									<SensitiveInput
-										id="event-confirm-input"
-										placeholder={inputPlaceholder
-											? inputPlaceholder
-											: i18n.t('Enter your message')}
-										bind:value={_inputValue}
-										required={true}
-									/>
-								</div>
-							{:else if inputType === 'select' && inputOptions.length}
-								<NativeSelect
-									className="w-full mt-2 rounded-lg py-2 px-4 text-sm dark:text-gray-300 dark:bg-gray-900 outline-hidden"
-									bind:value={_inputValue}
-									options={inputOptions}
-									placeholder={inputPlaceholder ? inputPlaceholder : i18n.t('Select an option')}
-									required
-								/>
-							{:else}
-								<textarea
-									bind:value={_inputValue}
-									placeholder={inputPlaceholder ? inputPlaceholder : i18n.t('Enter your message')}
-									class="w-full mt-2 rounded-lg px-4 py-2 text-sm dark:text-gray-300 dark:bg-gray-900 outline-hidden resize-none"
-									rows="3"
-									required
-								></textarea>
-							{/if}
-						{/if}
-					</div>
-				</slot>
-
-				<div class="mt-6 flex justify-between gap-1.5">
-					<button
-						class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-gray-850 dark:hover:bg-gray-800 dark:text-white font-medium w-full py-2 rounded-3xl transition"
-						on:click={() => {
-							cancelHandler();
-						}}
-						type="button"
-					>
-						{cancelLabel}
-					</button>
-					<button
-						class="text-sm bg-gray-900 hover:bg-gray-850 text-gray-100 dark:bg-gray-100 dark:hover:bg-white dark:text-gray-800 font-medium w-full py-2 rounded-3xl transition"
-						on:click={() => {
-							confirmHandler();
-						}}
-						type="button"
-					>
-						{confirmLabel}
-					</button>
-				</div>
-			</div>
-		</div>
-	</div>
-{/if}
-
-

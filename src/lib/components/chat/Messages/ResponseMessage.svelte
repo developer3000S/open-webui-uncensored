@@ -1,13 +1,13 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
-	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
-	
 	import { toast } from 'svelte-sonner';
 	import dayjs from 'dayjs';
 
 	import { createEventDispatcher, onDestroy } from 'svelte';
+	import { onMount, tick, getContext } from 'svelte';
 	import type { Writable } from 'svelte/store';
+	import type { i18n as i18nType, t } from 'i18next';
+
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	const dispatch = createEventDispatcher();
 
@@ -67,6 +67,7 @@
 	import { getOutputText, replaceOutputMessageText, type OutputItem } from './structuredOutput';
 
 	interface MessageType {
+		[key: string]: any;
 		id: string;
 		model: string;
 		content: string;
@@ -115,12 +116,14 @@
 			load_duration?: number;
 			usage?: unknown;
 		};
-		annotation?: { type: string; rating: number; rag_quality_rating?: number };
+		annotation?: { type: string; rating: number };
 	}
 
-	export let chatId: any = '';
-	export let history: { messages?: Record<string, any>; currentId?: string | null; [key: string]: any } = {};
-	export let messageId: any;
+	export let chatId = '';
+	export let history;
+	export let messageId;
+	export let selectedModels = [];
+
 	let message: MessageType = structuredClone(history.messages[messageId]);
 	$: if (history.messages) {
 		const source = history.messages[messageId];
@@ -140,7 +143,8 @@
 		}
 	}
 
-	export let siblings: any;
+	export let siblings;
+
 	export let setInputText: Function = () => {};
 	export let gotoMessage: Function = () => {};
 	export let showPreviousMessage: Function;
@@ -149,6 +153,7 @@
 	export let updateChat: Function;
 	export let editMessage: Function;
 	export let saveMessage: Function;
+	export let rateMessage: Function;
 	export let actionMessage: Function;
 	export let deleteMessage: Function;
 
@@ -156,24 +161,27 @@
 	export let continueResponse: Function;
 	export let regenerateResponse: Function;
 
-	export let isLastMessage: any = true;
-	export let readOnly: any = false;
-	export let editCodeBlock: any = true;
-	export let topPadding: any = false;
-	let citationsElement: HTMLDivElement;
+	export let addMessages: Function;
+
+	export let isLastMessage = true;
+	export let readOnly = false;
+	export let editCodeBlock = true;
+	export let topPadding = false;
+
+	let citationsElement: any;
 
 	let contentContainerElement: HTMLDivElement;
 	let buttonsContainerElement: HTMLDivElement;
 	let showDeleteConfirm = false;
 
-	let model: any = null;
+	let model = null;
 	$: model = $models.find((m) => m.id === message.model);
 
 	$: statusEntries = message?.statusHistory ?? [...(message?.status ? [message?.status] : [])];
 	$: hasVisibleStatus =
 		(model?.info?.meta?.capabilities?.status_updates ?? true) &&
 		statusEntries.length > 0 &&
-		!(statusEntries.at(-1)?.hidden ?? false);
+		!((statusEntries.at(-1) as any)?.hidden ?? false);
 	$: visibleResponseContent =
 		getOutputText(message.output) || removeAllDetails(message.content ?? '');
 	$: hasResponseContent = Boolean((message.content ?? '').trim() || message.output?.length);
@@ -193,7 +201,7 @@
 
 	let showRateComment = false;
 
-	const copyToClipboard = async (text: any) => {
+	const copyToClipboard = async (text) => {
 		text = removeAllDetails(text);
 
 		if (($config?.ui?.response_watermark ?? '').trim() !== '') {
@@ -202,7 +210,7 @@
 
 		const res = await _copyToClipboard(text, null, $settings?.copyFormatted ?? false);
 		if (res) {
-			toast.success(i18n.t('Copying to clipboard was successful!'));
+			toast.success($i18n.t('Copying to clipboard was successful!'));
 		}
 	};
 
@@ -230,7 +238,7 @@
 	const speak = async () => {
 		const content = visibleResponseContent;
 		if (!content.trim().length) {
-			toast.info(i18n.t('No content to speak'));
+			toast.info($i18n.t('No content to speak'));
 			return;
 		}
 
@@ -241,7 +249,7 @@
 		speaking = true;
 
 		if ($config.audio.tts.engine === '') {
-			let voices: any[] = [];
+			let voices = [];
 			const getVoicesLoop = setInterval(() => {
 				voices = speechSynthesis.getVoices();
 				if (voices.length > 0) {
@@ -280,7 +288,7 @@
 			);
 
 			if (!messageContentParts.length) {
-				toast.info(i18n.t('No content to speak'));
+				toast.info($i18n.t('No content to speak'));
 				speaking = false;
 				loadingSpeech = false;
 				return;
@@ -294,7 +302,7 @@
 					await TTSWorker.set(
 						new KokoroWorker({
 							dtype: $settings.audio?.tts?.engineConfig?.dtype ?? 'fp32'
-						})
+						} as any)
 					);
 
 					await $TTSWorker.init();
@@ -305,7 +313,7 @@
 
 					const url = await $TTSWorker
 						.generate({ text: sentence, voice: voiceId })
-						.catch(async (error)=> {
+						.catch((error) => {
 							console.error(error);
 							toast.error(`${error}`);
 							speaking = false;
@@ -323,7 +331,8 @@
 				for (const [, sentence] of messageContentParts.entries()) {
 					if (signal.aborted) return;
 
-					const res = await synthesizeOpenAISpeech(localStorage.token, voiceId, sentence).catch(async (error)=> {
+					const res = await synthesizeOpenAISpeech(localStorage.token, voiceId, sentence).catch(
+						(error) => {
 							console.error(error);
 							toast.error(`${error}`);
 							speaking = false;
@@ -344,11 +353,11 @@
 		}
 	};
 
-	let preprocessedDetailsCache: any = [];
+	let preprocessedDetailsCache = [];
 
 	function preprocessForEditing(content: string): string {
 		// Replace <details>...</details> with unique ID placeholder
-		const detailsBlocks: any = [];
+		const detailsBlocks = [];
 		let i = 0;
 
 		content = content.replace(/<details[\s\S]*?<\/details>/gi, (match) => {
@@ -435,55 +444,6 @@
 
 	let feedbackLoading = false;
 
-	let ragFeedbackLoading = false;
-
-	const ragFeedbackHandler = async (rating: number | null = null) => {
-		ragFeedbackLoading = true;
-		console.log('RAG Feedback', rating);
-
-		const updatedMessage = {
-			...message,
-			annotation: {
-				...(message?.annotation ?? {}),
-				...(rating !== null ? { rag_quality_rating: rating } : {})
-			}
-		};
-
-		const chat = await getChatById(localStorage.token, chatId).catch((error) => {
-			toast.error(`${error}`);
-		});
-		if (!chat) {
-			return;
-		}
-
-		const messagesList = createMessagesList(history, message.id);
-
-		let feedbackItem = {
-			type: 'rag_rating',
-			data: {
-				rag_quality_rating: rating,
-				model_id: message?.selectedModelId ?? message.model
-			},
-			meta: {
-				chat_id: chatId,
-				message_id: message.id,
-				rag_quality: true
-			}
-		};
-
-		if (rating !== null) {
-			await createNewFeedback(localStorage.token, feedbackItem)
-				.catch((error) => {
-					toast.error(`RAG feedback error: ${error}`);
-				})
-				.then(() => {
-					// Optionally update local state
-				});
-		}
-
-		ragFeedbackLoading = false;
-	};
-
 	const feedbackHandler = async (rating: number | null = null, details: object | null = null) => {
 		feedbackLoading = true;
 		console.log('Feedback', rating, details);
@@ -495,7 +455,7 @@
 				...(rating !== null ? { rating: rating } : {}),
 				...(details ? details : {})
 			}
-		};
+		} as any;
 
 		const chat = await getChatById(localStorage.token, chatId).catch((error) => {
 			toast.error(`${error}`);
@@ -544,19 +504,19 @@
 			}
 			return acc;
 		}, {});
-		feedbackItem.meta.base_models = baseModels;
+		(feedbackItem as any).meta.base_models = baseModels;
 
-		let feedback: any = null;
+		let feedback = null;
 		if (message?.feedbackId) {
 			feedback = await updateFeedbackById(
 				localStorage.token,
 				message.feedbackId,
 				feedbackItem
-			).catch(async (error)=> {
+			).catch((error) => {
 				toast.error(`${error}`);
 			});
 		} else {
-			feedback = await createNewFeedback(localStorage.token, feedbackItem).catch(async (error)=> {
+			feedback = await createNewFeedback(localStorage.token, feedbackItem).catch((error) => {
 				toast.error(`${error}`);
 			});
 
@@ -575,11 +535,15 @@
 
 			if (!updatedMessage.annotation?.tags && (message?.content ?? '') !== '') {
 				// attempt to generate tags
-				const tags = await generateTags(localStorage.token, message.model, messages, chatId).catch(async (error)=> {
-						console.error(error);
-						return [];
-					}
-				);
+				const tags = await generateTags(
+					localStorage.token,
+					message.model,
+					messages as any,
+					chatId
+				).catch((error) => {
+					console.error(error);
+					return [];
+				});
 				console.log(tags);
 
 				if (tags) {
@@ -591,7 +555,7 @@
 						localStorage.token,
 						updatedMessage.feedbackId,
 						feedbackItem
-					).catch(async (error)=> {
+					).catch((error) => {
 						toast.error(`${error}`);
 					});
 				}
@@ -606,7 +570,7 @@
 	};
 
 	$: if (!edit) {
-		async (async () => {
+		(async () => {
 			await tick();
 		})();
 	}
@@ -627,7 +591,7 @@
 		}
 	};
 
-	const contentCopyHandler = (e: any) => {
+	const contentCopyHandler = (e) => {
 		if (contentContainerElement) {
 			e.preventDefault();
 			// Get the selected HTML
@@ -655,6 +619,7 @@
 		}
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		// console.log('ResponseMessage mounted');
 
@@ -681,7 +646,7 @@
 
 <DeleteConfirmDialog
 	bind:show={showDeleteConfirm}
-	title={i18n.t('Delete message?')}
+	title={$i18n.t('Delete message?')}
 	on:confirm={() => {
 		deleteMessageHandler();
 	}}
@@ -691,12 +656,12 @@
 	<div
 		class=" flex w-full message-{message.id}"
 		id="message-{message.id}"
-		dir={$settings.chatDirection}
+		dir={$settings.chatDirection as any}
 		style="scroll-margin-top: 3rem;"
 	>
 		<div class={`shrink-0 ltr:mr-3 rtl:ml-3 hidden @lg:flex mt-1 `}>
 			<ProfileImage
-				src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${model?.id}&lang=${i18n.language}`}
+				src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${model?.id}&lang=${$i18n.language}`}
 				className={'size-8 assistant-message-profile-image'}
 			/>
 		</div>
@@ -718,7 +683,7 @@
 					>
 						<Tooltip content={dayjs(message.timestamp * 1000).format('LLLL')}>
 							<span class="line-clamp-1"
-								>{i18n.t(formatDate(message.timestamp * 1000), {
+								>{$i18n.t(formatDate(message.timestamp * 1000), {
 									LOCALIZED_TIME: dayjs(message.timestamp * 1000).format('LT'),
 									LOCALIZED_DATE: dayjs(message.timestamp * 1000).format('L')
 								})}</span
@@ -738,19 +703,19 @@
 						{#if message?.files && message.files?.filter( (f) => ['image', 'file'].includes(f.type) ).length > 0}
 							<div
 								class="my-1 w-full flex overflow-x-auto gap-2 flex-wrap"
-								dir={$settings?.chatDirection ?? 'auto'}
+								dir={($settings?.chatDirection ?? 'auto') as any}
 							>
 								{#each message.files.filter((f) => ['image', 'file'].includes(f.type)) as file}
 									<div>
-										{#if file.type === 'image' || (file?.content_type ?? '').startsWith('image/')}
+										{#if file.type === 'image' || ((file as any)?.content_type ?? '').startsWith('image/')}
 											<Image src={file.url} alt={message.content} />
 										{:else}
 											<FileItem
 												item={file}
 												url={file.url}
-												name={file.name}
+												name={(file as any).name}
 												type={file.type}
-												size={file?.size}
+												size={(file as any)?.size}
 												small={true}
 											/>
 										{/if}
@@ -795,7 +760,7 @@
 										bind:this={editTextAreaElement}
 										class=" bg-transparent outline-hidden w-full resize-none"
 										bind:value={editedContent}
-										on:input={(e: any) => {
+										on:input={(e) => {
 											const messagesContainer = document.getElementById('messages-container');
 											const savedScrollTop = messagesContainer?.scrollTop;
 
@@ -804,7 +769,7 @@
 
 											if (messagesContainer) messagesContainer.scrollTop = savedScrollTop;
 										}}
-										on:keydown={(e: any) => {
+										on:keydown={(e) => {
 											if (e.key === 'Escape') {
 												document.getElementById('close-edit-message-button')?.click();
 											}
@@ -816,7 +781,7 @@
 												document.getElementById('confirm-edit-message-button')?.click();
 											}
 										}}
-									></textarea>
+									/>
 								{/if}
 
 								<div class=" mt-2 mb-1 flex justify-between text-sm font-medium">
@@ -828,7 +793,7 @@
 												saveAsCopyHandler();
 											}}
 										>
-											{i18n.t('Save As Copy')}
+											{$i18n.t('Save As Copy')}
 										</button>
 									</div>
 
@@ -840,7 +805,7 @@
 												cancelEditMessage();
 											}}
 										>
-											{i18n.t('Cancel')}
+											{$i18n.t('Cancel')}
 										</button>
 
 										<button
@@ -850,7 +815,7 @@
 												editMessageConfirmHandler();
 											}}
 										>
-											{i18n.t('Save')}
+											{$i18n.t('Save')}
 										</button>
 									</div>
 								</div>
@@ -883,10 +848,10 @@
 										? (message?.done ?? false)
 										: true}
 									{model}
-									onTaskClick={(e: any) => {
+									onTaskClick={async (e) => {
 										console.log(e);
 									}}
-									onSourceClick={(id: any) => {
+									onSourceClick={async (id) => {
 										console.log(id);
 
 										if (citationsElement) {
@@ -925,7 +890,7 @@
 							{/if}
 
 							{#if message?.error}
-								<Error content={message?.error?.content ?? message.content} />
+								<Error content={(message?.error as any)?.content ?? message.content} />
 							{/if}
 
 							{#if (message?.sources || message?.citations) && (model?.info?.meta?.capabilities?.citations ?? true)}
@@ -954,7 +919,7 @@
 							{#if siblings.length > 1}
 								<div class="flex self-center min-w-fit" dir="ltr">
 									<button
-										aria-label={i18n.t('Previous message')}
+										aria-label={$i18n.t('Previous message')}
 										class="self-center p-1 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-white hover:text-black rounded-md transition"
 										on:click={() => {
 											showPreviousMessage(message);
@@ -1027,7 +992,7 @@
 										on:click={() => {
 											showNextMessage(message);
 										}}
-										aria-label={i18n.t('Next message')}
+										aria-label={$i18n.t('Next message')}
 									>
 										<svg
 											xmlns="http://www.w3.org/2000/svg"
@@ -1051,12 +1016,12 @@
 							{#if message.done}
 								{#if !readOnly}
 									{#if $user?.role === 'user' ? ($user?.permissions?.chat?.edit ?? true) : true}
-										<Tooltip content={i18n.t('Edit')} placement="bottom">
+										<Tooltip content={$i18n.t('Edit')} placement="bottom">
 											<button
-												aria-label={i18n.t('Edit')}
+												aria-label={$i18n.t('Edit')}
 												class="{isLastMessage || ($settings?.highContrastMode ?? false)
 													? 'visible'
-													: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 border-radius: 0.5rem; dark:hover:text-white hover:text-black transition"
+													: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg dark:hover:text-white hover:text-black transition"
 												on:click={() => {
 													editMessageHandler();
 												}}
@@ -1081,12 +1046,12 @@
 									{/if}
 								{/if}
 
-								<Tooltip content={i18n.t('Copy')} placement="bottom">
+								<Tooltip content={$i18n.t('Copy')} placement="bottom">
 									<button
-										aria-label={i18n.t('Copy')}
+										aria-label={$i18n.t('Copy')}
 										class="{isLastMessage || ($settings?.highContrastMode ?? false)
 											? 'visible'
-											: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 border-radius: 0.5rem; dark:hover:text-white hover:text-black transition copy-response-button"
+											: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg dark:hover:text-white hover:text-black transition copy-response-button"
 										on:click={() => {
 											copyToClipboard(visibleResponseContent);
 										}}
@@ -1110,13 +1075,13 @@
 								</Tooltip>
 
 								{#if !readOnly && ($user?.role === 'admin' || ($user?.permissions?.chat?.tts ?? true))}
-									<Tooltip content={i18n.t('Read Aloud')} placement="bottom">
+									<Tooltip content={$i18n.t('Read Aloud')} placement="bottom">
 										<button
-											aria-label={i18n.t('Read Aloud')}
+											aria-label={$i18n.t('Read Aloud')}
 											id="speak-button-{message.id}"
 											class="{isLastMessage || ($settings?.highContrastMode ?? false)
 												? 'visible'
-												: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 border-radius: 0.5rem; dark:hover:text-white hover:text-black transition"
+												: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg dark:hover:text-white hover:text-black transition"
 											on:click={() => {
 												if (!loadingSpeech) {
 													if (speaking) {
@@ -1155,16 +1120,7 @@
 																opacity: 0.2;
 															}
 														}
-													
-	.buttons::-webkit-scrollbar {
-		display: none; /* for Chrome, Safari and Opera */
-	}
-
-	.buttons {
-		-ms-overflow-style: none; /* IE and Edge */
-		scrollbar-width: none; /* Firefox */
-	}
-</style>
+													</style>
 													<circle class="spinner_S1WN" cx="4" cy="12" r="3" />
 													<circle class="spinner_S1WN spinner_Km9P" cx="12" cy="12" r="3" />
 													<circle class="spinner_S1WN spinner_JApP" cx="20" cy="12" r="3" />
@@ -1225,7 +1181,7 @@
 											aria-hidden="true"
 											class=" {isLastMessage || ($settings?.highContrastMode ?? false)
 												? 'visible'
-												: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 border-radius: 0.5rem; dark:hover:text-white hover:text-black transition whitespace-pre-wrap"
+												: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg dark:hover:text-white hover:text-black transition whitespace-pre-wrap"
 											on:click={() => {
 												console.log(message);
 											}}
@@ -1252,12 +1208,12 @@
 
 								{#if !readOnly}
 									{#if !$temporaryChatEnabled && ($config?.features.enable_message_rating ?? true) && ($user?.role === 'admin' || ($user?.permissions?.chat?.rate_response ?? true))}
-										<Tooltip content={i18n.t('Good Response')} placement="bottom">
+										<Tooltip content={$i18n.t('Good Response')} placement="bottom">
 											<button
-												aria-label={i18n.t('Good Response')}
+												aria-label={$i18n.t('Good Response')}
 												class="{isLastMessage || ($settings?.highContrastMode ?? false)
 													? 'visible'
-													: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 border-radius: 0.5rem; {(
+													: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg {(
 													message?.annotation?.rating ?? ''
 												).toString() === '1'
 													? 'bg-gray-100 dark:bg-gray-800'
@@ -1290,12 +1246,12 @@
 											</button>
 										</Tooltip>
 
-										<Tooltip content={i18n.t('Bad Response')} placement="bottom">
+										<Tooltip content={$i18n.t('Bad Response')} placement="bottom">
 											<button
-												aria-label={i18n.t('Bad Response')}
+												aria-label={$i18n.t('Bad Response')}
 												class="{isLastMessage || ($settings?.highContrastMode ?? false)
 													? 'visible'
-													: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 border-radius: 0.5rem; {(
+													: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg {(
 													message?.annotation?.rating ?? ''
 												).toString() === '-1'
 													? 'bg-gray-100 dark:bg-gray-800'
@@ -1329,91 +1285,15 @@
 										</Tooltip>
 									{/if}
 
-									<Tooltip content={i18n.t('RAG quality hit?')} placement="bottom">
-										<button
-											aria-label={i18n.t('RAG quality hit?')}
-											class="{isLastMessage || ($settings?.highContrastMode ?? false)
-												? 'visible'
-												: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 border-radius: 0.5rem; {/** @type {string} */ (
-												message?.annotation?.rag_quality_rating ?? ''
-											) === '1'
-												? 'bg-gray-100 dark:bg-gray-800'
-												: ''} dark:hover:text-white hover:text-black transition disabled:cursor-progress disabled:hover:bg-transparent"
-											disabled={ragFeedbackLoading}
-											on:click={async () => {
-												await ragFeedbackHandler(1);
-												window.setTimeout(() => {
-													document
-														.getElementById(`message-feedback-${message.id}`)
-														?.scrollIntoView();
-												}, 0);
-											}}
-										>
-											<svg
-												aria-hidden="true"
-												stroke="currentColor"
-												fill="none"
-												stroke-width="2.3"
-												viewBox="0 0 24 24"
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												class="w-4 h-4"
-												xmlns="http://www.w3.org/2000/svg"
-											>
-												<path
-													d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"
-												/>
-											</svg>
-										</button>
-									</Tooltip>
-
-									<Tooltip content={i18n.t('RAG quality miss?')} placement="bottom">
-										<button
-											aria-label={i18n.t('RAG quality miss?')}
-											class="{isLastMessage || ($settings?.highContrastMode ?? false)
-												? 'visible'
-												: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 border-radius: 0.5rem; {/** @type {string} */ (
-												message?.annotation?.rag_quality_rating ?? ''
-											) === '-1'
-												? 'bg-gray-100 dark:bg-gray-800'
-												: ''} dark:hover:text-white hover:text-black transition disabled:cursor-progress disabled:hover:bg-transparent"
-											disabled={ragFeedbackLoading}
-											on:click={async () => {
-												await ragFeedbackHandler(-1);
-												window.setTimeout(() => {
-													document
-														.getElementById(`message-feedback-${message.id}`)
-														?.scrollIntoView();
-												}, 0);
-											}}
-										>
-											<svg
-												aria-hidden="true"
-												stroke="currentColor"
-												fill="none"
-												stroke-width="2.3"
-												viewBox="0 0 24 24"
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												class="w-4 h-4"
-												xmlns="http://www.w3.org/2000/svg"
-											>
-												<path
-													d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"
-												/>
-											</svg>
-										</button>
-									</Tooltip>
-
 									{#if isLastMessage && ($user?.role === 'admin' || ($user?.permissions?.chat?.continue_response ?? true))}
-										<Tooltip content={i18n.t('Continue Response')} placement="bottom">
+										<Tooltip content={$i18n.t('Continue Response')} placement="bottom">
 											<button
-												aria-label={i18n.t('Continue Response')}
+												aria-label={$i18n.t('Continue Response')}
 												type="button"
 												id="continue-response-button"
 												class="{isLastMessage || ($settings?.highContrastMode ?? false)
 													? 'visible'
-													: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 border-radius: 0.5rem; dark:hover:text-white hover:text-black transition"
+													: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg dark:hover:text-white hover:text-black transition"
 												on:click={() => {
 													continueResponse();
 												}}
@@ -1445,7 +1325,6 @@
 									{#if $user?.role === 'admin' || ($user?.permissions?.chat?.regenerate_response ?? true)}
 										{#if $settings?.regenerateMenu ?? true}
 											<button
-												aria-label={i18n.t('Regenerate Response')}
 												type="button"
 												class="hidden regenerate-response-button"
 												on:click={() => {
@@ -1464,7 +1343,7 @@
 														});
 													});
 												}}
-											></button>
+											/>
 
 											<RegenerateMenu
 												onRegenerate={(prompt = null) => {
@@ -1484,12 +1363,12 @@
 													});
 												}}
 											>
-												<Tooltip content={i18n.t('Regenerate')} placement="bottom">
+												<Tooltip content={$i18n.t('Regenerate')} placement="bottom">
 													<div
-														aria-label={i18n.t('Regenerate')}
+														aria-label={$i18n.t('Regenerate')}
 														class="{isLastMessage
 															? 'visible'
-															: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 border-radius: 0.5rem; dark:hover:text-white hover:text-black transition"
+															: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg dark:hover:text-white hover:text-black transition"
 													>
 														<svg
 															xmlns="http://www.w3.org/2000/svg"
@@ -1510,13 +1389,13 @@
 												</Tooltip>
 											</RegenerateMenu>
 										{:else}
-											<Tooltip content={i18n.t('Regenerate')} placement="bottom">
+											<Tooltip content={$i18n.t('Regenerate')} placement="bottom">
 												<button
 													type="button"
-													aria-label={i18n.t('Regenerate')}
+													aria-label={$i18n.t('Regenerate')}
 													class="{isLastMessage
 														? 'visible'
-														: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 border-radius: 0.5rem; dark:hover:text-white hover:text-black transition regenerate-response-button"
+														: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg dark:hover:text-white hover:text-black transition regenerate-response-button"
 													on:click={() => {
 														showRateComment = false;
 														regenerateResponse(message);
@@ -1556,14 +1435,14 @@
 
 									{#if $user?.role === 'admin' || ($user?.permissions?.chat?.delete_message ?? true)}
 										{#if siblings.length > 1}
-											<Tooltip content={i18n.t('Delete')} placement="bottom">
+											<Tooltip content={$i18n.t('Delete')} placement="bottom">
 												<button
 													type="button"
-													aria-label={i18n.t('Delete')}
+													aria-label={$i18n.t('Delete')}
 													id="delete-response-button"
 													class="{isLastMessage || ($settings?.highContrastMode ?? false)
 														? 'visible'
-														: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 border-radius: 0.5rem; dark:hover:text-white hover:text-black transition"
+														: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg dark:hover:text-white hover:text-black transition"
 													on:click={(e) => {
 														if (e.shiftKey) {
 															deleteMessageHandler();
@@ -1599,7 +1478,7 @@
 												aria-label={action.name}
 												class="{isLastMessage || ($settings?.highContrastMode ?? false)
 													? 'visible'
-													: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 border-radius: 0.5rem; dark:hover:text-white hover:text-black transition"
+													: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg dark:hover:text-white hover:text-black transition"
 												on:click={() => {
 													actionMessage(action.id, message);
 												}}
@@ -1631,7 +1510,7 @@
 						<RateComment
 							bind:message
 							bind:show={showRateComment}
-							on:save={async (e: any) => {
+							on:save={async (e) => {
 								await feedbackHandler(null, {
 									...e.detail
 								});
@@ -1661,4 +1540,13 @@
 	</div>
 {/key}
 
+<style>
+	.buttons::-webkit-scrollbar {
+		display: none; /* for Chrome, Safari and Opera */
+	}
 
+	.buttons {
+		-ms-overflow-style: none; /* IE and Edge */
+		scrollbar-width: none; /* Firefox */
+	}
+</style>

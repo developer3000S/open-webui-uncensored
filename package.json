@@ -48,7 +48,7 @@
     "svelte-confetti": "^2.3.2",
     "svelte-eslint-parser": "^1.10.0",
     "tslib": "^2.4.1",
-    "typescript": "^6.0.3",
+    "typescript": "^5.5.4",
     "typescript-eslint": "^8.72.1",
     "vite": "^8.0.12",
     "vite-plugin-singlefile": "^2.3.4",

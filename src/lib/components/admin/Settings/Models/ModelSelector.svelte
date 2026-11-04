@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
@@ -55,7 +55,7 @@
 					selectedModelId = '';
 				}}
 			>
-				<option value="">{i18n.t('Select a model')}</option>
+				<option value="">{$i18n.t('Select a model')}</option>
 				{#each models as model}
 					{#if !modelIds.includes(model.id)}
 						<option value={model.id} class="bg-gray-50 dark:bg-gray-700">{model.name}</option>
@@ -88,7 +88,7 @@
 			</div>
 		{:else}
 			<div class="text-gray-500 text-xs text-center py-2">
-				{i18n.t('No models selected')}
+				{$i18n.t('No models selected')}
 			</div>
 		{/if}
 	</div>
@@ -133,7 +133,7 @@
 					selectedModelId = '';
 				}}
 			>
-				<option value="">{i18n.t('Select a model')}</option>
+				<option value="">{$i18n.t('Select a model')}</option>
 				{#each models as model}
 					{#if !modelIds.includes(model.id)}
 						<option value={model.id} class="bg-gray-50 dark:bg-gray-700">{model.name}</option>
@@ -166,7 +166,7 @@
 			</div>
 		{:else}
 			<div class="text-gray-500 text-xs text-center py-2">
-				{i18n.t('No models selected')}
+				{$i18n.t('No models selected')}
 			</div>
 		{/if}
 	</div>

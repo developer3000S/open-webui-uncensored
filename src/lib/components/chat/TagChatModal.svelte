@@ -5,10 +5,10 @@
 	import Tags from '../common/Tags.svelte';
 
 	import type { Writable } from 'svelte/store';
-	
+
 	export let tags: any;
-	export let deleteTag: Function;
-	export let addTag: Function;
+	export let deleteTag: any;
+	export let addTag: any;
 
 	export let show: any = false;
 </script>

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 
@@ -79,8 +79,9 @@
 		getUserList();
 	}
 
+	// @ts-ignore
 	onMount(async () => {
-		groups = await getGroups(localStorage.token, true).catch(async (error)=> {
+		groups = await getGroups(localStorage.token, true).catch(async (error) => {
 			console.error(error);
 			return [];
 		});
@@ -109,7 +110,7 @@
 			<div class="mx-1 mb-1.5">
 				<div class="text-xs text-gray-500 mx-0.5 mb-1">
 					{groupIds.length}
-					{i18n.t('groups')}
+					{$i18n.t('groups')}
 				</div>
 				<div class="flex gap-1 flex-wrap">
 					{#each groupIds as id}
@@ -141,7 +142,7 @@
 			<div class="mx-1 mb-1.5">
 				<div class="text-xs text-gray-500 mx-0.5 mb-1">
 					{userIds.length}
-					{i18n.t('users')}
+					{$i18n.t('users')}
 				</div>
 				<div class="flex gap-1 flex-wrap">
 					{#each userIds as id}
@@ -189,7 +190,7 @@
 						class=" w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
 						bind:value={query}
 						on:input={handleSearchInput}
-						placeholder={i18n.t('Search')}
+						placeholder={$i18n.t('Search')}
 					/>
 				</div>
 			</div>
@@ -201,7 +202,7 @@
 					<div class="w-full max-h-96 overflow-y-auto rounded-lg">
 						{#if includeGroups && filteredGroups.length > 0}
 							<div class="text-xs text-gray-500 mb-1 mx-1">
-								{i18n.t('Groups')}
+								{$i18n.t('Groups')}
 							</div>
 
 							<div class="mb-3">
@@ -243,7 +244,7 @@
 
 						{#if includeUsers}
 							<div class="text-xs text-gray-500 mb-1 mx-1">
-								{i18n.t('Users')}
+								{$i18n.t('Users')}
 							</div>
 
 							<div>
@@ -307,7 +308,7 @@
 			</div>
 		{:else}
 			<div class="text-gray-500 text-xs text-center py-5 px-10">
-				{i18n.t('No users were found.')}
+				{$i18n.t('No users were found.')}
 			</div>
 		{/if}
 	{/if}
@@ -323,7 +324,7 @@
 			<div class="mx-1 mb-1.5">
 				<div class="text-xs text-gray-500 mx-0.5 mb-1">
 					{groupIds.length}
-					{i18n.t('groups')}
+					{$i18n.t('groups')}
 				</div>
 				<div class="flex gap-1 flex-wrap">
 					{#each groupIds as id}
@@ -355,7 +356,7 @@
 			<div class="mx-1 mb-1.5">
 				<div class="text-xs text-gray-500 mx-0.5 mb-1">
 					{userIds.length}
-					{i18n.t('users')}
+					{$i18n.t('users')}
 				</div>
 				<div class="flex gap-1 flex-wrap">
 					{#each userIds as id}
@@ -403,7 +404,7 @@
 						class=" w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
 						bind:value={query}
 						on:input={handleSearchInput}
-						placeholder={i18n.t('Search')}
+						placeholder={$i18n.t('Search')}
 					/>
 				</div>
 			</div>
@@ -415,7 +416,7 @@
 					<div class="w-full max-h-96 overflow-y-auto rounded-lg">
 						{#if includeGroups && filteredGroups.length > 0}
 							<div class="text-xs text-gray-500 mb-1 mx-1">
-								{i18n.t('Groups')}
+								{$i18n.t('Groups')}
 							</div>
 
 							<div class="mb-3">
@@ -457,7 +458,7 @@
 
 						{#if includeUsers}
 							<div class="text-xs text-gray-500 mb-1 mx-1">
-								{i18n.t('Users')}
+								{$i18n.t('Users')}
 							</div>
 
 							<div>
@@ -521,7 +522,7 @@
 			</div>
 		{:else}
 			<div class="text-gray-500 text-xs text-center py-5 px-10">
-				{i18n.t('No users were found.')}
+				{$i18n.t('No users were found.')}
 			</div>
 		{/if}
 	{/if}

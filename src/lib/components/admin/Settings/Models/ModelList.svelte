@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext, onDestroy, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Sortable from 'sortablejs';
 
@@ -90,7 +90,7 @@
 	</div>
 {:else}
 	<div class="text-gray-500 text-xs text-center py-2">
-		{i18n.t('No models found')}
+		{$i18n.t('No models found')}
 	</div>
 {/if}
 
@@ -116,6 +116,6 @@
 	</div>
 {:else}
 	<div class="text-gray-500 text-xs text-center py-2">
-		{i18n.t('No models found')}
+		{$i18n.t('No models found')}
 	</div>
 {/if}

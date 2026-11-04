@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
@@ -45,7 +45,7 @@
 <Modal bind:show size="sm">
 	<div class="px-5 pt-4 pb-5">
 		<div class="font-semibold text-base mb-4">
-			{title || i18n.t('Move to folder')}
+			{title || $i18n.t('Move to folder')}
 		</div>
 
 		<div class="flex flex-col gap-1 max-h-72 overflow-y-auto pr-1">
@@ -73,7 +73,7 @@
 					/>
 					<polyline stroke-linecap="round" stroke-linejoin="round" points="9 22 9 12 15 12 15 22" />
 				</svg>
-				<span>{i18n.t('Root (no folder)')}</span>
+				<span>{$i18n.t('Root (no folder)')}</span>
 			</button>
 
 			{#each availableDirectories as dir (dir.id)}
@@ -92,7 +92,7 @@
 
 			{#if availableDirectories.length === 0}
 				<div class="text-xs text-gray-400 px-3 py-2">
-					{i18n.t('No folders available')}
+					{$i18n.t('No folders available')}
 				</div>
 			{/if}
 		</div>
@@ -103,14 +103,14 @@
 				class="px-4 py-2 rounded-xl text-sm hover:bg-gray-100 dark:hover:bg-gray-850 transition"
 				on:click={handleCancel}
 			>
-				{i18n.t('Cancel')}
+				{$i18n.t('Cancel')}
 			</button>
 			<button
 				type="button"
 				class="px-4 py-2 rounded-xl text-sm bg-gray-900 text-white dark:bg-white dark:text-gray-900 hover:opacity-90 transition"
 				on:click={handleSubmit}
 			>
-				{i18n.t('Move here')}
+				{$i18n.t('Move here')}
 			</button>
 		</div>
 	</div>
@@ -119,7 +119,7 @@
 <Modal bind:show size="sm">
 	<div class="px-5 pt-4 pb-5">
 		<div class="font-semibold text-base mb-4">
-			{title || i18n.t('Move to folder')}
+			{title || $i18n.t('Move to folder')}
 		</div>
 
 		<div class="flex flex-col gap-1 max-h-72 overflow-y-auto pr-1">
@@ -147,7 +147,7 @@
 					/>
 					<polyline stroke-linecap="round" stroke-linejoin="round" points="9 22 9 12 15 12 15 22" />
 				</svg>
-				<span>{i18n.t('Root (no folder)')}</span>
+				<span>{$i18n.t('Root (no folder)')}</span>
 			</button>
 
 			{#each availableDirectories as dir (dir.id)}
@@ -166,7 +166,7 @@
 
 			{#if availableDirectories.length === 0}
 				<div class="text-xs text-gray-400 px-3 py-2">
-					{i18n.t('No folders available')}
+					{$i18n.t('No folders available')}
 				</div>
 			{/if}
 		</div>
@@ -177,14 +177,14 @@
 				class="px-4 py-2 rounded-xl text-sm hover:bg-gray-100 dark:hover:bg-gray-850 transition"
 				on:click={handleCancel}
 			>
-				{i18n.t('Cancel')}
+				{$i18n.t('Cancel')}
 			</button>
 			<button
 				type="button"
 				class="px-4 py-2 rounded-xl text-sm bg-gray-900 text-white dark:bg-white dark:text-gray-900 hover:opacity-90 transition"
 				on:click={handleSubmit}
 			>
-				{i18n.t('Move here')}
+				{$i18n.t('Move here')}
 			</button>
 		</div>
 	</div>

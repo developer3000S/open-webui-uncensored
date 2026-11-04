@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
@@ -34,7 +34,7 @@
 		<div class="text-sm flex flex-col w-full">
 			<button
 				class="w-full"
-				aria-label={i18n.t('Toggle status history')}
+				aria-label={$i18n.t('Toggle status history')}
 				aria-expanded={showHistory}
 				on:click={() => {
 					showHistory = !showHistory;
@@ -82,7 +82,7 @@
 		<div class="text-sm flex flex-col w-full">
 			<button
 				class="w-full"
-				aria-label={i18n.t('Toggle status history')}
+				aria-label={$i18n.t('Toggle status history')}
 				aria-expanded={showHistory}
 				on:click={() => {
 					showHistory = !showHistory;

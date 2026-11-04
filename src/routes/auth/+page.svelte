@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import DOMPurify from 'dompurify';
 	import { marked } from 'marked';
@@ -31,21 +31,17 @@
 	import { redirect } from '@sveltejs/kit';
 
 	import type { Writable } from 'svelte/store';
+	import type { Config } from '$lib/stores';
 
 	interface ConfigWithMetadata extends Config {
 		metadata?: {
 			login_footer?: string;
 			auth_logo_position?: string;
 		};
-		features?: {
-			enable_ldap?: boolean;
-			enable_login_form?: boolean;
-			onboarding?: boolean;
-		};
 	}
 
 	let loaded = false;
-	let form: { email?: string; password?: string } = {};
+	let form: any = {};
 
 	let mode = $config?.features.enable_ldap ? 'ldap' : 'signin';
 
@@ -59,7 +55,7 @@
 	const setSessionUser = async (sessionUser: any, redirectPath: string | null = null) => {
 		if (sessionUser) {
 			console.log(sessionUser);
-			toast.success(i18n.t(`You're now logged in.`));
+			toast.success($i18n.t(`You're now logged in.`));
 			if (sessionUser.token) {
 				localStorage.token = sessionUser.token;
 			}
@@ -83,7 +79,7 @@
 	};
 
 	const signInHandler = async () => {
-		const sessionUser = await userSignIn(email, password).catch(async (error)=> {
+		const sessionUser = await userSignIn(email, password).catch(async (error) => {
 			toast.error(`${error}`);
 			return null;
 		});
@@ -94,12 +90,13 @@
 	const signUpHandler = async () => {
 		if ($config?.features?.enable_signup_password_confirmation) {
 			if (password !== confirmPassword) {
-				toast.error(i18n.t('Passwords do not match.'));
+				toast.error($i18n.t('Passwords do not match.'));
 				return;
 			}
 		}
 
-		const sessionUser = await userSignUp(name, email, password, generateInitialsImage(name)).catch(async (error)=> {
+		const sessionUser = await userSignUp(name, email, password, generateInitialsImage(name)).catch(
+			async (error) => {
 				toast.error(`${error}`);
 				return null;
 			}
@@ -109,7 +106,7 @@
 	};
 
 	const ldapSignInHandler = async () => {
-		const sessionUser = await ldapUserSignIn(ldapUsername, password).catch(async (error)=> {
+		const sessionUser = await ldapUserSignIn(ldapUsername, password).catch(async (error) => {
 			toast.error(`${error}`);
 			return null;
 		});
@@ -140,7 +137,7 @@
 			return;
 		}
 
-		const sessionUser = await getSessionUser(token).catch(async (error)=> {
+		const sessionUser = await getSessionUser(token).catch(async (error) => {
 			toast.error(`${error}`);
 			return null;
 		});
@@ -178,6 +175,7 @@
 		}
 	}
 
+	// @ts-ignore
 	onMount(async () => {
 		const redirectPath = $page.url.searchParams.get('redirect');
 		if ($user !== undefined) {
@@ -229,13 +227,13 @@
 </script>
 
 <svelte:head>
-			<title>
+	<title>
 		{`${WEBUI_NAME}`}
 	</title>
-			<title>
+	<title>
 		{`${WEBUI_NAME}`}
 	</title>
-		</svelte:head>
+</svelte:head>
 
 <OnBoarding
 	bind:show={onboarding}
@@ -262,7 +260,7 @@
 							class="flex items-center justify-center gap-3 text-xl sm:text-2xl text-center font-medium dark:text-gray-200"
 						>
 							<div>
-								{i18n.t('Signing in to {{WEBUI_NAME}}', { WEBUI_NAME: WEBUI_NAME })}
+								{$i18n.t('Signing in to {{WEBUI_NAME}}', { WEBUI_NAME: WEBUI_NAME })}
 							</div>
 
 							<div>
@@ -294,20 +292,20 @@
 								<div class="mb-1">
 									<div class=" text-2xl font-medium">
 										{#if $config?.onboarding ?? false}
-											{i18n.t(`Get started with {{WEBUI_NAME}}`, { WEBUI_NAME: WEBUI_NAME })}
+											{$i18n.t(`Get started with {{WEBUI_NAME}}`, { WEBUI_NAME: WEBUI_NAME })}
 										{:else if mode === 'ldap'}
-											{i18n.t(`Sign in to {{WEBUI_NAME}} with LDAP`, { WEBUI_NAME: WEBUI_NAME })}
+											{$i18n.t(`Sign in to {{WEBUI_NAME}} with LDAP`, { WEBUI_NAME: WEBUI_NAME })}
 										{:else if mode === 'signin'}
-											{i18n.t(`Sign in to {{WEBUI_NAME}}`, { WEBUI_NAME: WEBUI_NAME })}
+											{$i18n.t(`Sign in to {{WEBUI_NAME}}`, { WEBUI_NAME: WEBUI_NAME })}
 										{:else}
-											{i18n.t(`Sign up to {{WEBUI_NAME}}`, { WEBUI_NAME: WEBUI_NAME })}
+											{$i18n.t(`Sign up to {{WEBUI_NAME}}`, { WEBUI_NAME: WEBUI_NAME })}
 										{/if}
 									</div>
 
 									{#if $config?.onboarding ?? false}
 										<div class="mt-1 text-xs font-medium text-gray-600 dark:text-gray-500">
 											ⓘ {WEBUI_NAME}
-											{i18n.t(
+											{$i18n.t(
 												'does not make any external connections, and your data stays securely on your locally hosted server.'
 											)}
 										</div>
@@ -319,7 +317,7 @@
 										{#if mode === 'signup'}
 											<div class="mb-2">
 												<label for="name" class="text-sm font-medium text-left mb-1 block"
-													>{i18n.t('Name')}</label
+													>{$i18n.t('Name')}</label
 												>
 												<input
 													bind:value={name}
@@ -327,7 +325,7 @@
 													id="name"
 													class="my-0.5 w-full text-sm outline-hidden bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-600"
 													autocomplete="name"
-													placeholder={i18n.t('Enter Your Full Name')}
+													placeholder={$i18n.t('Enter Your Full Name')}
 													required
 												/>
 											</div>
@@ -336,7 +334,7 @@
 										{#if mode === 'ldap'}
 											<div class="mb-2">
 												<label for="username" class="text-sm font-medium text-left mb-1 block"
-													>{i18n.t('Username')}</label
+													>{$i18n.t('Username')}</label
 												>
 												<input
 													bind:value={ldapUsername}
@@ -345,14 +343,14 @@
 													autocomplete="username"
 													name="username"
 													id="username"
-													placeholder={i18n.t('Enter Your Username')}
+													placeholder={$i18n.t('Enter Your Username')}
 													required
 												/>
 											</div>
 										{:else}
 											<div class="mb-2">
 												<label for="email" class="text-sm font-medium text-left mb-1 block"
-													>{i18n.t('Email')}</label
+													>{$i18n.t('Email')}</label
 												>
 												<input
 													bind:value={email}
@@ -361,7 +359,7 @@
 													class="my-0.5 w-full text-sm outline-hidden bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-600"
 													autocomplete="email"
 													name="email"
-													placeholder={i18n.t('Enter Your Email')}
+													placeholder={$i18n.t('Enter Your Email')}
 													required
 												/>
 											</div>
@@ -369,19 +367,18 @@
 
 										<div>
 											<label for="password" class="text-sm font-medium text-left mb-1 block"
-												>{i18n.t('Password')}</label
+												>{$i18n.t('Password')}</label
 											>
 											<SensitiveInput
 												bind:value={password}
 												type="password"
 												id="password"
-												class="my-0.5 w-full text-sm outline-hidden bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-600"
-												placeholder={i18n.t('Enter Your Password')}
+												inputClassName="my-0.5 w-full text-sm outline-hidden bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-600"
+												placeholder={$i18n.t('Enter Your Password')}
 												autocomplete={mode === 'signup' ? 'new-password' : 'current-password'}
 												name="password"
 												screenReader={true}
 												required
-												aria-required="true"
 											/>
 										</div>
 
@@ -390,14 +387,14 @@
 												<label
 													for="confirm-password"
 													class="text-sm font-medium text-left mb-1 block"
-													>{i18n.t('Confirm Password')}</label
+													>{$i18n.t('Confirm Password')}</label
 												>
 												<SensitiveInput
 													bind:value={confirmPassword}
 													type="password"
 													id="confirm-password"
-													class="my-0.5 w-full text-sm outline-hidden bg-transparent"
-													placeholder={i18n.t('Confirm Your Password')}
+													inputClassName="my-0.5 w-full text-sm outline-hidden bg-transparent"
+													placeholder={$i18n.t('Confirm Your Password')}
 													autocomplete="new-password"
 													name="confirm-password"
 													required
@@ -413,7 +410,7 @@
 												class="bg-gray-700/5 hover:bg-gray-700/10 dark:bg-gray-100/5 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition w-full rounded-full font-medium text-sm py-2.5"
 												type="submit"
 											>
-												{i18n.t('Authenticate')}
+												{$i18n.t('Authenticate')}
 											</button>
 										{:else}
 											<button
@@ -421,17 +418,17 @@
 												type="submit"
 											>
 												{mode === 'signin'
-													? i18n.t('Sign in')
+													? $i18n.t('Sign in')
 													: ($config as ConfigWithMetadata)?.features?.onboarding
-														? i18n.t('Create Admin Account')
-														: i18n.t('Create Account')}
+														? $i18n.t('Create Admin Account')
+														: $i18n.t('Create Account')}
 											</button>
 
 											{#if ($config as ConfigWithMetadata)?.features.enable_signup && !($config as ConfigWithMetadata)?.features?.onboarding}
 												<div class=" mt-4 text-sm text-center">
 													{mode === 'signin'
-														? i18n.t("Don't have an account?")
-														: i18n.t('Already have an account?')}
+														? $i18n.t("Don't have an account?")
+														: $i18n.t('Already have an account?')}
 
 													<button
 														class=" font-medium underline"
@@ -444,7 +441,7 @@
 															}
 														}}
 													>
-														{mode === 'signin' ? i18n.t('Sign up') : i18n.t('Sign in')}
+														{mode === 'signin' ? $i18n.t('Sign up') : $i18n.t('Sign in')}
 													</button>
 												</div>
 											{/if}
@@ -459,7 +456,7 @@
 									{#if ($config as ConfigWithMetadata)?.features?.enable_login_form || ($config as ConfigWithMetadata)?.features?.enable_ldap || form}
 										<span
 											class="px-3 text-sm font-medium text-gray-900 dark:text-white bg-transparent"
-											>{i18n.t('or')}</span
+											>{$i18n.t('or')}</span
 										>
 									{/if}
 
@@ -493,7 +490,7 @@
 													d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
 												/><path fill="none" d="M0 0h48v48H0z" />
 											</svg>
-											<span>{i18n.t('Continue with {{provider}}', { provider: 'Google' })}</span>
+											<span>{$i18n.t('Continue with {{provider}}', { provider: 'Google' })}</span>
 										</button>
 									{/if}
 									{#if $config?.oauth?.providers?.microsoft}
@@ -523,7 +520,8 @@
 													fill="#ffb900"
 												/>
 											</svg>
-											<span>{i18n.t('Continue with {{provider}}', { provider: 'Microsoft' })}</span>
+											<span>{$i18n.t('Continue with {{provider}}', { provider: 'Microsoft' })}</span
+											>
 										</button>
 									{/if}
 									{#if $config?.oauth?.providers?.github}
@@ -544,7 +542,7 @@
 													d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.92 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57C20.565 21.795 24 17.31 24 12c0-6.63-5.37-12-12-12z"
 												/>
 											</svg>
-											<span>{i18n.t('Continue with {{provider}}', { provider: 'GitHub' })}</span>
+											<span>{$i18n.t('Continue with {{provider}}', { provider: 'GitHub' })}</span>
 										</button>
 									{/if}
 									{#if $config?.oauth?.providers?.oidc}
@@ -571,7 +569,7 @@
 											</svg>
 
 											<span
-												>{i18n.t('Continue with {{provider}}', {
+												>{$i18n.t('Continue with {{provider}}', {
 													provider: $config?.oauth?.providers?.oidc ?? 'SSO'
 												})}</span
 											>
@@ -584,7 +582,7 @@
 												window.location.href = `${WEBUI_BASE_URL}/oauth/feishu/login`;
 											}}
 										>
-											<span>{i18n.t('Continue with {{provider}}', { provider: 'Feishu' })}</span>
+											<span>{$i18n.t('Continue with {{provider}}', { provider: 'Feishu' })}</span>
 										</button>
 									{/if}
 								</div>
@@ -603,8 +601,8 @@
 									>
 										<span
 											>{mode === 'ldap'
-												? i18n.t('Continue with Email')
-												: i18n.t('Continue with LDAP')}</span
+												? $i18n.t('Continue with Email')
+												: $i18n.t('Continue with LDAP')}</span
 										>
 									</button>
 								</div>
@@ -642,8 +640,6 @@
 	{/if}
 </div>
 
-
-
 <OnBoarding
 	bind:show={onboarding}
 	getStartedHandler={() => {
@@ -669,7 +665,7 @@
 							class="flex items-center justify-center gap-3 text-xl sm:text-2xl text-center font-medium dark:text-gray-200"
 						>
 							<div>
-								{i18n.t('Signing in to {{WEBUI_NAME}}', { WEBUI_NAME: WEBUI_NAME })}
+								{$i18n.t('Signing in to {{WEBUI_NAME}}', { WEBUI_NAME: WEBUI_NAME })}
 							</div>
 
 							<div>
@@ -701,20 +697,20 @@
 								<div class="mb-1">
 									<div class=" text-2xl font-medium">
 										{#if $config?.onboarding ?? false}
-											{i18n.t(`Get started with {{WEBUI_NAME}}`, { WEBUI_NAME: WEBUI_NAME })}
+											{$i18n.t(`Get started with {{WEBUI_NAME}}`, { WEBUI_NAME: WEBUI_NAME })}
 										{:else if mode === 'ldap'}
-											{i18n.t(`Sign in to {{WEBUI_NAME}} with LDAP`, { WEBUI_NAME: WEBUI_NAME })}
+											{$i18n.t(`Sign in to {{WEBUI_NAME}} with LDAP`, { WEBUI_NAME: WEBUI_NAME })}
 										{:else if mode === 'signin'}
-											{i18n.t(`Sign in to {{WEBUI_NAME}}`, { WEBUI_NAME: WEBUI_NAME })}
+											{$i18n.t(`Sign in to {{WEBUI_NAME}}`, { WEBUI_NAME: WEBUI_NAME })}
 										{:else}
-											{i18n.t(`Sign up to {{WEBUI_NAME}}`, { WEBUI_NAME: WEBUI_NAME })}
+											{$i18n.t(`Sign up to {{WEBUI_NAME}}`, { WEBUI_NAME: WEBUI_NAME })}
 										{/if}
 									</div>
 
 									{#if $config?.onboarding ?? false}
 										<div class="mt-1 text-xs font-medium text-gray-600 dark:text-gray-500">
 											ⓘ {WEBUI_NAME}
-											{i18n.t(
+											{$i18n.t(
 												'does not make any external connections, and your data stays securely on your locally hosted server.'
 											)}
 										</div>
@@ -726,7 +722,7 @@
 										{#if mode === 'signup'}
 											<div class="mb-2">
 												<label for="name" class="text-sm font-medium text-left mb-1 block"
-													>{i18n.t('Name')}</label
+													>{$i18n.t('Name')}</label
 												>
 												<input
 													bind:value={name}
@@ -734,7 +730,7 @@
 													id="name"
 													class="my-0.5 w-full text-sm outline-hidden bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-600"
 													autocomplete="name"
-													placeholder={i18n.t('Enter Your Full Name')}
+													placeholder={$i18n.t('Enter Your Full Name')}
 													required
 												/>
 											</div>
@@ -743,7 +739,7 @@
 										{#if mode === 'ldap'}
 											<div class="mb-2">
 												<label for="username" class="text-sm font-medium text-left mb-1 block"
-													>{i18n.t('Username')}</label
+													>{$i18n.t('Username')}</label
 												>
 												<input
 													bind:value={ldapUsername}
@@ -752,14 +748,14 @@
 													autocomplete="username"
 													name="username"
 													id="username"
-													placeholder={i18n.t('Enter Your Username')}
+													placeholder={$i18n.t('Enter Your Username')}
 													required
 												/>
 											</div>
 										{:else}
 											<div class="mb-2">
 												<label for="email" class="text-sm font-medium text-left mb-1 block"
-													>{i18n.t('Email')}</label
+													>{$i18n.t('Email')}</label
 												>
 												<input
 													bind:value={email}
@@ -768,7 +764,7 @@
 													class="my-0.5 w-full text-sm outline-hidden bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-600"
 													autocomplete="email"
 													name="email"
-													placeholder={i18n.t('Enter Your Email')}
+													placeholder={$i18n.t('Enter Your Email')}
 													required
 												/>
 											</div>
@@ -776,19 +772,18 @@
 
 										<div>
 											<label for="password" class="text-sm font-medium text-left mb-1 block"
-												>{i18n.t('Password')}</label
+												>{$i18n.t('Password')}</label
 											>
 											<SensitiveInput
 												bind:value={password}
 												type="password"
 												id="password"
-												class="my-0.5 w-full text-sm outline-hidden bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-600"
-												placeholder={i18n.t('Enter Your Password')}
+												inputClassName="my-0.5 w-full text-sm outline-hidden bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-600"
+												placeholder={$i18n.t('Enter Your Password')}
 												autocomplete={mode === 'signup' ? 'new-password' : 'current-password'}
 												name="password"
 												screenReader={true}
 												required
-												aria-required="true"
 											/>
 										</div>
 
@@ -797,14 +792,14 @@
 												<label
 													for="confirm-password"
 													class="text-sm font-medium text-left mb-1 block"
-													>{i18n.t('Confirm Password')}</label
+													>{$i18n.t('Confirm Password')}</label
 												>
 												<SensitiveInput
 													bind:value={confirmPassword}
 													type="password"
 													id="confirm-password"
-													class="my-0.5 w-full text-sm outline-hidden bg-transparent"
-													placeholder={i18n.t('Confirm Your Password')}
+													inputClassName="my-0.5 w-full text-sm outline-hidden bg-transparent"
+													placeholder={$i18n.t('Confirm Your Password')}
 													autocomplete="new-password"
 													name="confirm-password"
 													required
@@ -820,7 +815,7 @@
 												class="bg-gray-700/5 hover:bg-gray-700/10 dark:bg-gray-100/5 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition w-full rounded-full font-medium text-sm py-2.5"
 												type="submit"
 											>
-												{i18n.t('Authenticate')}
+												{$i18n.t('Authenticate')}
 											</button>
 										{:else}
 											<button
@@ -828,17 +823,17 @@
 												type="submit"
 											>
 												{mode === 'signin'
-													? i18n.t('Sign in')
+													? $i18n.t('Sign in')
 													: ($config as ConfigWithMetadata)?.features?.onboarding
-														? i18n.t('Create Admin Account')
-														: i18n.t('Create Account')}
+														? $i18n.t('Create Admin Account')
+														: $i18n.t('Create Account')}
 											</button>
 
 											{#if ($config as ConfigWithMetadata)?.features.enable_signup && !($config as ConfigWithMetadata)?.features?.onboarding}
 												<div class=" mt-4 text-sm text-center">
 													{mode === 'signin'
-														? i18n.t("Don't have an account?")
-														: i18n.t('Already have an account?')}
+														? $i18n.t("Don't have an account?")
+														: $i18n.t('Already have an account?')}
 
 													<button
 														class=" font-medium underline"
@@ -851,7 +846,7 @@
 															}
 														}}
 													>
-														{mode === 'signin' ? i18n.t('Sign up') : i18n.t('Sign in')}
+														{mode === 'signin' ? $i18n.t('Sign up') : $i18n.t('Sign in')}
 													</button>
 												</div>
 											{/if}
@@ -866,7 +861,7 @@
 									{#if ($config as ConfigWithMetadata)?.features?.enable_login_form || ($config as ConfigWithMetadata)?.features?.enable_ldap || form}
 										<span
 											class="px-3 text-sm font-medium text-gray-900 dark:text-white bg-transparent"
-											>{i18n.t('or')}</span
+											>{$i18n.t('or')}</span
 										>
 									{/if}
 
@@ -900,7 +895,7 @@
 													d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
 												/><path fill="none" d="M0 0h48v48H0z" />
 											</svg>
-											<span>{i18n.t('Continue with {{provider}}', { provider: 'Google' })}</span>
+											<span>{$i18n.t('Continue with {{provider}}', { provider: 'Google' })}</span>
 										</button>
 									{/if}
 									{#if $config?.oauth?.providers?.microsoft}
@@ -930,7 +925,8 @@
 													fill="#ffb900"
 												/>
 											</svg>
-											<span>{i18n.t('Continue with {{provider}}', { provider: 'Microsoft' })}</span>
+											<span>{$i18n.t('Continue with {{provider}}', { provider: 'Microsoft' })}</span
+											>
 										</button>
 									{/if}
 									{#if $config?.oauth?.providers?.github}
@@ -951,7 +947,7 @@
 													d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.92 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57C20.565 21.795 24 17.31 24 12c0-6.63-5.37-12-12-12z"
 												/>
 											</svg>
-											<span>{i18n.t('Continue with {{provider}}', { provider: 'GitHub' })}</span>
+											<span>{$i18n.t('Continue with {{provider}}', { provider: 'GitHub' })}</span>
 										</button>
 									{/if}
 									{#if $config?.oauth?.providers?.oidc}
@@ -978,7 +974,7 @@
 											</svg>
 
 											<span
-												>{i18n.t('Continue with {{provider}}', {
+												>{$i18n.t('Continue with {{provider}}', {
 													provider: $config?.oauth?.providers?.oidc ?? 'SSO'
 												})}</span
 											>
@@ -991,7 +987,7 @@
 												window.location.href = `${WEBUI_BASE_URL}/oauth/feishu/login`;
 											}}
 										>
-											<span>{i18n.t('Continue with {{provider}}', { provider: 'Feishu' })}</span>
+											<span>{$i18n.t('Continue with {{provider}}', { provider: 'Feishu' })}</span>
 										</button>
 									{/if}
 								</div>
@@ -1010,8 +1006,8 @@
 									>
 										<span
 											>{mode === 'ldap'
-												? i18n.t('Continue with Email')
-												: i18n.t('Continue with LDAP')}</span
+												? $i18n.t('Continue with Email')
+												: $i18n.t('Continue with LDAP')}</span
 										>
 									</button>
 								</div>

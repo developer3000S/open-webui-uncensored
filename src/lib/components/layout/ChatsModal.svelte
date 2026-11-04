@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 
@@ -32,6 +32,7 @@
 
 	export let show: any = false;
 	export let title: any = 'Chats';
+	export let emptyPlaceholder: any = undefined;
 	export let shareUrl: any = false;
 	export let showUserInfo: any = false;
 	export let showSearch: any = true;
@@ -49,7 +50,7 @@
 	let selectedIdx = 0;
 	let showDeleteConfirmDialog = false;
 
-	export let onUpdate = () => {};
+	export let onUpdate: any = () => {};
 	export let onDelete: (id: string) => void = () => {};
 
 	export let loadHandler: null | Function = null;
@@ -104,7 +105,7 @@
 				{/if}
 			</div>
 			<button
-				aria-label={i18n.t('Close')}
+				aria-label={$i18n.t('Close')}
 				class="self-center"
 				on:click={() => {
 					show = false;
@@ -146,7 +147,7 @@
 						<input
 							class=" w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
 							bind:value={query}
-							placeholder={i18n.t('Search Chats')}
+							placeholder={$i18n.t('Search Chats')}
 							maxlength="500"
 						/>
 
@@ -174,18 +175,18 @@
 							<div class="flex text-xs font-medium mb-1.5">
 								{#if showUserInfo}
 									<div class="px-1.5 py-1 w-32">
-										{i18n.t('User')}
+										{$i18n.t('User')}
 									</div>
 								{/if}
 								<button
-									aria-label={i18n.t('Title')}
+									aria-label={$i18n.t('Title')}
 									class="px-1.5 py-1 cursor-pointer select-none {showUserInfo
 										? 'flex-1'
 										: 'basis-3/5'}"
 									on:click={() => setSortKey('title')}
 								>
 									<div class="flex gap-1.5 items-center">
-										{i18n.t('Title')}
+										{$i18n.t('Title')}
 
 										{#if orderBy === 'title'}
 											<span class="font-normal"
@@ -203,14 +204,14 @@
 									</div>
 								</button>
 								<button
-									aria-label={i18n.t('Updated at')}
+									aria-label={$i18n.t('Updated at')}
 									class="px-1.5 py-1 cursor-pointer select-none hidden sm:flex {showUserInfo
 										? 'w-28'
 										: 'sm:basis-2/5'} justify-end"
 									on:click={() => setSortKey('updated_at')}
 								>
 									<div class="flex gap-1.5 items-center">
-										{i18n.t('Updated at')}
+										{$i18n.t('Updated at')}
 
 										{#if orderBy === 'updated_at'}
 											<span class="font-normal"
@@ -234,7 +235,7 @@
 								<div
 									class="text-xs text-gray-500 dark:text-gray-400 text-center px-5 min-h-20 w-full h-full flex justify-center items-center"
 								>
-									{i18n.t('No results found')}
+									{$i18n.t('No results found')}
 								</div>
 							{/if}
 
@@ -245,24 +246,24 @@
 											? ''
 											: 'pt-5'} pb-2 px-2"
 									>
-										{i18n.t(chat.time_range)}
+										{$i18n.t(chat.time_range)}
 										<!-- localisation keys for time_range to be recognized from the i18next parser (so they don't get automatically removed):
-							{i18n.t('Today')}
-							{i18n.t('Yesterday')}
-							{i18n.t('Previous 7 days')}
-							{i18n.t('Previous 30 days')}
-							{i18n.t('January')}
-							{i18n.t('February')}
-							{i18n.t('March')}
-							{i18n.t('April')}
-							{i18n.t('May')}
-							{i18n.t('June')}
-							{i18n.t('July')}
-							{i18n.t('August')}
-							{i18n.t('September')}
-							{i18n.t('October')}
-							{i18n.t('November')}
-							{i18n.t('December')}
+							{$i18n.t('Today')}
+							{$i18n.t('Yesterday')}
+							{$i18n.t('Previous 7 days')}
+							{$i18n.t('Previous 30 days')}
+							{$i18n.t('January')}
+							{$i18n.t('February')}
+							{$i18n.t('March')}
+							{$i18n.t('April')}
+							{$i18n.t('May')}
+							{$i18n.t('June')}
+							{$i18n.t('July')}
+							{$i18n.t('August')}
+							{$i18n.t('September')}
+							{$i18n.t('October')}
+							{$i18n.t('November')}
+							{$i18n.t('December')}
 							-->
 									</div>
 								{/if}
@@ -295,7 +296,7 @@
 
 									<div class="{showUserInfo ? 'w-28' : 'basis-2/5'} flex items-center justify-end">
 										<div class="hidden sm:flex text-gray-500 dark:text-gray-400 text-xs">
-											{i18n.t(
+											{$i18n.t(
 												dayjs(chat?.updated_at * 1000).calendar(null, {
 													sameDay: '[Today]',
 													nextDay: '[Tomorrow]',
@@ -310,9 +311,9 @@
 										{#if !readOnly}
 											<div class="flex justify-end pl-2.5 text-gray-600 dark:text-gray-300">
 												{#if unarchiveHandler}
-													<Tooltip content={i18n.t('Unarchive Chat')}>
+													<Tooltip content={$i18n.t('Unarchive Chat')}>
 														<button
-															aria-label={i18n.t('Unarchive Chat')}
+															aria-label={$i18n.t('Unarchive Chat')}
 															class="self-center w-fit px-1 text-sm rounded-xl"
 															on:click={(e: any) => {
 																e.stopImmediatePropagation();
@@ -339,7 +340,7 @@
 												{/if}
 
 												{#if unshareHandler && chat.share_id}
-													<Tooltip content={i18n.t('Copy Share Link')}>
+													<Tooltip content={$i18n.t('Copy Share Link')}>
 														<button
 															class="self-center w-fit px-1 text-sm rounded-xl"
 															on:click={async (e: any) => {
@@ -347,18 +348,18 @@
 																e.stopPropagation();
 																const shareUrl = `${window.location.origin}/s/${chat.share_id}`;
 																await navigator.clipboard.writeText(shareUrl);
-																toast.success(i18n.t('Share link copied to clipboard.'));
+																toast.success($i18n.t('Share link copied to clipboard.'));
 															}}
 														>
-															<Clipboard class="size-4" strokeWidth="1.5" />
+															<Clipboard className="size-4" strokeWidth="1.5" />
 														</button>
 													</Tooltip>
 												{/if}
 
 												<Tooltip
 													content={unshareHandler
-														? i18n.t('Unshare Chat')
-														: i18n.t('Delete Chat')}
+														? $i18n.t('Unshare Chat')
+														: $i18n.t('Delete Chat')}
 												>
 													<button
 														class="self-center w-fit px-1 text-sm rounded-xl"
@@ -411,7 +412,7 @@
 										class="w-full flex justify-center py-1 text-xs animate-pulse items-center gap-2"
 									>
 										<Spinner className=" size-4" />
-										<div class=" ">{i18n.t('Loading...')}</div>
+										<div class=" ">{$i18n.t('Loading...')}</div>
 									</div>
 								</Loader>
 							{/if}
@@ -439,9 +440,9 @@
 											class="text-xs text-gray-700 uppercase bg-transparent dark:text-gray-200 border-b-1 border-gray-50 dark:border-gray-850/30"
 										>
 											<tr>
-												<th scope="col" class="px-3 py-2"> {i18n.t('Name')} </th>
+												<th scope="col" class="px-3 py-2"> {$i18n.t('Name')} </th>
 												<th scope="col" class="px-3 py-2 hidden md:flex">
-													{i18n.t('Created At')}
+													{$i18n.t('Created At')}
 												</th>
 												<th scope="col" class="px-3 py-2 text-right" />
 											</tr>
@@ -469,7 +470,7 @@
 													<td class="px-3 py-1 text-right">
 														<div class="flex justify-end w-full">
 															{#if unarchiveHandler}
-																<Tooltip content={i18n.t('Unarchive Chat')}>
+																<Tooltip content={$i18n.t('Unarchive Chat')}>
 																	<button
 																		class="self-center w-fit text-sm px-2 py-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 																		on:click={async () => {
@@ -494,7 +495,7 @@
 																</Tooltip>
 															{/if}
 
-															<Tooltip content={i18n.t('Delete Chat')}>
+															<Tooltip content={$i18n.t('Delete Chat')}>
 																<button
 																	class="self-center w-fit text-sm px-2 py-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 																	on:click={async () => {
@@ -530,7 +531,7 @@
 						</div>
 					{:else}
 						<div class="text-left text-sm w-full mb-8">
-							{emptyPlaceholder || i18n.t('No chats found.')}
+							{emptyPlaceholder || $i18n.t('No chats found.')}
 						</div>
 					{/if}
 				{:else}
@@ -569,7 +570,7 @@
 				{/if}
 			</div>
 			<button
-				aria-label={i18n.t('Close')}
+				aria-label={$i18n.t('Close')}
 				class="self-center"
 				on:click={() => {
 					show = false;
@@ -611,7 +612,7 @@
 						<input
 							class=" w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
 							bind:value={query}
-							placeholder={i18n.t('Search Chats')}
+							placeholder={$i18n.t('Search Chats')}
 							maxlength="500"
 						/>
 
@@ -639,18 +640,18 @@
 							<div class="flex text-xs font-medium mb-1.5">
 								{#if showUserInfo}
 									<div class="px-1.5 py-1 w-32">
-										{i18n.t('User')}
+										{$i18n.t('User')}
 									</div>
 								{/if}
 								<button
-									aria-label={i18n.t('Title')}
+									aria-label={$i18n.t('Title')}
 									class="px-1.5 py-1 cursor-pointer select-none {showUserInfo
 										? 'flex-1'
 										: 'basis-3/5'}"
 									on:click={() => setSortKey('title')}
 								>
 									<div class="flex gap-1.5 items-center">
-										{i18n.t('Title')}
+										{$i18n.t('Title')}
 
 										{#if orderBy === 'title'}
 											<span class="font-normal"
@@ -668,14 +669,14 @@
 									</div>
 								</button>
 								<button
-									aria-label={i18n.t('Updated at')}
+									aria-label={$i18n.t('Updated at')}
 									class="px-1.5 py-1 cursor-pointer select-none hidden sm:flex {showUserInfo
 										? 'w-28'
 										: 'sm:basis-2/5'} justify-end"
 									on:click={() => setSortKey('updated_at')}
 								>
 									<div class="flex gap-1.5 items-center">
-										{i18n.t('Updated at')}
+										{$i18n.t('Updated at')}
 
 										{#if orderBy === 'updated_at'}
 											<span class="font-normal"
@@ -699,7 +700,7 @@
 								<div
 									class="text-xs text-gray-500 dark:text-gray-400 text-center px-5 min-h-20 w-full h-full flex justify-center items-center"
 								>
-									{i18n.t('No results found')}
+									{$i18n.t('No results found')}
 								</div>
 							{/if}
 
@@ -710,24 +711,24 @@
 											? ''
 											: 'pt-5'} pb-2 px-2"
 									>
-										{i18n.t(chat.time_range)}
+										{$i18n.t(chat.time_range)}
 										<!-- localisation keys for time_range to be recognized from the i18next parser (so they don't get automatically removed):
-							{i18n.t('Today')}
-							{i18n.t('Yesterday')}
-							{i18n.t('Previous 7 days')}
-							{i18n.t('Previous 30 days')}
-							{i18n.t('January')}
-							{i18n.t('February')}
-							{i18n.t('March')}
-							{i18n.t('April')}
-							{i18n.t('May')}
-							{i18n.t('June')}
-							{i18n.t('July')}
-							{i18n.t('August')}
-							{i18n.t('September')}
-							{i18n.t('October')}
-							{i18n.t('November')}
-							{i18n.t('December')}
+							{$i18n.t('Today')}
+							{$i18n.t('Yesterday')}
+							{$i18n.t('Previous 7 days')}
+							{$i18n.t('Previous 30 days')}
+							{$i18n.t('January')}
+							{$i18n.t('February')}
+							{$i18n.t('March')}
+							{$i18n.t('April')}
+							{$i18n.t('May')}
+							{$i18n.t('June')}
+							{$i18n.t('July')}
+							{$i18n.t('August')}
+							{$i18n.t('September')}
+							{$i18n.t('October')}
+							{$i18n.t('November')}
+							{$i18n.t('December')}
 							-->
 									</div>
 								{/if}
@@ -760,7 +761,7 @@
 
 									<div class="{showUserInfo ? 'w-28' : 'basis-2/5'} flex items-center justify-end">
 										<div class="hidden sm:flex text-gray-500 dark:text-gray-400 text-xs">
-											{i18n.t(
+											{$i18n.t(
 												dayjs(chat?.updated_at * 1000).calendar(null, {
 													sameDay: '[Today]',
 													nextDay: '[Tomorrow]',
@@ -775,9 +776,9 @@
 										{#if !readOnly}
 											<div class="flex justify-end pl-2.5 text-gray-600 dark:text-gray-300">
 												{#if unarchiveHandler}
-													<Tooltip content={i18n.t('Unarchive Chat')}>
+													<Tooltip content={$i18n.t('Unarchive Chat')}>
 														<button
-															aria-label={i18n.t('Unarchive Chat')}
+															aria-label={$i18n.t('Unarchive Chat')}
 															class="self-center w-fit px-1 text-sm rounded-xl"
 															on:click={(e: any) => {
 																e.stopImmediatePropagation();
@@ -804,7 +805,7 @@
 												{/if}
 
 												{#if unshareHandler && chat.share_id}
-													<Tooltip content={i18n.t('Copy Share Link')}>
+													<Tooltip content={$i18n.t('Copy Share Link')}>
 														<button
 															class="self-center w-fit px-1 text-sm rounded-xl"
 															on:click={async (e: any) => {
@@ -812,18 +813,18 @@
 																e.stopPropagation();
 																const shareUrl = `${window.location.origin}/s/${chat.share_id}`;
 																await navigator.clipboard.writeText(shareUrl);
-																toast.success(i18n.t('Share link copied to clipboard.'));
+																toast.success($i18n.t('Share link copied to clipboard.'));
 															}}
 														>
-															<Clipboard class="size-4" strokeWidth="1.5" />
+															<Clipboard className="size-4" strokeWidth="1.5" />
 														</button>
 													</Tooltip>
 												{/if}
 
 												<Tooltip
 													content={unshareHandler
-														? i18n.t('Unshare Chat')
-														: i18n.t('Delete Chat')}
+														? $i18n.t('Unshare Chat')
+														: $i18n.t('Delete Chat')}
 												>
 													<button
 														class="self-center w-fit px-1 text-sm rounded-xl"
@@ -876,7 +877,7 @@
 										class="w-full flex justify-center py-1 text-xs animate-pulse items-center gap-2"
 									>
 										<Spinner className=" size-4" />
-										<div class=" ">{i18n.t('Loading...')}</div>
+										<div class=" ">{$i18n.t('Loading...')}</div>
 									</div>
 								</Loader>
 							{/if}
@@ -904,9 +905,9 @@
 											class="text-xs text-gray-700 uppercase bg-transparent dark:text-gray-200 border-b-1 border-gray-50 dark:border-gray-850/30"
 										>
 											<tr>
-												<th scope="col" class="px-3 py-2"> {i18n.t('Name')} </th>
+												<th scope="col" class="px-3 py-2"> {$i18n.t('Name')} </th>
 												<th scope="col" class="px-3 py-2 hidden md:flex">
-													{i18n.t('Created At')}
+													{$i18n.t('Created At')}
 												</th>
 												<th scope="col" class="px-3 py-2 text-right" />
 											</tr>
@@ -934,7 +935,7 @@
 													<td class="px-3 py-1 text-right">
 														<div class="flex justify-end w-full">
 															{#if unarchiveHandler}
-																<Tooltip content={i18n.t('Unarchive Chat')}>
+																<Tooltip content={$i18n.t('Unarchive Chat')}>
 																	<button
 																		class="self-center w-fit text-sm px-2 py-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 																		on:click={async () => {
@@ -959,7 +960,7 @@
 																</Tooltip>
 															{/if}
 
-															<Tooltip content={i18n.t('Delete Chat')}>
+															<Tooltip content={$i18n.t('Delete Chat')}>
 																<button
 																	class="self-center w-fit text-sm px-2 py-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 																	on:click={async () => {
@@ -995,7 +996,7 @@
 						</div>
 					{:else}
 						<div class="text-left text-sm w-full mb-8">
-							{emptyPlaceholder || i18n.t('No chats found.')}
+							{emptyPlaceholder || $i18n.t('No chats found.')}
 						</div>
 					{/if}
 				{:else}

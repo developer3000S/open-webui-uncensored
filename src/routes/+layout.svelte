@@ -1,11 +1,10 @@
-<script lang="ts">
-
+<script>
 	import { io } from 'socket.io-client';
 	import { spring } from 'svelte/motion';
 	import { createPyodideWorker } from '$lib/pyodide/createPyodideWorker';
 	import { Toaster, toast } from 'svelte-sonner';
 
-	const loadingProgress = spring(0, {
+	let loadingProgress = spring(0, {
 		stiffness: 0.05
 	});
 
@@ -29,6 +28,8 @@
 		isLastActiveTab,
 		isApp,
 		appInfo,
+		models,
+		appData,
 		toolServers,
 		playingNotificationSound,
 		channels,
@@ -42,12 +43,13 @@
 	} from '$lib/stores';
 	import { getFileContentById } from '$lib/apis/files';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import { beforeNavigate } from '$app/navigation';
+	import { updated } from '$app/state';
 
 	import i18n, { initI18n, getLanguages, changeLanguage } from '$lib/i18n';
 
-	let { children } = $props();
-
+	import '../tailwind.css';
 	import '../app.css';
 	import 'tippy.js/dist/tippy.css';
 
@@ -97,7 +99,7 @@
 
 	// handle frontend updates (https://svelte.dev/docs/kit/configuration#version)
 	beforeNavigate(async ({ willUnload, to }) => {
-		if (pages.updated.current && !willUnload && to?.url) {
+		if (updated.current && !willUnload && to?.url) {
 			await unregisterServiceWorkers();
 			location.href = to.url.href;
 		}
@@ -107,23 +109,23 @@
 
 	const bc = new BroadcastChannel('active-tab-channel');
 
-	let loaded = $state(false);
-	let tokenTimer: any = null;
+	let loaded = false;
+	let tokenTimer = null;
 	let isAuthRedirectInProgress = false;
 
-	let showRefresh = $state(false);
+	let showRefresh = false;
 
-	let showSyncStatsModal = $state(false);
-	let syncStatsEventData = $state(null);
+	let showSyncStatsModal = false;
+	let syncStatsEventData = null;
 
-	let heartbeatInterval: any = null;
-	let disconnectToastTimer: any = null;
+	let heartbeatInterval = null;
+	let disconnectToastTimer = null;
 	let disconnectWarningShown = false;
 
 	const BREAKPOINT = 768;
 	const DISCONNECT_TOAST_DELAY_MS = 2000;
 
-	const setupSocket = async (enableWebsocket: any) => {
+	const setupSocket = async (enableWebsocket) => {
 		const _socket = io(`${WEBUI_BASE_URL}` || undefined, {
 			reconnection: true,
 			reconnectionDelay: 1000,
@@ -154,7 +156,7 @@
 				socketConnected.set(true);
 				// Only show "Reconnected" if the user actually saw the disconnect warning
 				if (disconnectWarningShown) {
-					toast.success(i18n.t('Reconnected'));
+					toast.success($i18n.t('Reconnected'));
 					disconnectWarningShown = false;
 				}
 			}
@@ -224,7 +226,7 @@
 			disconnectToastTimer = setTimeout(() => {
 				disconnectToastTimer = null;
 				disconnectWarningShown = true;
-				toast.warning(i18n.t('Connection lost. Reconnecting...'));
+				toast.warning($i18n.t('Connection lost. Reconnecting...'));
 			}, DISCONNECT_TOAST_DELAY_MS);
 
 			if (heartbeatInterval) {
@@ -251,10 +253,10 @@
 		return worker;
 	};
 
-	const executePythonAsWorker = async (id: any,  code: any,  cb: any, files: any = []) => {
-		let result: any = null;
-		let stdout: any = null;
-		let stderr: any = null;
+	const executePythonAsWorker = async (id, code, cb, files = []) => {
+		let result = null;
+		let stdout = null;
+		let stderr = null;
 
 		let executing = true;
 		let packages = [
@@ -276,7 +278,7 @@
 		const worker = getOrCreateWorker();
 
 		// Fetch file content from the server and prepare for the worker
-		let filePayloads: any[] = [];
+		let filePayloads = [];
 		if (files && files.length > 0) {
 			for (const file of files) {
 				try {
@@ -288,7 +290,7 @@
 							filePayloads.push({ name: fileName, data: content });
 						}
 					}
-				} catch (e: any) {
+				} catch (e) {
 					console.error('Failed to fetch file for Pyodide:', e);
 				}
 			}
@@ -330,7 +332,7 @@
 		}, 60000);
 
 		// Use addEventListener so multiple concurrent executions don't clobber each other
-		const onMessage = (event: any) => {
+		const onMessage = (event) => {
 			const { id: eventId, ...data } = event.data;
 			// Only handle responses for this execution ID
 			if (eventId !== id) return;
@@ -364,7 +366,7 @@
 			executing = false;
 		};
 
-		const onError = (event: any) => {
+		const onError = (event) => {
 			console.log('pyodideWorker.onerror', event);
 			clearTimeout(timeoutId);
 			worker.removeEventListener('message', onMessage);
@@ -391,7 +393,7 @@
 		worker.addEventListener('error', onError);
 	};
 
-	const resolveToolServer = (serverUrl: any) => {
+	const resolveToolServer = (serverUrl) => {
 		let toolServer = $settings?.toolServers?.find((server) => server.url === serverUrl);
 		if (!toolServer) {
 			const terminalServer = ($settings?.terminalServers ?? []).find(
@@ -411,7 +413,7 @@
 			$toolServers?.find((server) => server.url === serverUrl) ??
 			$terminalServers?.find((server) => server.url === serverUrl);
 
-		let token: any = null;
+		let token = null;
 		if (toolServer) {
 			const auth_type = toolServer?.auth_type ?? 'bearer';
 			if (auth_type === 'bearer') token = toolServer?.key;
@@ -421,7 +423,7 @@
 		return { toolServer, toolServerData, token };
 	};
 
-	const executeTool = async (data: any, cb: any, chatId: any) => {
+	const executeTool = async (data, cb, chatId) => {
 		const { toolServer, toolServerData, token } = resolveToolServer(data.server?.url);
 
 		console.log('executeTool', data, toolServer);
@@ -439,13 +441,13 @@
 			console.log('executeToolServer', res);
 
 			if (data?.name === 'display_file' && data?.params?.path) {
-				if (res?.exists !== false) {
+				if (res?.['exists'] !== false) {
 					displayFileHandler(data.params.path, { showControls, showFileNavPath });
 				}
 			}
 
 			if (['write_file'].includes(data?.name) && data?.params?.path) {
-				showFileNavDir.set(res?.path ?? data.params.path);
+				showFileNavDir.set(res?.['path'] ?? data.params.path);
 			}
 
 			if (cb) {
@@ -458,8 +460,8 @@
 		}
 	};
 
-	const chatEventHandler = async (event: any, cb: any) => {
-		const chat = pages.url.pathname.includes(`/c/${event.chat_id}`);
+	const chatEventHandler = async (event, cb) => {
+		const chat = $page.url.pathname.includes(`/c/${event.chat_id}`);
 
 		// Skip events from temporary chats that are not the current chat.
 		// This prevents notifications from being sent to other tabs/devices
@@ -487,10 +489,10 @@
 		if (type === 'calendar:alert' && data) {
 			const timeStr =
 				data.minutes_until <= 0
-					? i18n.t('Starting now')
+					? $i18n.t('Starting now')
 					: data.minutes_until === 1
-						? i18n.t('Starting in 1 minute')
-						: i18n.t('Starting in {{count}} minutes', { count: data.minutes_until });
+						? $i18n.t('Starting in 1 minute')
+						: $i18n.t('Starting in {{count}} minutes', { count: data.minutes_until });
 
 			toast.custom(NotificationToast, {
 				componentProps: {
@@ -619,7 +621,7 @@
 		if ((event.chat_id !== $chatId && !$temporaryChatEnabled) || isInBackground) {
 			if (type === 'chat:completion') {
 				const { done, content, output, title } = data;
-				const displayTitle = title || i18n.t('New Chat');
+				const displayTitle = title || $i18n.t('New Chat');
 				const contentPreview = cleanText(removeAllDetails(getOutputText(output) || content || ''));
 
 				if (done) {
@@ -666,7 +668,7 @@
 		}
 	};
 
-	const channelEventHandler = async (event: any) => {
+	const channelEventHandler = async (event) => {
 		console.log('channelEventHandler', event);
 		if (event.data?.type === 'typing') {
 			return;
@@ -674,7 +676,7 @@
 
 		// handle channel created event
 		if (event.data?.type === 'channel:created') {
-			const res = await getChannels(localStorage.token).catch(async (error: any)=> {
+			const res = await getChannels(localStorage.token).catch(async (error) => {
 				return null;
 			});
 
@@ -691,7 +693,7 @@
 		}
 
 		// check url path
-		const channel = pages.url.pathname.includes(`/channels/${event.channel_id}`);
+		const channel = $page.url.pathname.includes(`/channels/${event.channel_id}`);
 
 		let isInBackground = document.visibilityState !== 'visible';
 		if (window.electronAPI) {
@@ -725,7 +727,7 @@
 						})
 					);
 				} else {
-					const res = await getChannels(localStorage.token).catch(async (error: any)=> {
+					const res = await getChannels(localStorage.token).catch(async (error) => {
 						return null;
 					});
 
@@ -769,7 +771,7 @@
 	};
 
 	const TOKEN_EXPIRY_BUFFER = 60; // seconds
-	const resolveFetchUrl = (input: any) => {
+	const resolveFetchUrl = (input) => {
 		if (input instanceof Request) {
 			return new URL(input.url, window.location.origin);
 		}
@@ -777,7 +779,7 @@
 		return new URL(input, window.location.origin);
 	};
 
-	const resolveFetchHeaders = (input: any, init: any) => {
+	const resolveFetchHeaders = (input, init) => {
 		if (init?.headers) {
 			return new Headers(init.headers);
 		}
@@ -789,7 +791,7 @@
 		return new Headers();
 	};
 
-	const isAuthenticatedBackendFetch = (input: any, init: any) => {
+	const isAuthenticatedBackendFetch = (input, init) => {
 		try {
 			const requestUrl = resolveFetchUrl(input);
 			const backendOrigin = new URL(WEBUI_BASE_URL || '/', window.location.origin).origin;
@@ -810,7 +812,7 @@
 		isAuthRedirectInProgress = true;
 		user.set(null);
 		localStorage.removeItem('token');
-		toast.error(i18n.t('Session expired. Please sign in again.'));
+		toast.error($i18n.t('Session expired. Please sign in again.'));
 
 		const currentPath = `${window.location.pathname}${window.location.search}`;
 		goto(`/auth?redirect=${encodeURIComponent(currentPath)}`).finally(() => {
@@ -818,7 +820,7 @@
 		});
 	};
 
-	const isCurrentSessionUnauthorized = async (originalFetch: any) => {
+	const isCurrentSessionUnauthorized = async (originalFetch) => {
 		return originalFetch(`${WEBUI_API_BASE_URL}/auths/`, {
 			method: 'GET',
 			headers: {
@@ -827,8 +829,8 @@
 			},
 			credentials: 'include'
 		})
-			.then(async (res)=> res.status === 401)
-			.catch(async ()=> false);
+			.then((res) => res.status === 401)
+			.catch(() => false);
 	};
 
 	const checkTokenExpiry = async () => {
@@ -849,7 +851,7 @@
 		}
 	};
 
-	const desktopEventHandler = async (event: any) => {
+	const desktopEventHandler = async (event) => {
 		// Events that don't require auth
 		if (event.type === 'page:reload') {
 			location.reload();
@@ -932,12 +934,12 @@
 					await removeOpenAIConnection(token, event.data.url);
 				}
 			}
-		} catch (e: any) {
+		} catch (e) {
 			console.error('Desktop connection update failed:', e);
 		}
 	};
 
-	const windowMessageEventHandler = async (event: any) => {
+	const windowMessageEventHandler = async (event) => {
 		if (
 			!['https://openwebui.com', 'https://www.openwebui.com', 'http://localhost:9999'].includes(
 				event.origin
@@ -952,9 +954,11 @@
 		}
 	};
 
+	// @ts-ignore - Svelte 5 onMount supports async callbacks at runtime
+	// @ts-ignore
 	onMount(async () => {
 		const originalFetch = window.fetch.bind(window);
-		window.fetch = async (input: any, init: any) => {
+		window.fetch = async (input, init) => {
 			const response = await originalFetch(input, init);
 
 			if (
@@ -973,7 +977,7 @@
 
 		let touchstartY = 0;
 
-		(el: any) => {
+		function isNavOrDescendant(el) {
 			const nav = document.querySelector('nav'); // change selector if needed
 			return nav && (el === nav || nav.contains(el));
 		}
@@ -1072,7 +1076,7 @@
 		};
 		window.addEventListener('resize', onResize);
 
-		user.subscribe((value: any)  => {
+		user.subscribe(async (value) => {
 			if (value) {
 				$socket?.off('events', chatEventHandler);
 				$socket?.off('events:channel', channelEventHandler);
@@ -1091,7 +1095,7 @@
 			}
 		});
 
-		let backendConfig: any = null;
+		let backendConfig = null;
 		try {
 			backendConfig = await getBackendConfig();
 			console.log('Backend config:', backendConfig);
@@ -1115,7 +1119,7 @@
 				: [navigator.language || navigator.userLanguage];
 			const lang = backendConfig?.default_locale
 				? backendConfig.default_locale
-				: bestMatchingLanguage(languages, browserLanguages, 'ru-RU');
+				: bestMatchingLanguage([...languages], [...browserLanguages], 'en-US');
 			changeLanguage(lang);
 			dayjs.locale(lang);
 		}
@@ -1133,7 +1137,7 @@
 
 				if (localStorage.token) {
 					// Get Session User Info
-					const sessionUser = await getSessionUser(localStorage.token).catch(async (error)=> {
+					const sessionUser = await getSessionUser(localStorage.token).catch((error) => {
 						toast.error(`${error}`);
 						return null;
 					});
@@ -1159,7 +1163,7 @@
 									type: 'token:update',
 									token: localStorage.token
 								})
-								.catch(async ()=> {});
+								.catch(() => {});
 						}
 					} else {
 						// Redirect Invalid Session User to /auth Page
@@ -1169,7 +1173,7 @@
 				} else {
 					// Don't redirect if we're already on the auth page
 					// Needed because we pass in tokens from OAuth logins via URL fragments
-					if (pages.url.pathname !== '/auth') {
+					if ($page.url.pathname !== '/auth') {
 						await goto(`/auth?redirect=${encodedUrl}`);
 					}
 				}
@@ -1185,7 +1189,7 @@
 			document.documentElement.classList.contains('her') &&
 			document.getElementById('progress-bar')
 		) {
-			const unsubscribeProgress = loadingProgress.subscribe((value) => {
+			loadingProgress.subscribe((value) => {
 				const progressBar = document.getElementById('progress-bar');
 
 				if (progressBar) {
@@ -1193,16 +1197,7 @@
 				}
 			});
 
-			// In Svelte 5, spring() returns a signal, not a legacy store:
-			// there is no `.set()` method. Animate the value to 100 instead.
-			loadingProgress.set(100, true);
-
-			// Wait until the spring animation settles at 100
-			while ($loadingProgress < 99.9) {
-				await new Promise((resolve) => setTimeout(resolve, 50));
-			}
-
-			unsubscribeProgress();
+			await loadingProgress.set(100);
 
 			document.getElementById('splash-screen')?.remove();
 
@@ -1223,7 +1218,7 @@
 		// Auto-show SyncStatsModal when opened with ?sync=true (from community)
 		if (
 			(window.opener ?? false) &&
-			pages.url.searchParams.get('sync') === 'true' &&
+			$page.url.searchParams.get('sync') === 'true' &&
 			($config?.features?.enable_community_sharing ?? false)
 		) {
 			showSyncStatsModal = true;
@@ -1245,7 +1240,7 @@
 </script>
 
 <svelte:head>
-			<title>{$WEBUI_NAME}</title>
+	<title>{$WEBUI_NAME}</title>
 	<link crossorigin="anonymous" rel="icon" href="{WEBUI_BASE_URL}/static/favicon.png" />
 
 	<meta name="apple-mobile-web-app-title" content={$WEBUI_NAME} />
@@ -1257,19 +1252,7 @@
 		href="/opensearch.xml"
 		crossorigin="use-credentials"
 	/>
-			<title>{$WEBUI_NAME}</title>
-	<link crossorigin="anonymous" rel="icon" href="{WEBUI_BASE_URL}/static/favicon.png" />
-
-	<meta name="apple-mobile-web-app-title" content={$WEBUI_NAME} />
-	<meta name="description" content={$WEBUI_NAME} />
-	<link
-		rel="search"
-		type="application/opensearchdescription+xml"
-		title={$WEBUI_NAME}
-		href="/opensearch.xml"
-		crossorigin="use-credentials"
-	/>
-		</svelte:head>
+</svelte:head>
 
 {#if showRefresh}
 	<div class=" py-5">
@@ -1283,56 +1266,11 @@
 			<AppSidebar />
 
 			<div class="w-full flex-1 max-w-[calc(100%-4.5rem)]">
-				{@render children()}
+				<slot />
 			</div>
 		</div>
 	{:else}
-		{@render children()}
-	{/if}
-{/if}
-
-{#if $config?.features.enable_community_sharing}
-	<SyncStatsModal bind:show={showSyncStatsModal} eventData={syncStatsEventData} />
-{/if}
-
-<Toaster
-	theme={$theme.includes('dark')
-		? 'dark'
-		: $theme === 'system'
-			? window.matchMedia('(prefers-color-scheme: dark)').matches
-				? 'dark'
-				: 'light'
-			: 'light'}
-	richColors
-	position="top-right"
-	closeButton
-	toastOptions={{
-		classes: {
-			closeButton:
-				'!bg-white/80 !text-gray-500 !border-gray-200 hover:!bg-gray-50 hover:!text-gray-700 dark:!bg-gray-850 dark:!text-gray-400 dark:!border-gray-700 dark:hover:!bg-gray-800 dark:hover:!text-gray-200'
-		}
-	}}
-/>
-
-
-
-{#if showRefresh}
-	<div class=" py-5">
-		<Spinner className="size-5" />
-	</div>
-{/if}
-
-{#if loaded}
-	{#if $isApp}
-		<div class="flex flex-row h-screen">
-			<AppSidebar />
-
-			<div class="w-full flex-1 max-w-[calc(100%-4.5rem)]">
-				{@render children()}
-			</div>
-		</div>
-	{:else}
-		{@render children()}
+		<slot />
 	{/if}
 {/if}
 

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import fileSaver from 'file-saver';
 	const { saveAs } = fileSaver;
@@ -32,14 +32,14 @@
 
 	import type { Writable } from 'svelte/store';
 
-	export let shareHandler: Function;
-	export let moveChatHandler: Function;
+	export let shareHandler: any;
+	export let moveChatHandler: any;
 
-	export let cloneChatHandler: Function;
-	export let archiveChatHandler: Function;
-	export let renameHandler: Function;
-	export let deleteHandler: Function;
-	export let onClose: Function;
+	export let cloneChatHandler: any;
+	export let archiveChatHandler: any;
+	export let renameHandler: any;
+	export let deleteHandler: any;
+	export let onClose: any;
 
 	export let chatId: any = '';
 	let show = false;
@@ -106,7 +106,7 @@
 					const virtualWidth = 800; // px, fixed width for cloned element
 
 					// Clone and style
-					const clonedElement = containerElement.cloneNode(true);
+					const clonedElement = containerElement.cloneNode(true) as HTMLElement;
 					clonedElement.classList.add('text-black');
 					clonedElement.classList.add('dark:text-white');
 					clonedElement.style.width = `${virtualWidth}px`;
@@ -282,6 +282,11 @@
 				regenerateResponse={() => {}}
 				messagesCount={null}
 				editCodeBlock={false}
+				selectedModels={[]}
+				showMessage={() => {}}
+				atSelectedModel={null}
+				mergeResponses={() => {}}
+				chatActionHandler={() => {}}
 			/>
 		</div>
 	</div>
@@ -295,7 +300,7 @@
 		}
 	}}
 >
-	<Tooltip content={i18n.t('More')}>
+	<Tooltip content={$i18n.t('More')}>
 		<slot />
 	</Tooltip>
 
@@ -312,7 +317,7 @@
 					}}
 				>
 					<Share strokeWidth="1.5" />
-					<div class="flex items-center">{i18n.t('Share')}</div>
+					<div class="flex items-center">{$i18n.t('Share')}</div>
 				</button>
 			{/if}
 
@@ -326,7 +331,7 @@
 						class="flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl w-full"
 					>
 						<Download strokeWidth="1.5" />
-						<div class="flex items-center">{i18n.t('Download')}</div>
+						<div class="flex items-center">{$i18n.t('Download')}</div>
 					</button>
 
 					<button
@@ -336,7 +341,7 @@
 							downloadJSONExport();
 						}}
 					>
-						<div class="flex items-center line-clamp-1">{i18n.t('Export chat (.json)')}</div>
+						<div class="flex items-center line-clamp-1">{$i18n.t('Export chat (.json)')}</div>
 					</button>
 
 					<button
@@ -346,7 +351,7 @@
 							downloadTxt();
 						}}
 					>
-						<div class="flex items-center line-clamp-1">{i18n.t('Plain text (.txt)')}</div>
+						<div class="flex items-center line-clamp-1">{$i18n.t('Plain text (.txt)')}</div>
 					</button>
 
 					<button
@@ -356,7 +361,7 @@
 							downloadPdf();
 						}}
 					>
-						<div class="flex items-center line-clamp-1">{i18n.t('PDF document (.pdf)')}</div>
+						<div class="flex items-center line-clamp-1">{$i18n.t('PDF document (.pdf)')}</div>
 					</button>
 				</DropdownSub>
 			{/if}
@@ -370,7 +375,7 @@
 				}}
 			>
 				<Pencil strokeWidth="1.5" />
-				<div class="flex items-center">{i18n.t('Rename')}</div>
+				<div class="flex items-center">{$i18n.t('Rename')}</div>
 			</button>
 
 			<hr class="border-gray-50/30 dark:border-gray-800/30 my-1" />
@@ -385,10 +390,10 @@
 			>
 				{#if pinned}
 					<BookmarkSlash strokeWidth="1.5" />
-					<div class="flex items-center">{i18n.t('Unpin')}</div>
+					<div class="flex items-center">{$i18n.t('Unpin')}</div>
 				{:else}
 					<Bookmark strokeWidth="1.5" />
-					<div class="flex items-center">{i18n.t('Pin')}</div>
+					<div class="flex items-center">{$i18n.t('Pin')}</div>
 				{/if}
 			</button>
 
@@ -402,7 +407,7 @@
 					}}
 				>
 					<DocumentDuplicate strokeWidth="1.5" />
-					<div class="flex items-center">{i18n.t('Clone')}</div>
+					<div class="flex items-center">{$i18n.t('Clone')}</div>
 				</button>
 			{/if}
 
@@ -416,7 +421,7 @@
 						class="flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl select-none w-full"
 					>
 						<Folder />
-						<div class="flex items-center">{i18n.t('Move')}</div>
+						<div class="flex items-center">{$i18n.t('Move')}</div>
 					</button>
 
 					{#each $folders.sort((a, b) => b.updated_at - a.updated_at) as folder}
@@ -445,7 +450,7 @@
 				}}
 			>
 				<ArchiveBox strokeWidth="1.5" />
-				<div class="flex items-center">{i18n.t('Archive')}</div>
+				<div class="flex items-center">{$i18n.t('Archive')}</div>
 			</button>
 
 			<button
@@ -456,7 +461,7 @@
 				}}
 			>
 				<GarbageBin strokeWidth="1.5" />
-				<div class="flex items-center">{i18n.t('Delete')}</div>
+				<div class="flex items-center">{$i18n.t('Delete')}</div>
 			</button>
 		</div>
 	</div>
@@ -478,6 +483,11 @@
 				regenerateResponse={() => {}}
 				messagesCount={null}
 				editCodeBlock={false}
+				selectedModels={[]}
+				showMessage={() => {}}
+				atSelectedModel={null}
+				mergeResponses={() => {}}
+				chatActionHandler={() => {}}
 			/>
 		</div>
 	</div>
@@ -491,7 +501,7 @@
 		}
 	}}
 >
-	<Tooltip content={i18n.t('More')}>
+	<Tooltip content={$i18n.t('More')}>
 		<slot />
 	</Tooltip>
 
@@ -508,7 +518,7 @@
 					}}
 				>
 					<Share strokeWidth="1.5" />
-					<div class="flex items-center">{i18n.t('Share')}</div>
+					<div class="flex items-center">{$i18n.t('Share')}</div>
 				</button>
 			{/if}
 
@@ -522,7 +532,7 @@
 						class="flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl w-full"
 					>
 						<Download strokeWidth="1.5" />
-						<div class="flex items-center">{i18n.t('Download')}</div>
+						<div class="flex items-center">{$i18n.t('Download')}</div>
 					</button>
 
 					<button
@@ -532,7 +542,7 @@
 							downloadJSONExport();
 						}}
 					>
-						<div class="flex items-center line-clamp-1">{i18n.t('Export chat (.json)')}</div>
+						<div class="flex items-center line-clamp-1">{$i18n.t('Export chat (.json)')}</div>
 					</button>
 
 					<button
@@ -542,7 +552,7 @@
 							downloadTxt();
 						}}
 					>
-						<div class="flex items-center line-clamp-1">{i18n.t('Plain text (.txt)')}</div>
+						<div class="flex items-center line-clamp-1">{$i18n.t('Plain text (.txt)')}</div>
 					</button>
 
 					<button
@@ -552,7 +562,7 @@
 							downloadPdf();
 						}}
 					>
-						<div class="flex items-center line-clamp-1">{i18n.t('PDF document (.pdf)')}</div>
+						<div class="flex items-center line-clamp-1">{$i18n.t('PDF document (.pdf)')}</div>
 					</button>
 				</DropdownSub>
 			{/if}
@@ -566,7 +576,7 @@
 				}}
 			>
 				<Pencil strokeWidth="1.5" />
-				<div class="flex items-center">{i18n.t('Rename')}</div>
+				<div class="flex items-center">{$i18n.t('Rename')}</div>
 			</button>
 
 			<hr class="border-gray-50/30 dark:border-gray-800/30 my-1" />
@@ -581,10 +591,10 @@
 			>
 				{#if pinned}
 					<BookmarkSlash strokeWidth="1.5" />
-					<div class="flex items-center">{i18n.t('Unpin')}</div>
+					<div class="flex items-center">{$i18n.t('Unpin')}</div>
 				{:else}
 					<Bookmark strokeWidth="1.5" />
-					<div class="flex items-center">{i18n.t('Pin')}</div>
+					<div class="flex items-center">{$i18n.t('Pin')}</div>
 				{/if}
 			</button>
 
@@ -598,7 +608,7 @@
 					}}
 				>
 					<DocumentDuplicate strokeWidth="1.5" />
-					<div class="flex items-center">{i18n.t('Clone')}</div>
+					<div class="flex items-center">{$i18n.t('Clone')}</div>
 				</button>
 			{/if}
 
@@ -612,7 +622,7 @@
 						class="flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl select-none w-full"
 					>
 						<Folder />
-						<div class="flex items-center">{i18n.t('Move')}</div>
+						<div class="flex items-center">{$i18n.t('Move')}</div>
 					</button>
 
 					{#each $folders.sort((a, b) => b.updated_at - a.updated_at) as folder}
@@ -641,7 +651,7 @@
 				}}
 			>
 				<ArchiveBox strokeWidth="1.5" />
-				<div class="flex items-center">{i18n.t('Archive')}</div>
+				<div class="flex items-center">{$i18n.t('Archive')}</div>
 			</button>
 
 			<button
@@ -652,7 +662,7 @@
 				}}
 			>
 				<GarbageBin strokeWidth="1.5" />
-				<div class="flex items-center">{i18n.t('Delete')}</div>
+				<div class="flex items-center">{$i18n.t('Delete')}</div>
 			</button>
 		</div>
 	</div>

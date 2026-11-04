@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
 	import Check from '$lib/components/icons/Check.svelte';
@@ -11,7 +11,7 @@
 	import type { Writable } from 'svelte/store';
 
 	export let value: any = '';
-	export let placeholder = i18n.t('Tag');
+	export let placeholder = $i18n.t('Tag');
 	export let onChange: (value: string) => void = () => {};
 
 	export let items: any = [];
@@ -68,7 +68,7 @@
 		selectedTag = '';
 	}}
 >
-	{i18n.t('All')}
+	{$i18n.t('All')}
 </button>
 
 <button
@@ -79,7 +79,7 @@
 		selectedTag = '';
 	}}
 >
-	{i18n.t('Created by you')}
+	{$i18n.t('Created by you')}
 </button>
 
 <button
@@ -90,7 +90,7 @@
 		selectedTag = '';
 	}}
 >
-	{i18n.t('Shared with you')}
+	{$i18n.t('Shared with you')}
 </button> -->
 
 <Select
@@ -144,7 +144,7 @@
 		selectedTag = '';
 	}}
 >
-	{i18n.t('All')}
+	{$i18n.t('All')}
 </button>
 
 <button
@@ -155,7 +155,7 @@
 		selectedTag = '';
 	}}
 >
-	{i18n.t('Created by you')}
+	{$i18n.t('Created by you')}
 </button>
 
 <button
@@ -166,5 +166,5 @@
 		selectedTag = '';
 	}}
 >
-	{i18n.t('Shared with you')}
+	{$i18n.t('Shared with you')}
 </button> -->

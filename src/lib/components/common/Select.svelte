@@ -5,7 +5,7 @@
 	/** Currently selected value */
 	export let value: any = '';
 	/** Items array: { value: string, label: string }[] */
-	export let items: any = [];
+	export let items: any[] = [];
 
 	/** Placeholder text when no value is selected */
 	export let placeholder: any = '';

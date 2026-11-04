@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import dayjs from 'dayjs';
 	import calendar from 'dayjs/plugin/calendar';
@@ -47,7 +47,7 @@
 						on:click={() => onSort?.('user_name')}
 					>
 						<div class="flex gap-1.5 items-center">
-							{i18n.t('User')}
+							{$i18n.t('User')}
 							{#if orderBy === 'user_name'}
 								<span class="font-normal">
 									{#if direction === 'asc'}<ChevronUp className="size-2" />{:else}<ChevronDown
@@ -61,7 +61,7 @@
 					</button>
 				{:else}
 					<div class="px-1.5 py-1 w-32">
-						{i18n.t('User')}
+						{$i18n.t('User')}
 					</div>
 				{/if}
 			{/if}
@@ -74,7 +74,7 @@
 					on:click={() => onSort?.('title')}
 				>
 					<div class="flex gap-1.5 items-center">
-						{i18n.t('Title')}
+						{$i18n.t('Title')}
 						{#if orderBy === 'title'}
 							<span class="font-normal">
 								{#if direction === 'asc'}<ChevronUp className="size-2" />{:else}<ChevronDown
@@ -94,7 +94,7 @@
 					on:click={() => onSort?.('updated_at')}
 				>
 					<div class="flex gap-1.5 items-center">
-						{i18n.t('Updated at')}
+						{$i18n.t('Updated at')}
 						{#if orderBy === 'updated_at'}
 							<span class="font-normal">
 								{#if direction === 'asc'}<ChevronUp className="size-2" />{:else}<ChevronDown
@@ -108,10 +108,10 @@
 				</button>
 			{:else}
 				<div class="px-1.5 py-1 {showUserInfo ? 'flex-1' : 'basis-3/5'}">
-					{i18n.t('Title')}
+					{$i18n.t('Title')}
 				</div>
 				<div class="px-1.5 py-1 hidden sm:flex {showUserInfo ? 'w-28' : 'basis-2/5'} justify-end">
-					{i18n.t('Updated at')}
+					{$i18n.t('Updated at')}
 				</div>
 			{/if}
 		</div>
@@ -123,7 +123,7 @@
 			</div>
 		{:else if !chatList || chatList.length === 0}
 			<div class="text-center text-gray-500 text-sm py-8">
-				{i18n.t(emptyMessage)}
+				{$i18n.t(emptyMessage)}
 			</div>
 		{:else}
 			{#each chatList as chat, idx (chat.id)}
@@ -133,7 +133,7 @@
 							? ''
 							: 'pt-5'} pb-2 px-2"
 					>
-						{i18n.t(chat.time_range)}
+						{$i18n.t(chat.time_range)}
 					</div>
 				{/if}
 
@@ -185,7 +185,7 @@
 				>
 					<div class="w-full flex justify-center py-1 text-xs animate-pulse items-center gap-2">
 						<Spinner className="size-4" />
-						<div>{i18n.t('Loading...')}</div>
+						<div>{$i18n.t('Loading...')}</div>
 					</div>
 				</Loader>
 			{/if}
@@ -204,7 +204,7 @@
 						on:click={() => onSort?.('user_name')}
 					>
 						<div class="flex gap-1.5 items-center">
-							{i18n.t('User')}
+							{$i18n.t('User')}
 							{#if orderBy === 'user_name'}
 								<span class="font-normal">
 									{#if direction === 'asc'}<ChevronUp className="size-2" />{:else}<ChevronDown
@@ -218,7 +218,7 @@
 					</button>
 				{:else}
 					<div class="px-1.5 py-1 w-32">
-						{i18n.t('User')}
+						{$i18n.t('User')}
 					</div>
 				{/if}
 			{/if}
@@ -231,7 +231,7 @@
 					on:click={() => onSort?.('title')}
 				>
 					<div class="flex gap-1.5 items-center">
-						{i18n.t('Title')}
+						{$i18n.t('Title')}
 						{#if orderBy === 'title'}
 							<span class="font-normal">
 								{#if direction === 'asc'}<ChevronUp className="size-2" />{:else}<ChevronDown
@@ -251,7 +251,7 @@
 					on:click={() => onSort?.('updated_at')}
 				>
 					<div class="flex gap-1.5 items-center">
-						{i18n.t('Updated at')}
+						{$i18n.t('Updated at')}
 						{#if orderBy === 'updated_at'}
 							<span class="font-normal">
 								{#if direction === 'asc'}<ChevronUp className="size-2" />{:else}<ChevronDown
@@ -265,10 +265,10 @@
 				</button>
 			{:else}
 				<div class="px-1.5 py-1 {showUserInfo ? 'flex-1' : 'basis-3/5'}">
-					{i18n.t('Title')}
+					{$i18n.t('Title')}
 				</div>
 				<div class="px-1.5 py-1 hidden sm:flex {showUserInfo ? 'w-28' : 'basis-2/5'} justify-end">
-					{i18n.t('Updated at')}
+					{$i18n.t('Updated at')}
 				</div>
 			{/if}
 		</div>
@@ -280,7 +280,7 @@
 			</div>
 		{:else if !chatList || chatList.length === 0}
 			<div class="text-center text-gray-500 text-sm py-8">
-				{i18n.t(emptyMessage)}
+				{$i18n.t(emptyMessage)}
 			</div>
 		{:else}
 			{#each chatList as chat, idx (chat.id)}
@@ -290,7 +290,7 @@
 							? ''
 							: 'pt-5'} pb-2 px-2"
 					>
-						{i18n.t(chat.time_range)}
+						{$i18n.t(chat.time_range)}
 					</div>
 				{/if}
 
@@ -342,7 +342,7 @@
 				>
 					<div class="w-full flex justify-center py-1 text-xs animate-pulse items-center gap-2">
 						<Spinner className="size-4" />
-						<div>{i18n.t('Loading...')}</div>
+						<div>{$i18n.t('Loading...')}</div>
 					</div>
 				</Loader>
 			{/if}

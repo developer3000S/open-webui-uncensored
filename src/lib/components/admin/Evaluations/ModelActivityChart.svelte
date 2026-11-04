@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { onMount, onDestroy } from 'svelte';
 	import Spinner from '$lib/components/common/Spinner.svelte';
@@ -53,11 +53,11 @@
 
 			chartData = Object.values(weeklyData).sort(
 				(a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-			);
+			) as any;
 		}
 
 		const labels = chartData.map((h) => {
-			const date = new Date('startDate' in h ? h.startDate : h.date);
+			const date = new Date(String('startDate' in h ? h.startDate : h.date));
 			if (aggregateWeekly) {
 				return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 			}
@@ -187,7 +187,7 @@
 		</div>
 	{:else if !history.length || history.every((h) => h.won === 0 && h.lost === 0)}
 		<div class="flex items-center justify-center h-40 text-gray-500 text-sm">
-			{i18n.t('No activity data')}
+			{$i18n.t('No activity data')}
 		</div>
 	{:else}
 		<div class="h-48">
@@ -203,7 +203,7 @@
 		</div>
 	{:else if !history.length || history.every((h) => h.won === 0 && h.lost === 0)}
 		<div class="flex items-center justify-center h-40 text-gray-500 text-sm">
-			{i18n.t('No activity data')}
+			{$i18n.t('No activity data')}
 		</div>
 	{:else}
 		<div class="h-48">

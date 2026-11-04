@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Dropdown from '$lib/components/common/Dropdown.svelte';
 	import GarbageBin from '$lib/components/icons/GarbageBin.svelte';
@@ -22,16 +22,17 @@
 	import type { Writable } from 'svelte/store';
 
 	export let model: any;
-	export let editHandler: Function;
-	export let shareHandler: Function;
-	export let cloneHandler: Function;
-	export let exportHandler: Function;
-	export let copyLinkHandler: Function;
+	export let user: any = undefined;
+	export let editHandler: any;
+	export let shareHandler: any;
+	export let cloneHandler: any;
+	export let exportHandler: any;
+	export let copyLinkHandler: any;
 
-	export let hideHandler: Function;
-	export let pinModelHandler: Function;
-	export let deleteHandler: Function;
-	export let onClose: Function;
+	export let hideHandler: any;
+	export let pinModelHandler: any;
+	export let deleteHandler: any;
+	export let onClose: any;
 
 	export let writeAccess: boolean = true;
 
@@ -46,7 +47,7 @@
 		}
 	}}
 >
-	<Tooltip content={i18n.t('More')}>
+	<Tooltip content={$i18n.t('More')}>
 		<button
 			on:click={(e) => {
 				e.stopPropagation();
@@ -69,7 +70,7 @@
 					}}
 				>
 					<Pencil />
-					<div class="flex items-center">{i18n.t('Edit')}</div>
+					<div class="flex items-center">{$i18n.t('Edit')}</div>
 				</button>
 			{/if}
 
@@ -119,9 +120,9 @@
 
 					<div class="flex items-center">
 						{#if model?.meta?.hidden ?? false}
-							{i18n.t('Show Model')}
+							{$i18n.t('Show Model')}
 						{:else}
-							{i18n.t('Hide Model')}
+							{$i18n.t('Hide Model')}
 						{/if}
 					</div>
 				</button>
@@ -141,9 +142,9 @@
 
 				<div class="flex items-center">
 					{#if ($settings?.pinnedModels ?? []).includes(model?.id)}
-						{i18n.t('Hide from Sidebar')}
+						{$i18n.t('Hide from Sidebar')}
 					{:else}
-						{i18n.t('Keep in Sidebar')}
+						{$i18n.t('Keep in Sidebar')}
 					{/if}
 				</div>
 			</button>
@@ -157,7 +158,7 @@
 				>
 					<DocumentDuplicate />
 
-					<div class="flex items-center">{i18n.t('Clone')}</div>
+					<div class="flex items-center">{$i18n.t('Clone')}</div>
 				</button>
 			{/if}
 
@@ -173,7 +174,7 @@
 			>
 				<Link />
 
-				<div class="flex items-center">{i18n.t('Copy Link')}</div>
+				<div class="flex items-center">{$i18n.t('Copy Link')}</div>
 			</button>
 
 			{#if writeAccess && ($currentUser?.role === 'admin' || $currentUser?.permissions?.workspace?.models_export)}
@@ -185,7 +186,7 @@
 				>
 					<Download />
 
-					<div class="flex items-center">{i18n.t('Export')}</div>
+					<div class="flex items-center">{$i18n.t('Export')}</div>
 				</button>
 			{/if}
 
@@ -197,7 +198,7 @@
 					}}
 				>
 					<Share />
-					<div class="flex items-center">{i18n.t('Share')}</div>
+					<div class="flex items-center">{$i18n.t('Share')}</div>
 				</button>
 			{/if}
 
@@ -211,7 +212,7 @@
 					}}
 				>
 					<GarbageBin />
-					<div class="flex items-center">{i18n.t('Delete')}</div>
+					<div class="flex items-center">{$i18n.t('Delete')}</div>
 				</button>
 			{/if}
 		</div>
@@ -226,7 +227,7 @@
 		}
 	}}
 >
-	<Tooltip content={i18n.t('More')}>
+	<Tooltip content={$i18n.t('More')}>
 		<button
 			on:click={(e) => {
 				e.stopPropagation();
@@ -249,7 +250,7 @@
 					}}
 				>
 					<Pencil />
-					<div class="flex items-center">{i18n.t('Edit')}</div>
+					<div class="flex items-center">{$i18n.t('Edit')}</div>
 				</button>
 			{/if}
 
@@ -299,9 +300,9 @@
 
 					<div class="flex items-center">
 						{#if model?.meta?.hidden ?? false}
-							{i18n.t('Show Model')}
+							{$i18n.t('Show Model')}
 						{:else}
-							{i18n.t('Hide Model')}
+							{$i18n.t('Hide Model')}
 						{/if}
 					</div>
 				</button>
@@ -321,9 +322,9 @@
 
 				<div class="flex items-center">
 					{#if ($settings?.pinnedModels ?? []).includes(model?.id)}
-						{i18n.t('Hide from Sidebar')}
+						{$i18n.t('Hide from Sidebar')}
 					{:else}
-						{i18n.t('Keep in Sidebar')}
+						{$i18n.t('Keep in Sidebar')}
 					{/if}
 				</div>
 			</button>
@@ -337,7 +338,7 @@
 				>
 					<DocumentDuplicate />
 
-					<div class="flex items-center">{i18n.t('Clone')}</div>
+					<div class="flex items-center">{$i18n.t('Clone')}</div>
 				</button>
 			{/if}
 
@@ -353,7 +354,7 @@
 			>
 				<Link />
 
-				<div class="flex items-center">{i18n.t('Copy Link')}</div>
+				<div class="flex items-center">{$i18n.t('Copy Link')}</div>
 			</button>
 
 			{#if writeAccess && ($currentUser?.role === 'admin' || $currentUser?.permissions?.workspace?.models_export)}
@@ -365,7 +366,7 @@
 				>
 					<Download />
 
-					<div class="flex items-center">{i18n.t('Export')}</div>
+					<div class="flex items-center">{$i18n.t('Export')}</div>
 				</button>
 			{/if}
 
@@ -377,7 +378,7 @@
 					}}
 				>
 					<Share />
-					<div class="flex items-center">{i18n.t('Share')}</div>
+					<div class="flex items-center">{$i18n.t('Share')}</div>
 				</button>
 			{/if}
 
@@ -391,7 +392,7 @@
 					}}
 				>
 					<GarbageBin />
-					<div class="flex items-center">{i18n.t('Delete')}</div>
+					<div class="flex items-center">{$i18n.t('Delete')}</div>
 				</button>
 			{/if}
 		</div>

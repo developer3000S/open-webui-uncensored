@@ -7,7 +7,7 @@
 	import { goto } from '$app/navigation';
 
 	import type { Writable } from 'svelte/store';
-	
+
 	import { WEBUI_BASE_URL } from '$lib/constants';
 	import { copyToClipboard, unescapeHtml } from '$lib/utils';
 
@@ -25,7 +25,7 @@
 	export let done: any = true;
 	export let tokens: Token[];
 	export let sourceIds: any = [];
-	export let onSourceClick: Function = () => {};
+	export let onSourceClick: any = () => {};
 
 	/**
 	 * Check if a URL is a same-origin note link and return the note ID if so.

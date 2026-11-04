@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import DOMPurify from 'dompurify';
 	import { marked } from 'marked';
@@ -13,6 +13,7 @@
 
 	let adminDetails: any = null;
 
+	// @ts-ignore
 	onMount(async () => {
 		adminDetails = await getAdminDetails(localStorage.token).catch((err) => {
 			console.error(err);
@@ -34,8 +35,8 @@
 					{#if ($config?.ui?.pending_user_overlay_title ?? '').trim() !== ''}
 						{$config.ui.pending_user_overlay_title}
 					{:else}
-						{i18n.t('Account Activation Pending')}<br />
-						{i18n.t('Contact Admin for WebUI Access')}
+						{$i18n.t('Account Activation Pending')}<br />
+						{$i18n.t('Contact Admin for WebUI Access')}
 					{/if}
 				</div>
 
@@ -48,7 +49,7 @@
 							marked.parse(($config?.ui?.pending_user_overlay_content ?? '').replace(/\n/g, '<br>'))
 						)}
 					{:else}
-						{i18n.t('Your account status is currently pending activation.')}{'\n'}{i18n.t(
+						{$i18n.t('Your account status is currently pending activation.')}{'\n'}{$i18n.t(
 							'To access the WebUI, please reach out to the administrator. Admins can manage user statuses from the Admin Panel.'
 						)}
 					{/if}
@@ -56,7 +57,7 @@
 
 				{#if adminDetails}
 					<div class="mt-4 text-sm font-medium text-center">
-						<div>{i18n.t('Admin')}: {adminDetails.name} ({adminDetails.email})</div>
+						<div>{$i18n.t('Admin')}: {adminDetails.name} ({adminDetails.email})</div>
 					</div>
 				{/if}
 
@@ -67,7 +68,7 @@
 							location.href = '/';
 						}}
 					>
-						{i18n.t('Check Again')}
+						{$i18n.t('Check Again')}
 					</button>
 
 					<button
@@ -79,7 +80,7 @@
 							});
 							localStorage.removeItem('token');
 							location.href = res?.redirect_url ?? '/auth';
-						}}>{i18n.t('Sign Out')}</button
+						}}>{$i18n.t('Sign Out')}</button
 					>
 				</div>
 			</div>
@@ -100,8 +101,8 @@
 					{#if ($config?.ui?.pending_user_overlay_title ?? '').trim() !== ''}
 						{$config.ui.pending_user_overlay_title}
 					{:else}
-						{i18n.t('Account Activation Pending')}<br />
-						{i18n.t('Contact Admin for WebUI Access')}
+						{$i18n.t('Account Activation Pending')}<br />
+						{$i18n.t('Contact Admin for WebUI Access')}
 					{/if}
 				</div>
 
@@ -114,7 +115,7 @@
 							marked.parse(($config?.ui?.pending_user_overlay_content ?? '').replace(/\n/g, '<br>'))
 						)}
 					{:else}
-						{i18n.t('Your account status is currently pending activation.')}{'\n'}{i18n.t(
+						{$i18n.t('Your account status is currently pending activation.')}{'\n'}{$i18n.t(
 							'To access the WebUI, please reach out to the administrator. Admins can manage user statuses from the Admin Panel.'
 						)}
 					{/if}
@@ -122,7 +123,7 @@
 
 				{#if adminDetails}
 					<div class="mt-4 text-sm font-medium text-center">
-						<div>{i18n.t('Admin')}: {adminDetails.name} ({adminDetails.email})</div>
+						<div>{$i18n.t('Admin')}: {adminDetails.name} ({adminDetails.email})</div>
 					</div>
 				{/if}
 
@@ -133,7 +134,7 @@
 							location.href = '/';
 						}}
 					>
-						{i18n.t('Check Again')}
+						{$i18n.t('Check Again')}
 					</button>
 
 					<button
@@ -145,7 +146,7 @@
 							});
 							localStorage.removeItem('token');
 							location.href = res?.redirect_url ?? '/auth';
-						}}>{i18n.t('Sign Out')}</button
+						}}>{$i18n.t('Sign Out')}</button
 					>
 				</div>
 			</div>

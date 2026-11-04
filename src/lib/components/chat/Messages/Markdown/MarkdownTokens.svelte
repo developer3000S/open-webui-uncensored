@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { decode } from 'html-entities';
 	import type { Writable } from 'svelte/store';
@@ -32,7 +32,7 @@
 	export let id: string;
 	export let tokens: Token[];
 	export let top: any = true;
-	let attributes: Record<string, any> = {};
+	export let attributes: Record<string, any> = {};
 	export let sourceIds: any = [];
 
 	export let done: any = true;
@@ -42,12 +42,12 @@
 	export let editCodeBlock: any = true;
 	export let topPadding: any = false;
 	export let allowEmbeds: any = true;
-	export let onSave: Function = () => {};
-	export let onUpdate: Function = () => {};
-	export let onPreview: Function = () => {};
+	export let onSave: any = () => {};
+	export let onUpdate: any = () => {};
+	export let onPreview: any = () => {};
 
-	export let onTaskClick: Function = () => {};
-	export let onSourceClick: Function = () => {};
+	export let onTaskClick: any = () => {};
+	export let onSourceClick: any = () => {};
 
 	const headerComponent = (depth: number) => {
 		return 'h' + depth;
@@ -239,7 +239,7 @@
 			</div>
 
 			<div class=" absolute top-1 right-1.5 z-20 invisible group-hover:visible flex gap-0.5">
-				<Tooltip content={i18n.t('Copy')}>
+				<Tooltip content={$i18n.t('Copy')}>
 					<button
 						class="p-1 rounded-lg bg-transparent transition"
 						on:click={(e) => {
@@ -251,7 +251,7 @@
 					</button>
 				</Tooltip>
 
-				<Tooltip content={i18n.t('Export to CSV')}>
+				<Tooltip content={$i18n.t('Export to CSV')}>
 					<button
 						class="p-1 rounded-lg bg-transparent transition"
 						on:click={(e) => {
@@ -658,7 +658,7 @@
 			</div>
 
 			<div class=" absolute top-1 right-1.5 z-20 invisible group-hover:visible flex gap-0.5">
-				<Tooltip content={i18n.t('Copy')}>
+				<Tooltip content={$i18n.t('Copy')}>
 					<button
 						class="p-1 rounded-lg bg-transparent transition"
 						on:click={(e) => {
@@ -670,7 +670,7 @@
 					</button>
 				</Tooltip>
 
-				<Tooltip content={i18n.t('Export to CSV')}>
+				<Tooltip content={$i18n.t('Export to CSV')}>
 					<button
 						class="p-1 rounded-lg bg-transparent transition"
 						on:click={(e) => {

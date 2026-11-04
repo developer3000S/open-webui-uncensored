@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import fileSaver from 'file-saver';
@@ -92,7 +92,7 @@
 				null,
 				null,
 				page
-			).catch(async (error)=> {
+			).catch(async (error) => {
 				toast.error(`${error}`);
 				return null;
 			});
@@ -102,7 +102,7 @@
 				total = res.total;
 
 				// get tags
-				tags = await getPromptTags(localStorage.token).catch(async (error)=> {
+				tags = await getPromptTags(localStorage.token).catch(async (error) => {
 					toast.error(`${error}`);
 					return [];
 				});
@@ -115,7 +115,7 @@
 	};
 
 	const shareHandler = async (prompt: any) => {
-		toast.success(i18n.t('Redirecting you to Open WebUI Community'));
+		toast.success($i18n.t('Redirecting you to Open WebUI Community'));
 
 		const url = 'https://openwebui.com';
 
@@ -171,13 +171,14 @@
 		});
 
 		if (res) {
-			toast.success(i18n.t(`Deleted {{name}}`, { name: command }));
+			toast.success($i18n.t(`Deleted {{name}}`, { name: command }));
 		}
 
 		page = 1;
 		getPromptList();
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		viewOption = localStorage?.workspaceViewOption || '';
 		loaded = true;
@@ -216,24 +217,24 @@
 </script>
 
 <svelte:head>
-			<title>
-		{i18n.t('Prompts')} • {$WEBUI_NAME}
+	<title>
+		{$i18n.t('Prompts')} • {$WEBUI_NAME}
 	</title>
-			<title>
-		{i18n.t('Prompts')} • {$WEBUI_NAME}
+	<title>
+		{$i18n.t('Prompts')} • {$WEBUI_NAME}
 	</title>
-		</svelte:head>
+</svelte:head>
 
 {#if loaded}
 	<DeleteConfirmDialog
 		bind:show={showDeleteConfirm}
-		title={i18n.t('Delete prompt?')}
+		title={$i18n.t('Delete prompt?')}
 		on:confirm={() => {
 			deleteHandler(deletePrompt);
 		}}
 	>
 		<div class=" text-sm text-gray-500 truncate">
-			{i18n.t('This will delete')} <span class="  font-medium">{deletePrompt.command}</span>.
+			{$i18n.t('This will delete')} <span class="  font-medium">{deletePrompt.command}</span>.
 		</div>
 	</DeleteConfirmDialog>
 
@@ -260,7 +261,7 @@
 								command: prompt.command,
 								name: prompt.name,
 								content: prompt.content
-							}).catch(async (error)=> {
+							}).catch(async (error) => {
 								toast.error(typeof error === 'string' ? error : JSON.stringify(error));
 								return null;
 							});
@@ -280,7 +281,7 @@
 		<div class="flex justify-between items-center">
 			<div class="flex items-center md:self-center text-xl font-medium px-0.5 gap-2 shrink-0">
 				<div>
-					{i18n.t('Prompts')}
+					{$i18n.t('Prompts')}
 				</div>
 
 				<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
@@ -297,7 +298,7 @@
 						}}
 					>
 						<div class=" self-center font-medium line-clamp-1">
-							{i18n.t('Import')}
+							{$i18n.t('Import')}
 						</div>
 					</button>
 				{/if}
@@ -313,7 +314,7 @@
 						}}
 					>
 						<div class=" self-center font-medium line-clamp-1">
-							{i18n.t('Export')}
+							{$i18n.t('Export')}
 						</div>
 					</button>
 				{/if}
@@ -323,7 +324,7 @@
 				>
 					<Plus className="size-3" strokeWidth="2.5" />
 
-					<div class=" hidden md:block md:ml-1 text-xs">{i18n.t('New Prompt')}</div>
+					<div class=" hidden md:block md:ml-1 text-xs">{$i18n.t('New Prompt')}</div>
 				</a>
 			</div>
 		</div>
@@ -341,15 +342,15 @@
 					class=" w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
 					bind:value={query}
 					on:input={handleSearchInput}
-					aria-label={i18n.t('Search Prompts')}
-					placeholder={i18n.t('Search Prompts')}
+					aria-label={$i18n.t('Search Prompts')}
+					placeholder={$i18n.t('Search Prompts')}
 				/>
 
 				{#if query}
 					<div class="self-center pl-1.5 translate-y-[0.5px] rounded-l-xl bg-transparent">
 						<button
 							class="p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 transition"
-							aria-label={i18n.t('Clear search')}
+							aria-label={$i18n.t('Clear search')}
 							on:click={() => {
 								query = '';
 								handleSearchInput();
@@ -414,20 +415,20 @@
 									</div>
 								</div>
 								{#if !prompt.write_access}
-									<Badge type="muted" content={i18n.t('Read Only')} />
+									<Badge type="muted" content={$i18n.t('Read Only')} />
 								{/if}
 							</div>
 
 							<div class="flex gap-1 text-xs">
 								<Tooltip
-									content={prompt?.user?.email ?? i18n.t('Deleted User')}
+									content={prompt?.user?.email ?? $i18n.t('Deleted User')}
 									className="flex shrink-0"
 									placement="top-start"
 								>
 									<div class="shrink-0 text-gray-500">
-										{i18n.t('By {{name}}', {
+										{$i18n.t('By {{name}}', {
 											name: capitalizeFirstLetter(
-												prompt?.user?.name ?? prompt?.user?.email ?? i18n.t('Deleted User')
+												prompt?.user?.name ?? prompt?.user?.email ?? $i18n.t('Deleted User')
 											)
 										})}
 									</div>
@@ -446,11 +447,11 @@
 						</div>
 						<div class="flex flex-row gap-0.5 self-center">
 							{#if shiftKey}
-								<Tooltip content={i18n.t('Delete')}>
+								<Tooltip content={$i18n.t('Delete')}>
 									<button
 										class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 										type="button"
-										aria-label={i18n.t('Delete')}
+										aria-label={$i18n.t('Delete')}
 										on:click={() => {
 											deleteHandler(prompt);
 										}}
@@ -459,11 +460,11 @@
 									</button>
 								</Tooltip>
 							{:else}
-								<Tooltip content={i18n.t('Copy Prompt')}>
+								<Tooltip content={$i18n.t('Copy Prompt')}>
 									<button
 										class="self-center w-fit text-sm p-1.5 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 										type="button"
-										aria-label={i18n.t('Copy Prompt')}
+										aria-label={$i18n.t('Copy Prompt')}
 										on:click={(e) => {
 											e.preventDefault();
 											e.stopPropagation();
@@ -506,7 +507,7 @@
 
 								<button on:click|stopPropagation|preventDefault>
 									<Tooltip
-										content={prompt.is_active !== false ? i18n.t('Enabled') : i18n.t('Disabled')}
+										content={prompt.is_active !== false ? $i18n.t('Enabled') : $i18n.t('Disabled')}
 									>
 										<Switch
 											bind:state={prompt.is_active}
@@ -531,9 +532,9 @@
 			<div class=" w-full h-full flex flex-col justify-center items-center my-16 mb-24">
 				<div class="max-w-md text-center">
 					<div class=" text-3xl mb-3">😕</div>
-					<div class=" text-lg font-medium mb-1">{i18n.t('No prompts found')}</div>
+					<div class=" text-lg font-medium mb-1">{$i18n.t('No prompts found')}</div>
 					<div class=" text-gray-500 text-center text-xs">
-						{i18n.t('Try adjusting your search or filter to find what you are looking for.')}
+						{$i18n.t('Try adjusting your search or filter to find what you are looking for.')}
 					</div>
 				</div>
 			</div>
@@ -543,7 +544,7 @@
 	{#if $config?.features.enable_community_sharing}
 		<div class=" my-16">
 			<div class=" text-xl font-medium mb-1 line-clamp-1">
-				{i18n.t('Made by Open WebUI Community')}
+				{$i18n.t('Made by Open WebUI Community')}
 			</div>
 
 			<a
@@ -552,9 +553,9 @@
 				target="_blank"
 			>
 				<div class=" self-center">
-					<div class=" font-medium line-clamp-1">{i18n.t('Discover a prompt')}</div>
+					<div class=" font-medium line-clamp-1">{$i18n.t('Discover a prompt')}</div>
 					<div class=" text-sm line-clamp-1">
-						{i18n.t('Discover, download, and explore custom prompts')}
+						{$i18n.t('Discover, download, and explore custom prompts')}
 					</div>
 				</div>
 
@@ -572,18 +573,16 @@
 	</div>
 {/if}
 
-
-
 {#if loaded}
 	<DeleteConfirmDialog
 		bind:show={showDeleteConfirm}
-		title={i18n.t('Delete prompt?')}
+		title={$i18n.t('Delete prompt?')}
 		on:confirm={() => {
 			deleteHandler(deletePrompt);
 		}}
 	>
 		<div class=" text-sm text-gray-500 truncate">
-			{i18n.t('This will delete')} <span class="  font-medium">{deletePrompt.command}</span>.
+			{$i18n.t('This will delete')} <span class="  font-medium">{deletePrompt.command}</span>.
 		</div>
 	</DeleteConfirmDialog>
 
@@ -610,7 +609,7 @@
 								command: prompt.command,
 								name: prompt.name,
 								content: prompt.content
-							}).catch(async (error)=> {
+							}).catch(async (error) => {
 								toast.error(typeof error === 'string' ? error : JSON.stringify(error));
 								return null;
 							});
@@ -630,7 +629,7 @@
 		<div class="flex justify-between items-center">
 			<div class="flex items-center md:self-center text-xl font-medium px-0.5 gap-2 shrink-0">
 				<div>
-					{i18n.t('Prompts')}
+					{$i18n.t('Prompts')}
 				</div>
 
 				<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
@@ -647,7 +646,7 @@
 						}}
 					>
 						<div class=" self-center font-medium line-clamp-1">
-							{i18n.t('Import')}
+							{$i18n.t('Import')}
 						</div>
 					</button>
 				{/if}
@@ -663,7 +662,7 @@
 						}}
 					>
 						<div class=" self-center font-medium line-clamp-1">
-							{i18n.t('Export')}
+							{$i18n.t('Export')}
 						</div>
 					</button>
 				{/if}
@@ -673,7 +672,7 @@
 				>
 					<Plus className="size-3" strokeWidth="2.5" />
 
-					<div class=" hidden md:block md:ml-1 text-xs">{i18n.t('New Prompt')}</div>
+					<div class=" hidden md:block md:ml-1 text-xs">{$i18n.t('New Prompt')}</div>
 				</a>
 			</div>
 		</div>
@@ -691,15 +690,15 @@
 					class=" w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
 					bind:value={query}
 					on:input={handleSearchInput}
-					aria-label={i18n.t('Search Prompts')}
-					placeholder={i18n.t('Search Prompts')}
+					aria-label={$i18n.t('Search Prompts')}
+					placeholder={$i18n.t('Search Prompts')}
 				/>
 
 				{#if query}
 					<div class="self-center pl-1.5 translate-y-[0.5px] rounded-l-xl bg-transparent">
 						<button
 							class="p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 transition"
-							aria-label={i18n.t('Clear search')}
+							aria-label={$i18n.t('Clear search')}
 							on:click={() => {
 								query = '';
 								handleSearchInput();
@@ -764,20 +763,20 @@
 									</div>
 								</div>
 								{#if !prompt.write_access}
-									<Badge type="muted" content={i18n.t('Read Only')} />
+									<Badge type="muted" content={$i18n.t('Read Only')} />
 								{/if}
 							</div>
 
 							<div class="flex gap-1 text-xs">
 								<Tooltip
-									content={prompt?.user?.email ?? i18n.t('Deleted User')}
+									content={prompt?.user?.email ?? $i18n.t('Deleted User')}
 									className="flex shrink-0"
 									placement="top-start"
 								>
 									<div class="shrink-0 text-gray-500">
-										{i18n.t('By {{name}}', {
+										{$i18n.t('By {{name}}', {
 											name: capitalizeFirstLetter(
-												prompt?.user?.name ?? prompt?.user?.email ?? i18n.t('Deleted User')
+												prompt?.user?.name ?? prompt?.user?.email ?? $i18n.t('Deleted User')
 											)
 										})}
 									</div>
@@ -796,11 +795,11 @@
 						</div>
 						<div class="flex flex-row gap-0.5 self-center">
 							{#if shiftKey}
-								<Tooltip content={i18n.t('Delete')}>
+								<Tooltip content={$i18n.t('Delete')}>
 									<button
 										class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 										type="button"
-										aria-label={i18n.t('Delete')}
+										aria-label={$i18n.t('Delete')}
 										on:click={() => {
 											deleteHandler(prompt);
 										}}
@@ -809,11 +808,11 @@
 									</button>
 								</Tooltip>
 							{:else}
-								<Tooltip content={i18n.t('Copy Prompt')}>
+								<Tooltip content={$i18n.t('Copy Prompt')}>
 									<button
 										class="self-center w-fit text-sm p-1.5 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 										type="button"
-										aria-label={i18n.t('Copy Prompt')}
+										aria-label={$i18n.t('Copy Prompt')}
 										on:click={(e) => {
 											e.preventDefault();
 											e.stopPropagation();
@@ -856,7 +855,7 @@
 
 								<button on:click|stopPropagation|preventDefault>
 									<Tooltip
-										content={prompt.is_active !== false ? i18n.t('Enabled') : i18n.t('Disabled')}
+										content={prompt.is_active !== false ? $i18n.t('Enabled') : $i18n.t('Disabled')}
 									>
 										<Switch
 											bind:state={prompt.is_active}
@@ -881,9 +880,9 @@
 			<div class=" w-full h-full flex flex-col justify-center items-center my-16 mb-24">
 				<div class="max-w-md text-center">
 					<div class=" text-3xl mb-3">😕</div>
-					<div class=" text-lg font-medium mb-1">{i18n.t('No prompts found')}</div>
+					<div class=" text-lg font-medium mb-1">{$i18n.t('No prompts found')}</div>
 					<div class=" text-gray-500 text-center text-xs">
-						{i18n.t('Try adjusting your search or filter to find what you are looking for.')}
+						{$i18n.t('Try adjusting your search or filter to find what you are looking for.')}
 					</div>
 				</div>
 			</div>
@@ -893,7 +892,7 @@
 	{#if $config?.features.enable_community_sharing}
 		<div class=" my-16">
 			<div class=" text-xl font-medium mb-1 line-clamp-1">
-				{i18n.t('Made by Open WebUI Community')}
+				{$i18n.t('Made by Open WebUI Community')}
 			</div>
 
 			<a
@@ -902,9 +901,9 @@
 				target="_blank"
 			>
 				<div class=" self-center">
-					<div class=" font-medium line-clamp-1">{i18n.t('Discover a prompt')}</div>
+					<div class=" font-medium line-clamp-1">{$i18n.t('Discover a prompt')}</div>
 					<div class=" text-sm line-clamp-1">
-						{i18n.t('Discover, download, and explore custom prompts')}
+						{$i18n.t('Discover, download, and explore custom prompts')}
 					</div>
 				</div>
 

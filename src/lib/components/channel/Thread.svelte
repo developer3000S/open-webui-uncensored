@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { goto } from '$app/navigation';
 
@@ -17,11 +17,11 @@
 
 	import type { Writable } from 'svelte/store';
 
-	let threadId: any = null;
-	let channel: any = null;
+	export let threadId: any = null;
+	export let channel: any = null;
 
-	export let onClose = () => {};
-	export let onPin = () => {};
+	export let onClose: any = () => {};
+	export let onPin: any = () => {};
 
 	let messages: any = null;
 	let top = false;
@@ -177,7 +177,7 @@
 {#if channel}
 	<div class="flex flex-col w-full h-full bg-gray-50 dark:bg-gray-850">
 		<div class="sticky top-0 flex items-center justify-between px-3.5 py-3">
-			<div class=" font-medium text-lg">{i18n.t('Thread')}</div>
+			<div class=" font-medium text-lg">{$i18n.t('Thread')}</div>
 
 			<div>
 				<button
@@ -237,8 +237,8 @@
 					{channel}
 					disabled={!channel?.write_access}
 					placeholder={!channel?.write_access
-						? i18n.t('You do not have permission to send messages in this thread.')
-						: i18n.t('Reply to thread...')}
+						? $i18n.t('You do not have permission to send messages in this thread.')
+						: $i18n.t('Reply to thread...')}
 					typingUsersClassName="from-gray-50 dark:from-gray-850"
 					{typingUsers}
 					userSuggestions={true}
@@ -254,7 +254,7 @@
 {#if channel}
 	<div class="flex flex-col w-full h-full bg-gray-50 dark:bg-gray-850">
 		<div class="sticky top-0 flex items-center justify-between px-3.5 py-3">
-			<div class=" font-medium text-lg">{i18n.t('Thread')}</div>
+			<div class=" font-medium text-lg">{$i18n.t('Thread')}</div>
 
 			<div>
 				<button
@@ -314,8 +314,8 @@
 					{channel}
 					disabled={!channel?.write_access}
 					placeholder={!channel?.write_access
-						? i18n.t('You do not have permission to send messages in this thread.')
-						: i18n.t('Reply to thread...')}
+						? $i18n.t('You do not have permission to send messages in this thread.')
+						: $i18n.t('Reply to thread...')}
 					typingUsersClassName="from-gray-50 dark:from-gray-850"
 					{typingUsers}
 					userSuggestions={true}

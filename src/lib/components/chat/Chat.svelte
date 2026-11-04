@@ -1,18 +1,17 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
-	import { getContext, onDestroy, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
-
 	import { v4 as uuidv4 } from 'uuid';
 	import { toast } from 'svelte-sonner';
 	import { PaneGroup, Pane, PaneResizer } from 'paneforge';
 
+	import { getContext, onDestroy, onMount, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
+	const i18n: Writable<i18nType> = getContext<Writable<i18nType>>('i18n');
 
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 
 	import { get, type Unsubscriber, type Writable } from 'svelte/store';
+	import type { i18n as i18nType } from 'i18next';
 	import { WEBUI_BASE_URL } from '$lib/constants';
 	import equal from 'fast-deep-equal';
 
@@ -118,7 +117,8 @@
 	import Sidebar from '../icons/Sidebar.svelte';
 	import Image from '../common/Image.svelte';
 
-	export let chatIdProp: any = '';
+	export let chatIdProp = '';
+
 	let loading = true;
 
 	const eventTarget = new EventTarget();
@@ -143,21 +143,21 @@
 	let eventConfirmationInputValue = '';
 	let eventConfirmationInputType = '';
 	let eventConfirmationInputOptions: ({ label?: string; value: string } | string)[] = [];
-	let eventCallback: ((result: any) => void) | null = null;
+	let eventCallback = null;
 
 	let selectedModels = [''];
 	let atSelectedModel: Model | undefined;
-	let selectedModelIds: string[] = [];
+	let selectedModelIds = [];
 	$: if (atSelectedModel !== undefined) {
 		selectedModelIds = [atSelectedModel.id];
 	} else {
 		selectedModelIds = selectedModels;
 	}
 
-	let selectedToolIds: string[] = [];
-	let selectedSkillIds: string[] = [];
-	let selectedFilterIds: string[] = [];
-	let pendingOAuthTools: any[] = [];
+	let selectedToolIds = [];
+	let selectedSkillIds = [];
+	let selectedFilterIds = [];
+	let pendingOAuthTools = [];
 
 	let imageGenerationEnabled = false;
 	let webSearchEnabled = false;
@@ -171,7 +171,8 @@
 		const currentModels = atSelectedModel?.id ? [atSelectedModel.id] : selectedModels;
 		const allModelsSupportWebSearch =
 			currentModels.filter(
-				(model) => $models.find((m) => m.id === model)?.info?.meta?.capabilities?.web_search ?? true
+				(model) =>
+					($models.find((m) => m.id === model)?.info?.meta as any)?.capabilities?.web_search ?? true
 			).length === currentModels.length;
 
 		webSearchActive = Boolean(
@@ -210,32 +211,29 @@
 
 	let generating = false;
 	let dragged = false;
-	let generationController: AbortController | null = null;
-	let contextCompactionToastId: any = null;
+	let generationController = null;
+	let contextCompactionToastId = null;
 
-	let chat: any = null;
-	let tags: any[] = [];
+	let chat = null;
+	let tags = [];
 
 	// Read-only when viewing someone else's chat (e.g. via shared folder access)
 	$: readOnly = chat != null && chat.user_id !== $user?.id;
 
-	let chatTasks: any = [];
+	let chatTasks = [];
 
-	let history: {
-		messages: Record<string, any>;
-		currentId: string | null;
-	} = {
-			messages: {},
-			currentId: null
-		};
+	let history = {
+		messages: {},
+		currentId: null
+	};
 
-	let taskIds: any = null;
+	let taskIds = null;
 
 	// Chat Input
 	let prompt = '';
-	let chatFiles: any = [];
-	let files: any = [];
-	let params: Record<string, any> = {};
+	let chatFiles = [];
+	let files = [];
+	let params: any = {};
 
 	$: if (chatIdProp) {
 		navigateHandler();
@@ -305,7 +303,7 @@
 						imageGenerationEnabled = input.imageGenerationEnabled;
 						codeInterpreterEnabled = input.codeInterpreterEnabled;
 					}
-				} catch (e: any) {}
+				} catch (e) {}
 			} else {
 				await setDefaults();
 			}
@@ -317,7 +315,7 @@
 		}
 	};
 
-	const onSelect = async (e: any) => {
+	const onSelect = async (e) => {
 		const { type, data } = e;
 
 		if (type === 'prompt') {
@@ -433,8 +431,8 @@
 					];
 
 					// Separate unauthenticated OAuth tools
-					const unauthed: any[] = [];
-					const authed: any = [];
+					const unauthed = [];
+					const authed = [];
 					for (const id of defaultIds) {
 						const tool = $tools.find((t) => t.id === id);
 						if (tool && tool.authenticated === false) {
@@ -472,7 +470,7 @@
 				// Set Default Filters (Toggleable only)
 				if (model?.info?.meta?.defaultFilterIds) {
 					selectedFilterIds = model.info.meta.defaultFilterIds.filter((id) =>
-						model?.filters?.find((f) => f.id === id)
+						(model as any)?.filters?.find((f) => f.id === id)
 					);
 				}
 
@@ -516,11 +514,11 @@
 		}
 	};
 
-	const showMessage = async (message: any, scroll: any = true, save: any = true) => {
+	const showMessage = async (message, scroll = true, save = true) => {
 		const _chatId = JSON.parse(JSON.stringify($chatId));
 		let _messageId = JSON.parse(JSON.stringify(message.id));
 
-		let messageChildrenIds: any[] = [];
+		let messageChildrenIds = [];
 		if (_messageId === null) {
 			messageChildrenIds = Object.keys(history.messages).filter(
 				(id) => history.messages[id].parentId === null
@@ -554,7 +552,7 @@
 		}
 	};
 
-	const updateLastReadAt = (id: any) => {
+	const updateLastReadAt = (id) => {
 		$socket?.emit('events:chat', {
 			chat_id: id,
 			data: { type: 'last_read_at' }
@@ -580,7 +578,7 @@
 		}
 	};
 
-	const handleContextCompactionStatus = (status: any) => {
+	const handleContextCompactionStatus = (status) => {
 		if (status?.action !== 'context_compaction') {
 			return;
 		}
@@ -588,12 +586,12 @@
 		if (status?.done) {
 			if (contextCompactionToastId !== null) {
 				if (status?.error) {
-					toast.error(i18n.t('Context compaction failed'), {
+					toast.error($i18n.t('Context compaction failed'), {
 						id: contextCompactionToastId,
 						duration: 3000
 					});
 				} else {
-					toast.success(i18n.t('Context compacted'), {
+					toast.success($i18n.t('Context compacted'), {
 						id: contextCompactionToastId,
 						duration: 1800
 					});
@@ -604,13 +602,13 @@
 		}
 
 		if (contextCompactionToastId === null) {
-			contextCompactionToastId = toast.loading(i18n.t('Compacting context'), {
+			contextCompactionToastId = toast.loading($i18n.t('Compacting context'), {
 				duration: Infinity
 			});
 		}
 	};
 
-	const chatEventHandler = async (event: any, cb: any) => {
+	const chatEventHandler = async (event, cb) => {
 		console.log(event);
 
 		if (event.chat_id === $chatId) {
@@ -763,7 +761,7 @@
 						if (cb) {
 							cb(result);
 						}
-					} catch (error: any) {
+					} catch (error) {
 						console.error('Error executing code:', error);
 					}
 				} else if (type === 'input') {
@@ -826,7 +824,7 @@
 					submitHandler(prompt);
 				} else {
 					eventConfirmationInput = false;
-					eventConfirmationTitle = i18n.t('Confirm Prompt from Embed');
+					eventConfirmationTitle = $i18n.t('Confirm Prompt from Embed');
 					eventConfirmationMessage = prompt;
 					eventCallback = async (confirmed: boolean) => {
 						if (confirmed) {
@@ -859,7 +857,7 @@
 					submitHandler(event.data.text);
 				} else {
 					eventConfirmationInput = false;
-					eventConfirmationTitle = i18n.t('Confirm Prompt from Embed');
+					eventConfirmationTitle = $i18n.t('Confirm Prompt from Embed');
 					eventConfirmationMessage = event.data.text;
 					eventCallback = async (confirmed: boolean) => {
 						if (confirmed) {
@@ -900,7 +898,7 @@
 
 	const hasPendingAssistantLeaf = () =>
 		Object.values(history.messages).some(
-			(message) =>
+			(message: any) =>
 				message?.role === 'assistant' && !message.done && (message.childrenIds?.length ?? 0) === 0
 		);
 
@@ -914,8 +912,8 @@
 		}
 
 		const pendingTaskIds = await getTaskIdsByChatId(localStorage.token, $chatId)
-			.then(async (res)=> res?.task_ids ?? [])
-			.catch(async ()=> null);
+			.then((res) => res?.task_ids ?? [])
+			.catch(() => null);
 
 		if (pendingTaskIds?.length === 0) {
 			await loadChat();
@@ -931,7 +929,9 @@
 
 		$audioQueue?.destroy();
 
-		const audioQueueInstance = new AudioQueue(document.getElementById('audioElement'));
+		const audioQueueInstance = new AudioQueue(
+			document.getElementById('audioElement') as HTMLAudioElement
+		);
 		audioQueue.set(audioQueueInstance);
 
 		// Restore direct terminal enabled states based on persisted selectedTerminalId
@@ -950,7 +950,7 @@
 			selectedTerminalId.set(null);
 		}
 
-		const pageSubscribe = page.subscribe(async (p: any) => {
+		const pageSubscribe = page.subscribe(async (p) => {
 			if (p.url.pathname === '/') {
 				await tick();
 				initNewChat();
@@ -959,7 +959,7 @@
 			stopAudio();
 		});
 
-		const showControlsSubscribe = showControls.subscribe(async (value: any) => {
+		const showControlsSubscribe = showControls.subscribe(async (value) => {
 			await tick();
 			if (controlPane && !$mobile) {
 				try {
@@ -980,7 +980,7 @@
 			}
 		});
 
-		const selectedFolderSubscribe = selectedFolder.subscribe(async (folder: any) => {
+		const selectedFolderSubscribe = selectedFolder.subscribe(async (folder) => {
 			await tick();
 			if (folder?.data?.model_ids && !equal(selectedModels, folder.data.model_ids)) {
 				selectedModels = folder.data.model_ids;
@@ -1056,13 +1056,13 @@
 
 	// File upload functions
 
-	const uploadGoogleDriveFile = async (fileData: any) => {
+	const uploadGoogleDriveFile = async (fileData) => {
 		console.log('Starting uploadGoogleDriveFile with:', {
 			id: fileData.id,
 			name: fileData.name,
 			url: fileData.url,
 			headers: {
-				Authorization: `Bearer ${token}`
+				Authorization: `Bearer ${localStorage.token}`
 			}
 		});
 
@@ -1140,7 +1140,7 @@
 			}
 
 			// If the file is an audio file, provide the language for STT.
-			let metadata: any = null;
+			let metadata = null;
 			if (
 				(file.type.startsWith('audio/') || file.type.startsWith('video/')) &&
 				$settings?.audio?.stt?.language
@@ -1169,21 +1169,21 @@
 			fileItem.url = `${uploadedFile.id}`;
 
 			files = files;
-			toast.success(i18n.t('File uploaded successfully'));
-		} catch (e: any) {
+			toast.success($i18n.t('File uploaded successfully'));
+		} catch (e) {
 			console.error('Error uploading file:', e);
 			files = files.filter((f) => f.itemId !== tempItemId);
 			toast.error(
-				i18n.t('Error uploading file: {{error}}', {
+				$i18n.t('Error uploading file: {{error}}', {
 					error: e.message || 'Unknown error'
 				})
 			);
 		}
 	};
 
-	const uploadWeb = async (urls: any) => {
+	const uploadWeb = async (urls) => {
 		if ($user?.role !== 'admin' && !($user?.permissions?.chat?.web_upload ?? true)) {
-			toast.error(i18n.t('You do not have permission to upload web content.'));
+			toast.error($i18n.t('You do not have permission to upload web content.'));
 			return;
 		}
 
@@ -1221,14 +1221,14 @@
 				}
 
 				files = [...files];
-			} catch (e: any) {
-				files = files.filter((f) => f.name !== url);
+			} catch (e) {
+				files = files.filter((f) => f.name !== fileItem.url);
 				toast.error(`${e}`);
 			}
 		}
 	};
 
-	const onUpload = async (event: any) => {
+	const onUpload = async (event) => {
 		const { type, data } = event;
 
 		if (type === 'google-drive') {
@@ -1238,7 +1238,7 @@
 		}
 	};
 
-	const onHistoryChange = (history: any) => {
+	const onHistoryChange = (history) => {
 		if (history) {
 			clearTimeout(contentsRAF);
 			contentsRAF = setTimeout(() => {
@@ -1252,7 +1252,7 @@
 
 	$: onHistoryChange(history);
 
-	const dispatchCallOverlayAudio = (message: any, final = false) => {
+	const dispatchCallOverlayAudio = (message, final = false) => {
 		if (!$showCallOverlay) {
 			return;
 		}
@@ -1286,7 +1286,7 @@
 
 	const getContents = () => {
 		const messages = history ? createMessagesList(history, history.currentId) : [];
-		let contents: any = [];
+		let contents = [];
 		messages.forEach((message) => {
 			if (message?.role !== 'user') {
 				const messageContent =
@@ -1295,8 +1295,9 @@
 					return;
 				}
 
-				const { codeBlocks: codeBlocks, htmlGroups: htmlGroups } =
-					getCodeBlockContents(messageContent);
+				const { codeBlocks: codeBlocks, htmlGroups: htmlGroups } = getCodeBlockContents(
+					messageContent
+				) as any;
 
 				if (htmlGroups && htmlGroups.length > 0) {
 					htmlGroups.forEach((group) => {
@@ -1461,7 +1462,7 @@
 		await showArtifacts.set(false);
 
 		if ($page.url.pathname.includes('/c/')) {
-			window.history.replaceState(history.state, '', `/`);
+			window.history.replaceState(window.history.state, '', `/`);
 		}
 
 		autoScroll = true;
@@ -1476,7 +1477,7 @@
 		};
 
 		chatFiles = [];
-		params = {};
+		params = {} as any;
 		taskIds = null;
 		chatTasks = [];
 
@@ -1594,13 +1595,13 @@
 			temporaryChatEnabled.set(false);
 		}
 
-		chat = await getChatById(localStorage.token, $chatId).catch(async (error: any)=> {
+		chat = await getChatById(localStorage.token, $chatId).catch(async (error) => {
 			await goto('/');
 			return null;
 		});
 
 		if (chat) {
-			tags = await getTagsById(localStorage.token, $chatId).catch((error: any) => {
+			tags = await getTagsById(localStorage.token, $chatId).catch(async (error) => {
 				return [];
 			});
 
@@ -1642,7 +1643,7 @@
 
 				// Mark all non-current assistant messages as done
 				if (history.currentId) {
-					for (const message of Object.values(history.messages)) {
+					for (const message of Object.values(history.messages) as any[]) {
 						if (
 							message &&
 							message.role === 'assistant' &&
@@ -1686,7 +1687,7 @@
 		}
 	};
 
-	const scrollToBottom = async (behavior: any = 'auto') => {
+	const scrollToBottom = async (behavior = 'auto' as any) => {
 		await tick();
 		if (messagesContainerElement) {
 			messagesContainerElement.scrollTo({
@@ -1723,8 +1724,8 @@
 		await messagesRef?.scrollToTop();
 	};
 
-	let scrollRAF: any = null;
-	let contentsRAF: any = null;
+	let scrollRAF = null;
+	let contentsRAF = null;
 	const scheduleScrollToBottom = () => {
 		if (!scrollRAF) {
 			scrollRAF = requestAnimationFrame(async () => {
@@ -1758,7 +1759,7 @@
 		}
 	};
 
-	const chatCompletedHandler = async (_chatId: any, modelId: any, responseMessageId: any, messages: any) => {
+	const chatCompletedHandler = async (_chatId, modelId, responseMessageId, messages) => {
 		// Backend handles outlet filters and persistence inline.
 		// Just refresh the sidebar chat list.
 		if ($chatId == _chatId && !$temporaryChatEnabled) {
@@ -1767,7 +1768,7 @@
 		}
 	};
 
-	const chatActionHandler = async (_chatId: any, actionId: any, modelId: any, responseMessageId: any, event: any = null) => {
+	const chatActionHandler = async (_chatId, actionId, modelId, responseMessageId, event = null) => {
 		const messages = createMessagesList(history, responseMessageId);
 
 		const res = await chatAction(localStorage.token, actionId, {
@@ -1779,13 +1780,13 @@
 				info: m.info ? m.info : undefined,
 				timestamp: m.timestamp,
 				...(m.sources ? { sources: m.sources } : {})
-			})),
+			})) as any,
 			...(event ? { event: event } : {}),
 			model_item: $models.find((m) => m.id === modelId),
 			chat_id: _chatId,
 			session_id: $socket?.id,
 			id: responseMessageId
-		}).catch((error) => {
+		} as any).catch((error) => {
 			toast.error(`${error}`);
 			messages.at(-1).error = { content: error };
 			return null;
@@ -1830,16 +1831,16 @@
 		}, 1000);
 	};
 
-	const createMessagePair = async (userPrompt: any) => {
+	const createMessagePair = async (userPrompt) => {
 		messageInput?.setText('');
 		if (selectedModels.length === 0) {
-			toast.error(i18n.t('Model not selected'));
+			toast.error($i18n.t('Model not selected'));
 		} else {
 			const modelId = selectedModels[0];
 			const model = $models.filter((m) => m.id === modelId).at(0);
 
 			if (!model) {
-				toast.error(i18n.t('Model not found'));
+				toast.error($i18n.t('Model not found'));
 				return;
 			}
 
@@ -1895,7 +1896,7 @@
 		}
 	};
 
-	const addMessages = async ({ modelId, parentId, messages }: any) => {
+	const addMessages = async ({ modelId, parentId, messages }) => {
 		const model = $models.filter((m) => m.id === modelId).at(0);
 
 		let parentMessage = history.messages[parentId];
@@ -1958,7 +1959,7 @@
 		}
 	};
 
-	const chatCompletionEventHandler = async (data: any, message: any, chatId: any) => {
+	const chatCompletionEventHandler = async (data, message, chatId) => {
 		const { id, done, choices, content, output, sources, selected_model_id, error, usage } = data;
 
 		// Store raw OR-aligned output items from backend
@@ -2076,7 +2077,7 @@
 	// Chat functions
 	//////////////////////////
 
-	const submitPrompt = async (inputContent: any, inputFiles: any) => {
+	const submitPrompt = async (inputContent, inputFiles) => {
 		const _files = structuredClone(inputFiles);
 
 		chatFiles.push(
@@ -2125,7 +2126,7 @@
 		await sendMessage(history, userMessageId);
 	};
 
-	const submitHandler = async (userPrompt: any { _raw = false } = {}) => {
+	const submitHandler = async (userPrompt, { _raw = false } = {}) => {
 		console.log('submitHandler', userPrompt, $chatId);
 
 		const _selectedModels = selectedModels.map((modelId) =>
@@ -2137,15 +2138,15 @@
 		}
 
 		if (pendingOAuthTools.length > 0) {
-			toast.warning(i18n.t('Please connect all required integrations before sending a message'));
+			toast.warning($i18n.t('Please connect all required integrations before sending a message'));
 			return;
 		}
 		if (userPrompt === '' && files.length === 0) {
-			toast.error(i18n.t('Please enter a prompt'));
+			toast.error($i18n.t('Please enter a prompt'));
 			return;
 		}
 		if (selectedModels.includes('')) {
-			toast.error(i18n.t('Model not selected'));
+			toast.error($i18n.t('Model not selected'));
 			return;
 		}
 
@@ -2154,7 +2155,7 @@
 			files.filter((file) => file.type !== 'image' && file.status === 'uploading').length > 0
 		) {
 			toast.error(
-				i18n.t(`Oops! There are files still uploading. Please wait for the upload to complete.`)
+				$i18n.t(`Oops! There are files still uploading. Please wait for the upload to complete.`)
 			);
 			return;
 		}
@@ -2164,7 +2165,7 @@
 			files.length + chatFiles.length > $config?.file?.max_count
 		) {
 			toast.error(
-				i18n.t(`You can only chat with a maximum of {{maxCount}} file(s) at a time.`, {
+				$i18n.t(`You can only chat with a maximum of {{maxCount}} file(s) at a time.`, {
 					maxCount: $config?.file?.max_count
 				})
 			);
@@ -2211,7 +2212,7 @@
 
 			if (currentMessage.error && !currentMessage.content) {
 				// Error in response
-				toast.error(i18n.t(`Oops! There was an error in the previous response.`));
+				toast.error($i18n.t(`Oops! There was an error in the previous response.`));
 				return;
 			}
 		}
@@ -2227,8 +2228,8 @@
 	};
 
 	const sendMessage = async (
-		_history: any
-		parentId: string
+		_history,
+		parentId: string,
 		{
 			messages = null,
 			modelId = null,
@@ -2250,7 +2251,7 @@
 
 		const responseMessageIds: Record<PropertyKey, string> = {};
 		// If modelId is provided, use it, else use selected model
-		let selectedModelIds: any = modelId
+		let selectedModelIds = modelId
 			? [modelId]
 			: atSelectedModel !== undefined
 				? [atSelectedModel.id]
@@ -2322,11 +2323,11 @@
 
 				if (
 					hasImages &&
-					!(model.info?.meta?.capabilities?.vision ?? true) &&
+					!((model.info?.meta as any)?.capabilities?.vision ?? true) &&
 					!imageGenerationEnabled
 				) {
 					toast.error(
-						i18n.t('Model {{modelName}} is not vision capable', {
+						$i18n.t('Model {{modelName}} is not vision capable', {
 							modelName: model.name ?? model.id
 						})
 					);
@@ -2364,7 +2365,7 @@
 	};
 
 	const getFeatures = () => {
-		let features: Record<string, any> = {};
+		let features = {};
 
 		if ($config?.features)
 			features = {
@@ -2401,11 +2402,11 @@
 	};
 
 	const sendMessageSocket = async (
-		model: any
-		_messages: any
-		_history: any
-		responseMessageId: any
-		_chatId: any
+		model,
+		_messages,
+		_history,
+		responseMessageId,
+		_chatId,
 		{
 			messageIdsList,
 			regenerationPrompt,
@@ -2429,7 +2430,7 @@
 			return fileExists;
 		});
 
-		let files: any = structuredClone(chatFiles);
+		let files = structuredClone(chatFiles);
 		files.push(
 			...(userMessage?.files ?? []).filter(
 				(item) =>
@@ -2521,8 +2522,8 @@
 				);
 		}
 
-		const toolIds: any[] = [];
-		const toolServerIds: any = [];
+		const toolIds = [];
+		const toolServerIds = [];
 
 		for (const toolId of selectedToolIds) {
 			if (toolId.startsWith('direct_server:')) {
@@ -2613,7 +2614,7 @@
 					: {})
 			},
 			`${WEBUI_BASE_URL}/api`
-		).catch((error: any) => {
+		).catch(async (error) => {
 			console.log(error);
 
 			let errorMessage = error;
@@ -2624,7 +2625,7 @@
 			}
 
 			if (typeof errorMessage === 'object') {
-				errorMessage = i18n.t(`Uh-oh! There was an issue with the response.`);
+				errorMessage = $i18n.t(`Uh-oh! There was an issue with the response.`);
 			}
 
 			toast.error(`${errorMessage}`);
@@ -2657,7 +2658,7 @@
 				if (res.chat_id && $chatId !== res.chat_id && $chatId === _chatId) {
 					await chatId.set(res.chat_id);
 					if (!$temporaryChatEnabled) {
-						window.history.replaceState(history.state, '', `/c/${res.chat_id}`);
+						window.history.replaceState(window.history.state, '', `/c/${res.chat_id}`);
 						currentChatPage.set(1);
 						await chats.set(await getChatList(localStorage.token, $currentChatPage));
 
@@ -2679,7 +2680,7 @@
 		scrollToBottom();
 	};
 
-	const handleOpenAIError = async (error: any, responseMessage: any) => {
+	const handleOpenAIError = async (error, responseMessage) => {
 		let errorMessage = '';
 		let innerError;
 
@@ -2708,7 +2709,7 @@
 		}
 
 		responseMessage.error = {
-			content: i18n.t(`Uh-oh! There was an issue with the response.`) + '\n' + errorMessage
+			content: $i18n.t(`Uh-oh! There was an issue with the response.`) + '\n' + errorMessage
 		};
 		responseMessage.done = true;
 
@@ -2721,10 +2722,10 @@
 		history.messages[responseMessage.id] = responseMessage;
 	};
 
-	const stopResponse = (processQueue: any = true) => {
+	const stopResponse = async (processQueue = true) => {
 		if (taskIds) {
 			if ($chatId) {
-				await stopTasksByChatId(localStorage.token, $chatId).catch(async (error)=> {
+				await stopTasksByChatId(localStorage.token, $chatId).catch((error) => {
 					toast.error(`${error}`);
 					return null;
 				});
@@ -2765,7 +2766,7 @@
 		}
 	};
 
-	const submitMessage = async (parentId: any, prompt: any) => {
+	const submitMessage = async (parentId, prompt) => {
 		let userPrompt = prompt;
 		let userMessageId = uuidv4();
 
@@ -2798,14 +2799,14 @@
 		await sendMessage(history, userMessageId);
 	};
 
-	const regenerateResponse = (message: any, suggestionPrompt: any = null) => {
+	const regenerateResponse = async (message, suggestionPrompt = null) => {
 		console.log('regenerateResponse');
 
 		if (history.currentId) {
 			let userMessage = history.messages[message.parentId];
 
 			if (!userMessage) {
-				toast.error(i18n.t('Parent message not found'));
+				toast.error($i18n.t('Parent message not found'));
 				return;
 			}
 
@@ -2857,7 +2858,7 @@
 		}
 	};
 
-	const mergeResponses = async (messageId: any, responses: any, _chatId: any) => {
+	const mergeResponses = async (messageId, responses, _chatId) => {
 		console.log('mergeResponses', messageId, responses);
 		const message = history.messages[messageId];
 		const mergedResponse = {
@@ -2906,12 +2907,12 @@
 			} else {
 				console.error(res);
 			}
-		} catch (e: any) {
+		} catch (e) {
 			console.error(e);
 		}
 	};
 
-	const initChatHandler = async (history: any) => {
+	const initChatHandler = async (history) => {
 		let _chatId = $chatId;
 
 		if (!$temporaryChatEnabled) {
@@ -2919,7 +2920,7 @@
 				localStorage.token,
 				{
 					id: _chatId,
-					title: i18n.t('New Chat'),
+					title: $i18n.t('New Chat'),
 					models: selectedModels,
 					system: $settings.system ?? undefined,
 					params: params,
@@ -2934,7 +2935,7 @@
 			_chatId = chat.id;
 			await chatId.set(_chatId);
 
-			window.history.replaceState(history.state, '', `/c/${_chatId}`);
+			window.history.replaceState(window.history.state, '', `/c/${_chatId}`);
 
 			await tick();
 
@@ -2951,7 +2952,7 @@
 		return _chatId;
 	};
 
-	const saveChatHandler = async (_chatId: any, history: any) => {
+	const saveChatHandler = async (_chatId, history) => {
 		if ($chatId == _chatId) {
 			if (!$temporaryChatEnabled) {
 				chat = await updateChatById(localStorage.token, _chatId, {
@@ -3008,9 +3009,10 @@
 		await sessionStorage.removeItem(`chat-input${chatId ? `-${chatId}` : ''}`);
 	};
 
-	const moveChatHandler = async (chatId: any, folderId: any) => {
+	const moveChatHandler = async (chatId, folderId) => {
 		if (chatId && folderId) {
-			const res = await updateChatFolderIdById(localStorage.token, chatId, folderId).catch(async (error)=> {
+			const res = await updateChatFolderIdById(localStorage.token, chatId, folderId).catch(
+				(error) => {
 					toast.error(`${error}`);
 					return null;
 				}
@@ -3021,10 +3023,10 @@
 				await chats.set(await getChatList(localStorage.token, $currentChatPage));
 				await pinnedChats.set(await getPinnedChatList(localStorage.token));
 
-				toast.success(i18n.t('Chat moved successfully'));
+				toast.success($i18n.t('Chat moved successfully'));
 			}
 		} else {
-			toast.error(i18n.t('Failed to move chat'));
+			toast.error($i18n.t('Failed to move chat'));
 		}
 	};
 
@@ -3036,10 +3038,10 @@
 			await goto('/');
 			chats.set(await getChatList(localStorage.token, $currentChatPage));
 			pinnedChats.set(await getPinnedChatList(localStorage.token));
-			toast.success(i18n.t('Chat archived.'));
-		} catch (error: any) {
+			toast.success($i18n.t('Chat archived.'));
+		} catch (error) {
 			console.error('Error archiving chat:', error);
-			toast.error(i18n.t('Failed to archive chat.'));
+			toast.error($i18n.t('Failed to archive chat.'));
 		}
 	};
 
@@ -3074,9 +3076,9 @@
 				chats.set(await getChatList(localStorage.token, $currentChatPage));
 				pinnedChats.set(await getPinnedChatList(localStorage.token));
 				allTags.set(await getAllTags(localStorage.token));
-				toast.success(i18n.t('Chat deleted.'));
+				toast.success($i18n.t('Chat deleted.'));
 			}
-		} catch (error: any) {
+		} catch (error) {
 			console.error('Error deleting chat:', error);
 			toast.error(`${error}`);
 		}
@@ -3084,28 +3086,23 @@
 </script>
 
 <svelte:head>
-			<title>
+	<title>
 		{$settings.showChatTitleInTab !== false && $chatTitle
 			? `${$chatTitle.length > 30 ? `${$chatTitle.slice(0, 30)}...` : $chatTitle} • ${$WEBUI_NAME}`
 			: `${$WEBUI_NAME}`}
 	</title>
-			<title>
-		{$settings.showChatTitleInTab !== false && $chatTitle
-			? `${$chatTitle.length > 30 ? `${$chatTitle.slice(0, 30)}...` : $chatTitle} • ${$WEBUI_NAME}`
-			: `${$WEBUI_NAME}`}
-	</title>
-		</svelte:head>
+</svelte:head>
 
 <audio id="audioElement" style="display: none;"></audio>
 
 <WebSearchConfirmDialog
 	bind:show={showWebSearchConfirm}
-	title={i18n.t('Use Web Search?')}
+	title={$i18n.t('Use Web Search?')}
 	message={($config?.features?.web_search_confirmation_content ?? '').trim() !== ''
 		? ($config?.features?.web_search_confirmation_content ?? '')
-		: i18n.t('Your query will be sent to the configured web search provider.')}
-	confirmLabel={i18n.t('Continue')}
-	cancelLabel={i18n.t('Cancel')}
+		: $i18n.t('Your query will be sent to the configured web search provider.')}
+	confirmLabel={$i18n.t('Continue')}
+	cancelLabel={$i18n.t('Cancel')}
 	on:confirm={confirmWebSearch}
 	on:cancel={() => {
 		if (pendingWebSearchPrompt === null) {
@@ -3117,13 +3114,13 @@
 
 <DeleteConfirmDialog
 	bind:show={showDeleteConfirm}
-	title={i18n.t('Delete chat?')}
+	title={$i18n.t('Delete chat?')}
 	on:confirm={() => {
 		confirmDeleteChat();
 	}}
 >
 	<div class=" text-sm text-gray-500 flex-1 line-clamp-3">
-		{i18n.t('This will delete')} <span class="  font-semibold">{$chatTitle}</span>.
+		{$i18n.t('This will delete')} <span class="  font-semibold">{$chatTitle}</span>.
 	</div>
 </DeleteConfirmDialog>
 
@@ -3136,7 +3133,7 @@
 	inputValue={eventConfirmationInputValue}
 	inputType={eventConfirmationInputType}
 	inputOptions={eventConfirmationInputOptions}
-	on:confirm={(e: any) => {
+	on:confirm={(e) => {
 		if (eventConfirmationInput) {
 			eventCallback(e.detail);
 		} else if (e.detail) {
@@ -3162,21 +3159,21 @@
 				<div
 					class="absolute top-0 left-0 w-full h-full bg-cover bg-center bg-no-repeat"
 					style="background-image: url({$selectedFolder?.meta?.background_image_url})  "
-				></div>
+				/>
 
 				<div
 					class="absolute top-0 left-0 w-full h-full bg-linear-to-t from-white to-white/85 dark:from-gray-900 dark:to-gray-900/90 z-0"
-				></div>
+				/>
 			{:else if $settings?.backgroundImageUrl ?? $config?.license_metadata?.background_image_url ?? null}
 				<div
 					class="absolute top-0 left-0 w-full h-full bg-cover bg-center bg-no-repeat"
 					style="background-image: url({$settings?.backgroundImageUrl ??
 						$config?.license_metadata?.background_image_url})  "
-				></div>
+				/>
 
 				<div
 					class="absolute top-0 left-0 w-full h-full bg-linear-to-t from-white to-white/85 dark:from-gray-900 dark:to-gray-900/90 z-0"
-				></div>
+				/>
 			{/if}
 
 			<PaneGroup direction="horizontal" class="w-full h-full">
@@ -3208,12 +3205,12 @@
 						onSaveTempChat={async () => {
 							try {
 								if (!history?.currentId || !Object.keys(history.messages).length) {
-									toast.error(i18n.t('No conversation to save'));
+									toast.error($i18n.t('No conversation to save'));
 									return;
 								}
 								const messages = createMessagesList(history, history.currentId);
 								const title =
-									messages.find((m) => m.role === 'user')?.content ?? i18n.t('New Chat');
+									messages.find((m) => m.role === 'user')?.content ?? $i18n.t('New Chat');
 
 								const savedChat = await createNewChat(
 									localStorage.token,
@@ -3235,11 +3232,11 @@
 									chats.set(await getChatList(localStorage.token, $currentChatPage));
 
 									await goto(`/c/${savedChat.id}`);
-									toast.success(i18n.t('Conversation saved successfully'));
+									toast.success($i18n.t('Conversation saved successfully'));
 								}
-							} catch (error: any) {
+							} catch (error) {
 								console.error('Error saving conversation:', error);
-								toast.error(i18n.t('Failed to save conversation'));
+								toast.error($i18n.t('Failed to save conversation'));
 							}
 						}}
 					/>
@@ -3250,7 +3247,7 @@
 								class=" pb-2.5 flex flex-col justify-between w-full flex-auto overflow-auto h-0 max-w-full z-10 scrollbar-hidden"
 								id="messages-container"
 								bind:this={messagesContainerElement}
-								on:scroll={(e: any) => {
+								on:scroll={(e) => {
 									autoScroll =
 										messagesContainerElement.scrollHeight - messagesContainerElement.scrollTop <=
 										messagesContainerElement.clientHeight + 5;
@@ -3265,7 +3262,7 @@
 										bind:history
 										bind:autoScroll
 										bind:prompt
-										setInputText={(text: any) => {
+										setInputText={(text) => {
 											messageInput?.setText(text);
 										}}
 										{selectedModels}
@@ -3288,7 +3285,7 @@
 							{#if readOnly}
 								<div class="pb-6 z-10">
 									<div class="text-xs text-gray-400 dark:text-gray-500 text-center">
-										{i18n.t('Read only')}
+										{$i18n.t('Read only')}
 									</div>
 								</div>
 							{:else}
@@ -3318,7 +3315,7 @@
 										{onUpload}
 										messageQueue={$chatRequestQueues[$chatId] ?? []}
 										{chatTasks}
-										onQueueSendNow={async (id: any) => {
+										onQueueSendNow={async (id) => {
 											const queue = $chatRequestQueues[$chatId] ?? [];
 											const item = queue.find((m) => m.id === id);
 											if (item) {
@@ -3332,7 +3329,7 @@
 												await submitPrompt(item.prompt, item.files);
 											}
 										}}
-										onQueueEdit={(id: any) => {
+										onQueueEdit={(id) => {
 											const queue = $chatRequestQueues[$chatId] ?? [];
 											const item = queue.find((m) => m.id === id);
 											if (item) {
@@ -3346,20 +3343,20 @@
 												messageInput?.setText(item.prompt);
 											}
 										}}
-										onQueueDelete={(id: any) => {
+										onQueueDelete={(id) => {
 											const queue = $chatRequestQueues[$chatId] ?? [];
 											chatRequestQueues.update((q) => ({
 												...q,
 												[$chatId]: queue.filter((m) => m.id !== id)
 											}));
 										}}
-										onChange={(data: any) => {
+										onChange={(data) => {
 											if (!$temporaryChatEnabled) {
 												saveDraft(data, $chatId);
 											}
 										}}
 										onWebSearchToggle={handleWebSearchToggle}
-										on:submit={async (e: any) => {
+										on:submit={async (e) => {
 											clearDraft($chatId);
 											if (e.detail || files.length > 0) {
 												await tick();
@@ -3372,7 +3369,7 @@
 									<div
 										class="absolute bottom-1 text-xs text-gray-500 text-center line-clamp-1 right-0 left-0"
 									>
-										<!-- {i18n.t('LLMs can make mistakes. Verify important information.')} -->
+										<!-- {$i18n.t('LLMs can make mistakes. Verify important information.')} -->
 									</div>
 								</div>
 							{/if}
@@ -3380,7 +3377,7 @@
 							<div class="flex items-center h-full">
 								<Placeholder
 									{history}
-									{selectedModels}
+									selectedModels={selectedModels as any}
 									bind:messageInput
 									bind:files
 									bind:prompt
@@ -3401,12 +3398,12 @@
 									{onSelect}
 									{onUpload}
 									onWebSearchToggle={handleWebSearchToggle}
-									onChange={(data: any) => {
+									onChange={(data) => {
 										if (!$temporaryChatEnabled) {
 											saveDraft(data);
 										}
 									}}
-									on:submit={async (e: any) => {
+									on:submit={async (e) => {
 										clearDraft();
 										if (e.detail || files.length > 0) {
 											await tick();
@@ -3457,369 +3454,4 @@
 		height: 0.5rem;
 		width: 0.5rem;
 	}
-
-	::-webkit-scrollbar {
-		height: 0.5rem;
-		width: 0.5rem;
-	}
 </style>
-
-
-
-<audio id="audioElement" style="display: none;"></audio>
-
-<WebSearchConfirmDialog
-	bind:show={showWebSearchConfirm}
-	title={i18n.t('Use Web Search?')}
-	message={($config?.features?.web_search_confirmation_content ?? '').trim() !== ''
-		? ($config?.features?.web_search_confirmation_content ?? '')
-		: i18n.t('Your query will be sent to the configured web search provider.')}
-	confirmLabel={i18n.t('Continue')}
-	cancelLabel={i18n.t('Cancel')}
-	on:confirm={confirmWebSearch}
-	on:cancel={() => {
-		if (pendingWebSearchPrompt === null) {
-			webSearchEnabled = false;
-		}
-		pendingWebSearchPrompt = null;
-	}}
-/>
-
-<DeleteConfirmDialog
-	bind:show={showDeleteConfirm}
-	title={i18n.t('Delete chat?')}
-	on:confirm={() => {
-		confirmDeleteChat();
-	}}
->
-	<div class=" text-sm text-gray-500 flex-1 line-clamp-3">
-		{i18n.t('This will delete')} <span class="  font-semibold">{$chatTitle}</span>.
-	</div>
-</DeleteConfirmDialog>
-
-<EventConfirmDialog
-	bind:show={showEventConfirmation}
-	title={eventConfirmationTitle}
-	message={eventConfirmationMessage}
-	input={eventConfirmationInput}
-	inputPlaceholder={eventConfirmationInputPlaceholder}
-	inputValue={eventConfirmationInputValue}
-	inputType={eventConfirmationInputType}
-	inputOptions={eventConfirmationInputOptions}
-	on:confirm={(e: any) => {
-		if (eventConfirmationInput) {
-			eventCallback(e.detail);
-		} else if (e.detail) {
-			eventCallback(e.detail);
-		} else {
-			eventCallback(true);
-		}
-	}}
-	on:cancel={() => {
-		eventCallback(false);
-	}}
-/>
-
-<div
-	class="h-screen max-h-[100dvh] transition-width duration-200 ease-in-out {$showSidebar
-		? '  md:max-w-[calc(100%-var(--sidebar-width))]'
-		: ' '} w-full max-w-full flex flex-col"
-	id="chat-container"
->
-	{#if !loading}
-		<div in:fade={{ duration: 50 }} class="w-full h-full flex flex-col">
-			{#if $selectedFolder && $selectedFolder?.meta?.background_image_url}
-				<div
-					class="absolute top-0 left-0 w-full h-full bg-cover bg-center bg-no-repeat"
-					style="background-image: url({$selectedFolder?.meta?.background_image_url})  "
-				></div>
-
-				<div
-					class="absolute top-0 left-0 w-full h-full bg-linear-to-t from-white to-white/85 dark:from-gray-900 dark:to-gray-900/90 z-0"
-				></div>
-			{:else if $settings?.backgroundImageUrl ?? $config?.license_metadata?.background_image_url ?? null}
-				<div
-					class="absolute top-0 left-0 w-full h-full bg-cover bg-center bg-no-repeat"
-					style="background-image: url({$settings?.backgroundImageUrl ??
-						$config?.license_metadata?.background_image_url})  "
-				></div>
-
-				<div
-					class="absolute top-0 left-0 w-full h-full bg-linear-to-t from-white to-white/85 dark:from-gray-900 dark:to-gray-900/90 z-0"
-				></div>
-			{/if}
-
-			<PaneGroup direction="horizontal" class="w-full h-full">
-				<Pane defaultSize={50} minSize={30} class="h-full flex relative max-w-full flex-col">
-					<FilesOverlay show={dragged} />
-					<Navbar
-						bind:this={navbarElement}
-						{readOnly}
-						chat={{
-							id: $chatId,
-							chat: {
-								title: $chatTitle,
-								models: selectedModels,
-								system: $settings.system ?? undefined,
-								params: params,
-								history: history,
-								timestamp: Date.now()
-							}
-						}}
-						{history}
-						title={$chatTitle}
-						bind:selectedModels
-						shareEnabled={!!history.currentId}
-						{initNewChat}
-						scrollToTop={!isNearTop ? scrollToTop : null}
-						{archiveChatHandler}
-						{deleteChatHandler}
-						{moveChatHandler}
-						onSaveTempChat={async () => {
-							try {
-								if (!history?.currentId || !Object.keys(history.messages).length) {
-									toast.error(i18n.t('No conversation to save'));
-									return;
-								}
-								const messages = createMessagesList(history, history.currentId);
-								const title =
-									messages.find((m) => m.role === 'user')?.content ?? i18n.t('New Chat');
-
-								const savedChat = await createNewChat(
-									localStorage.token,
-									{
-										id: uuidv4(),
-										title: title.length > 50 ? `${title.slice(0, 50)}...` : title,
-										models: selectedModels,
-										params: params,
-										history: history,
-										messages: messages,
-										timestamp: Date.now()
-									},
-									null
-								);
-
-								if (savedChat) {
-									temporaryChatEnabled.set(false);
-									chatId.set(savedChat.id);
-									chats.set(await getChatList(localStorage.token, $currentChatPage));
-
-									await goto(`/c/${savedChat.id}`);
-									toast.success(i18n.t('Conversation saved successfully'));
-								}
-							} catch (error: any) {
-								console.error('Error saving conversation:', error);
-								toast.error(i18n.t('Failed to save conversation'));
-							}
-						}}
-					/>
-
-					<div id="chat-pane" class="flex flex-col flex-auto z-10 w-full @container overflow-auto">
-						{#if ($settings?.landingPageMode === 'chat' && !$selectedFolder) || createMessagesList(history, history.currentId).length > 0}
-							<div
-								class=" pb-2.5 flex flex-col justify-between w-full flex-auto overflow-auto h-0 max-w-full z-10 scrollbar-hidden"
-								id="messages-container"
-								bind:this={messagesContainerElement}
-								on:scroll={(e: any) => {
-									autoScroll =
-										messagesContainerElement.scrollHeight - messagesContainerElement.scrollTop <=
-										messagesContainerElement.clientHeight + 5;
-									isNearTop = messagesContainerElement.scrollTop <= 100;
-								}}
-							>
-								<div class=" h-full w-full flex flex-col">
-									<Messages
-										bind:this={messagesRef}
-										chatId={$chatId}
-										{readOnly}
-										bind:history
-										bind:autoScroll
-										bind:prompt
-										setInputText={(text: any) => {
-											messageInput?.setText(text);
-										}}
-										{selectedModels}
-										{atSelectedModel}
-										{sendMessage}
-										{showMessage}
-										{submitMessage}
-										{continueResponse}
-										{regenerateResponse}
-										{mergeResponses}
-										{chatActionHandler}
-										{addMessages}
-										topPadding={true}
-										bottomPadding={files.length > 0}
-										{onSelect}
-									/>
-								</div>
-							</div>
-
-							{#if readOnly}
-								<div class="pb-6 z-10">
-									<div class="text-xs text-gray-400 dark:text-gray-500 text-center">
-										{i18n.t('Read only')}
-									</div>
-								</div>
-							{:else}
-								<div class=" pb-2 {dragged ? 'z-0' : 'z-10'}">
-									<MessageInput
-										bind:this={messageInput}
-										{history}
-										{taskIds}
-										{selectedModels}
-										bind:files
-										bind:prompt
-										bind:autoScroll
-										bind:selectedToolIds
-										bind:selectedSkillIds
-										bind:selectedFilterIds
-										bind:imageGenerationEnabled
-										bind:codeInterpreterEnabled
-										{pendingOAuthTools}
-										bind:webSearchEnabled
-										bind:atSelectedModel
-										bind:showCommands
-										bind:dragged
-										toolServers={$toolServers}
-										{generating}
-										{stopResponse}
-										{createMessagePair}
-										{onUpload}
-										messageQueue={$chatRequestQueues[$chatId] ?? []}
-										{chatTasks}
-										onQueueSendNow={async (id: any) => {
-											const queue = $chatRequestQueues[$chatId] ?? [];
-											const item = queue.find((m) => m.id === id);
-											if (item) {
-												// Remove from queue
-												chatRequestQueues.update((q) => ({
-													...q,
-													[$chatId]: queue.filter((m) => m.id !== id)
-												}));
-												await stopResponse(false);
-												await tick();
-												await submitPrompt(item.prompt, item.files);
-											}
-										}}
-										onQueueEdit={(id: any) => {
-											const queue = $chatRequestQueues[$chatId] ?? [];
-											const item = queue.find((m) => m.id === id);
-											if (item) {
-												// Remove from queue
-												chatRequestQueues.update((q) => ({
-													...q,
-													[$chatId]: queue.filter((m) => m.id !== id)
-												}));
-												// Set files and restore prompt to input
-												files = item.files;
-												messageInput?.setText(item.prompt);
-											}
-										}}
-										onQueueDelete={(id: any) => {
-											const queue = $chatRequestQueues[$chatId] ?? [];
-											chatRequestQueues.update((q) => ({
-												...q,
-												[$chatId]: queue.filter((m) => m.id !== id)
-											}));
-										}}
-										onChange={(data: any) => {
-											if (!$temporaryChatEnabled) {
-												saveDraft(data, $chatId);
-											}
-										}}
-										onWebSearchToggle={handleWebSearchToggle}
-										on:submit={async (e: any) => {
-											clearDraft($chatId);
-											if (e.detail || files.length > 0) {
-												await tick();
-
-												submitHandler(e.detail);
-											}
-										}}
-									/>
-
-									<div
-										class="absolute bottom-1 text-xs text-gray-500 text-center line-clamp-1 right-0 left-0"
-									>
-										<!-- {i18n.t('LLMs can make mistakes. Verify important information.')} -->
-									</div>
-								</div>
-							{/if}
-						{:else}
-							<div class="flex items-center h-full">
-								<Placeholder
-									{history}
-									{selectedModels}
-									bind:messageInput
-									bind:files
-									bind:prompt
-									bind:autoScroll
-									bind:selectedToolIds
-									bind:selectedSkillIds
-									bind:selectedFilterIds
-									bind:imageGenerationEnabled
-									bind:codeInterpreterEnabled
-									bind:webSearchEnabled
-									bind:atSelectedModel
-									bind:showCommands
-									bind:dragged
-									{pendingOAuthTools}
-									toolServers={$toolServers}
-									{stopResponse}
-									{createMessagePair}
-									{onSelect}
-									{onUpload}
-									onWebSearchToggle={handleWebSearchToggle}
-									onChange={(data: any) => {
-										if (!$temporaryChatEnabled) {
-											saveDraft(data);
-										}
-									}}
-									on:submit={async (e: any) => {
-										clearDraft();
-										if (e.detail || files.length > 0) {
-											await tick();
-											submitHandler(e.detail);
-										}
-									}}
-								/>
-							</div>
-						{/if}
-					</div>
-				</Pane>
-
-				<ChatControls
-					bind:this={controlPaneComponent}
-					bind:history
-					bind:chatFiles
-					bind:params
-					bind:files
-					bind:pane={controlPane}
-					chatId={$chatId}
-					modelId={selectedModelIds?.at(0) ?? null}
-					models={selectedModelIds.reduce((a, e, i, arr) => {
-						const model = $models.find((m) => m.id === e);
-						if (model) {
-							return [...a, model];
-						}
-						return a;
-					}, [])}
-					submitPrompt={submitHandler}
-					{stopResponse}
-					{showMessage}
-					{eventTarget}
-					{codeInterpreterEnabled}
-				/>
-			</PaneGroup>
-		</div>
-	{:else if loading}
-		<div class=" flex items-center justify-center h-full w-full">
-			<div class="m-auto">
-				<Spinner className="size-5" />
-			</div>
-		</div>
-	{/if}
-</div>
-
-

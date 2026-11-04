@@ -4,7 +4,7 @@
 	import Search from '$lib/components/icons/Search.svelte';
 	import Collapsible from '$lib/components/common/Collapsible.svelte';
 
-	export let status = { urls: [], query: '' };
+	export let status = { urls: [], query: '', items: [] as any[] };
 	let state = false;
 
 	let searchError: any = null;

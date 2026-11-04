@@ -1,6 +1,6 @@
 import { OLLAMA_API_BASE_URL } from '$lib/constants';
 
-export const verifyOllamaConnection = async (token: string = '', connection: dict = {}) => {
+export const verifyOllamaConnection = async (token: string = '', connection: Record<string, any> = {}) => {
 	let error: any = null;
 
 	const res = await fetch(`${OLLAMA_API_BASE_URL}/verify`, {

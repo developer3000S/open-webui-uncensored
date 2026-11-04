@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 	const dispatch = createEventDispatcher();
@@ -20,7 +20,7 @@
 
 	export let show: any = false;
 	export let edit: any = false;
-	let model: any = null;
+	export let model: any = null;
 
 	let name = '';
 	let id = '';
@@ -64,7 +64,7 @@
 
 		if (!name || !id) {
 			loading = false;
-			toast.error(i18n.t('Name and ID are required, please fill them out'));
+			toast.error($i18n.t('Name and ID are required, please fill them out'));
 			return;
 		}
 
@@ -72,7 +72,7 @@
 			if ($models.find((model) => model.name === name)) {
 				loading = false;
 				name = '';
-				toast.error(i18n.t('Model name already exists, please choose a different one'));
+				toast.error($i18n.t('Model name already exists, please choose a different one'));
 				return;
 			}
 		}
@@ -135,9 +135,9 @@
 		<div class=" flex justify-between dark:text-gray-100 px-5 pt-4 pb-2">
 			<div class=" text-lg font-medium self-center font-primary">
 				{#if edit}
-					{i18n.t('Edit Arena Model')}
+					{$i18n.t('Edit Arena Model')}
 				{:else}
-					{i18n.t('Add Arena Model')}
+					{$i18n.t('Add Arena Model')}
 				{/if}
 			</div>
 			<button
@@ -233,7 +233,7 @@
 								<img
 									src={profileImageUrl}
 									class="size-16 rounded-full object-cover shrink-0"
-									alt={i18n.t('Profile')}
+									alt={$i18n.t('Profile')}
 								/>
 
 								<div
@@ -247,14 +247,14 @@
 						</div>
 						<div class="flex gap-2">
 							<div class="flex flex-col w-full">
-								<div class=" mb-0.5 text-xs text-gray-500">{i18n.t('Name')}</div>
+								<div class=" mb-0.5 text-xs text-gray-500">{$i18n.t('Name')}</div>
 
 								<div class="flex-1">
 									<input
 										class="w-full text-sm bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden"
 										type="text"
 										bind:value={name}
-										placeholder={i18n.t('Model Name')}
+										placeholder={$i18n.t('Model Name')}
 										autocomplete="off"
 										required
 									/>
@@ -262,14 +262,14 @@
 							</div>
 
 							<div class="flex flex-col w-full">
-								<div class=" mb-0.5 text-xs text-gray-500">{i18n.t('ID')}</div>
+								<div class=" mb-0.5 text-xs text-gray-500">{$i18n.t('ID')}</div>
 
 								<div class="flex-1">
 									<input
 										class="w-full text-sm bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden"
 										type="text"
 										bind:value={id}
-										placeholder={i18n.t('Model ID')}
+										placeholder={$i18n.t('Model ID')}
 										autocomplete="off"
 										required
 										disabled={edit}
@@ -279,14 +279,14 @@
 						</div>
 
 						<div class="flex flex-col w-full mt-2">
-							<div class=" mb-1 text-xs text-gray-500">{i18n.t('Description')}</div>
+							<div class=" mb-1 text-xs text-gray-500">{$i18n.t('Description')}</div>
 
 							<div class="flex-1">
 								<input
 									class="w-full text-sm bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden"
 									type="text"
 									bind:value={description}
-									placeholder={i18n.t('Enter description')}
+									placeholder={$i18n.t('Enter description')}
 									autocomplete="off"
 								/>
 							</div>
@@ -302,7 +302,7 @@
 
 						<div class="flex flex-col w-full">
 							<div class="mb-1 flex justify-between">
-								<div class="text-xs text-gray-500">{i18n.t('Models')}</div>
+								<div class="text-xs text-gray-500">{$i18n.t('Models')}</div>
 
 								<div>
 									<button
@@ -313,9 +313,9 @@
 										}}
 									>
 										{#if filterMode === 'include'}
-											{i18n.t('Include')}
+											{$i18n.t('Include')}
 										{:else}
-											{i18n.t('Exclude')}
+											{$i18n.t('Exclude')}
 										{/if}
 									</button>
 								</div>
@@ -343,7 +343,7 @@
 								</div>
 							{:else}
 								<div class="text-gray-500 text-xs text-center py-2">
-									{i18n.t('Leave empty to include all models or select specific models')}
+									{$i18n.t('Leave empty to include all models or select specific models')}
 								</div>
 							{/if}
 						</div>
@@ -357,8 +357,8 @@
 									: 'text-gray-500'} placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden"
 								bind:value={selectedModelId}
 							>
-								<option value="">{i18n.t('Select a model')}</option>
-								{#each $models.filter((m) => m?.owned_by !== 'arena') as model}
+								<option value="">{$i18n.t('Select a model')}</option>
+								{#each $models.filter((m) => (m?.owned_by as any) !== 'arena') as model}
 									<option value={model.id} class="bg-gray-50 dark:bg-gray-700">{model.name}</option>
 								{/each}
 							</select>
@@ -385,7 +385,7 @@
 									showDeleteConfirmDialog = true;
 								}}
 							>
-								{i18n.t('Delete')}
+								{$i18n.t('Delete')}
 							</button>
 						{/if}
 
@@ -396,7 +396,7 @@
 							type="submit"
 							disabled={loading}
 						>
-							{i18n.t('Save')}
+							{$i18n.t('Save')}
 
 							{#if loading}
 								<div class="ml-2 self-center">
@@ -424,9 +424,9 @@
 		<div class=" flex justify-between dark:text-gray-100 px-5 pt-4 pb-2">
 			<div class=" text-lg font-medium self-center font-primary">
 				{#if edit}
-					{i18n.t('Edit Arena Model')}
+					{$i18n.t('Edit Arena Model')}
 				{:else}
-					{i18n.t('Add Arena Model')}
+					{$i18n.t('Add Arena Model')}
 				{/if}
 			</div>
 			<button
@@ -522,7 +522,7 @@
 								<img
 									src={profileImageUrl}
 									class="size-16 rounded-full object-cover shrink-0"
-									alt={i18n.t('Profile')}
+									alt={$i18n.t('Profile')}
 								/>
 
 								<div
@@ -536,14 +536,14 @@
 						</div>
 						<div class="flex gap-2">
 							<div class="flex flex-col w-full">
-								<div class=" mb-0.5 text-xs text-gray-500">{i18n.t('Name')}</div>
+								<div class=" mb-0.5 text-xs text-gray-500">{$i18n.t('Name')}</div>
 
 								<div class="flex-1">
 									<input
 										class="w-full text-sm bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden"
 										type="text"
 										bind:value={name}
-										placeholder={i18n.t('Model Name')}
+										placeholder={$i18n.t('Model Name')}
 										autocomplete="off"
 										required
 									/>
@@ -551,14 +551,14 @@
 							</div>
 
 							<div class="flex flex-col w-full">
-								<div class=" mb-0.5 text-xs text-gray-500">{i18n.t('ID')}</div>
+								<div class=" mb-0.5 text-xs text-gray-500">{$i18n.t('ID')}</div>
 
 								<div class="flex-1">
 									<input
 										class="w-full text-sm bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden"
 										type="text"
 										bind:value={id}
-										placeholder={i18n.t('Model ID')}
+										placeholder={$i18n.t('Model ID')}
 										autocomplete="off"
 										required
 										disabled={edit}
@@ -568,14 +568,14 @@
 						</div>
 
 						<div class="flex flex-col w-full mt-2">
-							<div class=" mb-1 text-xs text-gray-500">{i18n.t('Description')}</div>
+							<div class=" mb-1 text-xs text-gray-500">{$i18n.t('Description')}</div>
 
 							<div class="flex-1">
 								<input
 									class="w-full text-sm bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden"
 									type="text"
 									bind:value={description}
-									placeholder={i18n.t('Enter description')}
+									placeholder={$i18n.t('Enter description')}
 									autocomplete="off"
 								/>
 							</div>
@@ -591,7 +591,7 @@
 
 						<div class="flex flex-col w-full">
 							<div class="mb-1 flex justify-between">
-								<div class="text-xs text-gray-500">{i18n.t('Models')}</div>
+								<div class="text-xs text-gray-500">{$i18n.t('Models')}</div>
 
 								<div>
 									<button
@@ -602,9 +602,9 @@
 										}}
 									>
 										{#if filterMode === 'include'}
-											{i18n.t('Include')}
+											{$i18n.t('Include')}
 										{:else}
-											{i18n.t('Exclude')}
+											{$i18n.t('Exclude')}
 										{/if}
 									</button>
 								</div>
@@ -632,7 +632,7 @@
 								</div>
 							{:else}
 								<div class="text-gray-500 text-xs text-center py-2">
-									{i18n.t('Leave empty to include all models or select specific models')}
+									{$i18n.t('Leave empty to include all models or select specific models')}
 								</div>
 							{/if}
 						</div>
@@ -646,8 +646,8 @@
 									: 'text-gray-500'} placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden"
 								bind:value={selectedModelId}
 							>
-								<option value="">{i18n.t('Select a model')}</option>
-								{#each $models.filter((m) => m?.owned_by !== 'arena') as model}
+								<option value="">{$i18n.t('Select a model')}</option>
+								{#each $models.filter((m) => (m?.owned_by as any) !== 'arena') as model}
 									<option value={model.id} class="bg-gray-50 dark:bg-gray-700">{model.name}</option>
 								{/each}
 							</select>
@@ -674,7 +674,7 @@
 									showDeleteConfirmDialog = true;
 								}}
 							>
-								{i18n.t('Delete')}
+								{$i18n.t('Delete')}
 							</button>
 						{/if}
 
@@ -685,7 +685,7 @@
 							type="submit"
 							disabled={loading}
 						>
-							{i18n.t('Save')}
+							{$i18n.t('Save')}
 
 							{#if loading}
 								<div class="ml-2 self-center">

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 	const dispatch = createEventDispatcher();
@@ -9,11 +9,11 @@
 	import RecursiveFolder from './RecursiveFolder.svelte';
 	import { chatId, selectedFolder } from '$lib/stores';
 
-	let folderRegistry: Record<string, any> = {};
+	export let folderRegistry: Record<string, any> = {};
 
-	let folders: Record<string, any> = {};
+	export let folders: Record<string, any> = {};
 	export let shiftKey: any = false;
-	export let onDelete = (folderId: any) => {};
+	export let onDelete: any = (folderId: any) => {};
 
 	let ownedList: any = [];
 	let sharedList: any = [];
@@ -79,7 +79,7 @@
 
 {#if sharedList.length > 0}
 	<div class="w-full pl-2.5 text-[11px] text-gray-400 dark:text-gray-600 pt-2 pb-0.5">
-		{i18n.t('Shared')}
+		{$i18n.t('Shared')}
 	</div>
 	{#each sharedList as folderId (folderId)}
 		<RecursiveFolder
@@ -126,7 +126,7 @@
 
 {#if sharedList.length > 0}
 	<div class="w-full pl-2.5 text-[11px] text-gray-400 dark:text-gray-600 pt-2 pb-0.5">
-		{i18n.t('Shared')}
+		{$i18n.t('Shared')}
 	</div>
 	{#each sharedList as folderId (folderId)}
 		<RecursiveFolder

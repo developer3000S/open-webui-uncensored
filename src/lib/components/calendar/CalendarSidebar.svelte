@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { CalendarModel } from '$lib/apis/calendar';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
@@ -96,12 +96,12 @@
 
 <ConfirmDialog
 	bind:show={showDeleteConfirm}
-	title={i18n.t('Delete Calendar')}
-	message={i18n.t(
+	title={$i18n.t('Delete Calendar')}
+	message={$i18n.t(
 		'This will permanently delete the calendar "{{name}}" and all its events. This action cannot be undone.',
 		{ name: deleteTargetCalendar?.name ?? '' }
 	)}
-	confirmLabel={i18n.t('Delete')}
+	confirmLabel={$i18n.t('Delete')}
 	onConfirm={confirmDelete}
 />
 
@@ -112,7 +112,7 @@
 			<div class="text-[11px] font-medium">{miniMonthNames[miniMonth]} {miniYear}</div>
 			<div class="flex items-center gap-0.5">
 				<button
-					aria-label={i18n.t('Previous month')}
+					aria-label={$i18n.t('Previous month')}
 					class="p-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition"
 					on:click={() => navigateMini(-1)}
 				>
@@ -131,7 +131,7 @@
 					>
 				</button>
 				<button
-					aria-label={i18n.t('Next month')}
+					aria-label={$i18n.t('Next month')}
 					class="p-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition"
 					on:click={() => navigateMini(1)}
 				>
@@ -182,11 +182,11 @@
 	<div>
 		<div class="flex items-center justify-between mb-1 px-1">
 			<div class="text-[11px] text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-				{i18n.t('Calendars')}
+				{$i18n.t('Calendars')}
 			</div>
 			<button
 				class="p-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-				title={i18n.t('New calendar')}
+				title={$i18n.t('New calendar')}
 				on:click={onCreateCalendar}
 			>
 				<svg
@@ -231,7 +231,7 @@
 								transition-all duration-150"
 							role="button"
 							tabindex="-1"
-							title={i18n.t('Delete calendar')}
+							title={$i18n.t('Delete calendar')}
 							on:click|stopPropagation={(e) => handleDeleteClick(e, cal)}
 						>
 							<svg
@@ -254,12 +254,12 @@
 
 <ConfirmDialog
 	bind:show={showDeleteConfirm}
-	title={i18n.t('Delete Calendar')}
-	message={i18n.t(
+	title={$i18n.t('Delete Calendar')}
+	message={$i18n.t(
 		'This will permanently delete the calendar "{{name}}" and all its events. This action cannot be undone.',
 		{ name: deleteTargetCalendar?.name ?? '' }
 	)}
-	confirmLabel={i18n.t('Delete')}
+	confirmLabel={$i18n.t('Delete')}
 	onConfirm={confirmDelete}
 />
 
@@ -270,7 +270,7 @@
 			<div class="text-[11px] font-medium">{miniMonthNames[miniMonth]} {miniYear}</div>
 			<div class="flex items-center gap-0.5">
 				<button
-					aria-label={i18n.t('Previous month')}
+					aria-label={$i18n.t('Previous month')}
 					class="p-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition"
 					on:click={() => navigateMini(-1)}
 				>
@@ -289,7 +289,7 @@
 					>
 				</button>
 				<button
-					aria-label={i18n.t('Next month')}
+					aria-label={$i18n.t('Next month')}
 					class="p-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition"
 					on:click={() => navigateMini(1)}
 				>
@@ -340,11 +340,11 @@
 	<div>
 		<div class="flex items-center justify-between mb-1 px-1">
 			<div class="text-[11px] text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-				{i18n.t('Calendars')}
+				{$i18n.t('Calendars')}
 			</div>
 			<button
 				class="p-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-				title={i18n.t('New calendar')}
+				title={$i18n.t('New calendar')}
 				on:click={onCreateCalendar}
 			>
 				<svg
@@ -389,7 +389,7 @@
 								transition-all duration-150"
 							role="button"
 							tabindex="-1"
-							title={i18n.t('Delete calendar')}
+							title={$i18n.t('Delete calendar')}
 							on:click|stopPropagation={(e) => handleDeleteClick(e, cal)}
 						>
 							<svg

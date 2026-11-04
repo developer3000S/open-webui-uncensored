@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { WEBUI_NAME, showSidebar, functions, mobile } from '$lib/stores';
 	import { page } from '$app/stores';
@@ -10,17 +10,18 @@
 
 	import type { Writable } from 'svelte/store';
 
+	// @ts-ignore
 	onMount(async () => {});
 </script>
 
 <svelte:head>
-			<title>
-		{i18n.t('Playground')} • {$WEBUI_NAME}
+	<title>
+		{$i18n.t('Playground')} • {$WEBUI_NAME}
 	</title>
-			<title>
-		{i18n.t('Playground')} • {$WEBUI_NAME}
+	<title>
+		{$i18n.t('Playground')} • {$WEBUI_NAME}
 	</title>
-		</svelte:head>
+</svelte:head>
 
 <div
 	class=" flex flex-col w-full h-screen max-h-[100dvh] transition-width duration-200 ease-in-out {$showSidebar
@@ -32,7 +33,7 @@
 			{#if $mobile}
 				<div class="{$showSidebar ? 'md:hidden' : ''} flex flex-none items-center self-end">
 					<Tooltip
-						content={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
+						content={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
 						interactive={true}
 					>
 						<button
@@ -59,14 +60,14 @@
 						class="min-w-fit p-1.5 {['/playground', '/playground/'].includes($page.url.pathname)
 							? ''
 							: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
-						href="/playground">{i18n.t('Chat')}</a
+						href="/playground">{$i18n.t('Chat')}</a
 					>
 
 					<!-- <a
 						class="min-w-fit p-1.5 {$page.url.pathname.includes('/playground/notes')
 							? ''
 							: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition"
-						href="/playground/notes">{i18n.t('Notes')}</a
+						href="/playground/notes">{$i18n.t('Notes')}</a
 					> -->
 
 					<a
@@ -74,7 +75,7 @@
 						class="min-w-fit p-1.5 {$page.url.pathname.includes('/playground/completions')
 							? ''
 							: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
-						href="/playground/completions">{i18n.t('Completions')}</a
+						href="/playground/completions">{$i18n.t('Completions')}</a
 					>
 
 					<a
@@ -82,7 +83,7 @@
 						class="min-w-fit p-1.5 {$page.url.pathname.includes('/playground/images')
 							? ''
 							: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
-						href="/playground/images">{i18n.t('Images')}</a
+						href="/playground/images">{$i18n.t('Images')}</a
 					>
 				</div>
 			</div>
@@ -94,8 +95,6 @@
 	</div>
 </div>
 
-
-
 <div
 	class=" flex flex-col w-full h-screen max-h-[100dvh] transition-width duration-200 ease-in-out {$showSidebar
 		? 'md:max-w-[calc(100%-var(--sidebar-width))]'
@@ -106,7 +105,7 @@
 			{#if $mobile}
 				<div class="{$showSidebar ? 'md:hidden' : ''} flex flex-none items-center self-end">
 					<Tooltip
-						content={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
+						content={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
 						interactive={true}
 					>
 						<button
@@ -133,14 +132,14 @@
 						class="min-w-fit p-1.5 {['/playground', '/playground/'].includes($page.url.pathname)
 							? ''
 							: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
-						href="/playground">{i18n.t('Chat')}</a
+						href="/playground">{$i18n.t('Chat')}</a
 					>
 
 					<!-- <a
 						class="min-w-fit p-1.5 {$page.url.pathname.includes('/playground/notes')
 							? ''
 							: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition"
-						href="/playground/notes">{i18n.t('Notes')}</a
+						href="/playground/notes">{$i18n.t('Notes')}</a
 					> -->
 
 					<a
@@ -148,7 +147,7 @@
 						class="min-w-fit p-1.5 {$page.url.pathname.includes('/playground/completions')
 							? ''
 							: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
-						href="/playground/completions">{i18n.t('Completions')}</a
+						href="/playground/completions">{$i18n.t('Completions')}</a
 					>
 
 					<a
@@ -156,7 +155,7 @@
 						class="min-w-fit p-1.5 {$page.url.pathname.includes('/playground/images')
 							? ''
 							: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
-						href="/playground/images">{i18n.t('Images')}</a
+						href="/playground/images">{$i18n.t('Images')}</a
 					>
 				</div>
 			</div>

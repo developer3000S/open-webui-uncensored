@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 
@@ -37,7 +37,7 @@
 	import Eye from '$lib/components/icons/Eye.svelte';
 
 	export let show: any = false;
-	export let initHandler = () => {};
+	export let initHandler: any = () => {};
 
 	let config: any = null;
 
@@ -138,29 +138,30 @@
 			promptSuggestions = await setDefaultPromptSuggestions(localStorage.token, promptSuggestions);
 			await _config.set(await getBackendConfig());
 
-			toast.success(i18n.t('Models configuration saved successfully'));
+			toast.success($i18n.t('Models configuration saved successfully'));
 			initHandler();
 			show = false;
 		} else {
-			toast.error(i18n.t('Failed to save models configuration'));
+			toast.error($i18n.t('Failed to save models configuration'));
 		}
 
 		loading = false;
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		init();
 	});
 </script>
 
 <ConfirmDialog
-	title={i18n.t('Reset All Models')}
-	message={i18n.t('This will delete all models including custom models and cannot be undone.')}
+	title={$i18n.t('Reset All Models')}
+	message={$i18n.t('This will delete all models including custom models and cannot be undone.')}
 	bind:show={showResetModal}
 	onConfirm={async () => {
 		const res = deleteAllModels(localStorage.token);
 		if (res) {
-			toast.success(i18n.t('All models deleted successfully'));
+			toast.success($i18n.t('All models deleted successfully'));
 			initHandler();
 		}
 	}}
@@ -170,7 +171,7 @@
 	<div>
 		<div class=" flex justify-between dark:text-gray-100 px-5 pt-4 pb-2">
 			<div class=" text-lg font-medium self-center font-primary">
-				{i18n.t('Settings')}
+				{$i18n.t('Settings')}
 			</div>
 			<button
 				class="self-center"
@@ -209,7 +210,7 @@
 									<div class=" self-center mr-2">
 										<AdjustmentsHorizontal />
 									</div>
-									<div class=" self-center">{i18n.t('Defaults')}</div>
+									<div class=" self-center">{$i18n.t('Defaults')}</div>
 								</button>
 
 								<button
@@ -225,7 +226,7 @@
 									<div class=" self-center mr-2">
 										<Eye />
 									</div>
-									<div class=" self-center">{i18n.t('Display')}</div>
+									<div class=" self-center">{$i18n.t('Display')}</div>
 								</button>
 							</div>
 
@@ -233,8 +234,8 @@
 								<div class="w-full h-full overflow-y-auto overflow-x-hidden scrollbar-hidden">
 									{#if selectedTab === 'defaults'}
 										<ModelSelector
-											title={i18n.t('Selected Models')}
-											tooltip={i18n.t(
+											title={$i18n.t('Selected Models')}
+											tooltip={$i18n.t(
 												'Set the default models that are automatically selected for all users when a new chat is created.'
 											)}
 											models={$models.filter((model) => !(model?.info?.meta?.hidden ?? false))}
@@ -244,8 +245,8 @@
 										<hr class=" border-gray-50 dark:border-gray-800/10 my-2.5 w-full" />
 
 										<ModelSelector
-											title={i18n.t('Pinned Models')}
-											tooltip={i18n.t(
+											title={$i18n.t('Pinned Models')}
+											tooltip={$i18n.t(
 												'Set the models that are automatically pinned to the sidebar for all users.'
 											)}
 											models={$models.filter((model) => !(model?.info?.meta?.hidden ?? false))}
@@ -263,7 +264,7 @@
 												}}
 											>
 												<div class="text-xs text-gray-500 font-medium">
-													{i18n.t('Prompt Suggestions')}
+													{$i18n.t('Prompt Suggestions')}
 												</div>
 												<div>
 													{#if showDefaultPromptSuggestions}
@@ -280,7 +281,7 @@
 
 													{#if promptSuggestions.length > 0}
 														<div class="text-xs text-left w-full mt-2 text-gray-500">
-															{i18n.t(
+															{$i18n.t(
 																'Adjusting these settings will apply changes universally to all users.'
 															)}
 														</div>
@@ -300,7 +301,7 @@
 												}}
 											>
 												<div class="text-xs text-gray-500 font-medium">
-													{i18n.t('Model Capabilities')}
+													{$i18n.t('Model Capabilities')}
 												</div>
 												<div>
 													{#if showDefaultCapabilities}
@@ -356,7 +357,7 @@
 												}}
 											>
 												<div class="text-xs text-gray-500 font-medium">
-													{i18n.t('Model Parameters')}
+													{$i18n.t('Model Parameters')}
 												</div>
 												<div>
 													{#if showDefaultParams}
@@ -399,7 +400,7 @@
 															});
 													}}
 												>
-													<div class="text-xs text-gray-500">{i18n.t('Reorder Models')}</div>
+													<div class="text-xs text-gray-500">{$i18n.t('Reorder Models')}</div>
 
 													{#if sortKey === 'model'}
 														<span class="font-normal self-center">
@@ -425,7 +426,7 @@
 								<div class="flex justify-between items-center pt-3 text-sm font-medium gap-1.5">
 									<div>
 										<Tooltip
-											content={i18n.t('This will delete all models including custom models')}
+											content={$i18n.t('This will delete all models including custom models')}
 										>
 											<button
 												class="text-sm font-normal text-gray-500 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300 transition hover:underline"
@@ -434,7 +435,7 @@
 													showResetModal = true;
 												}}
 											>
-												{i18n.t('Reset')}
+												{$i18n.t('Reset')}
 											</button>
 										</Tooltip>
 									</div>
@@ -445,7 +446,7 @@
 										type="submit"
 										disabled={loading}
 									>
-										{i18n.t('Save')}
+										{$i18n.t('Save')}
 
 										{#if loading}
 											<span class="shrink-0">
@@ -468,13 +469,13 @@
 </Modal>
 
 <ConfirmDialog
-	title={i18n.t('Reset All Models')}
-	message={i18n.t('This will delete all models including custom models and cannot be undone.')}
+	title={$i18n.t('Reset All Models')}
+	message={$i18n.t('This will delete all models including custom models and cannot be undone.')}
 	bind:show={showResetModal}
 	onConfirm={async () => {
 		const res = deleteAllModels(localStorage.token);
 		if (res) {
-			toast.success(i18n.t('All models deleted successfully'));
+			toast.success($i18n.t('All models deleted successfully'));
 			initHandler();
 		}
 	}}
@@ -484,7 +485,7 @@
 	<div>
 		<div class=" flex justify-between dark:text-gray-100 px-5 pt-4 pb-2">
 			<div class=" text-lg font-medium self-center font-primary">
-				{i18n.t('Settings')}
+				{$i18n.t('Settings')}
 			</div>
 			<button
 				class="self-center"
@@ -523,7 +524,7 @@
 									<div class=" self-center mr-2">
 										<AdjustmentsHorizontal />
 									</div>
-									<div class=" self-center">{i18n.t('Defaults')}</div>
+									<div class=" self-center">{$i18n.t('Defaults')}</div>
 								</button>
 
 								<button
@@ -539,7 +540,7 @@
 									<div class=" self-center mr-2">
 										<Eye />
 									</div>
-									<div class=" self-center">{i18n.t('Display')}</div>
+									<div class=" self-center">{$i18n.t('Display')}</div>
 								</button>
 							</div>
 
@@ -547,8 +548,8 @@
 								<div class="w-full h-full overflow-y-auto overflow-x-hidden scrollbar-hidden">
 									{#if selectedTab === 'defaults'}
 										<ModelSelector
-											title={i18n.t('Selected Models')}
-											tooltip={i18n.t(
+											title={$i18n.t('Selected Models')}
+											tooltip={$i18n.t(
 												'Set the default models that are automatically selected for all users when a new chat is created.'
 											)}
 											models={$models.filter((model) => !(model?.info?.meta?.hidden ?? false))}
@@ -558,8 +559,8 @@
 										<hr class=" border-gray-50 dark:border-gray-800/10 my-2.5 w-full" />
 
 										<ModelSelector
-											title={i18n.t('Pinned Models')}
-											tooltip={i18n.t(
+											title={$i18n.t('Pinned Models')}
+											tooltip={$i18n.t(
 												'Set the models that are automatically pinned to the sidebar for all users.'
 											)}
 											models={$models.filter((model) => !(model?.info?.meta?.hidden ?? false))}
@@ -577,7 +578,7 @@
 												}}
 											>
 												<div class="text-xs text-gray-500 font-medium">
-													{i18n.t('Prompt Suggestions')}
+													{$i18n.t('Prompt Suggestions')}
 												</div>
 												<div>
 													{#if showDefaultPromptSuggestions}
@@ -594,7 +595,7 @@
 
 													{#if promptSuggestions.length > 0}
 														<div class="text-xs text-left w-full mt-2 text-gray-500">
-															{i18n.t(
+															{$i18n.t(
 																'Adjusting these settings will apply changes universally to all users.'
 															)}
 														</div>
@@ -614,7 +615,7 @@
 												}}
 											>
 												<div class="text-xs text-gray-500 font-medium">
-													{i18n.t('Model Capabilities')}
+													{$i18n.t('Model Capabilities')}
 												</div>
 												<div>
 													{#if showDefaultCapabilities}
@@ -670,7 +671,7 @@
 												}}
 											>
 												<div class="text-xs text-gray-500 font-medium">
-													{i18n.t('Model Parameters')}
+													{$i18n.t('Model Parameters')}
 												</div>
 												<div>
 													{#if showDefaultParams}
@@ -713,7 +714,7 @@
 															});
 													}}
 												>
-													<div class="text-xs text-gray-500">{i18n.t('Reorder Models')}</div>
+													<div class="text-xs text-gray-500">{$i18n.t('Reorder Models')}</div>
 
 													{#if sortKey === 'model'}
 														<span class="font-normal self-center">
@@ -739,7 +740,7 @@
 								<div class="flex justify-between items-center pt-3 text-sm font-medium gap-1.5">
 									<div>
 										<Tooltip
-											content={i18n.t('This will delete all models including custom models')}
+											content={$i18n.t('This will delete all models including custom models')}
 										>
 											<button
 												class="text-sm font-normal text-gray-500 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300 transition hover:underline"
@@ -748,7 +749,7 @@
 													showResetModal = true;
 												}}
 											>
-												{i18n.t('Reset')}
+												{$i18n.t('Reset')}
 											</button>
 										</Tooltip>
 									</div>
@@ -759,7 +760,7 @@
 										type="submit"
 										disabled={loading}
 									>
-										{i18n.t('Save')}
+										{$i18n.t('Save')}
 
 										{#if loading}
 											<span class="shrink-0">

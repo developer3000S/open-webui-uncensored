@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 
@@ -43,17 +43,18 @@
 	import type { Writable } from 'svelte/store';
 
 	export let readOnly: boolean = false;
+	export let shareEnabled: any = false;
 
-	export let shareHandler: Function;
-	export let moveChatHandler: Function;
+	export let shareHandler: any;
+	export let moveChatHandler: any;
 
-	export let archiveChatHandler: Function;
-	export let deleteChatHandler: Function;
+	export let archiveChatHandler: any;
+	export let deleteChatHandler: any;
 
-	// export let tagHandler: Function;
+	// export let tagHandler: any;
 
 	export let chat: any;
-	export let onClose: Function = () => {};
+	export let onClose: any = () => {};
 	export let scrollToTop: (() => void) | null = null;
 
 	let showFullMessages = false;
@@ -96,7 +97,7 @@
 					const virtualWidth = 800; // px, fixed width for cloned element
 
 					// Clone and style
-					const clonedElement = containerElement.cloneNode(true);
+					const clonedElement = containerElement.cloneNode(true) as HTMLElement;
 					clonedElement.classList.add('text-black');
 					clonedElement.classList.add('dark:text-white');
 					clonedElement.style.width = `${virtualWidth}px`;
@@ -274,6 +275,11 @@
 				regenerateResponse={() => {}}
 				messagesCount={null}
 				editCodeBlock={false}
+				selectedModels={[]}
+				showMessage={() => {}}
+				atSelectedModel={null}
+				mergeResponses={() => {}}
+				chatActionHandler={() => {}}
 			/>
 		</div>
 	</div>
@@ -319,7 +325,7 @@
 						d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
 					/>
 				</svg>
-				<div class="flex items-center">{i18n.t('Settings')}</div>
+				<div class="flex items-center">{$i18n.t('Settings')}</div>
 			</DropdownMenu.Item> -->
 			<!-- Settings commented out block above -->
 
@@ -345,7 +351,7 @@
 							d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18"
 						/>
 					</svg>
-					<div class="flex items-center">{i18n.t('Scroll to Top')}</div>
+					<div class="flex items-center">{$i18n.t('Scroll to Top')}</div>
 				</button>
 
 				<hr class="border-gray-50/30 dark:border-gray-800/30 my-1" />
@@ -363,7 +369,7 @@
 					}}
 				>
 					<Cube className=" size-4" strokeWidth="1.5" />
-					<div class="flex items-center">{i18n.t('Artifacts')}</div>
+					<div class="flex items-center">{$i18n.t('Artifacts')}</div>
 				</button>
 
 				<hr class="border-gray-50/30 dark:border-gray-800/30 my-1" />
@@ -379,7 +385,7 @@
 					}}
 				>
 					<Share strokeWidth="1.5" />
-					<div class="flex items-center">{i18n.t('Share')}</div>
+					<div class="flex items-center">{$i18n.t('Share')}</div>
 				</button>
 			{/if}
 
@@ -392,7 +398,7 @@
 					>
 						<Download strokeWidth="1.5" />
 
-						<div class="flex items-center">{i18n.t('Download')}</div>
+						<div class="flex items-center">{$i18n.t('Download')}</div>
 					</button>
 
 					<button
@@ -402,7 +408,7 @@
 							downloadJSONExport();
 						}}
 					>
-						<div class="flex items-center line-clamp-1">{i18n.t('Export chat (.json)')}</div>
+						<div class="flex items-center line-clamp-1">{$i18n.t('Export chat (.json)')}</div>
 					</button>
 
 					<button
@@ -412,7 +418,7 @@
 							downloadTxt();
 						}}
 					>
-						<div class="flex items-center line-clamp-1">{i18n.t('Plain text (.txt)')}</div>
+						<div class="flex items-center line-clamp-1">{$i18n.t('Plain text (.txt)')}</div>
 					</button>
 
 					<button
@@ -422,7 +428,7 @@
 							downloadPdf();
 						}}
 					>
-						<div class="flex items-center line-clamp-1">{i18n.t('PDF document (.pdf)')}</div>
+						<div class="flex items-center line-clamp-1">{$i18n.t('PDF document (.pdf)')}</div>
 					</button>
 				</DropdownSub>
 			{/if}
@@ -437,12 +443,12 @@
 					});
 
 					if (res) {
-						toast.success(i18n.t('Copied to clipboard'));
+						toast.success($i18n.t('Copied to clipboard'));
 					}
 				}}
 			>
 				<Clipboard className=" size-4" strokeWidth="1.5" />
-				<div class="flex items-center">{i18n.t('Copy')}</div>
+				<div class="flex items-center">{$i18n.t('Copy')}</div>
 			</button>
 
 			{#if !readOnly && !$temporaryChatEnabled && chat?.id}
@@ -457,7 +463,7 @@
 						>
 							<Folder strokeWidth="1.5" />
 
-							<div class="flex items-center">{i18n.t('Move')}</div>
+							<div class="flex items-center">{$i18n.t('Move')}</div>
 						</button>
 						{#each $folders.sort((a, b) => b.updated_at - a.updated_at) as folder}
 							{#if folder?.id}
@@ -487,7 +493,7 @@
 					}}
 				>
 					<ArchiveBox className="size-4" strokeWidth="1.5" />
-					<div class="flex items-center">{i18n.t('Archive')}</div>
+					<div class="flex items-center">{$i18n.t('Archive')}</div>
 				</button>
 
 				<button
@@ -498,7 +504,7 @@
 					}}
 				>
 					<GarbageBin strokeWidth="1.5" />
-					<div class="flex items-center">{i18n.t('Delete')}</div>
+					<div class="flex items-center">{$i18n.t('Delete')}</div>
 				</button>
 
 				<hr class="border-gray-50/30 dark:border-gray-800/30 my-1" />
@@ -527,6 +533,11 @@
 				regenerateResponse={() => {}}
 				messagesCount={null}
 				editCodeBlock={false}
+				selectedModels={[]}
+				showMessage={() => {}}
+				atSelectedModel={null}
+				mergeResponses={() => {}}
+				chatActionHandler={() => {}}
 			/>
 		</div>
 	</div>
@@ -572,7 +583,7 @@
 						d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
 					/>
 				</svg>
-				<div class="flex items-center">{i18n.t('Settings')}</div>
+				<div class="flex items-center">{$i18n.t('Settings')}</div>
 			</DropdownMenu.Item> -->
 			<!-- Settings commented out block above -->
 
@@ -598,7 +609,7 @@
 							d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18"
 						/>
 					</svg>
-					<div class="flex items-center">{i18n.t('Scroll to Top')}</div>
+					<div class="flex items-center">{$i18n.t('Scroll to Top')}</div>
 				</button>
 
 				<hr class="border-gray-50/30 dark:border-gray-800/30 my-1" />
@@ -616,7 +627,7 @@
 					}}
 				>
 					<Cube className=" size-4" strokeWidth="1.5" />
-					<div class="flex items-center">{i18n.t('Artifacts')}</div>
+					<div class="flex items-center">{$i18n.t('Artifacts')}</div>
 				</button>
 
 				<hr class="border-gray-50/30 dark:border-gray-800/30 my-1" />
@@ -632,7 +643,7 @@
 					}}
 				>
 					<Share strokeWidth="1.5" />
-					<div class="flex items-center">{i18n.t('Share')}</div>
+					<div class="flex items-center">{$i18n.t('Share')}</div>
 				</button>
 			{/if}
 
@@ -645,7 +656,7 @@
 					>
 						<Download strokeWidth="1.5" />
 
-						<div class="flex items-center">{i18n.t('Download')}</div>
+						<div class="flex items-center">{$i18n.t('Download')}</div>
 					</button>
 
 					<button
@@ -655,7 +666,7 @@
 							downloadJSONExport();
 						}}
 					>
-						<div class="flex items-center line-clamp-1">{i18n.t('Export chat (.json)')}</div>
+						<div class="flex items-center line-clamp-1">{$i18n.t('Export chat (.json)')}</div>
 					</button>
 
 					<button
@@ -665,7 +676,7 @@
 							downloadTxt();
 						}}
 					>
-						<div class="flex items-center line-clamp-1">{i18n.t('Plain text (.txt)')}</div>
+						<div class="flex items-center line-clamp-1">{$i18n.t('Plain text (.txt)')}</div>
 					</button>
 
 					<button
@@ -675,7 +686,7 @@
 							downloadPdf();
 						}}
 					>
-						<div class="flex items-center line-clamp-1">{i18n.t('PDF document (.pdf)')}</div>
+						<div class="flex items-center line-clamp-1">{$i18n.t('PDF document (.pdf)')}</div>
 					</button>
 				</DropdownSub>
 			{/if}
@@ -690,12 +701,12 @@
 					});
 
 					if (res) {
-						toast.success(i18n.t('Copied to clipboard'));
+						toast.success($i18n.t('Copied to clipboard'));
 					}
 				}}
 			>
 				<Clipboard className=" size-4" strokeWidth="1.5" />
-				<div class="flex items-center">{i18n.t('Copy')}</div>
+				<div class="flex items-center">{$i18n.t('Copy')}</div>
 			</button>
 
 			{#if !readOnly && !$temporaryChatEnabled && chat?.id}
@@ -710,7 +721,7 @@
 						>
 							<Folder strokeWidth="1.5" />
 
-							<div class="flex items-center">{i18n.t('Move')}</div>
+							<div class="flex items-center">{$i18n.t('Move')}</div>
 						</button>
 						{#each $folders.sort((a, b) => b.updated_at - a.updated_at) as folder}
 							{#if folder?.id}
@@ -740,7 +751,7 @@
 					}}
 				>
 					<ArchiveBox className="size-4" strokeWidth="1.5" />
-					<div class="flex items-center">{i18n.t('Archive')}</div>
+					<div class="flex items-center">{$i18n.t('Archive')}</div>
 				</button>
 
 				<button
@@ -751,7 +762,7 @@
 					}}
 				>
 					<GarbageBin strokeWidth="1.5" />
-					<div class="flex items-center">{i18n.t('Delete')}</div>
+					<div class="flex items-center">{$i18n.t('Delete')}</div>
 				</button>
 
 				<hr class="border-gray-50/30 dark:border-gray-800/30 my-1" />

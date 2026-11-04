@@ -3,7 +3,7 @@
 	import Message from './Message.svelte';
 
 	import type { Writable } from 'svelte/store';
-	
+
 	export let messages: any = [];
 </script>
 

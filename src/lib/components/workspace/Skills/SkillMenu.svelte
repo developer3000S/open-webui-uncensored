@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Dropdown from '$lib/components/common/Dropdown.svelte';
 	import GarbageBin from '$lib/components/icons/GarbageBin.svelte';
@@ -12,11 +12,11 @@
 
 	import type { Writable } from 'svelte/store';
 
-	export let editHandler: Function;
-	export let cloneHandler: Function;
-	export let exportHandler: Function;
-	export let deleteHandler: Function;
-	export let onClose: Function;
+	export let editHandler: any;
+	export let cloneHandler: any;
+	export let exportHandler: any;
+	export let deleteHandler: any;
+	export let onClose: any;
 
 	let show = false;
 </script>
@@ -29,7 +29,7 @@
 		}
 	}}
 >
-	<Tooltip content={i18n.t('More')}>
+	<Tooltip content={$i18n.t('More')}>
 		<slot />
 	</Tooltip>
 
@@ -58,7 +58,7 @@
 					/>
 				</svg>
 
-				<div class="flex items-center">{i18n.t('Edit')}</div>
+				<div class="flex items-center">{$i18n.t('Edit')}</div>
 			</button>
 
 			<button
@@ -68,7 +68,7 @@
 				}}
 			>
 				<DocumentDuplicate />
-				<div class="flex items-center">{i18n.t('Clone')}</div>
+				<div class="flex items-center">{$i18n.t('Clone')}</div>
 			</button>
 
 			{#if $user?.role === 'admin' || $user?.permissions?.workspace?.skills_export}
@@ -79,7 +79,7 @@
 					}}
 				>
 					<Download />
-					<div class="flex items-center">{i18n.t('Export')}</div>
+					<div class="flex items-center">{$i18n.t('Export')}</div>
 				</button>
 			{/if}
 
@@ -92,7 +92,7 @@
 				}}
 			>
 				<GarbageBin />
-				<div class="flex items-center">{i18n.t('Delete')}</div>
+				<div class="flex items-center">{$i18n.t('Delete')}</div>
 			</button>
 		</div>
 	</div>
@@ -106,7 +106,7 @@
 		}
 	}}
 >
-	<Tooltip content={i18n.t('More')}>
+	<Tooltip content={$i18n.t('More')}>
 		<slot />
 	</Tooltip>
 
@@ -135,7 +135,7 @@
 					/>
 				</svg>
 
-				<div class="flex items-center">{i18n.t('Edit')}</div>
+				<div class="flex items-center">{$i18n.t('Edit')}</div>
 			</button>
 
 			<button
@@ -145,7 +145,7 @@
 				}}
 			>
 				<DocumentDuplicate />
-				<div class="flex items-center">{i18n.t('Clone')}</div>
+				<div class="flex items-center">{$i18n.t('Clone')}</div>
 			</button>
 
 			{#if $user?.role === 'admin' || $user?.permissions?.workspace?.skills_export}
@@ -156,7 +156,7 @@
 					}}
 				>
 					<Download />
-					<div class="flex items-center">{i18n.t('Export')}</div>
+					<div class="flex items-center">{$i18n.t('Export')}</div>
 				</button>
 			{/if}
 
@@ -169,7 +169,7 @@
 				}}
 			>
 				<GarbageBin />
-				<div class="flex items-center">{i18n.t('Delete')}</div>
+				<div class="flex items-center">{$i18n.t('Delete')}</div>
 			</button>
 		</div>
 	</div>

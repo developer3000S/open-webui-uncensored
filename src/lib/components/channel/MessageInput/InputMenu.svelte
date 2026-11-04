@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { config, user, tools as _tools, mobile } from '$lib/stores';
 	import { getTools } from '$lib/apis/tools';
@@ -18,10 +18,10 @@
 
 	import type { Writable } from 'svelte/store';
 
-	export let screenCaptureHandler: Function;
-	export let uploadFilesHandler: Function;
+	export let screenCaptureHandler: any;
+	export let uploadFilesHandler: any;
 
-	export let onClose: Function = () => {};
+	export let onClose: any = () => {};
 
 	let show = false;
 
@@ -40,7 +40,7 @@
 		}
 	}}
 >
-	<Tooltip content={i18n.t('More')}>
+	<Tooltip content={$i18n.t('More')}>
 		<slot />
 	</Tooltip>
 
@@ -57,7 +57,7 @@
 				}}
 			>
 				<Clip />
-				<div class="line-clamp-1">{i18n.t('Upload Files')}</div>
+				<div class="line-clamp-1">{$i18n.t('Upload Files')}</div>
 			</button>
 
 			<button
@@ -69,7 +69,7 @@
 				}}
 			>
 				<Camera />
-				<div class=" line-clamp-1">{i18n.t('Capture')}</div>
+				<div class=" line-clamp-1">{$i18n.t('Capture')}</div>
 			</button>
 		</div>
 	</div>
@@ -83,7 +83,7 @@
 		}
 	}}
 >
-	<Tooltip content={i18n.t('More')}>
+	<Tooltip content={$i18n.t('More')}>
 		<slot />
 	</Tooltip>
 
@@ -100,7 +100,7 @@
 				}}
 			>
 				<Clip />
-				<div class="line-clamp-1">{i18n.t('Upload Files')}</div>
+				<div class="line-clamp-1">{$i18n.t('Upload Files')}</div>
 			</button>
 
 			<button
@@ -112,7 +112,7 @@
 				}}
 			>
 				<Camera />
-				<div class=" line-clamp-1">{i18n.t('Capture')}</div>
+				<div class=" line-clamp-1">{$i18n.t('Capture')}</div>
 			</button>
 		</div>
 	</div>

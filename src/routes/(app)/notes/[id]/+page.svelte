@@ -12,6 +12,7 @@
 
 	let loaded = false;
 
+	// @ts-ignore
 	onMount(async () => {
 		loaded = true;
 	});

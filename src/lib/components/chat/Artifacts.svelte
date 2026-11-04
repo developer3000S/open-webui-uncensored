@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import type { Writable } from 'svelte/store';
@@ -27,6 +27,7 @@
 	import Download from '../icons/Download.svelte';
 
 	export let overlay: any = false;
+	export let history: any = undefined;
 	let contents: Array<{ type: string; content: string }> = [];
 	let selectedContentIdx = 0;
 
@@ -63,7 +64,7 @@
 		);
 
 		// Cancel drag when hovering over iframe
-		iframeElement.contentWindow.addEventListener('mouseenter', (e: any)  => {
+		iframeElement.contentWindow.addEventListener('mouseenter', (e: any) => {
 			e.preventDefault();
 			iframeElement.contentWindow.addEventListener('dragstart', (event) => {
 				event.preventDefault();
@@ -136,7 +137,7 @@
 					<div class="flex items-center space-x-2">
 						<div class="flex items-center gap-0.5 self-center min-w-fit" dir="ltr">
 							<button
-								aria-label={i18n.t('Previous Version')}
+								aria-label={$i18n.t('Previous Version')}
 								class="self-center p-1 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-white hover:text-black rounded-md transition disabled:cursor-not-allowed"
 								on:click={() => navigateContent('prev')}
 								disabled={contents.length <= 1}
@@ -158,14 +159,14 @@
 							</button>
 
 							<div class="text-xs self-center dark:text-gray-100 min-w-fit">
-								{i18n.t('Version {{selectedVersion}} of {{totalVersions}}', {
+								{$i18n.t('Version {{selectedVersion}} of {{totalVersions}}', {
 									selectedVersion: selectedContentIdx + 1,
 									totalVersions: contents.length
 								})}
 							</div>
 
 							<button
-								aria-label={i18n.t('Next Version')}
+								aria-label={$i18n.t('Next Version')}
 								class="self-center p-1 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-white hover:text-black rounded-md transition disabled:cursor-not-allowed"
 								on:click={() => navigateContent('next')}
 								disabled={contents.length <= 1}
@@ -198,10 +199,10 @@
 								setTimeout(() => {
 									copied = false;
 								}, 2000);
-							}}>{copied ? i18n.t('Copied') : i18n.t('Copy')}</button
+							}}>{copied ? $i18n.t('Copied') : $i18n.t('Copy')}</button
 						>
 
-						<Tooltip content={i18n.t('Download')}>
+						<Tooltip content={$i18n.t('Download')}>
 							<button
 								class=" bg-none border-none text-xs bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 transition rounded-md p-0.5"
 								on:click={downloadArtifact}
@@ -211,7 +212,7 @@
 						</Tooltip>
 
 						{#if contents[selectedContentIdx].type === 'iframe'}
-							<Tooltip content={i18n.t('Open in full screen')}>
+							<Tooltip content={$i18n.t('Open in full screen')}>
 								<button
 									class=" bg-none border-none text-xs bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 transition rounded-md p-0.5"
 									on:click={showFullScreen}
@@ -269,7 +270,7 @@
 					</div>
 				{:else}
 					<div class="m-auto font-medium text-xs text-gray-900 dark:text-white">
-						{i18n.t('No HTML, CSS, or JavaScript content found.')}
+						{$i18n.t('No HTML, CSS, or JavaScript content found.')}
 					</div>
 				{/if}
 			</div>
@@ -290,7 +291,7 @@
 					<div class="flex items-center space-x-2">
 						<div class="flex items-center gap-0.5 self-center min-w-fit" dir="ltr">
 							<button
-								aria-label={i18n.t('Previous Version')}
+								aria-label={$i18n.t('Previous Version')}
 								class="self-center p-1 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-white hover:text-black rounded-md transition disabled:cursor-not-allowed"
 								on:click={() => navigateContent('prev')}
 								disabled={contents.length <= 1}
@@ -312,14 +313,14 @@
 							</button>
 
 							<div class="text-xs self-center dark:text-gray-100 min-w-fit">
-								{i18n.t('Version {{selectedVersion}} of {{totalVersions}}', {
+								{$i18n.t('Version {{selectedVersion}} of {{totalVersions}}', {
 									selectedVersion: selectedContentIdx + 1,
 									totalVersions: contents.length
 								})}
 							</div>
 
 							<button
-								aria-label={i18n.t('Next Version')}
+								aria-label={$i18n.t('Next Version')}
 								class="self-center p-1 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:text-white hover:text-black rounded-md transition disabled:cursor-not-allowed"
 								on:click={() => navigateContent('next')}
 								disabled={contents.length <= 1}
@@ -352,10 +353,10 @@
 								setTimeout(() => {
 									copied = false;
 								}, 2000);
-							}}>{copied ? i18n.t('Copied') : i18n.t('Copy')}</button
+							}}>{copied ? $i18n.t('Copied') : $i18n.t('Copy')}</button
 						>
 
-						<Tooltip content={i18n.t('Download')}>
+						<Tooltip content={$i18n.t('Download')}>
 							<button
 								class=" bg-none border-none text-xs bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 transition rounded-md p-0.5"
 								on:click={downloadArtifact}
@@ -365,7 +366,7 @@
 						</Tooltip>
 
 						{#if contents[selectedContentIdx].type === 'iframe'}
-							<Tooltip content={i18n.t('Open in full screen')}>
+							<Tooltip content={$i18n.t('Open in full screen')}>
 								<button
 									class=" bg-none border-none text-xs bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 transition rounded-md p-0.5"
 									on:click={showFullScreen}
@@ -423,7 +424,7 @@
 					</div>
 				{:else}
 					<div class="m-auto font-medium text-xs text-gray-900 dark:text-white">
-						{i18n.t('No HTML, CSS, or JavaScript content found.')}
+						{$i18n.t('No HTML, CSS, or JavaScript content found.')}
 					</div>
 				{/if}
 			</div>

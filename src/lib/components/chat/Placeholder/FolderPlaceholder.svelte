@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
@@ -45,7 +45,7 @@
 		if (folder && folder.id) {
 			// Always use the shared folder endpoint so owners also see
 			// chats created by users who have write access to this folder.
-			const res = await getSharedFolderChats(localStorage.token, folder.id).catch(async (error)=> {
+			const res = await getSharedFolderChats(localStorage.token, folder.id).catch(async (error) => {
 				console.error(error);
 				return null;
 			});
@@ -81,7 +81,7 @@
 				type="button"
 				on:click={() => {
 					selectedTab = 'knowledge';
-				}}>{i18n.t('Knowledge')}</button
+				}}>{$i18n.t('Knowledge')}</button
 			>
 
 			<button
@@ -93,7 +93,7 @@
 					selectedTab = 'chats';
 				}}
 			>
-				{i18n.t('Chats')}
+				{$i18n.t('Chats')}
 			</button>
 		</div>
 	</div> -->
@@ -131,7 +131,7 @@
 				type="button"
 				on:click={() => {
 					selectedTab = 'knowledge';
-				}}>{i18n.t('Knowledge')}</button
+				}}>{$i18n.t('Knowledge')}</button
 			>
 
 			<button
@@ -143,7 +143,7 @@
 					selectedTab = 'chats';
 				}}
 			>
-				{i18n.t('Chats')}
+				{$i18n.t('Chats')}
 			</button>
 		</div>
 	</div> -->

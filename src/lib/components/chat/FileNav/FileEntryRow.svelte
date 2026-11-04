@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import { formatFileSize } from '$lib/utils';
@@ -301,7 +301,7 @@
 				class="shrink-0 p-0.5 mr-1 rounded-lg transition
 					text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400
 					hover:bg-gray-100 dark:hover:bg-gray-800"
-				aria-label={i18n.t('More')}
+				aria-label={$i18n.t('More')}
 			>
 				<EllipsisHorizontal className="size-3.5" />
 			</button>
@@ -335,7 +335,7 @@
 								d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z"
 							/>
 						</svg>
-						<div class="flex items-center">{i18n.t('Download')}</div>
+						<div class="flex items-center">{$i18n.t('Download')}</div>
 					</button>
 
 					<button
@@ -348,12 +348,12 @@
 									? `${currentPath}${entry.name}/`
 									: `${currentPath}${entry.name}`;
 							navigator.clipboard.writeText(path).then(() => {
-								toast.success(i18n.t('Path copied'));
+								toast.success($i18n.t('Path copied'));
 							});
 						}}
 					>
 						<Clipboard className="size-4" strokeWidth="1.5" />
-						<div class="flex items-center">{i18n.t('Copy Path')}</div>
+						<div class="flex items-center">{$i18n.t('Copy Path')}</div>
 					</button>
 
 					<button
@@ -365,7 +365,7 @@
 						}}
 					>
 						<Pencil className="size-4" strokeWidth="1.5" />
-						<div class="flex items-center">{i18n.t('Rename')}</div>
+						<div class="flex items-center">{$i18n.t('Rename')}</div>
 					</button>
 
 					<button
@@ -377,7 +377,7 @@
 						}}
 					>
 						<GarbageBin className="size-4" />
-						<div class="flex items-center">{i18n.t('Delete')}</div>
+						<div class="flex items-center">{$i18n.t('Delete')}</div>
 					</button>
 				</div>
 			</div>
@@ -551,7 +551,7 @@
 				class="shrink-0 p-0.5 mr-1 rounded-lg transition
 					text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400
 					hover:bg-gray-100 dark:hover:bg-gray-800"
-				aria-label={i18n.t('More')}
+				aria-label={$i18n.t('More')}
 			>
 				<EllipsisHorizontal className="size-3.5" />
 			</button>
@@ -585,7 +585,7 @@
 								d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z"
 							/>
 						</svg>
-						<div class="flex items-center">{i18n.t('Download')}</div>
+						<div class="flex items-center">{$i18n.t('Download')}</div>
 					</button>
 
 					<button
@@ -598,12 +598,12 @@
 									? `${currentPath}${entry.name}/`
 									: `${currentPath}${entry.name}`;
 							navigator.clipboard.writeText(path).then(() => {
-								toast.success(i18n.t('Path copied'));
+								toast.success($i18n.t('Path copied'));
 							});
 						}}
 					>
 						<Clipboard className="size-4" strokeWidth="1.5" />
-						<div class="flex items-center">{i18n.t('Copy Path')}</div>
+						<div class="flex items-center">{$i18n.t('Copy Path')}</div>
 					</button>
 
 					<button
@@ -615,7 +615,7 @@
 						}}
 					>
 						<Pencil className="size-4" strokeWidth="1.5" />
-						<div class="flex items-center">{i18n.t('Rename')}</div>
+						<div class="flex items-center">{$i18n.t('Rename')}</div>
 					</button>
 
 					<button
@@ -627,7 +627,7 @@
 						}}
 					>
 						<GarbageBin className="size-4" />
-						<div class="flex items-center">{i18n.t('Delete')}</div>
+						<div class="flex items-center">{$i18n.t('Delete')}</div>
 					</button>
 				</div>
 			</div>

@@ -9,7 +9,7 @@
 
 	const dispatch = createEventDispatcher();
 
-	export let onClick: Function = () => {};
+	export let onClick: any = () => {};
 	export let title: string = 'HI';
 	export let content: string;
 

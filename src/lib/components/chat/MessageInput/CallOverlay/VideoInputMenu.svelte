@@ -2,11 +2,11 @@
 	import { getContext, createEventDispatcher } from 'svelte';
 
 	import type { Writable } from 'svelte/store';
-		const dispatch = createEventDispatcher();
+	const dispatch = createEventDispatcher();
 
 	import Dropdown from '$lib/components/common/Dropdown.svelte';
 
-	export let onClose: Function = () => {};
+	export let onClose: any = () => {};
 	export let devices: any;
 
 	let show = false;

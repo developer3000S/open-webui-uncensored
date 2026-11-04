@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toolServers, tools } from '$lib/stores';
 
@@ -21,13 +21,13 @@
 	const authStatus = (tool: any) =>
 		tool?.authenticated === false
 			? {
-					label: i18n.t('Auth required'),
+					label: $i18n.t('Auth required'),
 					dot: 'bg-amber-500',
 					pill: 'text-amber-700 dark:text-amber-300'
 				}
 			: tool?.authenticated === true
 				? {
-						label: i18n.t('Connected'),
+						label: $i18n.t('Connected'),
 						dot: 'bg-green-500',
 						pill: 'text-green-700 dark:text-green-300'
 					}
@@ -37,10 +37,10 @@
 <Modal bind:show size="md">
 	<div>
 		<div class=" flex justify-between dark:text-gray-300 px-5 pt-4 pb-0.5">
-			<div class=" text-lg font-medium self-center">{i18n.t('Available Tools')}</div>
+			<div class=" text-lg font-medium self-center">{$i18n.t('Available Tools')}</div>
 			<button
 				class="self-center"
-				aria-label={i18n.t('Close')}
+				aria-label={$i18n.t('Close')}
 				on:click={() => {
 					show = false;
 				}}
@@ -52,7 +52,7 @@
 		{#if selectedTools.length > 0}
 			{#if $toolServers.length > 0}
 				<div class=" flex justify-between dark:text-gray-300 px-5 pb-1">
-					<div class=" text-base font-medium self-center">{i18n.t('Tools')}</div>
+					<div class=" text-base font-medium self-center">{$i18n.t('Tools')}</div>
 				</div>
 			{/if}
 
@@ -110,15 +110,15 @@
 
 		{#if $toolServers.length > 0}
 			<div class=" flex justify-between dark:text-gray-300 px-5 pb-0.5">
-				<div class=" text-base font-medium self-center">{i18n.t('Tool Servers')}</div>
+				<div class=" text-base font-medium self-center">{$i18n.t('Tool Servers')}</div>
 			</div>
 
 			<div class="px-5 pb-5 w-full flex flex-col justify-center">
 				<div class=" text-xs text-gray-600 dark:text-gray-300 mb-2">
-					{i18n.t('Open WebUI can use tools provided by any OpenAPI server.')} <br /><a
+					{$i18n.t('Open WebUI can use tools provided by any OpenAPI server.')} <br /><a
 						class="underline"
 						href="https://github.com/open-webui/openapi-servers"
-						target="_blank">{i18n.t('Learn more about OpenAPI tool servers.')}</a
+						target="_blank">{$i18n.t('Learn more about OpenAPI tool servers.')}</a
 					>
 				</div>
 				<div class=" text-sm dark:text-gray-300 mb-1">
@@ -162,10 +162,10 @@
 <Modal bind:show size="md">
 	<div>
 		<div class=" flex justify-between dark:text-gray-300 px-5 pt-4 pb-0.5">
-			<div class=" text-lg font-medium self-center">{i18n.t('Available Tools')}</div>
+			<div class=" text-lg font-medium self-center">{$i18n.t('Available Tools')}</div>
 			<button
 				class="self-center"
-				aria-label={i18n.t('Close')}
+				aria-label={$i18n.t('Close')}
 				on:click={() => {
 					show = false;
 				}}
@@ -177,7 +177,7 @@
 		{#if selectedTools.length > 0}
 			{#if $toolServers.length > 0}
 				<div class=" flex justify-between dark:text-gray-300 px-5 pb-1">
-					<div class=" text-base font-medium self-center">{i18n.t('Tools')}</div>
+					<div class=" text-base font-medium self-center">{$i18n.t('Tools')}</div>
 				</div>
 			{/if}
 
@@ -235,15 +235,15 @@
 
 		{#if $toolServers.length > 0}
 			<div class=" flex justify-between dark:text-gray-300 px-5 pb-0.5">
-				<div class=" text-base font-medium self-center">{i18n.t('Tool Servers')}</div>
+				<div class=" text-base font-medium self-center">{$i18n.t('Tool Servers')}</div>
 			</div>
 
 			<div class="px-5 pb-5 w-full flex flex-col justify-center">
 				<div class=" text-xs text-gray-600 dark:text-gray-300 mb-2">
-					{i18n.t('Open WebUI can use tools provided by any OpenAPI server.')} <br /><a
+					{$i18n.t('Open WebUI can use tools provided by any OpenAPI server.')} <br /><a
 						class="underline"
 						href="https://github.com/open-webui/openapi-servers"
-						target="_blank">{i18n.t('Learn more about OpenAPI tool servers.')}</a
+						target="_blank">{$i18n.t('Learn more about OpenAPI tool servers.')}</a
 					>
 				</div>
 				<div class=" text-sm dark:text-gray-300 mb-1">

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { models } from '$lib/stores';
 	import {
@@ -35,12 +35,12 @@
 		(typeof localStorage !== 'undefined' && localStorage.getItem('analyticsCustomEnd')) || '';
 
 	$: periods = [
-		{ value: '24h', label: i18n.t('Last 24 hours') },
-		{ value: '7d', label: i18n.t('Last 7 days') },
-		{ value: '30d', label: i18n.t('Last 30 days') },
-		{ value: '90d', label: i18n.t('Last 90 days') },
-		{ value: 'all', label: i18n.t('All time') },
-		{ value: 'custom', label: i18n.t('Custom range') }
+		{ value: '24h', label: $i18n.t('Last 24 hours') },
+		{ value: '7d', label: $i18n.t('Last 7 days') },
+		{ value: '30d', label: $i18n.t('Last 30 days') },
+		{ value: '90d', label: $i18n.t('Last 90 days') },
+		{ value: 'all', label: $i18n.t('All time') },
+		{ value: 'custom', label: $i18n.t('Custom range') }
 	];
 
 	// User group filter
@@ -173,6 +173,7 @@
 		loadDashboard();
 	}
 
+	// @ts-ignore
 	onMount(async () => {
 		// Load groups for filter
 		try {
@@ -212,8 +213,8 @@
 			return userDirection === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
 		}
 		if (userOrderBy === 'tokens') {
-			const aTokens = a.total_tokens ?? 0;
-			const bTokens = b.total_tokens ?? 0;
+			const aTokens = (a as any).total_tokens ?? 0;
+			const bTokens = (b as any).total_tokens ?? 0;
 			return userDirection === 'asc' ? aTokens - bTokens : bTokens - aTokens;
 		}
 		return userDirection === 'asc' ? a.count - b.count : b.count - a.count;
@@ -238,7 +239,7 @@
 	class="pt-0.5 pb-1 gap-1 flex flex-row justify-between items-center sticky top-0 z-10 bg-white dark:bg-gray-900"
 >
 	<div class="text-lg font-medium px-0.5 shrink-0">
-		{i18n.t('Analytics')}
+		{$i18n.t('Analytics')}
 	</div>
 	<div class="flex items-center gap-2 flex-wrap justify-end min-w-0">
 		{#if groups.length > 0}
@@ -246,7 +247,7 @@
 				bind:value={selectedGroupId}
 				class="w-fit pr-8 rounded-sm px-2 text-xs bg-transparent outline-none text-right"
 			>
-				<option value={null}>{i18n.t('All Users')}</option>
+				<option value={null}>{$i18n.t('All Users')}</option>
 				{#each groups as group}
 					<option value={group.id}>{group.name}</option>
 				{/each}
@@ -293,25 +294,25 @@
 			><span class="font-medium text-gray-900 dark:text-gray-300"
 				>{summary.total_messages.toLocaleString()}</span
 			>
-			{i18n.t('messages')}</span
+			{$i18n.t('messages')}</span
 		>
-		<Tooltip content={i18n.t('Token counts are estimates and may not reflect actual API usage')}>
+		<Tooltip content={$i18n.t('Token counts are estimates and may not reflect actual API usage')}>
 			<span class="cursor-help"
 				><span class="font-medium text-gray-900 dark:text-gray-300"
 					>{formatNumber(totalTokens.total)}</span
 				>
-				{i18n.t('tokens')}</span
+				{$i18n.t('tokens')}</span
 			>
 		</Tooltip>
 		<span
 			><span class="font-medium text-gray-900 dark:text-gray-300"
 				>{summary.total_chats.toLocaleString()}</span
 			>
-			{i18n.t('chats')}</span
+			{$i18n.t('chats')}</span
 		>
 		<span
 			><span class="font-medium text-gray-900 dark:text-gray-300">{summary.total_users}</span>
-			{i18n.t('users')}</span
+			{$i18n.t('users')}</span
 		>
 	</div>
 
@@ -332,7 +333,7 @@
 		{@const periodMap = { '24h': 'hour', '7d': 'week', '30d': 'month', '90d': 'year', all: 'all' }}
 		<div class="mb-4">
 			<div class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2 px-0.5">
-				{selectedPeriod === '24h' ? i18n.t('Hourly Messages') : i18n.t('Daily Messages')}
+				{selectedPeriod === '24h' ? $i18n.t('Hourly Messages') : $i18n.t('Daily Messages')}
 			</div>
 			<ChartLine
 				data={dailyStats}
@@ -354,7 +355,7 @@
 		<!-- Model Usage Table -->
 		<div>
 			<div class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 px-0.5">
-				{i18n.t('Model Usage')}
+				{$i18n.t('Model Usage')}
 			</div>
 			<div class="scrollbar-hidden relative whitespace-nowrap overflow-x-auto max-w-full">
 				<table class="w-full text-sm text-left text-gray-500 dark:text-gray-400 table-auto">
@@ -367,7 +368,7 @@
 								on:click={() => toggleModelSort('name')}
 							>
 								<div class="flex gap-1.5 items-center">
-									{i18n.t('Model')}
+									{$i18n.t('Model')}
 									{#if modelOrderBy === 'name'}
 										<span class="font-normal">
 											{#if modelDirection === 'asc'}<ChevronUp
@@ -385,7 +386,7 @@
 								on:click={() => toggleModelSort('count')}
 							>
 								<div class="flex gap-1.5 items-center justify-end">
-									{i18n.t('Messages')}
+									{$i18n.t('Messages')}
 									{#if modelOrderBy === 'count'}
 										<span class="font-normal">
 											{#if modelDirection === 'asc'}<ChevronUp
@@ -403,7 +404,7 @@
 								on:click={() => toggleModelSort('users')}
 							>
 								<div class="flex gap-1.5 items-center justify-end">
-									{i18n.t('Users')}
+									{$i18n.t('Users')}
 									{#if modelOrderBy === 'users'}
 										<span class="font-normal">
 											{#if modelDirection === 'asc'}<ChevronUp
@@ -421,7 +422,7 @@
 								on:click={() => toggleModelSort('chats')}
 							>
 								<div class="flex gap-1.5 items-center justify-end">
-									{i18n.t('Chats')}
+									{$i18n.t('Chats')}
 									{#if modelOrderBy === 'chats'}
 										<span class="font-normal">
 											{#if modelDirection === 'asc'}<ChevronUp
@@ -439,7 +440,7 @@
 								on:click={() => toggleModelSort('tokens')}
 							>
 								<div class="flex gap-1.5 items-center justify-end">
-									{i18n.t('Tokens')}
+									{$i18n.t('Tokens')}
 									{#if modelOrderBy === 'tokens'}
 										<span class="font-normal">
 											{#if modelDirection === 'asc'}<ChevronUp
@@ -510,7 +511,7 @@
 						{#if sortedModels.length === 0}
 							<tr
 								><td colspan="7" class="px-3 py-2 text-center text-gray-400"
-									>{i18n.t('No data')}</td
+									>{$i18n.t('No data')}</td
 								></tr
 							>
 						{/if}
@@ -522,7 +523,7 @@
 		<!-- User Activity Table -->
 		<div>
 			<div class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 px-0.5">
-				{i18n.t('User Activity')}
+				{$i18n.t('User Activity')}
 			</div>
 			<div class="scrollbar-hidden relative whitespace-nowrap overflow-x-auto max-w-full">
 				<table class="w-full text-sm text-left text-gray-500 dark:text-gray-400 table-auto">
@@ -535,7 +536,7 @@
 								on:click={() => toggleUserSort('name')}
 							>
 								<div class="flex gap-1.5 items-center">
-									{i18n.t('User')}
+									{$i18n.t('User')}
 									{#if userOrderBy === 'name'}
 										<span class="font-normal">
 											{#if userDirection === 'asc'}<ChevronUp
@@ -553,7 +554,7 @@
 								on:click={() => toggleUserSort('count')}
 							>
 								<div class="flex gap-1.5 items-center justify-end">
-									{i18n.t('Messages')}
+									{$i18n.t('Messages')}
 									{#if userOrderBy === 'count'}
 										<span class="font-normal">
 											{#if userDirection === 'asc'}<ChevronUp
@@ -571,7 +572,7 @@
 								on:click={() => toggleUserSort('tokens')}
 							>
 								<div class="flex gap-1.5 items-center justify-end">
-									{i18n.t('Tokens')}
+									{$i18n.t('Tokens')}
 									{#if userOrderBy === 'tokens'}
 										<span class="font-normal">
 											{#if userDirection === 'asc'}<ChevronUp
@@ -605,13 +606,14 @@
 									</div>
 								</td>
 								<td class="px-3 py-1 text-right">{user.count.toLocaleString()}</td>
-								<td class="px-3 py-1 text-right">{formatNumber(user.total_tokens ?? 0)}</td>
+								<td class="px-3 py-1 text-right">{formatNumber((user as any).total_tokens ?? 0)}</td
+								>
 							</tr>
 						{/each}
 						{#if sortedUsers.length === 0}
 							<tr
 								><td colspan="4" class="px-3 py-2 text-center text-gray-400"
-									>{i18n.t('No data')}</td
+									>{$i18n.t('No data')}</td
 								></tr
 							>
 						{/if}
@@ -622,7 +624,7 @@
 	</div>
 
 	<div class="text-gray-500 text-xs mt-1.5 text-right">
-		ⓘ {i18n.t('Message counts are based on assistant responses.')}
+		ⓘ {$i18n.t('Message counts are based on assistant responses.')}
 	</div>
 {/if}
 
@@ -631,7 +633,7 @@
 	class="pt-0.5 pb-1 gap-1 flex flex-row justify-between items-center sticky top-0 z-10 bg-white dark:bg-gray-900"
 >
 	<div class="text-lg font-medium px-0.5 shrink-0">
-		{i18n.t('Analytics')}
+		{$i18n.t('Analytics')}
 	</div>
 	<div class="flex items-center gap-2 flex-wrap justify-end min-w-0">
 		{#if groups.length > 0}
@@ -639,7 +641,7 @@
 				bind:value={selectedGroupId}
 				class="w-fit pr-8 rounded-sm px-2 text-xs bg-transparent outline-none text-right"
 			>
-				<option value={null}>{i18n.t('All Users')}</option>
+				<option value={null}>{$i18n.t('All Users')}</option>
 				{#each groups as group}
 					<option value={group.id}>{group.name}</option>
 				{/each}
@@ -686,25 +688,25 @@
 			><span class="font-medium text-gray-900 dark:text-gray-300"
 				>{summary.total_messages.toLocaleString()}</span
 			>
-			{i18n.t('messages')}</span
+			{$i18n.t('messages')}</span
 		>
-		<Tooltip content={i18n.t('Token counts are estimates and may not reflect actual API usage')}>
+		<Tooltip content={$i18n.t('Token counts are estimates and may not reflect actual API usage')}>
 			<span class="cursor-help"
 				><span class="font-medium text-gray-900 dark:text-gray-300"
 					>{formatNumber(totalTokens.total)}</span
 				>
-				{i18n.t('tokens')}</span
+				{$i18n.t('tokens')}</span
 			>
 		</Tooltip>
 		<span
 			><span class="font-medium text-gray-900 dark:text-gray-300"
 				>{summary.total_chats.toLocaleString()}</span
 			>
-			{i18n.t('chats')}</span
+			{$i18n.t('chats')}</span
 		>
 		<span
 			><span class="font-medium text-gray-900 dark:text-gray-300">{summary.total_users}</span>
-			{i18n.t('users')}</span
+			{$i18n.t('users')}</span
 		>
 	</div>
 
@@ -725,7 +727,7 @@
 		{@const periodMap = { '24h': 'hour', '7d': 'week', '30d': 'month', '90d': 'year', all: 'all' }}
 		<div class="mb-4">
 			<div class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2 px-0.5">
-				{selectedPeriod === '24h' ? i18n.t('Hourly Messages') : i18n.t('Daily Messages')}
+				{selectedPeriod === '24h' ? $i18n.t('Hourly Messages') : $i18n.t('Daily Messages')}
 			</div>
 			<ChartLine
 				data={dailyStats}
@@ -747,7 +749,7 @@
 		<!-- Model Usage Table -->
 		<div>
 			<div class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 px-0.5">
-				{i18n.t('Model Usage')}
+				{$i18n.t('Model Usage')}
 			</div>
 			<div class="scrollbar-hidden relative whitespace-nowrap overflow-x-auto max-w-full">
 				<table class="w-full text-sm text-left text-gray-500 dark:text-gray-400 table-auto">
@@ -760,7 +762,7 @@
 								on:click={() => toggleModelSort('name')}
 							>
 								<div class="flex gap-1.5 items-center">
-									{i18n.t('Model')}
+									{$i18n.t('Model')}
 									{#if modelOrderBy === 'name'}
 										<span class="font-normal">
 											{#if modelDirection === 'asc'}<ChevronUp
@@ -778,7 +780,7 @@
 								on:click={() => toggleModelSort('count')}
 							>
 								<div class="flex gap-1.5 items-center justify-end">
-									{i18n.t('Messages')}
+									{$i18n.t('Messages')}
 									{#if modelOrderBy === 'count'}
 										<span class="font-normal">
 											{#if modelDirection === 'asc'}<ChevronUp
@@ -796,7 +798,7 @@
 								on:click={() => toggleModelSort('users')}
 							>
 								<div class="flex gap-1.5 items-center justify-end">
-									{i18n.t('Users')}
+									{$i18n.t('Users')}
 									{#if modelOrderBy === 'users'}
 										<span class="font-normal">
 											{#if modelDirection === 'asc'}<ChevronUp
@@ -814,7 +816,7 @@
 								on:click={() => toggleModelSort('chats')}
 							>
 								<div class="flex gap-1.5 items-center justify-end">
-									{i18n.t('Chats')}
+									{$i18n.t('Chats')}
 									{#if modelOrderBy === 'chats'}
 										<span class="font-normal">
 											{#if modelDirection === 'asc'}<ChevronUp
@@ -832,7 +834,7 @@
 								on:click={() => toggleModelSort('tokens')}
 							>
 								<div class="flex gap-1.5 items-center justify-end">
-									{i18n.t('Tokens')}
+									{$i18n.t('Tokens')}
 									{#if modelOrderBy === 'tokens'}
 										<span class="font-normal">
 											{#if modelDirection === 'asc'}<ChevronUp
@@ -903,7 +905,7 @@
 						{#if sortedModels.length === 0}
 							<tr
 								><td colspan="7" class="px-3 py-2 text-center text-gray-400"
-									>{i18n.t('No data')}</td
+									>{$i18n.t('No data')}</td
 								></tr
 							>
 						{/if}
@@ -915,7 +917,7 @@
 		<!-- User Activity Table -->
 		<div>
 			<div class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 px-0.5">
-				{i18n.t('User Activity')}
+				{$i18n.t('User Activity')}
 			</div>
 			<div class="scrollbar-hidden relative whitespace-nowrap overflow-x-auto max-w-full">
 				<table class="w-full text-sm text-left text-gray-500 dark:text-gray-400 table-auto">
@@ -928,7 +930,7 @@
 								on:click={() => toggleUserSort('name')}
 							>
 								<div class="flex gap-1.5 items-center">
-									{i18n.t('User')}
+									{$i18n.t('User')}
 									{#if userOrderBy === 'name'}
 										<span class="font-normal">
 											{#if userDirection === 'asc'}<ChevronUp
@@ -946,7 +948,7 @@
 								on:click={() => toggleUserSort('count')}
 							>
 								<div class="flex gap-1.5 items-center justify-end">
-									{i18n.t('Messages')}
+									{$i18n.t('Messages')}
 									{#if userOrderBy === 'count'}
 										<span class="font-normal">
 											{#if userDirection === 'asc'}<ChevronUp
@@ -964,7 +966,7 @@
 								on:click={() => toggleUserSort('tokens')}
 							>
 								<div class="flex gap-1.5 items-center justify-end">
-									{i18n.t('Tokens')}
+									{$i18n.t('Tokens')}
 									{#if userOrderBy === 'tokens'}
 										<span class="font-normal">
 											{#if userDirection === 'asc'}<ChevronUp
@@ -998,13 +1000,14 @@
 									</div>
 								</td>
 								<td class="px-3 py-1 text-right">{user.count.toLocaleString()}</td>
-								<td class="px-3 py-1 text-right">{formatNumber(user.total_tokens ?? 0)}</td>
+								<td class="px-3 py-1 text-right">{formatNumber((user as any).total_tokens ?? 0)}</td
+								>
 							</tr>
 						{/each}
 						{#if sortedUsers.length === 0}
 							<tr
 								><td colspan="4" class="px-3 py-2 text-center text-gray-400"
-									>{i18n.t('No data')}</td
+									>{$i18n.t('No data')}</td
 								></tr
 							>
 						{/if}
@@ -1015,6 +1018,6 @@
 	</div>
 
 	<div class="text-gray-500 text-xs mt-1.5 text-right">
-		ⓘ {i18n.t('Message counts are based on assistant responses.')}
+		ⓘ {$i18n.t('Message counts are based on assistant responses.')}
 	</div>
 {/if}

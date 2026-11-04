@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
@@ -20,8 +20,9 @@
 
 	export let chatListLoading: any = false;
 	export let allChatsLoaded: any = false;
-	export let loadHandler: Function = null;
+	export let loadHandler: any = null;
 	export let showOwnerInfo: any = false;
+	let show = false;
 	let chatList: any = null;
 
 	const init = async () => {
@@ -33,7 +34,7 @@
 				time_range: getTimeRange(chat.updated_at)
 			}));
 
-			chatList.sort((a, b) => {
+			chatList.sort((a: any, b: any) => {
 				if (direction === 'asc') {
 					return a[orderBy] > b[orderBy] ? 1 : -1;
 				} else {
@@ -70,7 +71,7 @@
 				on:click={() => setSortKey('title')}
 			>
 				<div class="flex gap-1.5 items-center">
-					{i18n.t('Title')}
+					{$i18n.t('Title')}
 
 					{#if orderBy === 'title'}
 						<span class="font-normal"
@@ -92,7 +93,7 @@
 				on:click={() => setSortKey('updated_at')}
 			>
 				<div class="flex gap-1.5 items-center">
-					{i18n.t('Updated at')}
+					{$i18n.t('Updated at')}
 
 					{#if orderBy === 'updated_at'}
 						<span class="font-normal"
@@ -117,7 +118,7 @@
 			<div
 				class="text-xs text-gray-500 dark:text-gray-400 text-center px-5 min-h-20 w-full h-full flex justify-center items-center"
 			>
-				{i18n.t('No chats found')}
+				{$i18n.t('No chats found')}
 			</div>
 		{/if}
 
@@ -128,24 +129,24 @@
 						? ''
 						: 'pt-5'} pb-2 px-2"
 				>
-					{i18n.t(chat.time_range)}
+					{$i18n.t(chat.time_range)}
 					<!-- localisation keys for time_range to be recognized from the i18next parser (so they don't get automatically removed):
-							{i18n.t('Today')}
-							{i18n.t('Yesterday')}
-							{i18n.t('Previous 7 days')}
-							{i18n.t('Previous 30 days')}
-							{i18n.t('January')}
-							{i18n.t('February')}
-							{i18n.t('March')}
-							{i18n.t('April')}
-							{i18n.t('May')}
-							{i18n.t('June')}
-							{i18n.t('July')}
-							{i18n.t('August')}
-							{i18n.t('September')}
-							{i18n.t('October')}
-							{i18n.t('November')}
-							{i18n.t('December')}
+							{$i18n.t('Today')}
+							{$i18n.t('Yesterday')}
+							{$i18n.t('Previous 7 days')}
+							{$i18n.t('Previous 30 days')}
+							{$i18n.t('January')}
+							{$i18n.t('February')}
+							{$i18n.t('March')}
+							{$i18n.t('April')}
+							{$i18n.t('May')}
+							{$i18n.t('June')}
+							{$i18n.t('July')}
+							{$i18n.t('August')}
+							{$i18n.t('September')}
+							{$i18n.t('October')}
+							{$i18n.t('November')}
+							{$i18n.t('December')}
 							-->
 				</div>
 			{/if}
@@ -203,7 +204,7 @@
 				on:click={() => setSortKey('title')}
 			>
 				<div class="flex gap-1.5 items-center">
-					{i18n.t('Title')}
+					{$i18n.t('Title')}
 
 					{#if orderBy === 'title'}
 						<span class="font-normal"
@@ -225,7 +226,7 @@
 				on:click={() => setSortKey('updated_at')}
 			>
 				<div class="flex gap-1.5 items-center">
-					{i18n.t('Updated at')}
+					{$i18n.t('Updated at')}
 
 					{#if orderBy === 'updated_at'}
 						<span class="font-normal"
@@ -250,7 +251,7 @@
 			<div
 				class="text-xs text-gray-500 dark:text-gray-400 text-center px-5 min-h-20 w-full h-full flex justify-center items-center"
 			>
-				{i18n.t('No chats found')}
+				{$i18n.t('No chats found')}
 			</div>
 		{/if}
 
@@ -261,24 +262,24 @@
 						? ''
 						: 'pt-5'} pb-2 px-2"
 				>
-					{i18n.t(chat.time_range)}
+					{$i18n.t(chat.time_range)}
 					<!-- localisation keys for time_range to be recognized from the i18next parser (so they don't get automatically removed):
-							{i18n.t('Today')}
-							{i18n.t('Yesterday')}
-							{i18n.t('Previous 7 days')}
-							{i18n.t('Previous 30 days')}
-							{i18n.t('January')}
-							{i18n.t('February')}
-							{i18n.t('March')}
-							{i18n.t('April')}
-							{i18n.t('May')}
-							{i18n.t('June')}
-							{i18n.t('July')}
-							{i18n.t('August')}
-							{i18n.t('September')}
-							{i18n.t('October')}
-							{i18n.t('November')}
-							{i18n.t('December')}
+							{$i18n.t('Today')}
+							{$i18n.t('Yesterday')}
+							{$i18n.t('Previous 7 days')}
+							{$i18n.t('Previous 30 days')}
+							{$i18n.t('January')}
+							{$i18n.t('February')}
+							{$i18n.t('March')}
+							{$i18n.t('April')}
+							{$i18n.t('May')}
+							{$i18n.t('June')}
+							{$i18n.t('July')}
+							{$i18n.t('August')}
+							{$i18n.t('September')}
+							{$i18n.t('October')}
+							{$i18n.t('November')}
+							{$i18n.t('December')}
 							-->
 				</div>
 			{/if}

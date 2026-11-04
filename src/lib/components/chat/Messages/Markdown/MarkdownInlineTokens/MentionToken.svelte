@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Token } from 'marked';
 	import { LinkPreview } from 'bits-ui';
@@ -26,8 +26,8 @@
 	}
 
 	const init = () => {
-		const _id = token?.id;
-		triggerChar = token?.triggerChar ?? '@';
+		const _id: any = (token as any)?.id;
+		triggerChar = (token as any)?.triggerChar ?? '@';
 
 		if (triggerChar === '$') {
 			// Skill mention: id format is "skillId|label"
@@ -53,7 +53,7 @@
 			id = _id;
 		}
 
-		label = token?.label ?? id;
+		label = (token as any)?.label ?? id;
 
 		if (triggerChar === '#') {
 			if (idType === 'C') {
@@ -62,7 +62,7 @@
 				if (channel) {
 					label = channel.name;
 				} else {
-					label = i18n.t('Unknown');
+					label = $i18n.t('Unknown');
 				}
 			} else if (idType === 'T') {
 				// Thread
@@ -76,7 +76,7 @@
 				if (model) {
 					label = model.name;
 				} else {
-					label = i18n.t('Unknown');
+					label = $i18n.t('Unknown');
 				}
 			}
 		}

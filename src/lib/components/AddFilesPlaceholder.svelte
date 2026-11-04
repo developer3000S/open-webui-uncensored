@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	export let title: any = '';
 	export let content: any = '';
@@ -13,7 +13,7 @@
 		{#if title}
 			{title}
 		{:else}
-			{i18n.t('Add Files')}
+			{$i18n.t('Add Files')}
 		{/if}
 	</div>
 
@@ -22,7 +22,7 @@
 			{#if content}
 				{content}
 			{:else}
-				{i18n.t('Drop any files here to upload')}
+				{$i18n.t('Drop any files here to upload')}
 			{/if}
 		</div>
 	</slot>
@@ -33,7 +33,7 @@
 		{#if title}
 			{title}
 		{:else}
-			{i18n.t('Add Files')}
+			{$i18n.t('Add Files')}
 		{/if}
 	</div>
 
@@ -42,7 +42,7 @@
 			{#if content}
 				{content}
 			{:else}
-				{i18n.t('Drop any files here to upload')}
+				{$i18n.t('Drop any files here to upload')}
 			{/if}
 		</div>
 	</slot>

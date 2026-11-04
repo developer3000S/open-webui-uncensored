@@ -1,8 +1,6 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
-	import { createEventDispatcher, getContext, onDestroy, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
-
+	import type { i18n as i18nType } from 'i18next';
+	import type { Writable } from 'svelte/store';
 	import '$lib/utils/codemirror';
 
 	import { basicSetup, EditorView } from 'codemirror';
@@ -17,6 +15,8 @@
 
 	import { oneDark } from '@codemirror/theme-one-dark';
 
+	import { onMount, createEventDispatcher, getContext, tick, onDestroy } from 'svelte';
+
 	import { createPyodideWorker } from '$lib/pyodide/createPyodideWorker';
 
 	import { formatPythonCode } from '$lib/apis/utils';
@@ -24,12 +24,13 @@
 	import { user } from '$lib/stores';
 
 	const dispatch = createEventDispatcher();
-	import type { Writable } from 'svelte/store';
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
-	export let boilerplate: any = '';
-	export let value: any = '';
+	export let boilerplate = '';
+	export let value = '';
+
 	export let onSave = () => {};
-	export let onChange = () => {};
+	export let onChange = (_value: any) => {};
 
 	let _value = '';
 
@@ -75,8 +76,9 @@
 		];
 	}
 
-	export let id: any = '';
-	export let lang: any = '';
+	export let id = '';
+	export let lang = '';
+
 	let codeEditor: EditorView | null = null;
 
 	export const focus = () => {
@@ -92,7 +94,7 @@
 		return await language?.load();
 	};
 
-	let pyodideWorkerInstance: any = null;
+	let pyodideWorkerInstance = null;
 
 	const getPyodideWorker = () => {
 		if (!pyodideWorkerInstance) {
@@ -104,7 +106,7 @@
 	// Generate unique IDs for requests
 	let _formatReqId = 0;
 
-	const formatPythonCodePyodide = (code: any) => {
+	const formatPythonCodePyodide = (code) => {
 		return new Promise((resolve, reject) => {
 			const id = `format-${++_formatReqId}`;
 			let timeout;
@@ -122,7 +124,7 @@ print("${endTag}")
 
 			const packages = ['black'];
 
-			(event: any) => {
+			function handleMessage(event) {
 				const { id: eventId, stdout, stderr } = event.data;
 				if (eventId !== id) return; // Only handle our message
 				clearTimeout(timeout);
@@ -132,7 +134,7 @@ print("${endTag}")
 				if (stderr) {
 					reject(stderr);
 				} else {
-					(stdout: any, start: any, end: any) => {
+					function extractBetweenDelimiters(stdout, start, end) {
 						console.log('stdout', stdout);
 						const startIdx = stdout.indexOf(start);
 						const endIdx = stdout.indexOf(end, startIdx + start.length);
@@ -150,7 +152,7 @@ print("${endTag}")
 				}
 			}
 
-			(event: any) => {
+			function handleError(event) {
 				clearTimeout(timeout);
 				worker.removeEventListener('message', handleMessage);
 				worker.removeEventListener('error', handleError);
@@ -182,7 +184,7 @@ print("${endTag}")
 				$user?.role === 'admin'
 					? formatPythonCode(localStorage.token, _value)
 					: formatPythonCodePyodide(_value)
-			).catch(async (error)=> {
+			).catch((error) => {
 				toast.error(`${error}`);
 				return null;
 			});
@@ -196,7 +198,7 @@ print("${endTag}")
 				onChange(_value);
 				await tick();
 
-				toast.success(i18n.t('Code formatted successfully'));
+				toast.success($i18n.t('Code formatted successfully'));
 				return true;
 			}
 			return false;
@@ -208,7 +210,7 @@ print("${endTag}")
 		basicSetup,
 		keymap.of([{ key: 'Tab', run: acceptCompletion }, indentWithTab]),
 		indentUnit.of('    '),
-		placeholder(i18n.t('Enter your code here...')),
+		placeholder($i18n.t('Enter your code here...')),
 		EditorView.updateListener.of((e) => {
 			if (e.docChanged) {
 				_value = e.state.doc.toString();
@@ -271,7 +273,7 @@ print("${endTag}")
 							});
 						} else {
 							codeEditor.dispatch({
-								effects: editorTheme.reconfigure()
+								effects: editorTheme.reconfigure([] as any)
 							});
 						}
 					}
@@ -284,7 +286,7 @@ print("${endTag}")
 			attributeFilter: ['class']
 		});
 
-		const keydownHandler = async (e: any) => {
+		const keydownHandler = async (e) => {
 			if ((e.ctrlKey || e.metaKey) && e.key === 's') {
 				e.preventDefault();
 
@@ -318,6 +320,4 @@ print("${endTag}")
 	});
 </script>
 
-<div id="code-textarea-{id}" class="h-full w-full text-sm"></div>
-
-<div id="code-textarea-{id}" class="h-full w-full text-sm"></div>
+<div id="code-textarea-{id}" class="h-full w-full text-sm" />

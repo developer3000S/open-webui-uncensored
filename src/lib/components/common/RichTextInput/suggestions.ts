@@ -1,8 +1,13 @@
-import { mount, unmount } from 'svelte';
 import { createClassComponent } from 'svelte/legacy';
-import type { Writable } from 'svelte/store';
 
 import tippy from 'tippy.js';
+import type { GetReferenceClientRect, Instance as TippyInstance } from 'tippy.js';
+import type { SuggestionKeyDownProps, SuggestionProps } from '@tiptap/suggestion';
+
+export interface SuggestionItem {
+	id: string;
+	label: string;
+}
 
 export function getSuggestionRenderer(Component: any, ComponentProps: Record<string, any> = {}) {
 	return function suggestionRenderer() {
@@ -13,7 +18,7 @@ export function getSuggestionRenderer(Component: any, ComponentProps: Record<str
 		let refEl: HTMLDivElement | null = null; // dummy reference
 
 		return {
-			onStart: (props: any) => {
+			onStart: (props: SuggestionProps<SuggestionItem, SuggestionItem>) => {
 				container = document.createElement('div');
 				container.className = 'suggestion-list-container';
 				document.body.appendChild(container);
@@ -25,12 +30,12 @@ export function getSuggestionRenderer(Component: any, ComponentProps: Record<str
 					props: {
 						char: props?.text?.charAt(0),
 						query: props?.query,
-						command: (item) => {
+						command: (item: SuggestionItem) => {
 							props.command({ id: item.id, label: item.label });
 						},
 						...ComponentProps
 					},
-					context: new Map<string, any>([['i18n', ComponentProps?.i18n as i18nType]])
+					context: new Map<string, any>([['i18n', ComponentProps?.i18n]])
 				});
 
 				// Create a tiny reference element so outside taps are truly "outside"
@@ -45,7 +50,7 @@ export function getSuggestionRenderer(Component: any, ComponentProps: Record<str
 				document.body.appendChild(refEl);
 
 				popup = tippy(refEl, {
-					getReferenceClientRect: props.clientRect as any,
+					getReferenceClientRect: props.clientRect as GetReferenceClientRect,
 					appendTo: () => document.body,
 					content: container,
 					interactive: true,
@@ -83,22 +88,22 @@ export function getSuggestionRenderer(Component: any, ComponentProps: Record<str
 				popup?.show();
 			},
 
-			onUpdate: (props: any) => {
+			onUpdate: (props: SuggestionProps<SuggestionItem, SuggestionItem>) => {
 				if (!component) return;
 
 				component.$set({
 					query: props.query,
-					command: (item) => {
+					command: (item: SuggestionItem) => {
 						props.command({ id: item.id, label: item.label });
 					}
 				});
 
 				if (props.clientRect && popup) {
-					popup.setProps({ getReferenceClientRect: props.clientRect as any });
+					popup.setProps({ getReferenceClientRect: props.clientRect as GetReferenceClientRect });
 				}
 			},
 
-			onKeyDown: (props: any) => {
+			onKeyDown: (props: SuggestionKeyDownProps) => {
 				// forward to the Svelte component’s handler
 				// (expose this from component as `export (evt: any)`)
 				// @ts-ignore

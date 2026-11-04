@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import fileSaver from 'file-saver';
 	const { saveAs } = fileSaver;
@@ -83,7 +83,7 @@
 	{#if content}
 		<div class=" absolute top-2.5 right-2.5">
 			<div class="flex gap-1">
-				<Tooltip content={i18n.t('Download as SVG')}>
+				<Tooltip content={$i18n.t('Download as SVG')}>
 					<button
 						class="p-1.5 rounded-lg border border-gray-100 dark:border-none dark:bg-gray-850 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
 						on:click={() => {
@@ -94,7 +94,7 @@
 					</button>
 				</Tooltip>
 
-				<Tooltip content={i18n.t('Reset view')}>
+				<Tooltip content={$i18n.t('Reset view')}>
 					<button
 						class="p-1.5 rounded-lg border border-gray-100 dark:border-none dark:bg-gray-850 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
 						on:click={() => {
@@ -105,12 +105,12 @@
 					</button>
 				</Tooltip>
 
-				<Tooltip content={i18n.t('Copy to clipboard')}>
+				<Tooltip content={$i18n.t('Copy to clipboard')}>
 					<button
 						class="p-1.5 rounded-lg border border-gray-100 dark:border-none dark:bg-gray-850 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
 						on:click={() => {
 							copyToClipboard(content);
-							toast.success(i18n.t('Copied to clipboard'));
+							toast.success($i18n.t('Copied to clipboard'));
 						}}
 					>
 						<Clipboard className=" size-4" strokeWidth="1.5" />
@@ -170,7 +170,7 @@
 	{#if content}
 		<div class=" absolute top-2.5 right-2.5">
 			<div class="flex gap-1">
-				<Tooltip content={i18n.t('Download as SVG')}>
+				<Tooltip content={$i18n.t('Download as SVG')}>
 					<button
 						class="p-1.5 rounded-lg border border-gray-100 dark:border-none dark:bg-gray-850 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
 						on:click={() => {
@@ -181,7 +181,7 @@
 					</button>
 				</Tooltip>
 
-				<Tooltip content={i18n.t('Reset view')}>
+				<Tooltip content={$i18n.t('Reset view')}>
 					<button
 						class="p-1.5 rounded-lg border border-gray-100 dark:border-none dark:bg-gray-850 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
 						on:click={() => {
@@ -192,12 +192,12 @@
 					</button>
 				</Tooltip>
 
-				<Tooltip content={i18n.t('Copy to clipboard')}>
+				<Tooltip content={$i18n.t('Copy to clipboard')}>
 					<button
 						class="p-1.5 rounded-lg border border-gray-100 dark:border-none dark:bg-gray-850 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
 						on:click={() => {
 							copyToClipboard(content);
-							toast.success(i18n.t('Copied to clipboard'));
+							toast.success($i18n.t('Copied to clipboard'));
 						}}
 					>
 						<Clipboard className=" size-4" strokeWidth="1.5" />

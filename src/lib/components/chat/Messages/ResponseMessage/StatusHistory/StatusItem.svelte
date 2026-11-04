@@ -1,13 +1,13 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 	import WebSearchResults from '../WebSearchResults.svelte';
 	import Search from '$lib/components/icons/Search.svelte';
 
-	let status: any = null;
+	export let status: any = null;
 	export let done: any = false;
 </script>
 
@@ -21,17 +21,17 @@
 							? 'shimmer'
 							: ''} text-base line-clamp-1 text-wrap"
 					>
-						<!-- i18n.t("Generating search query") -->
-						<!-- i18n.t("No search query generated") -->
-						<!-- i18n.t('Searched {{count}} sites') -->
+						<!-- $i18n.t("Generating search query") -->
+						<!-- $i18n.t("No search query generated") -->
+						<!-- $i18n.t('Searched {{count}} sites') -->
 						{#if status?.description?.includes('{{count}}')}
-							{i18n.t(status?.description, {
+							{$i18n.t(status?.description, {
 								count: (status?.urls || status?.items).length
 							})}
 						{:else if status?.description === 'No search query generated'}
-							{i18n.t('No search query generated')}
+							{$i18n.t('No search query generated')}
 						{:else if status?.description === 'Generating search query'}
-							{i18n.t('Generating search query')}
+							{$i18n.t('Generating search query')}
 						{:else}
 							{status?.description}
 						{/if}
@@ -45,7 +45,7 @@
 						? 'shimmer'
 						: ''} text-gray-500 dark:text-gray-500 text-base line-clamp-1 text-wrap"
 				>
-					{i18n.t(`Searching Knowledge for "{{searchQuery}}"`, {
+					{$i18n.t(`Searching Knowledge for "{{searchQuery}}"`, {
 						searchQuery: status.query
 					})}
 				</div>
@@ -57,7 +57,7 @@
 						? 'shimmer'
 						: ''} text-gray-500 dark:text-gray-500 text-base line-clamp-1 text-wrap"
 				>
-					{i18n.t(`Searching`)}
+					{$i18n.t(`Searching`)}
 				</div>
 
 				<div class=" flex gap-1 flex-wrap mt-2">
@@ -83,7 +83,7 @@
 						? 'shimmer'
 						: ''} text-gray-500 dark:text-gray-500 text-base line-clamp-1 text-wrap"
 				>
-					{i18n.t(`Querying`)}
+					{$i18n.t(`Querying`)}
 				</div>
 
 				<div class=" flex gap-1 flex-wrap mt-2">
@@ -110,15 +110,15 @@
 						: ''} text-gray-500 dark:text-gray-500 text-base line-clamp-1 text-wrap"
 				>
 					{#if status.count === 0}
-						{i18n.t('No sources found')}
+						{$i18n.t('No sources found')}
 					{:else if status.count === 1}
-						{i18n.t('Retrieved 1 source')}
+						{$i18n.t('Retrieved 1 source')}
 					{:else}
-						<!-- {i18n.t('Source')} -->
-						<!-- {i18n.t('No source available')} -->
-						<!-- {i18n.t('No distance available')} -->
-						<!-- {i18n.t('Retrieved {{count}} sources')} -->
-						{i18n.t('Retrieved {{count}} sources', {
+						<!-- {$i18n.t('Source')} -->
+						<!-- {$i18n.t('No source available')} -->
+						<!-- {$i18n.t('No distance available')} -->
+						<!-- {$i18n.t('Retrieved {{count}} sources')} -->
+						{$i18n.t('Retrieved {{count}} sources', {
 							count: status.count
 						})}
 					{/if}
@@ -131,17 +131,17 @@
 						? 'shimmer'
 						: ''} text-gray-500 dark:text-gray-500 text-base line-clamp-1 text-wrap"
 				>
-					<!-- i18n.t(`Searching "{{searchQuery}}"`) -->
+					<!-- $i18n.t(`Searching "{{searchQuery}}"`) -->
 					{#if status?.description?.includes('{{searchQuery}}')}
-						{i18n.t(status?.description, {
+						{$i18n.t(status?.description, {
 							searchQuery: status?.query
 						})}
 					{:else if status?.description === 'No search query generated'}
-						{i18n.t('No search query generated')}
+						{$i18n.t('No search query generated')}
 					{:else if status?.description === 'Generating search query'}
-						{i18n.t('Generating search query')}
+						{$i18n.t('Generating search query')}
 					{:else if status?.description === 'Searching the web'}
-						{i18n.t('Searching the web')}
+						{$i18n.t('Searching the web')}
 					{:else}
 						{status?.description}
 					{/if}
@@ -161,17 +161,17 @@
 							? 'shimmer'
 							: ''} text-base line-clamp-1 text-wrap"
 					>
-						<!-- i18n.t("Generating search query") -->
-						<!-- i18n.t("No search query generated") -->
-						<!-- i18n.t('Searched {{count}} sites') -->
+						<!-- $i18n.t("Generating search query") -->
+						<!-- $i18n.t("No search query generated") -->
+						<!-- $i18n.t('Searched {{count}} sites') -->
 						{#if status?.description?.includes('{{count}}')}
-							{i18n.t(status?.description, {
+							{$i18n.t(status?.description, {
 								count: (status?.urls || status?.items).length
 							})}
 						{:else if status?.description === 'No search query generated'}
-							{i18n.t('No search query generated')}
+							{$i18n.t('No search query generated')}
 						{:else if status?.description === 'Generating search query'}
-							{i18n.t('Generating search query')}
+							{$i18n.t('Generating search query')}
 						{:else}
 							{status?.description}
 						{/if}
@@ -185,7 +185,7 @@
 						? 'shimmer'
 						: ''} text-gray-500 dark:text-gray-500 text-base line-clamp-1 text-wrap"
 				>
-					{i18n.t(`Searching Knowledge for "{{searchQuery}}"`, {
+					{$i18n.t(`Searching Knowledge for "{{searchQuery}}"`, {
 						searchQuery: status.query
 					})}
 				</div>
@@ -197,7 +197,7 @@
 						? 'shimmer'
 						: ''} text-gray-500 dark:text-gray-500 text-base line-clamp-1 text-wrap"
 				>
-					{i18n.t(`Searching`)}
+					{$i18n.t(`Searching`)}
 				</div>
 
 				<div class=" flex gap-1 flex-wrap mt-2">
@@ -223,7 +223,7 @@
 						? 'shimmer'
 						: ''} text-gray-500 dark:text-gray-500 text-base line-clamp-1 text-wrap"
 				>
-					{i18n.t(`Querying`)}
+					{$i18n.t(`Querying`)}
 				</div>
 
 				<div class=" flex gap-1 flex-wrap mt-2">
@@ -250,15 +250,15 @@
 						: ''} text-gray-500 dark:text-gray-500 text-base line-clamp-1 text-wrap"
 				>
 					{#if status.count === 0}
-						{i18n.t('No sources found')}
+						{$i18n.t('No sources found')}
 					{:else if status.count === 1}
-						{i18n.t('Retrieved 1 source')}
+						{$i18n.t('Retrieved 1 source')}
 					{:else}
-						<!-- {i18n.t('Source')} -->
-						<!-- {i18n.t('No source available')} -->
-						<!-- {i18n.t('No distance available')} -->
-						<!-- {i18n.t('Retrieved {{count}} sources')} -->
-						{i18n.t('Retrieved {{count}} sources', {
+						<!-- {$i18n.t('Source')} -->
+						<!-- {$i18n.t('No source available')} -->
+						<!-- {$i18n.t('No distance available')} -->
+						<!-- {$i18n.t('Retrieved {{count}} sources')} -->
+						{$i18n.t('Retrieved {{count}} sources', {
 							count: status.count
 						})}
 					{/if}
@@ -271,17 +271,17 @@
 						? 'shimmer'
 						: ''} text-gray-500 dark:text-gray-500 text-base line-clamp-1 text-wrap"
 				>
-					<!-- i18n.t(`Searching "{{searchQuery}}"`) -->
+					<!-- $i18n.t(`Searching "{{searchQuery}}"`) -->
 					{#if status?.description?.includes('{{searchQuery}}')}
-						{i18n.t(status?.description, {
+						{$i18n.t(status?.description, {
 							searchQuery: status?.query
 						})}
 					{:else if status?.description === 'No search query generated'}
-						{i18n.t('No search query generated')}
+						{$i18n.t('No search query generated')}
 					{:else if status?.description === 'Generating search query'}
-						{i18n.t('Generating search query')}
+						{$i18n.t('Generating search query')}
 					{:else if status?.description === 'Searching the web'}
-						{i18n.t('Searching the web')}
+						{$i18n.t('Searching the web')}
 					{:else}
 						{status?.description}
 					{/if}

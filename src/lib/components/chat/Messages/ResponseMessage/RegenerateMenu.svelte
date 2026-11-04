@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Dropdown from '$lib/components/common/Dropdown.svelte';
 	import LineSpace from '$lib/components/icons/LineSpace.svelte';
@@ -9,8 +9,8 @@
 
 	import type { Writable } from 'svelte/store';
 
-	export let onRegenerate: Function = (prompt = null) => {};
-	export let onClose: Function = () => {};
+	export let onRegenerate: any = (prompt = null) => {};
+	export let onClose: any = () => {};
 
 	let show = false;
 	let inputValue = '';
@@ -37,7 +37,7 @@
 					type="text"
 					id="floating-message-input"
 					class="bg-transparent outline-hidden w-full flex-1 text-sm"
-					placeholder={i18n.t('Suggest a change')}
+					placeholder={$i18n.t('Suggest a change')}
 					bind:value={inputValue}
 					autocomplete="off"
 					on:keydown={(e) => {
@@ -50,7 +50,7 @@
 
 				<div class="ml-2 self-center flex items-center">
 					<button
-						aria-label={i18n.t('Submit suggestion')}
+						aria-label={$i18n.t('Submit suggestion')}
 						class="{inputValue !== ''
 							? 'bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 '
 							: 'text-white bg-gray-200 dark:text-gray-900 dark:bg-gray-700 disabled'} transition rounded-full p-1 self-center"
@@ -97,27 +97,27 @@
 						d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
 					/>
 				</svg>
-				<div class="flex items-center">{i18n.t('Try Again')}</div>
+				<div class="flex items-center">{$i18n.t('Try Again')}</div>
 			</button>
 
 			<button
 				class="select-none flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl w-full"
 				on:click={() => {
-					onRegenerate(i18n.t('Add Details'));
+					onRegenerate($i18n.t('Add Details'));
 				}}
 			>
 				<LineSpace strokeWidth="2" />
-				<div class="flex items-center">{i18n.t('Add Details')}</div>
+				<div class="flex items-center">{$i18n.t('Add Details')}</div>
 			</button>
 
 			<button
 				class="select-none flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl w-full"
 				on:click={() => {
-					onRegenerate(i18n.t('More Concise'));
+					onRegenerate($i18n.t('More Concise'));
 				}}
 			>
 				<LineSpaceSmaller strokeWidth="2" />
-				<div class="flex items-center">{i18n.t('More Concise')}</div>
+				<div class="flex items-center">{$i18n.t('More Concise')}</div>
 			</button>
 		</div>
 	</div>
@@ -144,7 +144,7 @@
 					type="text"
 					id="floating-message-input"
 					class="bg-transparent outline-hidden w-full flex-1 text-sm"
-					placeholder={i18n.t('Suggest a change')}
+					placeholder={$i18n.t('Suggest a change')}
 					bind:value={inputValue}
 					autocomplete="off"
 					on:keydown={(e) => {
@@ -157,7 +157,7 @@
 
 				<div class="ml-2 self-center flex items-center">
 					<button
-						aria-label={i18n.t('Submit suggestion')}
+						aria-label={$i18n.t('Submit suggestion')}
 						class="{inputValue !== ''
 							? 'bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 '
 							: 'text-white bg-gray-200 dark:text-gray-900 dark:bg-gray-700 disabled'} transition rounded-full p-1 self-center"
@@ -204,27 +204,27 @@
 						d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
 					/>
 				</svg>
-				<div class="flex items-center">{i18n.t('Try Again')}</div>
+				<div class="flex items-center">{$i18n.t('Try Again')}</div>
 			</button>
 
 			<button
 				class="select-none flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl w-full"
 				on:click={() => {
-					onRegenerate(i18n.t('Add Details'));
+					onRegenerate($i18n.t('Add Details'));
 				}}
 			>
 				<LineSpace strokeWidth="2" />
-				<div class="flex items-center">{i18n.t('Add Details')}</div>
+				<div class="flex items-center">{$i18n.t('Add Details')}</div>
 			</button>
 
 			<button
 				class="select-none flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl w-full"
 				on:click={() => {
-					onRegenerate(i18n.t('More Concise'));
+					onRegenerate($i18n.t('More Concise'));
 				}}
 			>
 				<LineSpaceSmaller strokeWidth="2" />
-				<div class="flex items-center">{i18n.t('More Concise')}</div>
+				<div class="flex items-center">{$i18n.t('More Concise')}</div>
 			</button>
 		</div>
 	</div>

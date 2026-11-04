@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
@@ -234,14 +234,14 @@
 	<div class="absolute -top-0.5 right-0.5 z-10">
 		<Tooltip
 			content={viewMode === 'visual'
-				? i18n.t('Switch to JSON editor')
-				: i18n.t('Switch to visual editor')}
+				? $i18n.t('Switch to JSON editor')
+				: $i18n.t('Switch to visual editor')}
 		>
 			<button
 				class="text-xs px-2 py-0.5 rounded-full transition-all text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-gray-700/50"
 				on:click={() => (viewMode === 'visual' ? switchToJson() : switchToVisual())}
 			>
-				{viewMode === 'visual' ? i18n.t('Visual') : 'JSON'}
+				{viewMode === 'visual' ? $i18n.t('Visual') : 'JSON'}
 			</button>
 		</Tooltip>
 	</div>
@@ -279,7 +279,7 @@
 									updateMessageText(di.indices[0], e.target.value);
 									autoResize(e);
 								}}
-								placeholder={i18n.t('Message text...')}
+								placeholder={$i18n.t('Message text...')}
 								rows="1"
 							></textarea>
 						{:else if di.type === 'reasoning'}
@@ -291,7 +291,7 @@
 									updateReasoningText(di.indices[0], e.target.value);
 									autoResize(e);
 								}}
-								placeholder={i18n.t('Reasoning text...')}
+								placeholder={$i18n.t('Reasoning text...')}
 								rows="1"
 							></textarea>
 						{:else if di.type === 'function_call'}
@@ -338,7 +338,7 @@
 					<!-- Delete -->
 					<div class="pt-1.5">
 						<button
-							aria-label={i18n.t('Delete')}
+							aria-label={$i18n.t('Delete')}
 							class="invisible group-hover:visible p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition rounded-lg"
 							on:click={() => deleteIndices(di.indices)}
 						>
@@ -363,7 +363,7 @@
 
 			{#if displayItems.length === 0}
 				<div class="text-sm text-gray-400 dark:text-gray-500 italic px-1">
-					{i18n.t('No output items')}
+					{$i18n.t('No output items')}
 				</div>
 			{/if}
 		</div>
@@ -375,14 +375,14 @@
 	<div class="absolute -top-0.5 right-0.5 z-10">
 		<Tooltip
 			content={viewMode === 'visual'
-				? i18n.t('Switch to JSON editor')
-				: i18n.t('Switch to visual editor')}
+				? $i18n.t('Switch to JSON editor')
+				: $i18n.t('Switch to visual editor')}
 		>
 			<button
 				class="text-xs px-2 py-0.5 rounded-full transition-all text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-gray-700/50"
 				on:click={() => (viewMode === 'visual' ? switchToJson() : switchToVisual())}
 			>
-				{viewMode === 'visual' ? i18n.t('Visual') : 'JSON'}
+				{viewMode === 'visual' ? $i18n.t('Visual') : 'JSON'}
 			</button>
 		</Tooltip>
 	</div>
@@ -420,7 +420,7 @@
 									updateMessageText(di.indices[0], e.target.value);
 									autoResize(e);
 								}}
-								placeholder={i18n.t('Message text...')}
+								placeholder={$i18n.t('Message text...')}
 								rows="1"
 							></textarea>
 						{:else if di.type === 'reasoning'}
@@ -432,7 +432,7 @@
 									updateReasoningText(di.indices[0], e.target.value);
 									autoResize(e);
 								}}
-								placeholder={i18n.t('Reasoning text...')}
+								placeholder={$i18n.t('Reasoning text...')}
 								rows="1"
 							></textarea>
 						{:else if di.type === 'function_call'}
@@ -479,7 +479,7 @@
 					<!-- Delete -->
 					<div class="pt-1.5">
 						<button
-							aria-label={i18n.t('Delete')}
+							aria-label={$i18n.t('Delete')}
 							class="invisible group-hover:visible p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition rounded-lg"
 							on:click={() => deleteIndices(di.indices)}
 						>
@@ -504,7 +504,7 @@
 
 			{#if displayItems.length === 0}
 				<div class="text-sm text-gray-400 dark:text-gray-500 italic px-1">
-					{i18n.t('No output items')}
+					{$i18n.t('No output items')}
 				</div>
 			{/if}
 		</div>

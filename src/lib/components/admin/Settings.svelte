@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -308,7 +308,7 @@
 		const containerElement = document.getElementById('admin-settings-tabs-container');
 
 		if (containerElement) {
-			containerElement.addEventListener('wheel', (event: any)  => {
+			containerElement.addEventListener('wheel', (event: any) => {
 				if (event.deltaY !== 0) {
 					// Adjust horizontal scroll position based on vertical scroll
 					containerElement.scrollLeft += event.deltaY;
@@ -334,30 +334,30 @@
 			<div class="self-center rounded-l-xl bg-transparent">
 				<Search className="size-3.5" strokeWidth="1.5" />
 			</div>
-			<label class="sr-only" for="search-input-settings-modal">{i18n.t('Search')}</label>
+			<label class="sr-only" for="search-input-settings-modal">{$i18n.t('Search')}</label>
 			<input
 				class="w-full py-1 text-sm bg-transparent dark:text-gray-300 outline-hidden"
 				bind:value={search}
 				id="search-input-settings-modal"
 				on:input={searchDebounceHandler}
-				placeholder={i18n.t('Search')}
+				placeholder={$i18n.t('Search')}
 			/>
 		</div>
 
-		<!-- {i18n.t('General')} -->
-		<!-- {i18n.t('Authentication')} -->
-		<!-- {i18n.t('Connections')} -->
-		<!-- {i18n.t('Models')} -->
-		<!-- {i18n.t('Evaluations')} -->
-		<!-- {i18n.t('Integrations')} -->
-		<!-- {i18n.t('Documents')} -->
-		<!-- {i18n.t('Web Search')} -->
-		<!-- {i18n.t('Code Execution')} -->
-		<!-- {i18n.t('Interface')} -->
-		<!-- {i18n.t('Audio')} -->
-		<!-- {i18n.t('Images')} -->
-		<!-- {i18n.t('Pipelines')} -->
-		<!-- {i18n.t('Database')} -->
+		<!-- {$i18n.t('General')} -->
+		<!-- {$i18n.t('Authentication')} -->
+		<!-- {$i18n.t('Connections')} -->
+		<!-- {$i18n.t('Models')} -->
+		<!-- {$i18n.t('Evaluations')} -->
+		<!-- {$i18n.t('Integrations')} -->
+		<!-- {$i18n.t('Documents')} -->
+		<!-- {$i18n.t('Web Search')} -->
+		<!-- {$i18n.t('Code Execution')} -->
+		<!-- {$i18n.t('Interface')} -->
+		<!-- {$i18n.t('Audio')} -->
+		<!-- {$i18n.t('Images')} -->
+		<!-- {$i18n.t('Pipelines')} -->
+		<!-- {$i18n.t('Database')} -->
 		{#each filteredSettings as tab (tab.id)}
 			<a
 				id={tab.id}
@@ -549,7 +549,7 @@
 						</svg>
 					{/if}
 				</div>
-				<div class=" self-center">{i18n.t(tab.title)}</div>
+				<div class=" self-center">{$i18n.t(tab.title)}</div>
 			</a>
 		{/each}
 	</div>
@@ -560,7 +560,7 @@
 		{#if selectedTab === 'general'}
 			<General
 				saveHandler={async () => {
-					toast.success(i18n.t('Settings saved successfully!'));
+					toast.success($i18n.t('Settings saved successfully!'));
 
 					await tick();
 					await config.set(await getBackendConfig());
@@ -571,7 +571,7 @@
 		{:else if selectedTab === 'connections'}
 			<Connections
 				on:save={() => {
-					toast.success(i18n.t('Settings saved successfully!'));
+					toast.success($i18n.t('Settings saved successfully!'));
 				}}
 			/>
 		{:else if selectedTab === 'models'}
@@ -583,7 +583,7 @@
 		{:else if selectedTab === 'documents'}
 			<Documents
 				on:save={async () => {
-					toast.success(i18n.t('Settings saved successfully!'));
+					toast.success($i18n.t('Settings saved successfully!'));
 
 					await tick();
 					await config.set(await getBackendConfig());
@@ -592,7 +592,7 @@
 		{:else if selectedTab === 'web'}
 			<WebSearch
 				saveHandler={async () => {
-					toast.success(i18n.t('Settings saved successfully!'));
+					toast.success($i18n.t('Settings saved successfully!'));
 
 					await tick();
 					await config.set(await getBackendConfig());
@@ -601,7 +601,7 @@
 		{:else if selectedTab === 'code-execution'}
 			<CodeExecution
 				saveHandler={async () => {
-					toast.success(i18n.t('Settings saved successfully!'));
+					toast.success($i18n.t('Settings saved successfully!'));
 
 					await tick();
 					await config.set(await getBackendConfig());
@@ -610,31 +610,27 @@
 		{:else if selectedTab === 'interface'}
 			<Interface
 				on:save={() => {
-					toast.success(i18n.t('Settings saved successfully!'));
+					toast.success($i18n.t('Settings saved successfully!'));
 				}}
 			/>
 		{:else if selectedTab === 'audio'}
 			<Audio
 				saveHandler={() => {
-					toast.success(i18n.t('Settings saved successfully!'));
+					toast.success($i18n.t('Settings saved successfully!'));
 				}}
 			/>
 		{:else if selectedTab === 'images'}
 			<Images
 				on:save={() => {
-					toast.success(i18n.t('Settings saved successfully!'));
+					toast.success($i18n.t('Settings saved successfully!'));
 				}}
 			/>
 		{:else if selectedTab === 'db'}
-			<Database
-				saveHandler={() => {
-					toast.success(i18n.t('Settings saved successfully!'));
-				}}
-			/>
+			<Database />
 		{:else if selectedTab === 'pipelines'}
 			<Pipelines
 				saveHandler={() => {
-					toast.success(i18n.t('Settings saved successfully!'));
+					toast.success($i18n.t('Settings saved successfully!'));
 				}}
 			/>
 		{/if}
@@ -653,30 +649,30 @@
 			<div class="self-center rounded-l-xl bg-transparent">
 				<Search className="size-3.5" strokeWidth="1.5" />
 			</div>
-			<label class="sr-only" for="search-input-settings-modal">{i18n.t('Search')}</label>
+			<label class="sr-only" for="search-input-settings-modal">{$i18n.t('Search')}</label>
 			<input
 				class="w-full py-1 text-sm bg-transparent dark:text-gray-300 outline-hidden"
 				bind:value={search}
 				id="search-input-settings-modal"
 				on:input={searchDebounceHandler}
-				placeholder={i18n.t('Search')}
+				placeholder={$i18n.t('Search')}
 			/>
 		</div>
 
-		<!-- {i18n.t('General')} -->
-		<!-- {i18n.t('Authentication')} -->
-		<!-- {i18n.t('Connections')} -->
-		<!-- {i18n.t('Models')} -->
-		<!-- {i18n.t('Evaluations')} -->
-		<!-- {i18n.t('Integrations')} -->
-		<!-- {i18n.t('Documents')} -->
-		<!-- {i18n.t('Web Search')} -->
-		<!-- {i18n.t('Code Execution')} -->
-		<!-- {i18n.t('Interface')} -->
-		<!-- {i18n.t('Audio')} -->
-		<!-- {i18n.t('Images')} -->
-		<!-- {i18n.t('Pipelines')} -->
-		<!-- {i18n.t('Database')} -->
+		<!-- {$i18n.t('General')} -->
+		<!-- {$i18n.t('Authentication')} -->
+		<!-- {$i18n.t('Connections')} -->
+		<!-- {$i18n.t('Models')} -->
+		<!-- {$i18n.t('Evaluations')} -->
+		<!-- {$i18n.t('Integrations')} -->
+		<!-- {$i18n.t('Documents')} -->
+		<!-- {$i18n.t('Web Search')} -->
+		<!-- {$i18n.t('Code Execution')} -->
+		<!-- {$i18n.t('Interface')} -->
+		<!-- {$i18n.t('Audio')} -->
+		<!-- {$i18n.t('Images')} -->
+		<!-- {$i18n.t('Pipelines')} -->
+		<!-- {$i18n.t('Database')} -->
 		{#each filteredSettings as tab (tab.id)}
 			<a
 				id={tab.id}
@@ -868,7 +864,7 @@
 						</svg>
 					{/if}
 				</div>
-				<div class=" self-center">{i18n.t(tab.title)}</div>
+				<div class=" self-center">{$i18n.t(tab.title)}</div>
 			</a>
 		{/each}
 	</div>
@@ -879,7 +875,7 @@
 		{#if selectedTab === 'general'}
 			<General
 				saveHandler={async () => {
-					toast.success(i18n.t('Settings saved successfully!'));
+					toast.success($i18n.t('Settings saved successfully!'));
 
 					await tick();
 					await config.set(await getBackendConfig());
@@ -890,7 +886,7 @@
 		{:else if selectedTab === 'connections'}
 			<Connections
 				on:save={() => {
-					toast.success(i18n.t('Settings saved successfully!'));
+					toast.success($i18n.t('Settings saved successfully!'));
 				}}
 			/>
 		{:else if selectedTab === 'models'}
@@ -902,7 +898,7 @@
 		{:else if selectedTab === 'documents'}
 			<Documents
 				on:save={async () => {
-					toast.success(i18n.t('Settings saved successfully!'));
+					toast.success($i18n.t('Settings saved successfully!'));
 
 					await tick();
 					await config.set(await getBackendConfig());
@@ -911,7 +907,7 @@
 		{:else if selectedTab === 'web'}
 			<WebSearch
 				saveHandler={async () => {
-					toast.success(i18n.t('Settings saved successfully!'));
+					toast.success($i18n.t('Settings saved successfully!'));
 
 					await tick();
 					await config.set(await getBackendConfig());
@@ -920,7 +916,7 @@
 		{:else if selectedTab === 'code-execution'}
 			<CodeExecution
 				saveHandler={async () => {
-					toast.success(i18n.t('Settings saved successfully!'));
+					toast.success($i18n.t('Settings saved successfully!'));
 
 					await tick();
 					await config.set(await getBackendConfig());
@@ -929,31 +925,27 @@
 		{:else if selectedTab === 'interface'}
 			<Interface
 				on:save={() => {
-					toast.success(i18n.t('Settings saved successfully!'));
+					toast.success($i18n.t('Settings saved successfully!'));
 				}}
 			/>
 		{:else if selectedTab === 'audio'}
 			<Audio
 				saveHandler={() => {
-					toast.success(i18n.t('Settings saved successfully!'));
+					toast.success($i18n.t('Settings saved successfully!'));
 				}}
 			/>
 		{:else if selectedTab === 'images'}
 			<Images
 				on:save={() => {
-					toast.success(i18n.t('Settings saved successfully!'));
+					toast.success($i18n.t('Settings saved successfully!'));
 				}}
 			/>
 		{:else if selectedTab === 'db'}
-			<Database
-				saveHandler={() => {
-					toast.success(i18n.t('Settings saved successfully!'));
-				}}
-			/>
+			<Database />
 		{:else if selectedTab === 'pipelines'}
 			<Pipelines
 				saveHandler={() => {
-					toast.success(i18n.t('Settings saved successfully!'));
+					toast.success($i18n.t('Settings saved successfully!'));
 				}}
 			/>
 		{/if}

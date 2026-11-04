@@ -384,7 +384,6 @@ function Generator({
           const computedStepTime = Math.ceil(elapsedSeconds / Math.max(0.5, step));
           activeStepTime = Math.max(activeStepTime + 15, computedStepTime + 15);
           expectedTotal = constraints.steps * activeStepTime;
-          step = Math.min(constraints.steps - 1, Math.floor(elapsedSeconds / activeStepTime));
         }
         const remaining = Math.max(1, expectedTotal - elapsedSeconds);
         setEstimatedLeftTime(Math.round(remaining));
@@ -463,7 +462,7 @@ function Generator({
         }
       } catch (saveErr) {
         console.error("Generated image could not be saved:", saveErr);
-        throw new Error(`Image generated but could not be saved to USB: ${saveErr.message || saveErr}`);
+        throw new Error(`Image generated but could not be saved to USB: ${saveErr.message || saveErr}`, { cause: saveErr });
       }
 
       setOutputImage(savedUrl);

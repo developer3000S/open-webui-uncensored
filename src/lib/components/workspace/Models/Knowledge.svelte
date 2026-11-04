@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { config, knowledge, settings, user } from '$lib/stores';
 
@@ -29,7 +29,7 @@
 
 	const uploadFileHandler = async (file: any, fullContext: boolean = false) => {
 		if ($user?.role !== 'admin' && !($user?.permissions?.chat?.file_upload ?? true)) {
-			toast.error(i18n.t('You do not have permission to upload files.'));
+			toast.error($i18n.t('You do not have permission to upload files.'));
 			return null;
 		}
 
@@ -49,7 +49,7 @@
 		};
 
 		if (fileItem.size == 0) {
-			toast.error(i18n.t('You cannot upload an empty file.'));
+			toast.error($i18n.t('You cannot upload an empty file.'));
 			return null;
 		}
 
@@ -119,7 +119,7 @@
 					maxSize: ($config?.file?.max_size ?? 0) * 1024 * 1024
 				});
 				toast.error(
-					i18n.t(`File size should not exceed {{maxSize}} MB.`, {
+					$i18n.t(`File size should not exceed {{maxSize}} MB.`, {
 						maxSize: $config?.file?.max_size
 					})
 				);
@@ -129,11 +129,12 @@
 			if (!file['type'].startsWith('image/')) {
 				uploadFileHandler(file);
 			} else {
-				toast.error(i18n.t(`Unsupported file type.`));
+				toast.error($i18n.t(`Unsupported file type.`));
 			}
 		});
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		loaded = true;
 	});
@@ -150,7 +151,7 @@
 			const _inputFiles = Array.from(inputFiles);
 			inputFilesHandler(_inputFiles);
 		} else {
-			toast.error(i18n.t(`File not found.`));
+			toast.error($i18n.t(`File not found.`));
 		}
 
 		filesInputElement.value = '';
@@ -162,7 +163,7 @@
 		<div class="mb-2">
 			<div class="flex w-full justify-between mb-1">
 				<div class=" self-center text-xs text-gray-500">
-					{i18n.t('Knowledge')}
+					{$i18n.t('Knowledge')}
 				</div>
 			</div>
 		</div>
@@ -174,6 +175,7 @@
 				{#each selectedItems as file, fileIdx}
 					<FileItem
 						{file}
+						size={file.size}
 						small={true}
 						item={file}
 						name={file.name}
@@ -212,7 +214,7 @@
 						<div
 							class="flex min-w-0 items-center bg-transparent text-xs text-gray-500 outline-hidden hover:underline dark:text-gray-400"
 						>
-							<span class="truncate">{i18n.t('Select Knowledge')}</span>
+							<span class="truncate">{$i18n.t('Select Knowledge')}</span>
 						</div>
 					</KnowledgeSelector>
 				</div>
@@ -221,12 +223,12 @@
 					<button
 						class="self-center bg-transparent text-xs text-gray-500 hover:underline dark:text-gray-400"
 						type="button"
-						aria-label={i18n.t('Upload Files')}
+						aria-label={$i18n.t('Upload Files')}
 						on:click={() => {
 							filesInputElement.click();
 						}}
 					>
-						{i18n.t('Upload')}
+						{$i18n.t('Upload')}
 					</button>
 				{/if}
 			</div>
@@ -235,7 +237,7 @@
 	</div>
 
 	<div class=" text-xs dark:text-gray-700">
-		{i18n.t('To attach knowledge base here, add them to the "Knowledge" workspace first.')}
+		{$i18n.t('To attach knowledge base here, add them to the "Knowledge" workspace first.')}
 	</div>
 </div>
 
@@ -250,7 +252,7 @@
 			const _inputFiles = Array.from(inputFiles);
 			inputFilesHandler(_inputFiles);
 		} else {
-			toast.error(i18n.t(`File not found.`));
+			toast.error($i18n.t(`File not found.`));
 		}
 
 		filesInputElement.value = '';
@@ -262,7 +264,7 @@
 		<div class="mb-2">
 			<div class="flex w-full justify-between mb-1">
 				<div class=" self-center text-xs text-gray-500">
-					{i18n.t('Knowledge')}
+					{$i18n.t('Knowledge')}
 				</div>
 			</div>
 		</div>
@@ -274,6 +276,7 @@
 				{#each selectedItems as file, fileIdx}
 					<FileItem
 						{file}
+						size={file.size}
 						small={true}
 						item={file}
 						name={file.name}
@@ -312,7 +315,7 @@
 						<div
 							class="flex min-w-0 items-center bg-transparent text-xs text-gray-500 outline-hidden hover:underline dark:text-gray-400"
 						>
-							<span class="truncate">{i18n.t('Select Knowledge')}</span>
+							<span class="truncate">{$i18n.t('Select Knowledge')}</span>
 						</div>
 					</KnowledgeSelector>
 				</div>
@@ -321,12 +324,12 @@
 					<button
 						class="self-center bg-transparent text-xs text-gray-500 hover:underline dark:text-gray-400"
 						type="button"
-						aria-label={i18n.t('Upload Files')}
+						aria-label={$i18n.t('Upload Files')}
 						on:click={() => {
 							filesInputElement.click();
 						}}
 					>
-						{i18n.t('Upload')}
+						{$i18n.t('Upload')}
 					</button>
 				{/if}
 			</div>
@@ -335,6 +338,6 @@
 	</div>
 
 	<div class=" text-xs dark:text-gray-700">
-		{i18n.t('To attach knowledge base here, add them to the "Knowledge" workspace first.')}
+		{$i18n.t('To attach knowledge base here, add them to the "Knowledge" workspace first.')}
 	</div>
 </div>

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import TagList from './Tags/TagList.svelte';
 	const dispatch = createEventDispatcher();
@@ -77,7 +77,14 @@
 	};
 </script>
 
-<svelte:window on:pointerdown={handlePointerDown} on:scroll|capture={positionPopup} on:resize={positionPopup} on:pointerdown={handlePointerDown} on:scroll|capture={positionPopup} on:resize={positionPopup} />
+<svelte:window
+	on:pointerdown={handlePointerDown}
+	on:scroll|capture={positionPopup}
+	on:resize={positionPopup}
+	on:pointerdown={handlePointerDown}
+	on:scroll|capture={positionPopup}
+	on:resize={positionPopup}
+/>
 
 <div class="flex flex-wrap items-center gap-1 w-full">
 	<TagList
@@ -96,7 +103,7 @@
 				class="w-full {tags.length > 0
 					? 'px-0.5'
 					: ''} text-xs bg-transparent outline-hidden placeholder:text-gray-400 dark:placeholder:text-gray-500"
-				placeholder={i18n.t('Add a tag...')}
+				placeholder={$i18n.t('Add a tag...')}
 				role="combobox"
 				aria-autocomplete="list"
 				aria-controls={listboxId}
@@ -175,8 +182,6 @@
 	{/if}
 </div>
 
-
-
 <div class="flex flex-wrap items-center gap-1 w-full">
 	<TagList
 		{tags}
@@ -194,7 +199,7 @@
 				class="w-full {tags.length > 0
 					? 'px-0.5'
 					: ''} text-xs bg-transparent outline-hidden placeholder:text-gray-400 dark:placeholder:text-gray-500"
-				placeholder={i18n.t('Add a tag...')}
+				placeholder={$i18n.t('Add a tag...')}
 				role="combobox"
 				aria-autocomplete="list"
 				aria-controls={listboxId}

@@ -2,7 +2,7 @@
 	import { getContext, createEventDispatcher, onMount, onDestroy } from 'svelte';
 
 	import type { Writable } from 'svelte/store';
-		const dispatch = createEventDispatcher();
+	const dispatch = createEventDispatcher();
 
 	import ChevronDown from '../icons/ChevronDown.svelte';
 	import ChevronRight from '../icons/ChevronRight.svelte';
@@ -50,7 +50,7 @@
 
 							// Read the JSON file with FileReader
 							const reader = new FileReader();
-							reader.onload = async (event: any)  => {
+							reader.onload = async (event: any) => {
 								try {
 									const fileContent = JSON.parse((event.target as FileReader).result as string);
 									console.log('Parsed JSON Content: ', fileContent);

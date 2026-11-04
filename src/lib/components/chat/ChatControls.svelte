@@ -1,9 +1,9 @@
 <script context="module" lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
-		let savedTab: 'controls' | 'files' | 'overview' = 'controls';
+	let savedTab: 'controls' | 'files' | 'overview' = 'controls';
 </script>
 
 <script lang="ts">
@@ -39,22 +39,26 @@
 	import Overview from './Overview.svelte';
 
 	import type { Writable } from 'svelte/store';
-	export let history: { messages?: Record<string, any>; currentId?: string | null; [key: string]: any } = {};
+	export let history: {
+		messages?: Record<string, any>;
+		currentId?: string | null;
+		[key: string]: any;
+	} = {};
 	export let models: any = [];
 
-	let chatId: any = null;
+	export let chatId: any = null;
 
 	export let chatFiles: any = [];
-	let params: Record<string, any> = {};
+	export let params: Record<string, any> = {};
 
 	export let eventTarget: EventTarget;
-	export let submitPrompt: Function;
-	export let stopResponse: Function;
-	export let showMessage: Function;
+	export let submitPrompt: any;
+	export let stopResponse: any;
+	export let showMessage: any;
 	export let files: any;
 	export let modelId: any;
 	export let codeInterpreterEnabled: any = false;
-	export let pane: Pane | null = null;
+	export let pane: any = null;
 
 	let largeScreen = false;
 	let dragged = false;
@@ -150,10 +154,10 @@
 				};
 				files = files;
 			}
-			toast.success(i18n.t('File attached to chat'));
+			toast.success($i18n.t('File attached to chat'));
 		} catch (e: any) {
 			files = files.filter((f) => f.itemId !== tempItemId);
-			toast.error(i18n.t('Failed to attach file'));
+			toast.error($i18n.t('Failed to attach file'));
 		}
 	};
 
@@ -313,7 +317,7 @@
 											: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
 										on:click={() => (activeTab = 'controls')}
 									>
-										{i18n.t('Controls')}
+										{$i18n.t('Controls')}
 									</button>
 								{/if}
 								{#if showFilesTab}
@@ -324,7 +328,7 @@
 											: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
 										on:click={() => (activeTab = 'files')}
 									>
-										{i18n.t('Files')}
+										{$i18n.t('Files')}
 									</button>
 								{/if}
 								{#if showOverviewTab}
@@ -335,14 +339,14 @@
 											: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
 										on:click={() => (activeTab = 'overview')}
 									>
-										{i18n.t('Overview')}
+										{$i18n.t('Overview')}
 									</button>
 								{/if}
 							</div>
 							<button
 								class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400"
 								on:click={() => showControls.set(false)}
-								aria-label={i18n.t('Close')}
+								aria-label={$i18n.t('Close')}
 							>
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
@@ -459,7 +463,7 @@
 												: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
 											on:click={() => (activeTab = 'controls')}
 										>
-											{i18n.t('Controls')}
+											{$i18n.t('Controls')}
 										</button>
 									{/if}
 									{#if showFilesTab}
@@ -470,7 +474,7 @@
 												: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
 											on:click={() => (activeTab = 'files')}
 										>
-											{i18n.t('Files')}
+											{$i18n.t('Files')}
 										</button>
 									{/if}
 									{#if showOverviewTab}
@@ -481,14 +485,14 @@
 												: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
 											on:click={() => (activeTab = 'overview')}
 										>
-											{i18n.t('Overview')}
+											{$i18n.t('Overview')}
 										</button>
 									{/if}
 								</div>
 								<button
 									class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400"
 									on:click={() => showControls.set(false)}
-									aria-label={i18n.t('Close')}
+									aria-label={$i18n.t('Close')}
 								>
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
@@ -580,7 +584,7 @@
 											: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
 										on:click={() => (activeTab = 'controls')}
 									>
-										{i18n.t('Controls')}
+										{$i18n.t('Controls')}
 									</button>
 								{/if}
 								{#if showFilesTab}
@@ -591,7 +595,7 @@
 											: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
 										on:click={() => (activeTab = 'files')}
 									>
-										{i18n.t('Files')}
+										{$i18n.t('Files')}
 									</button>
 								{/if}
 								{#if showOverviewTab}
@@ -602,14 +606,14 @@
 											: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
 										on:click={() => (activeTab = 'overview')}
 									>
-										{i18n.t('Overview')}
+										{$i18n.t('Overview')}
 									</button>
 								{/if}
 							</div>
 							<button
 								class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400"
 								on:click={() => showControls.set(false)}
-								aria-label={i18n.t('Close')}
+								aria-label={$i18n.t('Close')}
 							>
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
@@ -726,7 +730,7 @@
 												: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
 											on:click={() => (activeTab = 'controls')}
 										>
-											{i18n.t('Controls')}
+											{$i18n.t('Controls')}
 										</button>
 									{/if}
 									{#if showFilesTab}
@@ -737,7 +741,7 @@
 												: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
 											on:click={() => (activeTab = 'files')}
 										>
-											{i18n.t('Files')}
+											{$i18n.t('Files')}
 										</button>
 									{/if}
 									{#if showOverviewTab}
@@ -748,14 +752,14 @@
 												: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
 											on:click={() => (activeTab = 'overview')}
 										>
-											{i18n.t('Overview')}
+											{$i18n.t('Overview')}
 										</button>
 									{/if}
 								</div>
 								<button
 									class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400"
 									on:click={() => showControls.set(false)}
-									aria-label={i18n.t('Close')}
+									aria-label={$i18n.t('Close')}
 								>
 									<svg
 										xmlns="http://www.w3.org/2000/svg"

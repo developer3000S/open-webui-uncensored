@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import type { Writable } from 'svelte/store';
@@ -23,14 +23,14 @@
 	import XMark from '$lib/components/icons/XMark.svelte';
 	import Textarea from './common/Textarea.svelte';
 
-	export let onSubmit: Function = () => {};
-	export let onDelete: Function = () => {};
+	export let onSubmit: any = () => {};
+	export let onDelete: any = () => {};
 
 	export let show: any = false;
 	export let edit: any = false;
 	export let ollama: any = false;
 	export let direct: any = false;
-	let connection: any = null;
+	export let connection: any = null;
 
 	let url = '';
 	let key = '';
@@ -73,7 +73,7 @@
 		});
 
 		if (res) {
-			toast.success(i18n.t('Server connection verified'));
+			toast.success($i18n.t('Server connection verified'));
 		}
 	};
 
@@ -92,7 +92,7 @@
 				}
 				headers = JSON.stringify(_headers, null, 2);
 			} catch (error) {
-				toast.error(i18n.t('Headers must be a valid JSON object'));
+				toast.error($i18n.t('Headers must be a valid JSON object'));
 				return;
 			}
 		}
@@ -116,7 +116,7 @@
 		});
 
 		if (res) {
-			toast.success(i18n.t('Server connection verified'));
+			toast.success($i18n.t('Server connection verified'));
 		}
 	};
 
@@ -140,7 +140,7 @@
 
 		if (!ollama && !url) {
 			loading = false;
-			toast.error(i18n.t('URL is required'));
+			toast.error($i18n.t('URL is required'));
 			return;
 		}
 
@@ -148,20 +148,20 @@
 			if (!apiVersion) {
 				loading = false;
 
-				toast.error(i18n.t('API Version is required'));
+				toast.error($i18n.t('API Version is required'));
 				return;
 			}
 
 			if (!key && !['azure_ad', 'microsoft_entra_id'].includes(auth_type)) {
 				loading = false;
 
-				toast.error(i18n.t('Key is required'));
+				toast.error($i18n.t('Key is required'));
 				return;
 			}
 
 			if (modelIds.length === 0) {
 				loading = false;
-				toast.error(i18n.t('Deployment names are required for Azure OpenAI'));
+				toast.error($i18n.t('Deployment names are required for Azure OpenAI'));
 				return;
 			}
 		}
@@ -174,7 +174,7 @@
 				}
 				headers = JSON.stringify(_headers, null, 2);
 			} catch (error) {
-				toast.error(i18n.t('Headers must be a valid JSON object'));
+				toast.error($i18n.t('Headers must be a valid JSON object'));
 				return;
 			}
 		}
@@ -256,14 +256,14 @@
 		<div class=" flex justify-between dark:text-gray-100 px-5 pt-4 pb-1.5">
 			<h1 class="text-lg font-medium self-center font-primary">
 				{#if edit}
-					{i18n.t('Edit Connection')}
+					{$i18n.t('Edit Connection')}
 				{:else}
-					{i18n.t('Add Connection')}
+					{$i18n.t('Add Connection')}
 				{/if}
 			</h1>
 			<button
 				class="self-center"
-				aria-label={i18n.t('Close modal')}
+				aria-label={$i18n.t('Close modal')}
 				on:click={() => {
 					show = false;
 				}}
@@ -285,7 +285,7 @@
 						{#if !direct}
 							<div class="flex gap-2">
 								<div class="flex w-full justify-between items-center">
-									<div class=" text-xs text-gray-500">{i18n.t('Connection Type')}</div>
+									<div class=" text-xs text-gray-500">{$i18n.t('Connection Type')}</div>
 
 									<div class="">
 										<button
@@ -296,9 +296,9 @@
 											class=" text-xs text-gray-700 dark:text-gray-300"
 										>
 											{#if connectionType === 'local'}
-												{i18n.t('Local')}
+												{$i18n.t('Local')}
 											{:else}
-												{i18n.t('External')}
+												{$i18n.t('External')}
 											{/if}
 										</button>
 									</div>
@@ -312,7 +312,7 @@
 									for="url-input"
 									class={`mb-0.5 text-xs text-gray-500
 								${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : ''}`}
-									>{i18n.t('URL')}</label
+									>{$i18n.t('URL')}</label
 								>
 
 								<div class="flex-1">
@@ -321,7 +321,7 @@
 										class={`w-full text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 										type="text"
 										bind:value={url}
-										placeholder={i18n.t('API Base URL')}
+										placeholder={$i18n.t('API Base URL')}
 										autocomplete="off"
 										list={ollama ? undefined : 'suggestions'}
 										required
@@ -342,14 +342,14 @@
 								</div>
 							</div>
 
-							<Tooltip content={i18n.t('Verify Connection')} className="self-end -mb-1">
+							<Tooltip content={$i18n.t('Verify Connection')} className="self-end -mb-1">
 								<button
 									class="self-center p-1 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition"
 									on:click={() => {
 										verifyHandler();
 									}}
 									type="button"
-									aria-label={i18n.t('Verify Connection')}
+									aria-label={$i18n.t('Verify Connection')}
 								>
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
@@ -369,9 +369,9 @@
 
 							<div class="flex flex-col shrink-0 self-end">
 								<label class="sr-only" for="toggle-connection"
-									>{i18n.t('Toggle whether current connection is active.')}</label
+									>{$i18n.t('Toggle whether current connection is active.')}</label
 								>
-								<Tooltip content={enable ? i18n.t('Enabled') : i18n.t('Disabled')}>
+								<Tooltip content={enable ? $i18n.t('Enabled') : $i18n.t('Disabled')}>
 									<Switch id="toggle-connection" bind:state={enable} />
 								</Tooltip>
 							</div>
@@ -382,7 +382,7 @@
 								<label
 									for="select-bearer-or-session"
 									class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
-									>{i18n.t('Auth')}</label
+									>{$i18n.t('Auth')}</label
 								>
 
 								<div class="flex gap-2">
@@ -392,14 +392,14 @@
 											class={`dark:bg-gray-900 w-full text-sm bg-transparent pr-5 ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 											bind:value={auth_type}
 										>
-											<option value="none">{i18n.t('None')}</option>
-											<option value="bearer">{i18n.t('Bearer')}</option>
+											<option value="none">{$i18n.t('None')}</option>
+											<option value="bearer">{$i18n.t('Bearer')}</option>
 
 											{#if !ollama}
-												<option value="session">{i18n.t('Session')}</option>
+												<option value="session">{$i18n.t('Session')}</option>
 												{#if !direct}
-													<option value="system_oauth">{i18n.t('OAuth')}</option>
-													<option value="microsoft_entra_id">{i18n.t('Entra ID')}</option>
+													<option value="system_oauth">{$i18n.t('OAuth')}</option>
+													<option value="microsoft_entra_id">{$i18n.t('Entra ID')}</option>
 												{/if}
 											{/if}
 										</select>
@@ -409,32 +409,32 @@
 										{#if auth_type === 'bearer'}
 											<SensitiveInput
 												bind:value={key}
-												placeholder={i18n.t('API Key')}
+												placeholder={$i18n.t('API Key')}
 												required={false}
 											/>
 										{:else if auth_type === 'none'}
 											<div
 												class={`text-xs self-center translate-y-[1px] ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 											>
-												{i18n.t('No authentication')}
+												{$i18n.t('No authentication')}
 											</div>
 										{:else if auth_type === 'session'}
 											<div
 												class={`text-xs self-center translate-y-[1px] ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 											>
-												{i18n.t('Forwards system user session credentials to authenticate')}
+												{$i18n.t('Forwards system user session credentials to authenticate')}
 											</div>
 										{:else if auth_type === 'system_oauth'}
 											<div
 												class={`text-xs self-center translate-y-[1px] ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 											>
-												{i18n.t('Forwards system user OAuth access token to authenticate')}
+												{$i18n.t('Forwards system user OAuth access token to authenticate')}
 											</div>
 										{:else if ['azure_ad', 'microsoft_entra_id'].includes(auth_type)}
 											<div
 												class={`text-xs self-center translate-y-[1px] ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 											>
-												{i18n.t('Uses DefaultAzureCredential to authenticate')}
+												{$i18n.t('Uses DefaultAzureCredential to authenticate')}
 											</div>
 										{/if}
 									</div>
@@ -449,19 +449,19 @@
 										for="headers-input"
 										class={`mb-0.5 text-xs text-gray-500
 								${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : ''}`}
-										>{i18n.t('Headers')}</label
+										>{$i18n.t('Headers')}</label
 									>
 
 									<div class="flex-1">
 										<Tooltip
-											content={i18n.t(
+											content={$i18n.t(
 												'Enter additional headers in JSON format (e.g. {"X-Custom-Header": "value"}'
 											)}
 										>
 											<Textarea
 												className="w-full text-sm outline-hidden"
 												bind:value={headers}
-												placeholder={i18n.t('Enter additional headers in JSON format')}
+												placeholder={$i18n.t('Enter additional headers in JSON format')}
 												required={false}
 												minSize={30}
 											/>
@@ -477,12 +477,12 @@
 									for="prefix-id-input"
 									class={`mb-0.5 text-xs text-gray-500
 								${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : ''}`}
-									>{i18n.t('Prefix ID')}</label
+									>{$i18n.t('Prefix ID')}</label
 								>
 
 								<div class="flex-1">
 									<Tooltip
-										content={i18n.t(
+										content={$i18n.t(
 											'Prefix ID is used to avoid conflicts with other connections by adding a prefix to the model IDs - leave empty to disable'
 										)}
 									>
@@ -491,7 +491,7 @@
 											type="text"
 											id="prefix-id-input"
 											bind:value={prefixId}
-											placeholder={i18n.t('Prefix ID')}
+											placeholder={$i18n.t('Prefix ID')}
 											autocomplete="off"
 										/>
 									</Tooltip>
@@ -505,12 +505,12 @@
 									for="context-length-input"
 									class={`mb-0.5 text-xs text-gray-500
 								${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : ''}`}
-									>{i18n.t('Context Length')}</label
+									>{$i18n.t('Context Length')}</label
 								>
 
 								<div class="flex-1">
 									<Tooltip
-										content={i18n.t(
+										content={$i18n.t(
 											'Maximum context window (in tokens) used when the connection does not report one - leave empty to detect automatically'
 										)}
 									>
@@ -521,7 +521,7 @@
 											step="512"
 											id="context-length-input"
 											bind:value={contextLength}
-											placeholder={i18n.t('Auto')}
+											placeholder={$i18n.t('Auto')}
 											autocomplete="off"
 										/>
 									</Tooltip>
@@ -535,7 +535,7 @@
 									for="provider-select"
 									class={`mb-0.5 text-xs text-gray-500
 								${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : ''}`}
-									>{i18n.t('Provider')}</label
+									>{$i18n.t('Provider')}</label
 								>
 
 								<div>
@@ -544,9 +544,9 @@
 										bind:value={provider}
 										class="text-xs text-gray-700 dark:text-gray-300 bg-transparent outline-hidden"
 									>
-										<option value="">{i18n.t('Default')}</option>
-										<option value="azure">{i18n.t('Azure OpenAI')}</option>
-										<option value="llama.cpp">{i18n.t('llama.cpp')}</option>
+										<option value="">{$i18n.t('Default')}</option>
+										<option value="azure">{$i18n.t('Azure OpenAI')}</option>
+										<option value="llama.cpp">{$i18n.t('llama.cpp')}</option>
 									</select>
 								</div>
 							</div>
@@ -559,7 +559,7 @@
 										for="api-version-input"
 										class={`mb-0.5 text-xs text-gray-500
 										${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : ''}`}
-										>{i18n.t('API Version')}</label
+										>{$i18n.t('API Version')}</label
 									>
 
 									<div class="flex-1">
@@ -568,7 +568,7 @@
 											class={`w-full text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 											type="text"
 											bind:value={apiVersion}
-											placeholder={i18n.t('API Version')}
+											placeholder={$i18n.t('API Version')}
 											autocomplete="off"
 											required
 										/>
@@ -583,7 +583,7 @@
 									for="api-type-toggle"
 									class={`mb-0.5 text-xs text-gray-500
 							${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : ''}`}
-									>{i18n.t('API Type')}</label
+									>{$i18n.t('API Type')}</label
 								>
 
 								<div>
@@ -598,18 +598,18 @@
 										{#if apiType === 'responses'}
 											<Tooltip
 												className="flex items-center gap-1"
-												content={i18n.t(
+												content={$i18n.t(
 													'This feature is currently experimental and may not work as expected.'
 												)}
 											>
 												<span class=" text-gray-400 dark:text-gray-600"
-													>{i18n.t('Experimental')}</span
+													>{$i18n.t('Experimental')}</span
 												>
 
-												{i18n.t('Responses')}
+												{$i18n.t('Responses')}
 											</Tooltip>
 										{:else}
-											{i18n.t('Chat Completions')}
+											{$i18n.t('Chat Completions')}
 										{/if}
 									</button>
 								</div>
@@ -622,7 +622,7 @@
 									class={`mb-0.5 text-xs text-gray-500
 								${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : ''}`}
 								>
-									{i18n.t('Model IDs')}
+									{$i18n.t('Model IDs')}
 								</div>
 							</div>
 
@@ -635,7 +635,7 @@
 											</div>
 											<div class="shrink-0">
 												<button
-													aria-label={i18n.t(`Remove {{MODELID}} from list.`, {
+													aria-label={$i18n.t(`Remove {{MODELID}} from list.`, {
 														MODELID: modelId
 													})}
 													type="button"
@@ -655,16 +655,16 @@
 								${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : ''}`}
 								>
 									{#if ollama}
-										{i18n.t('Leave empty to include all models from "{{url}}/api/tags" endpoint', {
+										{$i18n.t('Leave empty to include all models from "{{url}}/api/tags" endpoint', {
 											url: url
 										})}
 									{:else if azure}
-										{i18n.t('Deployment names are required for Azure OpenAI')}
-										<!-- {i18n.t('Leave empty to include all models from "{{url}}" endpoint', {
+										{$i18n.t('Deployment names are required for Azure OpenAI')}
+										<!-- {$i18n.t('Leave empty to include all models from "{{url}}" endpoint', {
 											url: `${url}/openai/deployments`
 										})} -->
 									{:else}
-										{i18n.t('Leave empty to include all models from "{{url}}/models" endpoint', {
+										{$i18n.t('Leave empty to include all models from "{{url}}/models" endpoint', {
 											url: url
 										})}
 									{/if}
@@ -673,7 +673,7 @@
 						</div>
 
 						<div class="flex items-center">
-							<label class="sr-only" for="add-model-id-input">{i18n.t('Add a model ID')}</label>
+							<label class="sr-only" for="add-model-id-input">{$i18n.t('Add a model ID')}</label>
 							<input
 								class="w-full py-1 text-sm rounded-lg bg-transparent {modelId
 									? ''
@@ -682,13 +682,13 @@
 									: 'placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden'}"
 								bind:value={modelId}
 								id="add-model-id-input"
-								placeholder={i18n.t('Add a model ID')}
+								placeholder={$i18n.t('Add a model ID')}
 							/>
 
 							<div>
 								<button
 									type="button"
-									aria-label={i18n.t('Add')}
+									aria-label={$i18n.t('Add')}
 									on:click={() => {
 										addModelHandler();
 									}}
@@ -705,7 +705,7 @@
 								class={`mb-0.5 text-xs text-gray-500
 								${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : ''}`}
 							>
-								{i18n.t('Tags')}
+								{$i18n.t('Tags')}
 							</div>
 
 							<div class="flex-1 mt-0.5">
@@ -737,7 +737,7 @@
 										showDeleteConfirmDialog = true;
 									}}
 								>
-									{i18n.t('Delete')}
+									{$i18n.t('Delete')}
 								</button>
 							{/if}
 						</div>
@@ -749,7 +749,7 @@
 							type="submit"
 							disabled={loading}
 						>
-							{i18n.t('Save')}
+							{$i18n.t('Save')}
 
 							{#if loading}
 								<span class="shrink-0">
@@ -766,10 +766,10 @@
 
 <ConfirmDialog
 	bind:show={showDeleteConfirmDialog}
-	message={i18n.t(
+	message={$i18n.t(
 		'Are you sure you want to delete this connection? This action cannot be undone.'
 	)}
-	confirmLabel={i18n.t('Delete')}
+	confirmLabel={$i18n.t('Delete')}
 	on:confirm={() => {
 		onDelete();
 		show = false;
@@ -781,14 +781,14 @@
 		<div class=" flex justify-between dark:text-gray-100 px-5 pt-4 pb-1.5">
 			<h1 class="text-lg font-medium self-center font-primary">
 				{#if edit}
-					{i18n.t('Edit Connection')}
+					{$i18n.t('Edit Connection')}
 				{:else}
-					{i18n.t('Add Connection')}
+					{$i18n.t('Add Connection')}
 				{/if}
 			</h1>
 			<button
 				class="self-center"
-				aria-label={i18n.t('Close modal')}
+				aria-label={$i18n.t('Close modal')}
 				on:click={() => {
 					show = false;
 				}}
@@ -810,7 +810,7 @@
 						{#if !direct}
 							<div class="flex gap-2">
 								<div class="flex w-full justify-between items-center">
-									<div class=" text-xs text-gray-500">{i18n.t('Connection Type')}</div>
+									<div class=" text-xs text-gray-500">{$i18n.t('Connection Type')}</div>
 
 									<div class="">
 										<button
@@ -821,9 +821,9 @@
 											class=" text-xs text-gray-700 dark:text-gray-300"
 										>
 											{#if connectionType === 'local'}
-												{i18n.t('Local')}
+												{$i18n.t('Local')}
 											{:else}
-												{i18n.t('External')}
+												{$i18n.t('External')}
 											{/if}
 										</button>
 									</div>
@@ -837,7 +837,7 @@
 									for="url-input"
 									class={`mb-0.5 text-xs text-gray-500
 								${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : ''}`}
-									>{i18n.t('URL')}</label
+									>{$i18n.t('URL')}</label
 								>
 
 								<div class="flex-1">
@@ -846,7 +846,7 @@
 										class={`w-full text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 										type="text"
 										bind:value={url}
-										placeholder={i18n.t('API Base URL')}
+										placeholder={$i18n.t('API Base URL')}
 										autocomplete="off"
 										list={ollama ? undefined : 'suggestions'}
 										required
@@ -867,14 +867,14 @@
 								</div>
 							</div>
 
-							<Tooltip content={i18n.t('Verify Connection')} className="self-end -mb-1">
+							<Tooltip content={$i18n.t('Verify Connection')} className="self-end -mb-1">
 								<button
 									class="self-center p-1 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition"
 									on:click={() => {
 										verifyHandler();
 									}}
 									type="button"
-									aria-label={i18n.t('Verify Connection')}
+									aria-label={$i18n.t('Verify Connection')}
 								>
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
@@ -894,9 +894,9 @@
 
 							<div class="flex flex-col shrink-0 self-end">
 								<label class="sr-only" for="toggle-connection"
-									>{i18n.t('Toggle whether current connection is active.')}</label
+									>{$i18n.t('Toggle whether current connection is active.')}</label
 								>
-								<Tooltip content={enable ? i18n.t('Enabled') : i18n.t('Disabled')}>
+								<Tooltip content={enable ? $i18n.t('Enabled') : $i18n.t('Disabled')}>
 									<Switch id="toggle-connection" bind:state={enable} />
 								</Tooltip>
 							</div>
@@ -907,7 +907,7 @@
 								<label
 									for="select-bearer-or-session"
 									class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
-									>{i18n.t('Auth')}</label
+									>{$i18n.t('Auth')}</label
 								>
 
 								<div class="flex gap-2">
@@ -917,14 +917,14 @@
 											class={`dark:bg-gray-900 w-full text-sm bg-transparent pr-5 ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 											bind:value={auth_type}
 										>
-											<option value="none">{i18n.t('None')}</option>
-											<option value="bearer">{i18n.t('Bearer')}</option>
+											<option value="none">{$i18n.t('None')}</option>
+											<option value="bearer">{$i18n.t('Bearer')}</option>
 
 											{#if !ollama}
-												<option value="session">{i18n.t('Session')}</option>
+												<option value="session">{$i18n.t('Session')}</option>
 												{#if !direct}
-													<option value="system_oauth">{i18n.t('OAuth')}</option>
-													<option value="microsoft_entra_id">{i18n.t('Entra ID')}</option>
+													<option value="system_oauth">{$i18n.t('OAuth')}</option>
+													<option value="microsoft_entra_id">{$i18n.t('Entra ID')}</option>
 												{/if}
 											{/if}
 										</select>
@@ -934,32 +934,32 @@
 										{#if auth_type === 'bearer'}
 											<SensitiveInput
 												bind:value={key}
-												placeholder={i18n.t('API Key')}
+												placeholder={$i18n.t('API Key')}
 												required={false}
 											/>
 										{:else if auth_type === 'none'}
 											<div
 												class={`text-xs self-center translate-y-[1px] ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 											>
-												{i18n.t('No authentication')}
+												{$i18n.t('No authentication')}
 											</div>
 										{:else if auth_type === 'session'}
 											<div
 												class={`text-xs self-center translate-y-[1px] ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 											>
-												{i18n.t('Forwards system user session credentials to authenticate')}
+												{$i18n.t('Forwards system user session credentials to authenticate')}
 											</div>
 										{:else if auth_type === 'system_oauth'}
 											<div
 												class={`text-xs self-center translate-y-[1px] ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 											>
-												{i18n.t('Forwards system user OAuth access token to authenticate')}
+												{$i18n.t('Forwards system user OAuth access token to authenticate')}
 											</div>
 										{:else if ['azure_ad', 'microsoft_entra_id'].includes(auth_type)}
 											<div
 												class={`text-xs self-center translate-y-[1px] ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 											>
-												{i18n.t('Uses DefaultAzureCredential to authenticate')}
+												{$i18n.t('Uses DefaultAzureCredential to authenticate')}
 											</div>
 										{/if}
 									</div>
@@ -974,19 +974,19 @@
 										for="headers-input"
 										class={`mb-0.5 text-xs text-gray-500
 								${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : ''}`}
-										>{i18n.t('Headers')}</label
+										>{$i18n.t('Headers')}</label
 									>
 
 									<div class="flex-1">
 										<Tooltip
-											content={i18n.t(
+											content={$i18n.t(
 												'Enter additional headers in JSON format (e.g. {"X-Custom-Header": "value"}'
 											)}
 										>
 											<Textarea
 												className="w-full text-sm outline-hidden"
 												bind:value={headers}
-												placeholder={i18n.t('Enter additional headers in JSON format')}
+												placeholder={$i18n.t('Enter additional headers in JSON format')}
 												required={false}
 												minSize={30}
 											/>
@@ -1002,12 +1002,12 @@
 									for="prefix-id-input"
 									class={`mb-0.5 text-xs text-gray-500
 								${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : ''}`}
-									>{i18n.t('Prefix ID')}</label
+									>{$i18n.t('Prefix ID')}</label
 								>
 
 								<div class="flex-1">
 									<Tooltip
-										content={i18n.t(
+										content={$i18n.t(
 											'Prefix ID is used to avoid conflicts with other connections by adding a prefix to the model IDs - leave empty to disable'
 										)}
 									>
@@ -1016,7 +1016,7 @@
 											type="text"
 											id="prefix-id-input"
 											bind:value={prefixId}
-											placeholder={i18n.t('Prefix ID')}
+											placeholder={$i18n.t('Prefix ID')}
 											autocomplete="off"
 										/>
 									</Tooltip>
@@ -1030,12 +1030,12 @@
 									for="context-length-input"
 									class={`mb-0.5 text-xs text-gray-500
 								${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : ''}`}
-									>{i18n.t('Context Length')}</label
+									>{$i18n.t('Context Length')}</label
 								>
 
 								<div class="flex-1">
 									<Tooltip
-										content={i18n.t(
+										content={$i18n.t(
 											'Maximum context window (in tokens) used when the connection does not report one - leave empty to detect automatically'
 										)}
 									>
@@ -1046,7 +1046,7 @@
 											step="512"
 											id="context-length-input"
 											bind:value={contextLength}
-											placeholder={i18n.t('Auto')}
+											placeholder={$i18n.t('Auto')}
 											autocomplete="off"
 										/>
 									</Tooltip>
@@ -1060,7 +1060,7 @@
 									for="provider-select"
 									class={`mb-0.5 text-xs text-gray-500
 								${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : ''}`}
-									>{i18n.t('Provider')}</label
+									>{$i18n.t('Provider')}</label
 								>
 
 								<div>
@@ -1069,9 +1069,9 @@
 										bind:value={provider}
 										class="text-xs text-gray-700 dark:text-gray-300 bg-transparent outline-hidden"
 									>
-										<option value="">{i18n.t('Default')}</option>
-										<option value="azure">{i18n.t('Azure OpenAI')}</option>
-										<option value="llama.cpp">{i18n.t('llama.cpp')}</option>
+										<option value="">{$i18n.t('Default')}</option>
+										<option value="azure">{$i18n.t('Azure OpenAI')}</option>
+										<option value="llama.cpp">{$i18n.t('llama.cpp')}</option>
 									</select>
 								</div>
 							</div>
@@ -1084,7 +1084,7 @@
 										for="api-version-input"
 										class={`mb-0.5 text-xs text-gray-500
 										${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : ''}`}
-										>{i18n.t('API Version')}</label
+										>{$i18n.t('API Version')}</label
 									>
 
 									<div class="flex-1">
@@ -1093,7 +1093,7 @@
 											class={`w-full text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 											type="text"
 											bind:value={apiVersion}
-											placeholder={i18n.t('API Version')}
+											placeholder={$i18n.t('API Version')}
 											autocomplete="off"
 											required
 										/>
@@ -1108,7 +1108,7 @@
 									for="api-type-toggle"
 									class={`mb-0.5 text-xs text-gray-500
 							${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : ''}`}
-									>{i18n.t('API Type')}</label
+									>{$i18n.t('API Type')}</label
 								>
 
 								<div>
@@ -1123,18 +1123,18 @@
 										{#if apiType === 'responses'}
 											<Tooltip
 												className="flex items-center gap-1"
-												content={i18n.t(
+												content={$i18n.t(
 													'This feature is currently experimental and may not work as expected.'
 												)}
 											>
 												<span class=" text-gray-400 dark:text-gray-600"
-													>{i18n.t('Experimental')}</span
+													>{$i18n.t('Experimental')}</span
 												>
 
-												{i18n.t('Responses')}
+												{$i18n.t('Responses')}
 											</Tooltip>
 										{:else}
-											{i18n.t('Chat Completions')}
+											{$i18n.t('Chat Completions')}
 										{/if}
 									</button>
 								</div>
@@ -1147,7 +1147,7 @@
 									class={`mb-0.5 text-xs text-gray-500
 								${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : ''}`}
 								>
-									{i18n.t('Model IDs')}
+									{$i18n.t('Model IDs')}
 								</div>
 							</div>
 
@@ -1160,7 +1160,7 @@
 											</div>
 											<div class="shrink-0">
 												<button
-													aria-label={i18n.t(`Remove {{MODELID}} from list.`, {
+													aria-label={$i18n.t(`Remove {{MODELID}} from list.`, {
 														MODELID: modelId
 													})}
 													type="button"
@@ -1180,16 +1180,16 @@
 								${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : ''}`}
 								>
 									{#if ollama}
-										{i18n.t('Leave empty to include all models from "{{url}}/api/tags" endpoint', {
+										{$i18n.t('Leave empty to include all models from "{{url}}/api/tags" endpoint', {
 											url: url
 										})}
 									{:else if azure}
-										{i18n.t('Deployment names are required for Azure OpenAI')}
-										<!-- {i18n.t('Leave empty to include all models from "{{url}}" endpoint', {
+										{$i18n.t('Deployment names are required for Azure OpenAI')}
+										<!-- {$i18n.t('Leave empty to include all models from "{{url}}" endpoint', {
 											url: `${url}/openai/deployments`
 										})} -->
 									{:else}
-										{i18n.t('Leave empty to include all models from "{{url}}/models" endpoint', {
+										{$i18n.t('Leave empty to include all models from "{{url}}/models" endpoint', {
 											url: url
 										})}
 									{/if}
@@ -1198,7 +1198,7 @@
 						</div>
 
 						<div class="flex items-center">
-							<label class="sr-only" for="add-model-id-input">{i18n.t('Add a model ID')}</label>
+							<label class="sr-only" for="add-model-id-input">{$i18n.t('Add a model ID')}</label>
 							<input
 								class="w-full py-1 text-sm rounded-lg bg-transparent {modelId
 									? ''
@@ -1207,13 +1207,13 @@
 									: 'placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden'}"
 								bind:value={modelId}
 								id="add-model-id-input"
-								placeholder={i18n.t('Add a model ID')}
+								placeholder={$i18n.t('Add a model ID')}
 							/>
 
 							<div>
 								<button
 									type="button"
-									aria-label={i18n.t('Add')}
+									aria-label={$i18n.t('Add')}
 									on:click={() => {
 										addModelHandler();
 									}}
@@ -1230,7 +1230,7 @@
 								class={`mb-0.5 text-xs text-gray-500
 								${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : ''}`}
 							>
-								{i18n.t('Tags')}
+								{$i18n.t('Tags')}
 							</div>
 
 							<div class="flex-1 mt-0.5">
@@ -1262,7 +1262,7 @@
 										showDeleteConfirmDialog = true;
 									}}
 								>
-									{i18n.t('Delete')}
+									{$i18n.t('Delete')}
 								</button>
 							{/if}
 						</div>
@@ -1274,7 +1274,7 @@
 							type="submit"
 							disabled={loading}
 						>
-							{i18n.t('Save')}
+							{$i18n.t('Save')}
 
 							{#if loading}
 								<span class="shrink-0">
@@ -1291,10 +1291,10 @@
 
 <ConfirmDialog
 	bind:show={showDeleteConfirmDialog}
-	message={i18n.t(
+	message={$i18n.t(
 		'Are you sure you want to delete this connection? This action cannot be undone.'
 	)}
-	confirmLabel={i18n.t('Delete')}
+	confirmLabel={$i18n.t('Delete')}
 	on:confirm={() => {
 		onDelete();
 		show = false;

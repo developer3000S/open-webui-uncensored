@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import {
 		WEBUI_NAME,
@@ -21,6 +21,7 @@
 
 	let loaded = false;
 
+	// @ts-ignore
 	onMount(async () => {
 		if ($user?.role !== 'admin') {
 			if ($page.url.pathname.includes('/models') && !$user?.permissions?.workspace?.models) {
@@ -47,13 +48,13 @@
 </script>
 
 <svelte:head>
-			<title>
-		{i18n.t('Workspace')} • {$WEBUI_NAME}
+	<title>
+		{$i18n.t('Workspace')} • {$WEBUI_NAME}
 	</title>
-			<title>
-		{i18n.t('Workspace')} • {$WEBUI_NAME}
+	<title>
+		{$i18n.t('Workspace')} • {$WEBUI_NAME}
 	</title>
-		</svelte:head>
+</svelte:head>
 
 {#if loaded}
 	<div
@@ -66,13 +67,13 @@
 				{#if $mobile}
 					<div class="{$showSidebar ? 'md:hidden' : ''} self-center flex flex-none items-center">
 						<Tooltip
-							content={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
+							content={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
 							interactive={true}
 						>
 							<button
 								id="sidebar-toggle-button"
 								class=" cursor-pointer flex rounded-lg hover:bg-gray-100 dark:hover:bg-gray-850 transition cursor-"
-								aria-label={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
+								aria-label={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
 								on:click={() => {
 									showSidebar.set(!$showSidebar);
 								}}
@@ -96,7 +97,7 @@
 								class="min-w-fit p-1.5 {$page.url.pathname.includes('/workspace/models')
 									? ''
 									: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
-								href="/workspace/models">{i18n.t('Models')}</a
+								href="/workspace/models">{$i18n.t('Models')}</a
 							>
 						{/if}
 
@@ -109,7 +110,7 @@
 									: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
 								href="/workspace/knowledge"
 							>
-								{i18n.t('Knowledge')}
+								{$i18n.t('Knowledge')}
 							</a>
 						{/if}
 
@@ -120,7 +121,7 @@
 								class="min-w-fit p-1.5 {$page.url.pathname.includes('/workspace/prompts')
 									? ''
 									: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
-								href="/workspace/prompts">{i18n.t('Prompts')}</a
+								href="/workspace/prompts">{$i18n.t('Prompts')}</a
 							>
 						{/if}
 
@@ -133,7 +134,7 @@
 									: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
 								href="/workspace/skills"
 							>
-								{i18n.t('Skills')}
+								{$i18n.t('Skills')}
 							</a>
 						{/if}
 
@@ -146,13 +147,13 @@
 									: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
 								href="/workspace/tools"
 							>
-								{i18n.t('Tools')}
+								{$i18n.t('Tools')}
 							</a>
 						{/if}
 					</div>
 				</div>
 
-				<!-- <div class="flex items-center text-xl font-medium">{i18n.t('Workspace')}</div> -->
+				<!-- <div class="flex items-center text-xl font-medium">{$i18n.t('Workspace')}</div> -->
 			</div>
 		</nav>
 
@@ -165,8 +166,6 @@
 	</div>
 {/if}
 
-
-
 {#if loaded}
 	<div
 		class=" relative flex flex-col w-full h-screen max-h-[100dvh] transition-width duration-200 ease-in-out {$showSidebar
@@ -178,13 +177,13 @@
 				{#if $mobile}
 					<div class="{$showSidebar ? 'md:hidden' : ''} self-center flex flex-none items-center">
 						<Tooltip
-							content={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
+							content={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
 							interactive={true}
 						>
 							<button
 								id="sidebar-toggle-button"
 								class=" cursor-pointer flex rounded-lg hover:bg-gray-100 dark:hover:bg-gray-850 transition cursor-"
-								aria-label={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
+								aria-label={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
 								on:click={() => {
 									showSidebar.set(!$showSidebar);
 								}}
@@ -208,7 +207,7 @@
 								class="min-w-fit p-1.5 {$page.url.pathname.includes('/workspace/models')
 									? ''
 									: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
-								href="/workspace/models">{i18n.t('Models')}</a
+								href="/workspace/models">{$i18n.t('Models')}</a
 							>
 						{/if}
 
@@ -221,7 +220,7 @@
 									: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
 								href="/workspace/knowledge"
 							>
-								{i18n.t('Knowledge')}
+								{$i18n.t('Knowledge')}
 							</a>
 						{/if}
 
@@ -232,7 +231,7 @@
 								class="min-w-fit p-1.5 {$page.url.pathname.includes('/workspace/prompts')
 									? ''
 									: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
-								href="/workspace/prompts">{i18n.t('Prompts')}</a
+								href="/workspace/prompts">{$i18n.t('Prompts')}</a
 							>
 						{/if}
 
@@ -245,7 +244,7 @@
 									: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
 								href="/workspace/skills"
 							>
-								{i18n.t('Skills')}
+								{$i18n.t('Skills')}
 							</a>
 						{/if}
 
@@ -258,13 +257,13 @@
 									: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
 								href="/workspace/tools"
 							>
-								{i18n.t('Tools')}
+								{$i18n.t('Tools')}
 							</a>
 						{/if}
 					</div>
 				</div>
 
-				<!-- <div class="flex items-center text-xl font-medium">{i18n.t('Workspace')}</div> -->
+				<!-- <div class="flex items-center text-xl font-medium">{$i18n.t('Workspace')}</div> -->
 			</div>
 		</nav>
 

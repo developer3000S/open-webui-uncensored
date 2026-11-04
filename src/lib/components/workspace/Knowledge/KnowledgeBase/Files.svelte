@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import dayjs from '$lib/dayjs';
 	import duration from 'dayjs/plugin/duration';
@@ -27,21 +27,21 @@
 	import Folder from '$lib/components/icons/Folder.svelte';
 	import DirectoryRow from './DirectoryRow.svelte';
 
-	let knowledge: any = null;
-	let selectedFileId: any = null;
+	export let knowledge: any = null;
+	export let selectedFileId: any = null;
 	export let files: any = [];
 	export let directories: any = [];
 
-	export let onClick = (fileId: any) => {};
-	export let onDelete = (fileId: any) => {};
-	export let onRename = (fileId: string, name: string) => {};
-	export let onNavigateDirectory = (directoryId: string) => {};
-	export let onRenameDirectory = (id: string, name: string) => {};
-	export let onDeleteDirectory = (id: string) => {};
-	export let onMoveFileToDirectory = (fileId: string, directoryId: string) => {};
-	export let onMoveDirectoryToDirectory = (dirId: string, targetDirectoryId: string) => {};
-	export let onMoveFile = (fileId: string) => {};
-	export let onCancelEmbedding = (fileId: string) => {};
+	export let onClick: any = (fileId: any) => {};
+	export let onDelete: any = (fileId: any) => {};
+	export let onRename: any = (fileId: string, name: string) => {};
+	export let onNavigateDirectory: any = (directoryId: string) => {};
+	export let onRenameDirectory: any = (id: string, name: string) => {};
+	export let onDeleteDirectory: any = (id: string) => {};
+	export let onMoveFileToDirectory: any = (fileId: string, directoryId: string) => {};
+	export let onMoveDirectoryToDirectory: any = (dirId: string, targetDirectoryId: string) => {};
+	export let onMoveFile: any = (fileId: string) => {};
+	export let onCancelEmbedding: any = (fileId: string) => {};
 
 	let editingFileId: string | null = null;
 	let editName = '';
@@ -78,13 +78,13 @@
 		// The server labels its phase 'embedding'; anything that reports chunk counts
 		// is past the transfer stage and worth showing as granular progress.
 		if (progress?.total_chunks) {
-			return i18n.t('Embedding {{processed}}/{{total}} chunks', {
+			return $i18n.t('Embedding {{processed}}/{{total}} chunks', {
 				processed: progress.processed_chunks ?? 0,
 				total: progress.total_chunks
 			});
 		}
-		if (progress?.phase === 'uploading') return i18n.t('Uploading...');
-		return i18n.t('Processing...');
+		if (progress?.phase === 'uploading') return $i18n.t('Uploading...');
+		return $i18n.t('Processing...');
 	};
 </script>
 
@@ -207,14 +207,14 @@
 
 					{#if file?.user}
 						<Tooltip
-							content={file?.user?.email ?? i18n.t('Deleted User')}
+							content={file?.user?.email ?? $i18n.t('Deleted User')}
 							className="flex shrink-0"
 							placement="top-start"
 						>
 							<div role="button" class="shrink-0 text-gray-500">
-								{i18n.t('By {{name}}', {
+								{$i18n.t('By {{name}}', {
 									name: capitalizeFirstLetter(
-										file?.user?.name ?? file?.user?.email ?? i18n.t('Deleted User')
+										file?.user?.name ?? file?.user?.email ?? $i18n.t('Deleted User')
 									)
 								})}
 							</div>
@@ -246,7 +246,7 @@
 									}}
 								>
 									<Pencil className="size-3.5" />
-									{i18n.t('Rename')}
+									{$i18n.t('Rename')}
 								</button>
 								<button
 									type="button"
@@ -257,7 +257,7 @@
 									}}
 								>
 									<Download className="size-3.5" />
-									{i18n.t('Download')}
+									{$i18n.t('Download')}
 								</button>
 								{#if file?.status === 'uploading' || file?.status === 'processing' || file?.status === 'pending'}
 									<button
@@ -279,7 +279,7 @@
 											<line x1="15" y1="9" x2="9" y2="15" />
 											<line x1="9" y1="9" x2="15" y2="15" />
 										</svg>
-										{i18n.t('Cancel embedding')}
+										{$i18n.t('Cancel embedding')}
 									</button>
 								{:else}
 									<button
@@ -290,7 +290,7 @@
 										}}
 									>
 										<Folder className="size-3.5" />
-										{i18n.t('Move to folder')}
+										{$i18n.t('Move to folder')}
 									</button>
 								{/if}
 								<button
@@ -301,7 +301,7 @@
 									}}
 								>
 									<GarbageBin className="size-3.5" />
-									{i18n.t('Delete')}
+									{$i18n.t('Delete')}
 								</button>
 							</div>
 						</div>
@@ -431,14 +431,14 @@
 
 					{#if file?.user}
 						<Tooltip
-							content={file?.user?.email ?? i18n.t('Deleted User')}
+							content={file?.user?.email ?? $i18n.t('Deleted User')}
 							className="flex shrink-0"
 							placement="top-start"
 						>
 							<div role="button" class="shrink-0 text-gray-500">
-								{i18n.t('By {{name}}', {
+								{$i18n.t('By {{name}}', {
 									name: capitalizeFirstLetter(
-										file?.user?.name ?? file?.user?.email ?? i18n.t('Deleted User')
+										file?.user?.name ?? file?.user?.email ?? $i18n.t('Deleted User')
 									)
 								})}
 							</div>
@@ -470,7 +470,7 @@
 									}}
 								>
 									<Pencil className="size-3.5" />
-									{i18n.t('Rename')}
+									{$i18n.t('Rename')}
 								</button>
 								<button
 									type="button"
@@ -481,7 +481,7 @@
 									}}
 								>
 									<Download className="size-3.5" />
-									{i18n.t('Download')}
+									{$i18n.t('Download')}
 								</button>
 								{#if file?.status === 'uploading' || file?.status === 'processing' || file?.status === 'pending'}
 									<button
@@ -503,7 +503,7 @@
 											<line x1="15" y1="9" x2="9" y2="15" />
 											<line x1="9" y1="9" x2="15" y2="15" />
 										</svg>
-										{i18n.t('Cancel embedding')}
+										{$i18n.t('Cancel embedding')}
 									</button>
 								{:else}
 									<button
@@ -514,7 +514,7 @@
 										}}
 									>
 										<Folder className="size-3.5" />
-										{i18n.t('Move to folder')}
+										{$i18n.t('Move to folder')}
 									</button>
 								{/if}
 								<button
@@ -525,7 +525,7 @@
 									}}
 								>
 									<GarbageBin className="size-3.5" />
-									{i18n.t('Delete')}
+									{$i18n.t('Delete')}
 								</button>
 							</div>
 						</div>

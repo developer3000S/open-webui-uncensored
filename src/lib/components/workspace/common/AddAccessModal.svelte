@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
@@ -11,7 +11,7 @@
 
 	export let show: any = false;
 	export let shareUsers: any = true;
-	export let onAdd = (payload: { userIds: string[]; groupIds: string[] }) => {};
+	export let onAdd: any = (payload: { userIds: string[]; groupIds: string[] }) => {};
 
 	let userIds: string[] = [];
 	let groupIds: string[] = [];
@@ -33,7 +33,7 @@
 		<div class=" flex justify-between dark:text-gray-100 px-5 pt-4 mb-1.5">
 			<div class="self-center text-base">
 				<div class="flex items-center gap-0.5 shrink-0">
-					{i18n.t('Add Access')}
+					{$i18n.t('Add Access')}
 				</div>
 			</div>
 			<button
@@ -69,7 +69,7 @@
 							class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-950 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full flex flex-row space-x-1 items-center"
 							type="submit"
 						>
-							{i18n.t('Add')}
+							{$i18n.t('Add')}
 						</button>
 					</div>
 				</form>
@@ -83,7 +83,7 @@
 		<div class=" flex justify-between dark:text-gray-100 px-5 pt-4 mb-1.5">
 			<div class="self-center text-base">
 				<div class="flex items-center gap-0.5 shrink-0">
-					{i18n.t('Add Access')}
+					{$i18n.t('Add Access')}
 				</div>
 			</div>
 			<button
@@ -119,7 +119,7 @@
 							class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-950 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full flex flex-row space-x-1 items-center"
 							type="submit"
 						>
-							{i18n.t('Add')}
+							{$i18n.t('Add')}
 						</button>
 					</div>
 				</form>

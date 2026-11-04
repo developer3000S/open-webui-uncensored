@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
@@ -28,7 +28,7 @@
 		write: { group_ids: string[]; user_ids: string[] };
 	};
 
-	export let onChange: Function = () => {};
+	export let onChange: any = () => {};
 
 	export let accessRoles = ['read'];
 	export let accessGrants: AccessGrant[] | any = [];
@@ -372,12 +372,10 @@
 	$: if (readGroupIds.length > 0 || writeGroupIds.length > 0) {
 		void ensureGroupsByIds([...readGroupIds, ...writeGroupIds]);
 	}
-	$: readGroupIds = (accessGrants, getPrincipalIdsByPermission('group', 'read'));
-	$: writeGroupIds = (accessGrants, getPrincipalIdsByPermission('group', 'write'));
-	$: readUserIds =
-		(accessGrants, getPrincipalIdsByPermission('user', 'read').filter((id) => id !== '*'));
-	$: writeUserIds =
-		(accessGrants, getPrincipalIdsByPermission('user', 'write').filter((id) => id !== '*'));
+	$: readGroupIds = getPrincipalIdsByPermission('group', 'read');
+	$: writeGroupIds = getPrincipalIdsByPermission('group', 'write');
+	$: readUserIds = getPrincipalIdsByPermission('user', 'read').filter((id) => id !== '*');
+	$: writeUserIds = getPrincipalIdsByPermission('user', 'write').filter((id) => id !== '*');
 
 	$: selectedUserIds = Array.from(new Set([...readUserIds, ...writeUserIds]));
 
@@ -418,6 +416,7 @@
 		}
 	}
 
+	// @ts-ignore
 	onMount(async () => {
 		console.log('AccessControl mounted', { accessGrants, accessControl });
 		const res = await getGroups(localStorage.token, true).catch((error) => {
@@ -487,7 +486,7 @@
 			<div>
 				<Tooltip
 					content={!(share && sharePublic) && !hasPublicReadGrant(accessGrants ?? [])
-						? i18n.t('You do not have permission to make this public')
+						? $i18n.t('You do not have permission to make this public')
 						: ''}
 				>
 					<select
@@ -498,18 +497,18 @@
 							setPublic((e.target as HTMLSelectElement).value === 'public');
 						}}
 					>
-						<option class=" text-gray-700" value="private">{i18n.t('Private')}</option>
+						<option class=" text-gray-700" value="private">{$i18n.t('Private')}</option>
 						{#if (share && sharePublic) || hasPublicReadGrant(accessGrants ?? [])}
-							<option class=" text-gray-700" value="public">{i18n.t('Public')}</option>
+							<option class=" text-gray-700" value="public">{$i18n.t('Public')}</option>
 						{/if}
 					</select>
 				</Tooltip>
 
 				<div class=" text-xs text-gray-400 font-medium">
 					{#if !hasPublicReadGrant(accessGrants ?? [])}
-						{i18n.t('Only select users and groups with permission can access')}
+						{$i18n.t('Only select users and groups with permission can access')}
 					{:else}
-						{i18n.t('Accessible to all users')}
+						{$i18n.t('Accessible to all users')}
 					{/if}
 				</div>
 			</div>
@@ -518,7 +517,7 @@
 		{#if hasPublicReadGrant(accessGrants ?? []) && accessRoles.includes('write')}
 			<div class="flex w-full justify-between mt-2 ml-0.5">
 				<div class="self-center text-xs">
-					{i18n.t('Allow public write access')}
+					{$i18n.t('Allow public write access')}
 				</div>
 				<Switch
 					state={hasPublicWriteGrant(accessGrants ?? [])}
@@ -533,7 +532,7 @@
 	{#if share}
 		<div class="flex items-center justify-between text-xs font-medium text-gray-500 my-1">
 			<div>
-				{i18n.t('Access List')}
+				{$i18n.t('Access List')}
 			</div>
 			<div class="flex gap-1">
 				<button
@@ -544,7 +543,7 @@
 					}}
 				>
 					<Plus className="size-3" />
-					{i18n.t('Add Access')}
+					{$i18n.t('Add Access')}
 				</button>
 			</div>
 		</div>
@@ -565,7 +564,7 @@
 						<div class="truncate text-sm flex items-center gap-2">
 							{group.name}
 							<span class="text-xs text-gray-400 font-normal"
-								>{group?.member_count} {i18n.t('members')}</span
+								>{group?.member_count} {$i18n.t('members')}</span
 							>
 						</div>
 					</div>
@@ -580,9 +579,9 @@
 							}}
 						>
 							{#if writeGroupIds.includes(group.id)}
-								<Badge type={'success'} content={i18n.t('Write')} />
+								<Badge type={'success'} content={$i18n.t('Write')} />
 							{:else}
-								<Badge type={'info'} content={i18n.t('Read')} />
+								<Badge type={'info'} content={$i18n.t('Read')} />
 							{/if}
 						</button>
 
@@ -628,9 +627,9 @@
 								}}
 							>
 								{#if writeUserIds.includes(user.id)}
-									<Badge type={'success'} content={i18n.t('Write')} />
+									<Badge type={'success'} content={$i18n.t('Write')} />
 								{:else}
-									<Badge type={'info'} content={i18n.t('Read')} />
+									<Badge type={'info'} content={$i18n.t('Read')} />
 								{/if}
 							</button>
 
@@ -650,7 +649,7 @@
 
 			{#if !hasPublicReadGrant(accessGrants ?? []) && accessGroups.length === 0 && selectedUsers.length === 0}
 				<div class="text-xs text-gray-500 text-center py-4">
-					{i18n.t('No access grants. Private to you.')}
+					{$i18n.t('No access grants. Private to you.')}
 				</div>
 			{/if}
 		</div>
@@ -701,7 +700,7 @@
 			<div>
 				<Tooltip
 					content={!(share && sharePublic) && !hasPublicReadGrant(accessGrants ?? [])
-						? i18n.t('You do not have permission to make this public')
+						? $i18n.t('You do not have permission to make this public')
 						: ''}
 				>
 					<select
@@ -712,18 +711,18 @@
 							setPublic((e.target as HTMLSelectElement).value === 'public');
 						}}
 					>
-						<option class=" text-gray-700" value="private">{i18n.t('Private')}</option>
+						<option class=" text-gray-700" value="private">{$i18n.t('Private')}</option>
 						{#if (share && sharePublic) || hasPublicReadGrant(accessGrants ?? [])}
-							<option class=" text-gray-700" value="public">{i18n.t('Public')}</option>
+							<option class=" text-gray-700" value="public">{$i18n.t('Public')}</option>
 						{/if}
 					</select>
 				</Tooltip>
 
 				<div class=" text-xs text-gray-400 font-medium">
 					{#if !hasPublicReadGrant(accessGrants ?? [])}
-						{i18n.t('Only select users and groups with permission can access')}
+						{$i18n.t('Only select users and groups with permission can access')}
 					{:else}
-						{i18n.t('Accessible to all users')}
+						{$i18n.t('Accessible to all users')}
 					{/if}
 				</div>
 			</div>
@@ -732,7 +731,7 @@
 		{#if hasPublicReadGrant(accessGrants ?? []) && accessRoles.includes('write')}
 			<div class="flex w-full justify-between mt-2 ml-0.5">
 				<div class="self-center text-xs">
-					{i18n.t('Allow public write access')}
+					{$i18n.t('Allow public write access')}
 				</div>
 				<Switch
 					state={hasPublicWriteGrant(accessGrants ?? [])}
@@ -747,7 +746,7 @@
 	{#if share}
 		<div class="flex items-center justify-between text-xs font-medium text-gray-500 my-1">
 			<div>
-				{i18n.t('Access List')}
+				{$i18n.t('Access List')}
 			</div>
 			<div class="flex gap-1">
 				<button
@@ -758,7 +757,7 @@
 					}}
 				>
 					<Plus className="size-3" />
-					{i18n.t('Add Access')}
+					{$i18n.t('Add Access')}
 				</button>
 			</div>
 		</div>
@@ -779,7 +778,7 @@
 						<div class="truncate text-sm flex items-center gap-2">
 							{group.name}
 							<span class="text-xs text-gray-400 font-normal"
-								>{group?.member_count} {i18n.t('members')}</span
+								>{group?.member_count} {$i18n.t('members')}</span
 							>
 						</div>
 					</div>
@@ -794,9 +793,9 @@
 							}}
 						>
 							{#if writeGroupIds.includes(group.id)}
-								<Badge type={'success'} content={i18n.t('Write')} />
+								<Badge type={'success'} content={$i18n.t('Write')} />
 							{:else}
-								<Badge type={'info'} content={i18n.t('Read')} />
+								<Badge type={'info'} content={$i18n.t('Read')} />
 							{/if}
 						</button>
 
@@ -842,9 +841,9 @@
 								}}
 							>
 								{#if writeUserIds.includes(user.id)}
-									<Badge type={'success'} content={i18n.t('Write')} />
+									<Badge type={'success'} content={$i18n.t('Write')} />
 								{:else}
-									<Badge type={'info'} content={i18n.t('Read')} />
+									<Badge type={'info'} content={$i18n.t('Read')} />
 								{/if}
 							</button>
 
@@ -864,7 +863,7 @@
 
 			{#if !hasPublicReadGrant(accessGrants ?? []) && accessGroups.length === 0 && selectedUsers.length === 0}
 				<div class="text-xs text-gray-500 text-center py-4">
-					{i18n.t('No access grants. Private to you.')}
+					{$i18n.t('No access grants. Private to you.')}
 				</div>
 			{/if}
 		</div>

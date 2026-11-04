@@ -15,12 +15,12 @@
 	};
 
 	marked.use(markedKatexExtension(options));
-	marked.use(markedExtension(options));
-	marked.use(citationExtension(options));
-	marked.use(footnoteExtension(options));
+	marked.use(markedExtension(options) as any);
+	(marked as any).use(citationExtension());
+	(marked as any).use(footnoteExtension());
 	marked.use(colonFenceExtension(options));
-	marked.use(disableSingleTilde);
-	marked.use({
+	marked.use(disableSingleTilde as any);
+	(marked as any).use({
 		extensions: [
 			mentionExtension({ triggerChar: '@' }),
 			mentionExtension({ triggerChar: '#' }),
@@ -39,22 +39,22 @@
 	export let id: any = '';
 	export let content: any;
 	export let done: any = true;
-	let model: any = null;
+	export let model: any = null;
 	export let save: any = false;
 	export let preview: any = false;
 	export let paragraphTag: any = 'p';
 	export let editCodeBlock: any = true;
 	export let topPadding: any = false;
 	export let allowEmbeds: any = true;
-	let sourceIds: any[] = [];
+	export let sourceIds: any[] = [];
 
-	export let onSave = () => {};
-	export let onUpdate = () => {};
+	export let onSave: any = () => {};
+	export let onUpdate: any = () => {};
 
-	export let onPreview = () => {};
+	export let onPreview: any = () => {};
 
-	export let onSourceClick = () => {};
-	export let onTaskClick = () => {};
+	export let onSourceClick: any = () => {};
+	export let onTaskClick: any = () => {};
 
 	let tokens: any[] = [];
 	let pendingUpdate: any = null;

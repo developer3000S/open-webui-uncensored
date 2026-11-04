@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { goto } from '$app/navigation';
 	import { getNoteById } from '$lib/apis/notes';
@@ -17,11 +17,12 @@
 	let author = '';
 	let loading = true;
 
+	// @ts-ignore
 	onMount(async () => {
 		try {
 			const note = await getNoteById(localStorage.token, noteId);
 			if (note) {
-				title = note.title || i18n.t('Untitled');
+				title = note.title || $i18n.t('Untitled');
 
 				if (note.user_id) {
 					try {
@@ -35,7 +36,7 @@
 				}
 			}
 		} catch {
-			title = i18n.t('Note');
+			title = $i18n.t('Note');
 		} finally {
 			loading = false;
 		}
@@ -65,11 +66,11 @@
 					{title}
 				{/if}
 			</div>
-			<div class="text-gray-500 text-xs shrink-0">{i18n.t('Note')}</div>
+			<div class="text-gray-500 text-xs shrink-0">{$i18n.t('Note')}</div>
 		</div>
 		{#if author}
 			<div class="text-gray-500 text-xs line-clamp-1 mt-0.5">
-				{i18n.t('By {{name}}', { name: author })}
+				{$i18n.t('By {{name}}', { name: author })}
 			</div>
 		{/if}
 	</div>
@@ -98,11 +99,11 @@
 					{title}
 				{/if}
 			</div>
-			<div class="text-gray-500 text-xs shrink-0">{i18n.t('Note')}</div>
+			<div class="text-gray-500 text-xs shrink-0">{$i18n.t('Note')}</div>
 		</div>
 		{#if author}
 			<div class="text-gray-500 text-xs line-clamp-1 mt-0.5">
-				{i18n.t('By {{name}}', { name: author })}
+				{$i18n.t('By {{name}}', { name: author })}
 			</div>
 		{/if}
 	</div>

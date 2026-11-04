@@ -1,10 +1,11 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	export let show: any = false;
 	export let selectedModelId: any = '';
+	export let insertNoteHandler: any = () => {};
 	import { marked } from 'marked';
 	// Configure marked with extensions
 	marked.use({
@@ -53,22 +54,23 @@
 
 	import type { Writable } from 'svelte/store';
 
-	let editor: any = null;
+	export let editor: any = null;
+	export let inputElement: any = null;
 
 	export let editing: any = false;
 	export let streaming: any = false;
 	export let stopResponseFlag: any = false;
-	let note: any = null;
+	export let note: any = null;
 	export let selectedContent: any = null;
 
 	export let files: any = [];
 	export let messages: any = [];
 
-	export let onInsert = (content: any) => {};
-	export let onStop = () => {};
-	export let onEdited = () => {};
+	export let onInsert: any = (content: any) => {};
+	export let onStop: any = () => {};
+	export let onEdited: any = () => {};
 
-	export let scrollToBottomHandler = () => {};
+	export let scrollToBottomHandler: any = () => {};
 
 	let loaded = false;
 
@@ -121,7 +123,7 @@ Based on the user's instruction, update and enhance the existing notes or select
 
 	const chatCompletionHandler = async () => {
 		if (selectedModelId === '') {
-			toast.error(i18n.t('Please select a model.'));
+			toast.error($i18n.t('Please select a model.'));
 			return;
 		}
 
@@ -233,7 +235,7 @@ Based on the user's instruction, update and enhance the existing notes or select
 							console.log(line);
 							if (line === 'data: [DONE]') {
 								if (editEnabled) {
-									responseMessage.content = `<status title="${i18n.t('Edited')}" done="true" />`;
+									responseMessage.content = `<status title="${$i18n.t('Edited')}" done="true" />`;
 
 									if (selectedContent && selectedContent?.text && editor) {
 										editor.commands.insertContentAt(
@@ -273,7 +275,7 @@ Based on the user's instruction, update and enhance the existing notes or select
 
 										scrollToBottomHandler();
 
-										responseMessage.content = `<status title="${i18n.t('Editing')}" done="false" />`;
+										responseMessage.content = `<status title="${$i18n.t('Editing')}" done="false" />`;
 										messages = messages;
 									} else {
 										messageContent += deltaContent;
@@ -320,6 +322,7 @@ Based on the user's instruction, update and enhance the existing notes or select
 		}
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		editEnabled = localStorage.getItem('noteEditEnabled') === 'true';
 
@@ -344,18 +347,18 @@ Based on the user's instruction, update and enhance the existing notes or select
 
 	<div class=" font-medium text-base flex items-center gap-1">
 		<div>
-			{i18n.t('Chat')}
+			{$i18n.t('Chat')}
 		</div>
 
 		<div>
 			<Tooltip
-				content={i18n.t(
+				content={$i18n.t(
 					'This feature is experimental and may be modified or discontinued without notice.'
 				)}
 				position="top"
 				className="inline-block"
 			>
-				<span class="text-gray-500 text-sm">({i18n.t('Experimental')})</span>
+				<span class="text-gray-500 text-sm">({$i18n.t('Experimental')})</span>
 			</Tooltip>
 		</div>
 	</div>
@@ -399,7 +402,7 @@ Based on the user's instruction, update and enhance the existing notes or select
 					>
 						<div slot="menu" class="flex items-center justify-between gap-2 w-full pr-1">
 							<div>
-								<Tooltip content={i18n.t('Edit')} placement="top">
+								<Tooltip content={$i18n.t('Edit')} placement="top">
 									<button
 										on:click|preventDefault={() => {
 											editEnabled = !editEnabled;
@@ -415,7 +418,7 @@ Based on the user's instruction, update and enhance the existing notes or select
 										<PencilSquare className="size-4" strokeWidth="1.75" />
 										<span
 											class="block whitespace-nowrap overflow-hidden text-ellipsis leading-none pr-0.5"
-											>{i18n.t('Edit')}</span
+											>{$i18n.t('Edit')}</span
 										>
 									</button>
 								</Tooltip>
@@ -455,18 +458,18 @@ Based on the user's instruction, update and enhance the existing notes or select
 
 	<div class=" font-medium text-base flex items-center gap-1">
 		<div>
-			{i18n.t('Chat')}
+			{$i18n.t('Chat')}
 		</div>
 
 		<div>
 			<Tooltip
-				content={i18n.t(
+				content={$i18n.t(
 					'This feature is experimental and may be modified or discontinued without notice.'
 				)}
 				position="top"
 				className="inline-block"
 			>
-				<span class="text-gray-500 text-sm">({i18n.t('Experimental')})</span>
+				<span class="text-gray-500 text-sm">({$i18n.t('Experimental')})</span>
 			</Tooltip>
 		</div>
 	</div>
@@ -510,7 +513,7 @@ Based on the user's instruction, update and enhance the existing notes or select
 					>
 						<div slot="menu" class="flex items-center justify-between gap-2 w-full pr-1">
 							<div>
-								<Tooltip content={i18n.t('Edit')} placement="top">
+								<Tooltip content={$i18n.t('Edit')} placement="top">
 									<button
 										on:click|preventDefault={() => {
 											editEnabled = !editEnabled;
@@ -526,7 +529,7 @@ Based on the user's instruction, update and enhance the existing notes or select
 										<PencilSquare className="size-4" strokeWidth="1.75" />
 										<span
 											class="block whitespace-nowrap overflow-hidden text-ellipsis leading-none pr-0.5"
-											>{i18n.t('Edit')}</span
+											>{$i18n.t('Edit')}</span
 										>
 									</button>
 								</Tooltip>

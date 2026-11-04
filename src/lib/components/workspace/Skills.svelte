@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import fileSaver from 'file-saver';
@@ -99,7 +99,7 @@
 	}
 
 	const cloneHandler = async (skill: any) => {
-		const _skill = await getSkillById(localStorage.token, skill.id).catch(async (error)=> {
+		const _skill = await getSkillById(localStorage.token, skill.id).catch(async (error) => {
 			toast.error(`${error}`);
 			return null;
 		});
@@ -115,7 +115,7 @@
 	};
 
 	const exportHandler = async (skill: any) => {
-		const _skill = await getSkillById(localStorage.token, skill.id).catch(async (error)=> {
+		const _skill = await getSkillById(localStorage.token, skill.id).catch(async (error) => {
 			toast.error(`${error}`);
 			return null;
 		});
@@ -129,13 +129,13 @@
 	};
 
 	const deleteHandler = async (skill: any) => {
-		const res = await deleteSkillById(localStorage.token, skill.id).catch(async (error)=> {
+		const res = await deleteSkillById(localStorage.token, skill.id).catch(async (error) => {
 			toast.error(`${error}`);
 			return null;
 		});
 
 		if (res) {
-			toast.success(i18n.t('Skill deleted successfully'));
+			toast.success($i18n.t('Skill deleted successfully'));
 		}
 
 		page = 1;
@@ -143,6 +143,7 @@
 		await _skills.set(await getSkills(localStorage.token));
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		viewOption = localStorage?.workspaceViewOption || '';
 		loaded = true;
@@ -181,20 +182,20 @@
 </script>
 
 <svelte:head>
-			<title>
-		{i18n.t('Skills')} • {$WEBUI_NAME}
+	<title>
+		{$i18n.t('Skills')} • {$WEBUI_NAME}
 	</title>
-			<title>
-		{i18n.t('Skills')} • {$WEBUI_NAME}
+	<title>
+		{$i18n.t('Skills')} • {$WEBUI_NAME}
 	</title>
-		</svelte:head>
+</svelte:head>
 
 {#if loaded}
 	<div class="flex flex-col gap-1 px-1 mt-1.5 mb-3">
 		<div class="flex justify-between items-center">
 			<div class="flex items-center md:self-center text-xl font-medium px-0.5 gap-2 shrink-0">
 				<div>
-					{i18n.t('Skills')}
+					{$i18n.t('Skills')}
 				</div>
 
 				<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
@@ -226,17 +227,17 @@
 										const items = Array.isArray(parsedSkills) ? parsedSkills : [parsedSkills];
 
 										for (const skill of items) {
-											await createNewSkill(localStorage.token, skill).catch(async (error)=> {
+											await createNewSkill(localStorage.token, skill).catch(async (error) => {
 												toast.error(`${error}`);
 											});
 										}
 
-										toast.success(i18n.t('Skill imported successfully'));
+										toast.success($i18n.t('Skill imported successfully'));
 										page = 1;
 										loadSkillItems();
 										_skills.set(await getSkills(localStorage.token));
 									} catch (e) {
-										toast.error(i18n.t('Invalid JSON file'));
+										toast.error($i18n.t('Invalid JSON file'));
 									}
 								};
 								reader.readAsText(file);
@@ -277,7 +278,7 @@
 						}}
 					>
 						<div class=" self-center font-medium line-clamp-1">
-							{i18n.t('Import')}
+							{$i18n.t('Import')}
 						</div>
 					</button>
 				{/if}
@@ -299,7 +300,7 @@
 						}}
 					>
 						<div class=" self-center font-medium line-clamp-1">
-							{i18n.t('Export')}
+							{$i18n.t('Export')}
 						</div>
 					</button>
 				{/if}
@@ -311,7 +312,7 @@
 					>
 						<Plus className="size-3" strokeWidth="2.5" />
 
-						<div class=" hidden md:block md:ml-1 text-xs">{i18n.t('New Skill')}</div>
+						<div class=" hidden md:block md:ml-1 text-xs">{$i18n.t('New Skill')}</div>
 					</a>
 				{/if}
 			</div>
@@ -330,14 +331,14 @@
 					class=" w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
 					bind:value={query}
 					on:input={handleSearchInput}
-					aria-label={i18n.t('Search Skills')}
-					placeholder={i18n.t('Search Skills')}
+					aria-label={$i18n.t('Search Skills')}
+					placeholder={$i18n.t('Search Skills')}
 				/>
 				{#if query}
 					<div class="self-center pl-1.5 translate-y-[0.5px] rounded-l-xl bg-transparent">
 						<button
 							class="p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 transition"
-							aria-label={i18n.t('Clear search')}
+							aria-label={$i18n.t('Clear search')}
 							on:click={() => {
 								query = '';
 								handleSearchInput();
@@ -400,20 +401,20 @@
 														{skill.name}
 													</div>
 													{#if !skill.is_active}
-														<Badge type="muted" content={i18n.t('Inactive')} />
+														<Badge type="muted" content={$i18n.t('Inactive')} />
 													{/if}
 												</div>
 											</Tooltip>
 											<div class="px-0.5">
 												<div class="text-xs text-gray-500 shrink-0">
 													<Tooltip
-														content={skill?.user?.email ?? i18n.t('Deleted User')}
+														content={skill?.user?.email ?? $i18n.t('Deleted User')}
 														className="flex shrink-0"
 														placement="top-start"
 													>
-														{i18n.t('By {{name}}', {
+														{$i18n.t('By {{name}}', {
 															name: capitalizeFirstLetter(
-																skill?.user?.name ?? skill?.user?.email ?? i18n.t('Deleted User')
+																skill?.user?.name ?? skill?.user?.email ?? $i18n.t('Deleted User')
 															)
 														})}
 													</Tooltip>
@@ -433,22 +434,22 @@
 															{skill.name}
 														</div>
 														{#if !skill.is_active}
-															<Badge type="muted" content={i18n.t('Inactive')} />
+															<Badge type="muted" content={$i18n.t('Inactive')} />
 														{/if}
 													</div>
 												</Tooltip>
-												<Badge type="muted" content={i18n.t('Read Only')} />
+												<Badge type="muted" content={$i18n.t('Read Only')} />
 											</div>
 											<div class="px-0.5">
 												<div class="text-xs text-gray-500 shrink-0">
 													<Tooltip
-														content={skill?.user?.email ?? i18n.t('Deleted User')}
+														content={skill?.user?.email ?? $i18n.t('Deleted User')}
 														className="flex shrink-0"
 														placement="top-start"
 													>
-														{i18n.t('By {{name}}', {
+														{$i18n.t('By {{name}}', {
 															name: capitalizeFirstLetter(
-																skill?.user?.name ?? skill?.user?.email ?? i18n.t('Deleted User')
+																skill?.user?.name ?? skill?.user?.email ?? $i18n.t('Deleted User')
 															)
 														})}
 													</Tooltip>
@@ -461,11 +462,11 @@
 							{#if skill.write_access}
 								<div class="flex flex-row gap-0.5 self-center">
 									{#if shiftKey}
-										<Tooltip content={i18n.t('Delete')}>
+										<Tooltip content={$i18n.t('Delete')}>
 											<button
 												class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 												type="button"
-												aria-label={i18n.t('Delete')}
+												aria-label={$i18n.t('Delete')}
 												on:click={() => {
 													deleteHandler(skill);
 												}}
@@ -500,7 +501,7 @@
 									{/if}
 
 									<button on:click|stopPropagation|preventDefault>
-										<Tooltip content={skill.is_active ? i18n.t('Enabled') : i18n.t('Disabled')}>
+										<Tooltip content={skill.is_active ? $i18n.t('Enabled') : $i18n.t('Disabled')}>
 											<Switch
 												bind:state={skill.is_active}
 												on:change={async () => {
@@ -525,9 +526,9 @@
 			<div class=" w-full h-full flex flex-col justify-center items-center my-16 mb-24">
 				<div class="max-w-md text-center">
 					<div class=" text-3xl mb-3">📝</div>
-					<div class=" text-lg font-medium mb-1">{i18n.t('No skills found')}</div>
+					<div class=" text-lg font-medium mb-1">{$i18n.t('No skills found')}</div>
 					<div class=" text-gray-500 text-center text-xs">
-						{i18n.t('Try adjusting your search or filter to find what you are looking for.')}
+						{$i18n.t('Try adjusting your search or filter to find what you are looking for.')}
 					</div>
 				</div>
 			</div>
@@ -536,13 +537,13 @@
 
 	<DeleteConfirmDialog
 		bind:show={showDeleteConfirm}
-		title={i18n.t('Delete skill?')}
+		title={$i18n.t('Delete skill?')}
 		on:confirm={() => {
 			deleteHandler(selectedSkill);
 		}}
 	>
 		<div class=" text-sm text-gray-500 truncate">
-			{i18n.t('This will delete')} <span class="  font-medium">{selectedSkill.name}</span>.
+			{$i18n.t('This will delete')} <span class="  font-medium">{selectedSkill.name}</span>.
 		</div>
 	</DeleteConfirmDialog>
 {:else}
@@ -551,14 +552,12 @@
 	</div>
 {/if}
 
-
-
 {#if loaded}
 	<div class="flex flex-col gap-1 px-1 mt-1.5 mb-3">
 		<div class="flex justify-between items-center">
 			<div class="flex items-center md:self-center text-xl font-medium px-0.5 gap-2 shrink-0">
 				<div>
-					{i18n.t('Skills')}
+					{$i18n.t('Skills')}
 				</div>
 
 				<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
@@ -590,17 +589,17 @@
 										const items = Array.isArray(parsedSkills) ? parsedSkills : [parsedSkills];
 
 										for (const skill of items) {
-											await createNewSkill(localStorage.token, skill).catch(async (error)=> {
+											await createNewSkill(localStorage.token, skill).catch(async (error) => {
 												toast.error(`${error}`);
 											});
 										}
 
-										toast.success(i18n.t('Skill imported successfully'));
+										toast.success($i18n.t('Skill imported successfully'));
 										page = 1;
 										loadSkillItems();
 										_skills.set(await getSkills(localStorage.token));
 									} catch (e) {
-										toast.error(i18n.t('Invalid JSON file'));
+										toast.error($i18n.t('Invalid JSON file'));
 									}
 								};
 								reader.readAsText(file);
@@ -641,7 +640,7 @@
 						}}
 					>
 						<div class=" self-center font-medium line-clamp-1">
-							{i18n.t('Import')}
+							{$i18n.t('Import')}
 						</div>
 					</button>
 				{/if}
@@ -663,7 +662,7 @@
 						}}
 					>
 						<div class=" self-center font-medium line-clamp-1">
-							{i18n.t('Export')}
+							{$i18n.t('Export')}
 						</div>
 					</button>
 				{/if}
@@ -675,7 +674,7 @@
 					>
 						<Plus className="size-3" strokeWidth="2.5" />
 
-						<div class=" hidden md:block md:ml-1 text-xs">{i18n.t('New Skill')}</div>
+						<div class=" hidden md:block md:ml-1 text-xs">{$i18n.t('New Skill')}</div>
 					</a>
 				{/if}
 			</div>
@@ -694,14 +693,14 @@
 					class=" w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
 					bind:value={query}
 					on:input={handleSearchInput}
-					aria-label={i18n.t('Search Skills')}
-					placeholder={i18n.t('Search Skills')}
+					aria-label={$i18n.t('Search Skills')}
+					placeholder={$i18n.t('Search Skills')}
 				/>
 				{#if query}
 					<div class="self-center pl-1.5 translate-y-[0.5px] rounded-l-xl bg-transparent">
 						<button
 							class="p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 transition"
-							aria-label={i18n.t('Clear search')}
+							aria-label={$i18n.t('Clear search')}
 							on:click={() => {
 								query = '';
 								handleSearchInput();
@@ -764,20 +763,20 @@
 														{skill.name}
 													</div>
 													{#if !skill.is_active}
-														<Badge type="muted" content={i18n.t('Inactive')} />
+														<Badge type="muted" content={$i18n.t('Inactive')} />
 													{/if}
 												</div>
 											</Tooltip>
 											<div class="px-0.5">
 												<div class="text-xs text-gray-500 shrink-0">
 													<Tooltip
-														content={skill?.user?.email ?? i18n.t('Deleted User')}
+														content={skill?.user?.email ?? $i18n.t('Deleted User')}
 														className="flex shrink-0"
 														placement="top-start"
 													>
-														{i18n.t('By {{name}}', {
+														{$i18n.t('By {{name}}', {
 															name: capitalizeFirstLetter(
-																skill?.user?.name ?? skill?.user?.email ?? i18n.t('Deleted User')
+																skill?.user?.name ?? skill?.user?.email ?? $i18n.t('Deleted User')
 															)
 														})}
 													</Tooltip>
@@ -797,22 +796,22 @@
 															{skill.name}
 														</div>
 														{#if !skill.is_active}
-															<Badge type="muted" content={i18n.t('Inactive')} />
+															<Badge type="muted" content={$i18n.t('Inactive')} />
 														{/if}
 													</div>
 												</Tooltip>
-												<Badge type="muted" content={i18n.t('Read Only')} />
+												<Badge type="muted" content={$i18n.t('Read Only')} />
 											</div>
 											<div class="px-0.5">
 												<div class="text-xs text-gray-500 shrink-0">
 													<Tooltip
-														content={skill?.user?.email ?? i18n.t('Deleted User')}
+														content={skill?.user?.email ?? $i18n.t('Deleted User')}
 														className="flex shrink-0"
 														placement="top-start"
 													>
-														{i18n.t('By {{name}}', {
+														{$i18n.t('By {{name}}', {
 															name: capitalizeFirstLetter(
-																skill?.user?.name ?? skill?.user?.email ?? i18n.t('Deleted User')
+																skill?.user?.name ?? skill?.user?.email ?? $i18n.t('Deleted User')
 															)
 														})}
 													</Tooltip>
@@ -825,11 +824,11 @@
 							{#if skill.write_access}
 								<div class="flex flex-row gap-0.5 self-center">
 									{#if shiftKey}
-										<Tooltip content={i18n.t('Delete')}>
+										<Tooltip content={$i18n.t('Delete')}>
 											<button
 												class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 												type="button"
-												aria-label={i18n.t('Delete')}
+												aria-label={$i18n.t('Delete')}
 												on:click={() => {
 													deleteHandler(skill);
 												}}
@@ -864,7 +863,7 @@
 									{/if}
 
 									<button on:click|stopPropagation|preventDefault>
-										<Tooltip content={skill.is_active ? i18n.t('Enabled') : i18n.t('Disabled')}>
+										<Tooltip content={skill.is_active ? $i18n.t('Enabled') : $i18n.t('Disabled')}>
 											<Switch
 												bind:state={skill.is_active}
 												on:change={async () => {
@@ -889,9 +888,9 @@
 			<div class=" w-full h-full flex flex-col justify-center items-center my-16 mb-24">
 				<div class="max-w-md text-center">
 					<div class=" text-3xl mb-3">📝</div>
-					<div class=" text-lg font-medium mb-1">{i18n.t('No skills found')}</div>
+					<div class=" text-lg font-medium mb-1">{$i18n.t('No skills found')}</div>
 					<div class=" text-gray-500 text-center text-xs">
-						{i18n.t('Try adjusting your search or filter to find what you are looking for.')}
+						{$i18n.t('Try adjusting your search or filter to find what you are looking for.')}
 					</div>
 				</div>
 			</div>
@@ -900,13 +899,13 @@
 
 	<DeleteConfirmDialog
 		bind:show={showDeleteConfirm}
-		title={i18n.t('Delete skill?')}
+		title={$i18n.t('Delete skill?')}
 		on:confirm={() => {
 			deleteHandler(selectedSkill);
 		}}
 	>
 		<div class=" text-sm text-gray-500 truncate">
-			{i18n.t('This will delete')} <span class="  font-medium">{selectedSkill.name}</span>.
+			{$i18n.t('This will delete')} <span class="  font-medium">{selectedSkill.name}</span>.
 		</div>
 	</DeleteConfirmDialog>
 {:else}

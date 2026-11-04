@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { goto } from '$app/navigation';
 
@@ -15,6 +15,7 @@
 
 	let loaded = false;
 
+	// @ts-ignore
 	onMount(async () => {
 		if ($user?.role !== 'admin') {
 			await goto('/');
@@ -24,13 +25,13 @@
 </script>
 
 <svelte:head>
-			<title>
-		{i18n.t('Admin Panel')} • {$WEBUI_NAME}
+	<title>
+		{$i18n.t('Admin Panel')} • {$WEBUI_NAME}
 	</title>
-			<title>
-		{i18n.t('Admin Panel')} • {$WEBUI_NAME}
+	<title>
+		{$i18n.t('Admin Panel')} • {$WEBUI_NAME}
 	</title>
-		</svelte:head>
+</svelte:head>
 
 {#if loaded}
 	<div
@@ -43,7 +44,7 @@
 				{#if $mobile}
 					<div class="{$showSidebar ? 'md:hidden' : ''} flex flex-none items-center self-end">
 						<Tooltip
-							content={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
+							content={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
 							interactive={true}
 						>
 							<button
@@ -70,7 +71,7 @@
 							class="min-w-fit p-1.5 {$page.url.pathname.includes('/admin/users')
 								? ''
 								: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
-							href="/admin">{i18n.t('Users')}</a
+							href="/admin">{$i18n.t('Users')}</a
 						>
 
 						{#if $config?.features.enable_admin_analytics ?? true}
@@ -79,7 +80,7 @@
 								class="min-w-fit p-1.5 {$page.url.pathname.includes('/admin/analytics')
 									? ''
 									: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
-								href="/admin/analytics">{i18n.t('Analytics')}</a
+								href="/admin/analytics">{$i18n.t('Analytics')}</a
 							>
 						{/if}
 
@@ -88,7 +89,7 @@
 							class="min-w-fit p-1.5 {$page.url.pathname.includes('/admin/evaluations')
 								? ''
 								: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
-							href="/admin/evaluations">{i18n.t('Evaluations')}</a
+							href="/admin/evaluations">{$i18n.t('Evaluations')}</a
 						>
 
 						<a
@@ -96,7 +97,7 @@
 							class="min-w-fit p-1.5 {$page.url.pathname.includes('/admin/functions')
 								? ''
 								: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
-							href="/admin/functions">{i18n.t('Functions')}</a
+							href="/admin/functions">{$i18n.t('Functions')}</a
 						>
 
 						<a
@@ -104,7 +105,7 @@
 							class="min-w-fit p-1.5 {$page.url.pathname.includes('/admin/settings')
 								? ''
 								: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
-							href="/admin/settings">{i18n.t('Settings')}</a
+							href="/admin/settings">{$i18n.t('Settings')}</a
 						>
 					</div>
 				</div>
@@ -117,8 +118,6 @@
 	</div>
 {/if}
 
-
-
 {#if loaded}
 	<div
 		class=" flex flex-col h-screen max-h-[100dvh] flex-1 transition-width duration-200 ease-in-out {$showSidebar
@@ -130,7 +129,7 @@
 				{#if $mobile}
 					<div class="{$showSidebar ? 'md:hidden' : ''} flex flex-none items-center self-end">
 						<Tooltip
-							content={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
+							content={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
 							interactive={true}
 						>
 							<button
@@ -157,7 +156,7 @@
 							class="min-w-fit p-1.5 {$page.url.pathname.includes('/admin/users')
 								? ''
 								: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
-							href="/admin">{i18n.t('Users')}</a
+							href="/admin">{$i18n.t('Users')}</a
 						>
 
 						{#if $config?.features.enable_admin_analytics ?? true}
@@ -166,7 +165,7 @@
 								class="min-w-fit p-1.5 {$page.url.pathname.includes('/admin/analytics')
 									? ''
 									: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
-								href="/admin/analytics">{i18n.t('Analytics')}</a
+								href="/admin/analytics">{$i18n.t('Analytics')}</a
 							>
 						{/if}
 
@@ -175,7 +174,7 @@
 							class="min-w-fit p-1.5 {$page.url.pathname.includes('/admin/evaluations')
 								? ''
 								: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
-							href="/admin/evaluations">{i18n.t('Evaluations')}</a
+							href="/admin/evaluations">{$i18n.t('Evaluations')}</a
 						>
 
 						<a
@@ -183,7 +182,7 @@
 							class="min-w-fit p-1.5 {$page.url.pathname.includes('/admin/functions')
 								? ''
 								: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
-							href="/admin/functions">{i18n.t('Functions')}</a
+							href="/admin/functions">{$i18n.t('Functions')}</a
 						>
 
 						<a
@@ -191,7 +190,7 @@
 							class="min-w-fit p-1.5 {$page.url.pathname.includes('/admin/settings')
 								? ''
 								: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
-							href="/admin/settings">{i18n.t('Settings')}</a
+							href="/admin/settings">{$i18n.t('Settings')}</a
 						>
 					</div>
 				</div>

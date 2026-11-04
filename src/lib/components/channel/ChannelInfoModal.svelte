@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import type { Writable } from 'svelte/store';
@@ -20,7 +20,7 @@
 	export let show: any = false;
 	export let channel: any = null;
 
-	export let onUpdate = () => {};
+	export let onUpdate: any = () => {};
 
 	let showAddMembersModal = false;
 	const submitHandler = async () => {};
@@ -53,10 +53,10 @@
 		});
 
 		if (res) {
-			toast.success(i18n.t('Member removed successfully'));
+			toast.success($i18n.t('Member removed successfully'));
 			onUpdate();
 		} else {
-			toast.error(i18n.t('Failed to remove member'));
+			toast.error($i18n.t('Failed to remove member'));
 		}
 	};
 
@@ -80,7 +80,7 @@
 					<div class="flex items-center gap-0.5 shrink-0">
 						{#if channel?.type === 'dm'}
 							<div class=" text-left self-center overflow-hidden w-full line-clamp-1 flex-1">
-								{i18n.t('Direct Message')}
+								{$i18n.t('Direct Message')}
 							</div>
 						{:else}
 							<div class=" size-4 justify-center flex items-center">
@@ -149,7 +149,7 @@
 					<div class="flex items-center gap-0.5 shrink-0">
 						{#if channel?.type === 'dm'}
 							<div class=" text-left self-center overflow-hidden w-full line-clamp-1 flex-1">
-								{i18n.t('Direct Message')}
+								{$i18n.t('Direct Message')}
 							</div>
 						{:else}
 							<div class=" size-4 justify-center flex items-center">

@@ -10,7 +10,7 @@
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 
 	import type { Writable } from 'svelte/store';
-	
+
 	export let overlay: any = false;
 	export let chatId: string | null = null;
 

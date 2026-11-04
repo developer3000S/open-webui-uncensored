@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Fuse from 'fuse.js';
 
@@ -13,10 +13,10 @@
 
 	import type { Writable } from 'svelte/store';
 	export let query: any = '';
-	export let onSelect = (e: any) => {};
+	export let onSelect: any = (e: any) => {};
 
 	let selectedIdx = 0;
-	let filteredItems: any[] = [];
+	export let filteredItems: any[] = [];
 
 	let fuse = new Fuse(
 		$models
@@ -63,7 +63,7 @@
 </script>
 
 <div class="px-2 text-xs text-gray-500 py-1">
-	{i18n.t('Models')}
+	{$i18n.t('Models')}
 </div>
 
 {#if filteredItems.length > 0}
@@ -85,7 +85,7 @@
 			>
 				<div class="flex text-black dark:text-gray-100 line-clamp-1">
 					<img
-						src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${model.id}&lang=${$language}`}
+						src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${model.id}&lang=${$i18n.language}`}
 						alt={model?.name ?? model.id}
 						class="rounded-full size-5 items-center mr-2"
 						on:error={(e: any) => {

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { WEBUI_BASE_URL } from '$lib/constants';
 	import emojiShortCodes from '$lib/emoji-shortcodes.json';
@@ -10,7 +10,7 @@
 	import type { Writable } from 'svelte/store';
 
 	export let query: any = '';
-	export let onSelect = (e: any) => {};
+	export let onSelect: any = (e: any) => {};
 
 	let selectedIdx = 0;
 	export let filteredItems: any = [];
@@ -67,7 +67,7 @@
 
 {#if filteredItems.length > 0}
 	<div class="px-2 text-xs text-gray-500 py-1">
-		{i18n.t('Emojis')}
+		{$i18n.t('Emojis')}
 	</div>
 
 	{#each filteredItems as emoji, emojiIdx}
@@ -102,7 +102,7 @@
 
 {#if filteredItems.length > 0}
 	<div class="px-2 text-xs text-gray-500 py-1">
-		{i18n.t('Emojis')}
+		{$i18n.t('Emojis')}
 	</div>
 
 	{#each filteredItems as emoji, emojiIdx}

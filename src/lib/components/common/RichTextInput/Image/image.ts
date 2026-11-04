@@ -25,6 +25,11 @@ export interface ImageOptions {
 	HTMLAttributes: Record<string, any>;
 }
 
+export interface EditorImageFile {
+	id: string;
+	url?: string;
+}
+
 export interface SetImageOptions {
 	src: string;
 	alt?: string;
@@ -133,7 +138,7 @@ export const Image = Node.create<ImageOptions>({
 
 			img.classList.add('rounded-md', 'max-h-72', 'w-fit', 'object-contain');
 
-			const editorFiles = editor.storage?.files || [];
+			const editorFiles = (editor.storage as { files?: EditorImageFile[] })?.files || [];
 
 			if (editorFiles && node.attrs.src.startsWith('data://')) {
 				const file = editorFiles.find((f) => f.id === fileId);
@@ -150,7 +155,7 @@ export const Image = Node.create<ImageOptions>({
 			img.setAttribute('title', node.attrs.title || '');
 
 			img.addEventListener('data', (e) => {
-				const files = e?.files || [];
+				const files = (e as Event & { files?: EditorImageFile[] })?.files || [];
 				if (files && node.attrs.src.startsWith('data://')) {
 					const file = editorFiles.find((f) => f.id === fileId);
 					if (file) {

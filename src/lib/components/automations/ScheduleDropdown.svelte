@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Dropdown from '$lib/components/common/Dropdown.svelte';
 	import type { Writable } from 'svelte/store';
@@ -24,22 +24,22 @@
 	let showDropdown = false;
 
 	$: FREQUENCIES = [
-		{ key: 'ONCE', label: i18n.t('Once') },
-		{ key: 'HOURLY', label: i18n.t('Hourly') },
-		{ key: 'DAILY', label: i18n.t('Daily') },
-		{ key: 'WEEKLY', label: i18n.t('Weekly') },
-		{ key: 'MONTHLY', label: i18n.t('Monthly') },
-		{ key: 'CUSTOM', label: i18n.t('Custom') }
+		{ key: 'ONCE', label: $i18n.t('Once') },
+		{ key: 'HOURLY', label: $i18n.t('Hourly') },
+		{ key: 'DAILY', label: $i18n.t('Daily') },
+		{ key: 'WEEKLY', label: $i18n.t('Weekly') },
+		{ key: 'MONTHLY', label: $i18n.t('Monthly') },
+		{ key: 'CUSTOM', label: $i18n.t('Custom') }
 	];
 
 	$: DAYS = [
-		{ key: 'MO', label: i18n.t('Mo', { context: 'day_of_week' }) },
-		{ key: 'TU', label: i18n.t('Tu', { context: 'day_of_week' }) },
-		{ key: 'WE', label: i18n.t('We', { context: 'day_of_week' }) },
-		{ key: 'TH', label: i18n.t('Th', { context: 'day_of_week' }) },
-		{ key: 'FR', label: i18n.t('Fr', { context: 'day_of_week' }) },
-		{ key: 'SA', label: i18n.t('Sa', { context: 'day_of_week' }) },
-		{ key: 'SU', label: i18n.t('Su', { context: 'day_of_week' }) }
+		{ key: 'MO', label: $i18n.t('Mo', { context: 'day_of_week' }) },
+		{ key: 'TU', label: $i18n.t('Tu', { context: 'day_of_week' }) },
+		{ key: 'WE', label: $i18n.t('We', { context: 'day_of_week' }) },
+		{ key: 'TH', label: $i18n.t('Th', { context: 'day_of_week' }) },
+		{ key: 'FR', label: $i18n.t('Fr', { context: 'day_of_week' }) },
+		{ key: 'SA', label: $i18n.t('Sa', { context: 'day_of_week' }) },
+		{ key: 'SU', label: $i18n.t('Su', { context: 'day_of_week' }) }
 	];
 
 	let lastVisualFrequency = 'DAILY';
@@ -194,7 +194,7 @@
 		class="rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 flex flex-col bg-white dark:bg-gray-850 w-48 p-1"
 	>
 		<div class="px-2 text-xs text-gray-500 pt-1">
-			{i18n.t('Schedule')}
+			{$i18n.t('Schedule')}
 		</div>
 
 		<div class="px-1.5 py-0.5">
@@ -245,7 +245,7 @@
 					</div>
 				{:else}
 					<div class="flex items-center gap-1.5">
-						<span class="text-xs text-gray-500 mr-0.5">{i18n.t('Time')}</span>
+						<span class="text-xs text-gray-500 mr-0.5">{$i18n.t('Time')}</span>
 						<input
 							type="time"
 							value={`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`}
@@ -263,7 +263,7 @@
 
 				{#if frequency === 'MONTHLY'}
 					<div class="flex items-center gap-1.5">
-						<span class="text-xs text-gray-500">{i18n.t('Day')}</span>
+						<span class="text-xs text-gray-500">{$i18n.t('Day')}</span>
 						<input
 							type="number"
 							bind:value={monthDay}
@@ -341,7 +341,7 @@
 		class="rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 flex flex-col bg-white dark:bg-gray-850 w-48 p-1"
 	>
 		<div class="px-2 text-xs text-gray-500 pt-1">
-			{i18n.t('Schedule')}
+			{$i18n.t('Schedule')}
 		</div>
 
 		<div class="px-1.5 py-0.5">
@@ -392,7 +392,7 @@
 					</div>
 				{:else}
 					<div class="flex items-center gap-1.5">
-						<span class="text-xs text-gray-500 mr-0.5">{i18n.t('Time')}</span>
+						<span class="text-xs text-gray-500 mr-0.5">{$i18n.t('Time')}</span>
 						<input
 							type="time"
 							value={`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`}
@@ -410,7 +410,7 @@
 
 				{#if frequency === 'MONTHLY'}
 					<div class="flex items-center gap-1.5">
-						<span class="text-xs text-gray-500">{i18n.t('Day')}</span>
+						<span class="text-xs text-gray-500">{$i18n.t('Day')}</span>
 						<input
 							type="number"
 							bind:value={monthDay}

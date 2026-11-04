@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import CodeEditor from './CodeEditor.svelte';
 	import Drawer from './Drawer.svelte';
@@ -15,6 +15,9 @@
 		onChange = () => {},
 		onSave = () => {}
 	} = $props();
+
+	const onChangeHandler: any = onChange;
+	const onSaveHandler: any = onSave;
 
 	let boilerplate = ``;
 
@@ -34,7 +37,7 @@
 			class=" sticky top-0 z-30 flex justify-between bg-white px-4.5 pt-3 pb-3 dark:bg-gray-900 dark:text-gray-100"
 		>
 			<div class=" font-primary self-center text-lg font-medium">
-				{i18n.t('Code Editor')}
+				{$i18n.t('Code Editor')}
 			</div>
 			<button
 				class="self-center"
@@ -60,7 +63,14 @@
 			class="flex h-full w-full flex-1 flex-col md:flex-row md:space-x-4 dark:text-gray-200 overflow-y-auto"
 		>
 			<div class=" flex h-full w-full flex-col sm:flex-row sm:justify-center sm:space-x-6">
-				<CodeEditor bind:this={codeEditor} {value} {boilerplate} {lang} {onChange} {onSave} />
+				<CodeEditor
+					bind:this={codeEditor}
+					{value}
+					{boilerplate}
+					{lang}
+					onChange={onChangeHandler}
+					onSave={onSaveHandler}
+				/>
 			</div>
 		</div>
 	</div>
@@ -72,7 +82,7 @@
 			class=" sticky top-0 z-30 flex justify-between bg-white px-4.5 pt-3 pb-3 dark:bg-gray-900 dark:text-gray-100"
 		>
 			<div class=" font-primary self-center text-lg font-medium">
-				{i18n.t('Code Editor')}
+				{$i18n.t('Code Editor')}
 			</div>
 			<button
 				class="self-center"
@@ -98,7 +108,14 @@
 			class="flex h-full w-full flex-1 flex-col md:flex-row md:space-x-4 dark:text-gray-200 overflow-y-auto"
 		>
 			<div class=" flex h-full w-full flex-col sm:flex-row sm:justify-center sm:space-x-6">
-				<CodeEditor bind:this={codeEditor} {value} {boilerplate} {lang} {onChange} {onSave} />
+				<CodeEditor
+					bind:this={codeEditor}
+					{value}
+					{boilerplate}
+					{lang}
+					onChange={onChangeHandler}
+					onSave={onSaveHandler}
+				/>
 			</div>
 		</div>
 	</div>

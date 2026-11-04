@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 
@@ -35,6 +35,7 @@
 
 	let loaded = false;
 
+	// @ts-ignore
 	onMount(async () => {
 		if ($user?.role !== 'admin') {
 			await goto('/');
@@ -45,7 +46,7 @@
 		const containerElement = document.getElementById('users-tabs-container');
 
 		if (containerElement) {
-			containerElement.addEventListener('wheel', (event: any)  => {
+			containerElement.addEventListener('wheel', (event: any) => {
 				if (event.deltaY !== 0) {
 					// Adjust horizontal scroll position based on vertical scroll
 					containerElement.scrollLeft += event.deltaY;
@@ -84,7 +85,7 @@
 					/>
 				</svg>
 			</div>
-			<div class=" self-center">{i18n.t('Overview')}</div>
+			<div class=" self-center">{$i18n.t('Overview')}</div>
 		</a>
 
 		<a
@@ -108,7 +109,7 @@
 					/>
 				</svg>
 			</div>
-			<div class=" self-center">{i18n.t('Groups')}</div>
+			<div class=" self-center">{$i18n.t('Groups')}</div>
 		</a>
 	</div>
 
@@ -147,7 +148,7 @@
 					/>
 				</svg>
 			</div>
-			<div class=" self-center">{i18n.t('Overview')}</div>
+			<div class=" self-center">{$i18n.t('Overview')}</div>
 		</a>
 
 		<a
@@ -171,7 +172,7 @@
 					/>
 				</svg>
 			</div>
-			<div class=" self-center">{i18n.t('Groups')}</div>
+			<div class=" self-center">{$i18n.t('Groups')}</div>
 		</a>
 	</div>
 

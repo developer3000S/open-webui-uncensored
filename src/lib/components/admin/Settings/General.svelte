@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import DOMPurify from 'dompurify';
 	import { v4 as uuidv4 } from 'uuid';
@@ -22,7 +22,7 @@
 
 	import type { Writable } from 'svelte/store';
 
-	export let saveHandler: Function;
+	export let saveHandler: any;
 
 	let updateAvailable = false;
 	let version = {
@@ -36,7 +36,7 @@
 
 	const checkForVersionUpdates = async () => {
 		updateAvailable = null;
-		version = await getVersionUpdates(localStorage.token).catch(async (error)=> {
+		version = await getVersionUpdates(localStorage.token).catch(async (error) => {
 			return {
 				current: WEBUI_VERSION,
 				latest: WEBUI_VERSION
@@ -63,10 +63,11 @@
 		if (res) {
 			saveHandler();
 		} else {
-			toast.error(i18n.t('Failed to update settings'));
+			toast.error($i18n.t('Failed to update settings'));
 		}
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		adminConfig = await getAdminConfig(localStorage.token);
 
@@ -84,14 +85,14 @@
 		{#if adminConfig !== null}
 			<div class="">
 				<div class="mb-3.5">
-					<div class=" mt-0.5 mb-2.5 text-base font-medium">{i18n.t('General')}</div>
+					<div class=" mt-0.5 mb-2.5 text-base font-medium">{$i18n.t('General')}</div>
 
 					<hr class=" border-gray-100/30 dark:border-gray-850/30 my-2" />
 
 					<div class="mb-2.5">
 						<div class=" mb-1 text-xs font-medium flex space-x-2 items-center">
 							<div>
-								{i18n.t('Version')}
+								{$i18n.t('Version')}
 							</div>
 						</div>
 						<div class="flex w-full justify-between items-center">
@@ -107,10 +108,10 @@
 											target="_blank"
 										>
 											{updateAvailable === null
-												? i18n.t('Checking for updates...')
+												? $i18n.t('Checking for updates...')
 												: updateAvailable
-													? `(v${version.latest} ${i18n.t('available!')})`
-													: i18n.t('(latest)')}
+													? `(v${version.latest} ${$i18n.t('available!')})`
+													: $i18n.t('(latest)')}
 										</a>
 									{/if}
 								</div>
@@ -122,7 +123,7 @@
 										showChangelog.set(true);
 									}}
 								>
-									<div>{i18n.t("See what's new")}</div>
+									<div>{$i18n.t("See what's new")}</div>
 								</button>
 							</div>
 
@@ -134,7 +135,7 @@
 										checkForVersionUpdates();
 									}}
 								>
-									{i18n.t('Check for updates')}
+									{$i18n.t('Check for updates')}
 								</button>
 							{/if}
 						</div>
@@ -144,10 +145,10 @@
 						<div class="flex w-full justify-between items-center">
 							<div class="text-xs pr-2">
 								<div class="">
-									{i18n.t('Help')}
+									{$i18n.t('Help')}
 								</div>
 								<div class=" text-xs text-gray-500">
-									{i18n.t('Discover how to use Open WebUI and seek support from the community.')}
+									{$i18n.t('Discover how to use Open WebUI and seek support from the community.')}
 								</div>
 							</div>
 
@@ -156,7 +157,7 @@
 								href="https://docs.openwebui.com/"
 								target="_blank"
 							>
-								{i18n.t('Documentation')}
+								{$i18n.t('Documentation')}
 							</a>
 						</div>
 
@@ -190,7 +191,7 @@
 						<div class="flex w-full justify-between items-center">
 							<div class="text-xs pr-2">
 								<div class="">
-									{i18n.t('License')}
+									{$i18n.t('License')}
 								</div>
 
 								{#if $config?.license_metadata}
@@ -224,7 +225,7 @@
 										target="_blank"
 									>
 										<span class="text-gray-500">
-											{i18n.t(
+											{$i18n.t(
 												'Upgrade to a licensed plan for enhanced capabilities, including custom theming and branding, and dedicated support.'
 											)}
 										</span>
@@ -235,34 +236,34 @@
 							<!-- <button
 								class="flex-shrink-0 text-xs px-3 py-1.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 transition rounded-lg font-medium"
 							>
-								{i18n.t('Activate')}
+								{$i18n.t('Activate')}
 							</button> -->
 						</div>
 					</div>
 				</div>
 
 				<div class="mb-3">
-					<div class=" mt-0.5 mb-2.5 text-base font-medium">{i18n.t('Features')}</div>
+					<div class=" mt-0.5 mb-2.5 text-base font-medium">{$i18n.t('Features')}</div>
 
 					<hr class=" border-gray-100/30 dark:border-gray-850/30 my-2" />
 
 					<div class="mb-2.5 flex w-full items-center justify-between pr-2">
 						<div class=" self-center text-xs font-medium">
-							{i18n.t('Enable Community Sharing')}
+							{$i18n.t('Enable Community Sharing')}
 						</div>
 
 						<Switch bind:state={adminConfig.ENABLE_COMMUNITY_SHARING} />
 					</div>
 
 					<div class="mb-2.5 flex w-full items-center justify-between pr-2">
-						<div class=" self-center text-xs font-medium">{i18n.t('Enable Message Rating')}</div>
+						<div class=" self-center text-xs font-medium">{$i18n.t('Enable Message Rating')}</div>
 
 						<Switch bind:state={adminConfig.ENABLE_MESSAGE_RATING} />
 					</div>
 
 					<div class="mb-2.5 flex w-full items-center justify-between pr-2">
 						<div class=" self-center text-xs font-medium">
-							{i18n.t('Folders')}
+							{$i18n.t('Folders')}
 						</div>
 
 						<Switch bind:state={adminConfig.ENABLE_FOLDERS} />
@@ -272,7 +273,7 @@
 						<div class="mb-2.5 w-full justify-between">
 							<div class="flex w-full justify-between">
 								<div class=" self-center text-xs font-medium">
-									{i18n.t('Folder Max File Count')}
+									{$i18n.t('Folder Max File Count')}
 								</div>
 							</div>
 
@@ -281,20 +282,20 @@
 									class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 									type="number"
 									min="0"
-									placeholder={i18n.t('Leave empty for unlimited')}
+									placeholder={$i18n.t('Leave empty for unlimited')}
 									bind:value={adminConfig.FOLDER_MAX_FILE_COUNT}
 								/>
 							</div>
 
 							<div class="mt-2 text-xs text-gray-400 dark:text-gray-500">
-								{i18n.t('Maximum number of files allowed per folder.')}
+								{$i18n.t('Maximum number of files allowed per folder.')}
 							</div>
 						</div>
 					{/if}
 
 					<div class="mb-2.5 flex w-full items-center justify-between pr-2">
 						<div class=" self-center text-xs font-medium">
-							{i18n.t('Memories')}
+							{$i18n.t('Memories')}
 						</div>
 
 						<Switch bind:state={adminConfig.ENABLE_MEMORIES} />
@@ -303,7 +304,7 @@
 					{#if adminConfig.ENABLE_MEMORIES}
 						<div class="mb-2.5 flex w-full items-center justify-between pr-2 pl-4">
 							<div class=" self-center text-xs font-medium text-gray-500 dark:text-gray-400">
-								{i18n.t('Memory System Context')}
+								{$i18n.t('Memory System Context')}
 							</div>
 
 							<Switch bind:state={adminConfig.ENABLE_MEMORY_SYSTEM_CONTEXT} />
@@ -312,7 +313,7 @@
 
 					<div class="mb-2.5 flex w-full items-center justify-between pr-2">
 						<div class=" self-center text-xs font-medium">
-							{i18n.t('Notes')}
+							{$i18n.t('Notes')}
 						</div>
 
 						<Switch bind:state={adminConfig.ENABLE_NOTES} />
@@ -320,7 +321,7 @@
 
 					<div class="mb-2.5 flex w-full items-center justify-between pr-2">
 						<div class=" self-center text-xs font-medium">
-							{i18n.t('Channels')}
+							{$i18n.t('Channels')}
 						</div>
 
 						<Switch bind:state={adminConfig.ENABLE_CHANNELS} />
@@ -328,7 +329,7 @@
 
 					<div class="mb-2.5 flex w-full items-center justify-between pr-2">
 						<div class=" self-center text-xs font-medium">
-							{i18n.t('Calendar')}
+							{$i18n.t('Calendar')}
 						</div>
 
 						<Switch bind:state={adminConfig.ENABLE_CALENDAR} />
@@ -336,7 +337,7 @@
 
 					<div class="mb-2.5 flex w-full items-center justify-between pr-2">
 						<div class=" self-center text-xs font-medium">
-							{i18n.t('Automations')}
+							{$i18n.t('Automations')}
 						</div>
 
 						<Switch bind:state={adminConfig.ENABLE_AUTOMATIONS} />
@@ -344,7 +345,7 @@
 
 					<div class="mb-2.5 flex w-full items-center justify-between pr-2">
 						<div class=" self-center text-xs font-medium">
-							{i18n.t('User Webhooks')}
+							{$i18n.t('User Webhooks')}
 						</div>
 
 						<Switch bind:state={adminConfig.ENABLE_USER_WEBHOOKS} />
@@ -352,7 +353,7 @@
 
 					<div class="mb-2.5 flex w-full items-center justify-between pr-2">
 						<div class=" self-center text-xs font-medium">
-							{i18n.t('User Status')}
+							{$i18n.t('User Status')}
 						</div>
 
 						<Switch bind:state={adminConfig.ENABLE_USER_STATUS} />
@@ -360,17 +361,17 @@
 
 					<div class="mb-2.5">
 						<div class=" self-center text-xs font-medium mb-2">
-							{i18n.t('Response Watermark')}
+							{$i18n.t('Response Watermark')}
 						</div>
 						<Textarea
-							placeholder={i18n.t('Enter a watermark for the response. Leave empty for none.')}
+							placeholder={$i18n.t('Enter a watermark for the response. Leave empty for none.')}
 							bind:value={adminConfig.RESPONSE_WATERMARK}
 						/>
 					</div>
 
 					<div class="mb-2.5 w-full justify-between">
 						<div class="flex w-full justify-between">
-							<div class=" self-center text-xs font-medium">{i18n.t('WebUI URL')}</div>
+							<div class=" self-center text-xs font-medium">{$i18n.t('WebUI URL')}</div>
 						</div>
 
 						<div class="flex mt-2 space-x-2">
@@ -383,7 +384,7 @@
 						</div>
 
 						<div class="mt-2 text-xs text-gray-400 dark:text-gray-500">
-							{i18n.t(
+							{$i18n.t(
 								'Enter the public URL of your WebUI. This URL will be used to generate links in the notifications.'
 							)}
 						</div>
@@ -393,18 +394,18 @@
 				<Events />
 
 				<div class="mb-3.5">
-					<div class=" mt-0.5 mb-2.5 text-base font-medium">{i18n.t('UI')}</div>
+					<div class=" mt-0.5 mb-2.5 text-base font-medium">{$i18n.t('UI')}</div>
 
 					<hr class=" border-gray-100/30 dark:border-gray-850/30 my-2" />
 
 					<div class="mb-2.5">
 						<div class="flex w-full justify-between">
 							<div class=" self-center text-xs">
-								{i18n.t('Banners')}
+								{$i18n.t('Banners')}
 							</div>
 
 							<button
-								aria-label={i18n.t('Add')}
+								aria-label={$i18n.t('Add')}
 								class="p-1 px-3 text-xs flex rounded-sm transition"
 								type="button"
 								on:click={() => {
@@ -448,7 +449,7 @@
 			class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 			type="submit"
 		>
-			{i18n.t('Save')}
+			{$i18n.t('Save')}
 		</button>
 	</div>
 </form>
@@ -463,14 +464,14 @@
 		{#if adminConfig !== null}
 			<div class="">
 				<div class="mb-3.5">
-					<div class=" mt-0.5 mb-2.5 text-base font-medium">{i18n.t('General')}</div>
+					<div class=" mt-0.5 mb-2.5 text-base font-medium">{$i18n.t('General')}</div>
 
 					<hr class=" border-gray-100/30 dark:border-gray-850/30 my-2" />
 
 					<div class="mb-2.5">
 						<div class=" mb-1 text-xs font-medium flex space-x-2 items-center">
 							<div>
-								{i18n.t('Version')}
+								{$i18n.t('Version')}
 							</div>
 						</div>
 						<div class="flex w-full justify-between items-center">
@@ -486,10 +487,10 @@
 											target="_blank"
 										>
 											{updateAvailable === null
-												? i18n.t('Checking for updates...')
+												? $i18n.t('Checking for updates...')
 												: updateAvailable
-													? `(v${version.latest} ${i18n.t('available!')})`
-													: i18n.t('(latest)')}
+													? `(v${version.latest} ${$i18n.t('available!')})`
+													: $i18n.t('(latest)')}
 										</a>
 									{/if}
 								</div>
@@ -501,7 +502,7 @@
 										showChangelog.set(true);
 									}}
 								>
-									<div>{i18n.t("See what's new")}</div>
+									<div>{$i18n.t("See what's new")}</div>
 								</button>
 							</div>
 
@@ -513,7 +514,7 @@
 										checkForVersionUpdates();
 									}}
 								>
-									{i18n.t('Check for updates')}
+									{$i18n.t('Check for updates')}
 								</button>
 							{/if}
 						</div>
@@ -523,10 +524,10 @@
 						<div class="flex w-full justify-between items-center">
 							<div class="text-xs pr-2">
 								<div class="">
-									{i18n.t('Help')}
+									{$i18n.t('Help')}
 								</div>
 								<div class=" text-xs text-gray-500">
-									{i18n.t('Discover how to use Open WebUI and seek support from the community.')}
+									{$i18n.t('Discover how to use Open WebUI and seek support from the community.')}
 								</div>
 							</div>
 
@@ -535,7 +536,7 @@
 								href="https://docs.openwebui.com/"
 								target="_blank"
 							>
-								{i18n.t('Documentation')}
+								{$i18n.t('Documentation')}
 							</a>
 						</div>
 
@@ -569,7 +570,7 @@
 						<div class="flex w-full justify-between items-center">
 							<div class="text-xs pr-2">
 								<div class="">
-									{i18n.t('License')}
+									{$i18n.t('License')}
 								</div>
 
 								{#if $config?.license_metadata}
@@ -603,7 +604,7 @@
 										target="_blank"
 									>
 										<span class="text-gray-500">
-											{i18n.t(
+											{$i18n.t(
 												'Upgrade to a licensed plan for enhanced capabilities, including custom theming and branding, and dedicated support.'
 											)}
 										</span>
@@ -614,34 +615,34 @@
 							<!-- <button
 								class="flex-shrink-0 text-xs px-3 py-1.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 transition rounded-lg font-medium"
 							>
-								{i18n.t('Activate')}
+								{$i18n.t('Activate')}
 							</button> -->
 						</div>
 					</div>
 				</div>
 
 				<div class="mb-3">
-					<div class=" mt-0.5 mb-2.5 text-base font-medium">{i18n.t('Features')}</div>
+					<div class=" mt-0.5 mb-2.5 text-base font-medium">{$i18n.t('Features')}</div>
 
 					<hr class=" border-gray-100/30 dark:border-gray-850/30 my-2" />
 
 					<div class="mb-2.5 flex w-full items-center justify-between pr-2">
 						<div class=" self-center text-xs font-medium">
-							{i18n.t('Enable Community Sharing')}
+							{$i18n.t('Enable Community Sharing')}
 						</div>
 
 						<Switch bind:state={adminConfig.ENABLE_COMMUNITY_SHARING} />
 					</div>
 
 					<div class="mb-2.5 flex w-full items-center justify-between pr-2">
-						<div class=" self-center text-xs font-medium">{i18n.t('Enable Message Rating')}</div>
+						<div class=" self-center text-xs font-medium">{$i18n.t('Enable Message Rating')}</div>
 
 						<Switch bind:state={adminConfig.ENABLE_MESSAGE_RATING} />
 					</div>
 
 					<div class="mb-2.5 flex w-full items-center justify-between pr-2">
 						<div class=" self-center text-xs font-medium">
-							{i18n.t('Folders')}
+							{$i18n.t('Folders')}
 						</div>
 
 						<Switch bind:state={adminConfig.ENABLE_FOLDERS} />
@@ -651,7 +652,7 @@
 						<div class="mb-2.5 w-full justify-between">
 							<div class="flex w-full justify-between">
 								<div class=" self-center text-xs font-medium">
-									{i18n.t('Folder Max File Count')}
+									{$i18n.t('Folder Max File Count')}
 								</div>
 							</div>
 
@@ -660,20 +661,20 @@
 									class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 									type="number"
 									min="0"
-									placeholder={i18n.t('Leave empty for unlimited')}
+									placeholder={$i18n.t('Leave empty for unlimited')}
 									bind:value={adminConfig.FOLDER_MAX_FILE_COUNT}
 								/>
 							</div>
 
 							<div class="mt-2 text-xs text-gray-400 dark:text-gray-500">
-								{i18n.t('Maximum number of files allowed per folder.')}
+								{$i18n.t('Maximum number of files allowed per folder.')}
 							</div>
 						</div>
 					{/if}
 
 					<div class="mb-2.5 flex w-full items-center justify-between pr-2">
 						<div class=" self-center text-xs font-medium">
-							{i18n.t('Memories')}
+							{$i18n.t('Memories')}
 						</div>
 
 						<Switch bind:state={adminConfig.ENABLE_MEMORIES} />
@@ -682,7 +683,7 @@
 					{#if adminConfig.ENABLE_MEMORIES}
 						<div class="mb-2.5 flex w-full items-center justify-between pr-2 pl-4">
 							<div class=" self-center text-xs font-medium text-gray-500 dark:text-gray-400">
-								{i18n.t('Memory System Context')}
+								{$i18n.t('Memory System Context')}
 							</div>
 
 							<Switch bind:state={adminConfig.ENABLE_MEMORY_SYSTEM_CONTEXT} />
@@ -691,7 +692,7 @@
 
 					<div class="mb-2.5 flex w-full items-center justify-between pr-2">
 						<div class=" self-center text-xs font-medium">
-							{i18n.t('Notes')}
+							{$i18n.t('Notes')}
 						</div>
 
 						<Switch bind:state={adminConfig.ENABLE_NOTES} />
@@ -699,7 +700,7 @@
 
 					<div class="mb-2.5 flex w-full items-center justify-between pr-2">
 						<div class=" self-center text-xs font-medium">
-							{i18n.t('Channels')}
+							{$i18n.t('Channels')}
 						</div>
 
 						<Switch bind:state={adminConfig.ENABLE_CHANNELS} />
@@ -707,7 +708,7 @@
 
 					<div class="mb-2.5 flex w-full items-center justify-between pr-2">
 						<div class=" self-center text-xs font-medium">
-							{i18n.t('Calendar')}
+							{$i18n.t('Calendar')}
 						</div>
 
 						<Switch bind:state={adminConfig.ENABLE_CALENDAR} />
@@ -715,7 +716,7 @@
 
 					<div class="mb-2.5 flex w-full items-center justify-between pr-2">
 						<div class=" self-center text-xs font-medium">
-							{i18n.t('Automations')}
+							{$i18n.t('Automations')}
 						</div>
 
 						<Switch bind:state={adminConfig.ENABLE_AUTOMATIONS} />
@@ -723,7 +724,7 @@
 
 					<div class="mb-2.5 flex w-full items-center justify-between pr-2">
 						<div class=" self-center text-xs font-medium">
-							{i18n.t('User Webhooks')}
+							{$i18n.t('User Webhooks')}
 						</div>
 
 						<Switch bind:state={adminConfig.ENABLE_USER_WEBHOOKS} />
@@ -731,7 +732,7 @@
 
 					<div class="mb-2.5 flex w-full items-center justify-between pr-2">
 						<div class=" self-center text-xs font-medium">
-							{i18n.t('User Status')}
+							{$i18n.t('User Status')}
 						</div>
 
 						<Switch bind:state={adminConfig.ENABLE_USER_STATUS} />
@@ -739,17 +740,17 @@
 
 					<div class="mb-2.5">
 						<div class=" self-center text-xs font-medium mb-2">
-							{i18n.t('Response Watermark')}
+							{$i18n.t('Response Watermark')}
 						</div>
 						<Textarea
-							placeholder={i18n.t('Enter a watermark for the response. Leave empty for none.')}
+							placeholder={$i18n.t('Enter a watermark for the response. Leave empty for none.')}
 							bind:value={adminConfig.RESPONSE_WATERMARK}
 						/>
 					</div>
 
 					<div class="mb-2.5 w-full justify-between">
 						<div class="flex w-full justify-between">
-							<div class=" self-center text-xs font-medium">{i18n.t('WebUI URL')}</div>
+							<div class=" self-center text-xs font-medium">{$i18n.t('WebUI URL')}</div>
 						</div>
 
 						<div class="flex mt-2 space-x-2">
@@ -762,7 +763,7 @@
 						</div>
 
 						<div class="mt-2 text-xs text-gray-400 dark:text-gray-500">
-							{i18n.t(
+							{$i18n.t(
 								'Enter the public URL of your WebUI. This URL will be used to generate links in the notifications.'
 							)}
 						</div>
@@ -772,18 +773,18 @@
 				<Events />
 
 				<div class="mb-3.5">
-					<div class=" mt-0.5 mb-2.5 text-base font-medium">{i18n.t('UI')}</div>
+					<div class=" mt-0.5 mb-2.5 text-base font-medium">{$i18n.t('UI')}</div>
 
 					<hr class=" border-gray-100/30 dark:border-gray-850/30 my-2" />
 
 					<div class="mb-2.5">
 						<div class="flex w-full justify-between">
 							<div class=" self-center text-xs">
-								{i18n.t('Banners')}
+								{$i18n.t('Banners')}
 							</div>
 
 							<button
-								aria-label={i18n.t('Add')}
+								aria-label={$i18n.t('Add')}
 								class="p-1 px-3 text-xs flex rounded-sm transition"
 								type="button"
 								on:click={() => {
@@ -827,7 +828,7 @@
 			class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 			type="submit"
 		>
-			{i18n.t('Save')}
+			{$i18n.t('Save')}
 		</button>
 	</div>
 </form>

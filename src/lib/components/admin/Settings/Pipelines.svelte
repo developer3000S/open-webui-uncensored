@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { v4 as uuidv4 } from 'uuid';
 
@@ -23,7 +23,7 @@
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import Switch from '$lib/components/common/Switch.svelte';
 
-	export let saveHandler: Function;
+	export let saveHandler: any;
 
 	let downloading = false;
 	let uploading = false;
@@ -56,12 +56,12 @@
 				pipeline.id,
 				valves,
 				selectedPipelinesUrlIdx
-			).catch(async (error)=> {
+			).catch(async (error) => {
 				toast.error(`${error}`);
 			});
 
 			if (res) {
-				toast.success(i18n.t('Valves updated successfully'));
+				toast.success($i18n.t('Valves updated successfully'));
 				setPipelines();
 				models.set(
 					await getModels(
@@ -72,7 +72,7 @@
 				saveHandler();
 			}
 		} else {
-			toast.error(i18n.t('No valves to update'));
+			toast.error($i18n.t('No valves to update'));
 		}
 	};
 
@@ -122,13 +122,13 @@
 			localStorage.token,
 			pipelineDownloadUrl,
 			selectedPipelinesUrlIdx
-		).catch(async (error)=> {
+		).catch(async (error) => {
 			toast.error(`${error}`);
 			return null;
 		});
 
 		if (res) {
-			toast.success(i18n.t('Pipeline downloaded successfully'));
+			toast.success($i18n.t('Pipeline downloaded successfully'));
 			setPipelines();
 			models.set(
 				await getModels(
@@ -149,15 +149,16 @@
 
 			console.log(file);
 
-			const res = await uploadPipeline(localStorage.token, file, selectedPipelinesUrlIdx).catch(async (error)=> {
+			const res = await uploadPipeline(localStorage.token, file, selectedPipelinesUrlIdx).catch(
+				async (error) => {
 					console.error(error);
-					toast.error(i18n.t('Something went wrong :/'));
+					toast.error($i18n.t('Something went wrong :/'));
 					return null;
 				}
 			);
 
 			if (res) {
-				toast.success(i18n.t('Pipeline downloaded successfully'));
+				toast.success($i18n.t('Pipeline downloaded successfully'));
 				setPipelines();
 				models.set(
 					await getModels(
@@ -167,7 +168,7 @@
 				);
 			}
 		} else {
-			toast.error(i18n.t('No file selected'));
+			toast.error($i18n.t('No file selected'));
 		}
 
 		pipelineFiles = null;
@@ -185,13 +186,13 @@
 			localStorage.token,
 			pipelines[selectedPipelineIdx].id,
 			selectedPipelinesUrlIdx
-		).catch(async (error)=> {
+		).catch(async (error) => {
 			toast.error(`${error}`);
 			return null;
 		});
 
 		if (res) {
-			toast.success(i18n.t('Pipeline deleted successfully'));
+			toast.success($i18n.t('Pipeline deleted successfully'));
 			setPipelines();
 			models.set(
 				await getModels(
@@ -202,6 +203,7 @@
 		}
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		PIPELINES_LIST = await getPipelinesList(localStorage.token);
 		console.log(PIPELINES_LIST);
@@ -224,7 +226,7 @@
 		{#if PIPELINES_LIST !== null}
 			<div class="flex w-full justify-between mb-2">
 				<div class=" self-center text-sm font-medium">
-					{i18n.t('Manage Pipelines')}
+					{$i18n.t('Manage Pipelines')}
 				</div>
 			</div>
 
@@ -235,14 +237,14 @@
 							<select
 								class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 								bind:value={selectedPipelinesUrlIdx}
-								placeholder={i18n.t('Select a pipeline url')}
+								placeholder={$i18n.t('Select a pipeline url')}
 								on:change={async () => {
 									await tick();
 									await setPipelines();
 								}}
 							>
 								<option value="" selected disabled class="bg-gray-100 dark:bg-gray-700"
-									>{i18n.t('Select a pipeline url')}</option
+									>{$i18n.t('Select a pipeline url')}</option
 								>
 
 								{#each PIPELINES_LIST as pipelines, idx}
@@ -257,7 +259,7 @@
 
 				<div class=" my-2">
 					<div class=" mb-2 text-sm font-medium">
-						{i18n.t('Upload Pipeline')}
+						{$i18n.t('Upload Pipeline')}
 					</div>
 					<div class="flex w-full">
 						<div class="flex-1 mr-2">
@@ -279,7 +281,7 @@
 								{#if pipelineFiles}
 									{pipelineFiles.length > 0 ? `${pipelineFiles.length}` : ''} pipeline(s) selected.
 								{:else}
-									{i18n.t('Click here to select a py file.')}
+									{$i18n.t('Click here to select a py file.')}
 								{/if}
 							</button>
 						</div>
@@ -310,7 +312,7 @@
 													transform: rotate(360deg);
 												}
 											}
-										
+
 											.spinner_ajPY {
 												transform-origin: center;
 												animation: spinner_AtaB 0.75s infinite linear;
@@ -321,7 +323,7 @@
 													transform: rotate(360deg);
 												}
 											}
-										
+
 											.spinner_ajPY {
 												transform-origin: center;
 												animation: spinner_AtaB 0.75s infinite linear;
@@ -332,7 +334,7 @@
 													transform: rotate(360deg);
 												}
 											}
-										
+
 											.spinner_ajPY {
 												transform-origin: center;
 												animation: spinner_AtaB 0.75s infinite linear;
@@ -375,13 +377,13 @@
 
 				<div class=" my-2">
 					<div class=" mb-2 text-sm font-medium">
-						{i18n.t('Install from Github URL')}
+						{$i18n.t('Install from Github URL')}
 					</div>
 					<div class="flex w-full">
 						<div class="flex-1 mr-2">
 							<input
 								class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
-								placeholder={i18n.t('Enter Github Raw URL')}
+								placeholder={$i18n.t('Enter Github Raw URL')}
 								bind:value={pipelineDownloadUrl}
 							/>
 						</div>
@@ -401,7 +403,6 @@
 										fill="currentColor"
 										xmlns="http://www.w3.org/2000/svg"
 									>
-										
 										<path
 											d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z"
 											opacity=".25"
@@ -431,10 +432,10 @@
 					</div>
 
 					<div class="mt-2 text-xs text-gray-500">
-						<span class=" font-medium dark:text-gray-200">{i18n.t('Warning:')}</span>
-						{i18n.t('Pipelines are a plugin system with arbitrary code execution —')}
+						<span class=" font-medium dark:text-gray-200">{$i18n.t('Warning:')}</span>
+						{$i18n.t('Pipelines are a plugin system with arbitrary code execution —')}
 						<span class=" font-medium dark:text-gray-400"
-							>{i18n.t("don't fetch random pipelines from sources you don't trust.")}</span
+							>{$i18n.t("don't fetch random pipelines from sources you don't trust.")}</span
 						>
 					</div>
 				</div>
@@ -445,7 +446,7 @@
 					{#if pipelines.length > 0}
 						<div class="flex w-full justify-between mb-2">
 							<div class=" self-center text-sm font-medium">
-								{i18n.t('Pipelines Valves')}
+								{$i18n.t('Pipelines Valves')}
 							</div>
 						</div>
 						<div class="space-y-1">
@@ -455,7 +456,7 @@
 										<select
 											class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 											bind:value={selectedPipelineIdx}
-											placeholder={i18n.t('Select a pipeline')}
+											placeholder={$i18n.t('Select a pipeline')}
 											on:change={async () => {
 												await tick();
 												await getValves(selectedPipelineIdx);
@@ -470,7 +471,7 @@
 									</div>
 
 									<button
-										aria-label={i18n.t('Delete')}
+										aria-label={$i18n.t('Delete')}
 										class="px-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-gray-850 dark:hover:bg-gray-800 dark:text-gray-100 rounded-lg transition"
 										on:click={() => {
 											deletePipelineHandler();
@@ -511,9 +512,9 @@
 														}}
 													>
 														{#if (valves[property] ?? null) === null}
-															<span class="ml-2 self-center"> {i18n.t('None')} </span>
+															<span class="ml-2 self-center"> {$i18n.t('None')} </span>
 														{:else}
-															<span class="ml-2 self-center"> {i18n.t('Custom')} </span>
+															<span class="ml-2 self-center"> {$i18n.t('Custom')} </span>
 														{/if}
 													</button>
 												</div>
@@ -536,7 +537,7 @@
 															{:else if (valves_spec.properties[property]?.type ?? null) === 'boolean'}
 																<div class="flex justify-between items-center">
 																	<div class="text-xs text-gray-500">
-																		{valves[property] ? i18n.t('Enabled') : i18n.t('Disabled')}
+																		{valves[property] ? $i18n.t('Enabled') : $i18n.t('Disabled')}
 																	</div>
 
 																	<div class=" pr-2">
@@ -562,12 +563,12 @@
 										<Spinner className="size-5" />
 									{/if}
 								{:else}
-									<div>{i18n.t('No valves')}</div>
+									<div>{$i18n.t('No valves')}</div>
 								{/if}
 							</div>
 						</div>
 					{:else if pipelines.length === 0}
-						<div>{i18n.t('Pipelines Not Detected')}</div>
+						<div>{$i18n.t('Pipelines Not Detected')}</div>
 					{/if}
 				{:else}
 					<div class="flex justify-center">
@@ -577,7 +578,7 @@
 					</div>
 				{/if}
 			{:else}
-				<div>{i18n.t('Pipelines Not Detected')}</div>
+				<div>{$i18n.t('Pipelines Not Detected')}</div>
 			{/if}
 		{:else}
 			<div class="flex justify-center h-full">
@@ -594,7 +595,7 @@
 				class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 				type="submit"
 			>
-				{i18n.t('Save')}
+				{$i18n.t('Save')}
 			</button>
 		</div>
 	{/if}
@@ -610,7 +611,7 @@
 		{#if PIPELINES_LIST !== null}
 			<div class="flex w-full justify-between mb-2">
 				<div class=" self-center text-sm font-medium">
-					{i18n.t('Manage Pipelines')}
+					{$i18n.t('Manage Pipelines')}
 				</div>
 			</div>
 
@@ -621,14 +622,14 @@
 							<select
 								class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 								bind:value={selectedPipelinesUrlIdx}
-								placeholder={i18n.t('Select a pipeline url')}
+								placeholder={$i18n.t('Select a pipeline url')}
 								on:change={async () => {
 									await tick();
 									await setPipelines();
 								}}
 							>
 								<option value="" selected disabled class="bg-gray-100 dark:bg-gray-700"
-									>{i18n.t('Select a pipeline url')}</option
+									>{$i18n.t('Select a pipeline url')}</option
 								>
 
 								{#each PIPELINES_LIST as pipelines, idx}
@@ -643,7 +644,7 @@
 
 				<div class=" my-2">
 					<div class=" mb-2 text-sm font-medium">
-						{i18n.t('Upload Pipeline')}
+						{$i18n.t('Upload Pipeline')}
 					</div>
 					<div class="flex w-full">
 						<div class="flex-1 mr-2">
@@ -665,7 +666,7 @@
 								{#if pipelineFiles}
 									{pipelineFiles.length > 0 ? `${pipelineFiles.length}` : ''} pipeline(s) selected.
 								{:else}
-									{i18n.t('Click here to select a py file.')}
+									{$i18n.t('Click here to select a py file.')}
 								{/if}
 							</button>
 						</div>
@@ -685,7 +686,6 @@
 										fill="currentColor"
 										xmlns="http://www.w3.org/2000/svg"
 									>
-										
 										<path
 											d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z"
 											opacity=".25"
@@ -717,13 +717,13 @@
 
 				<div class=" my-2">
 					<div class=" mb-2 text-sm font-medium">
-						{i18n.t('Install from Github URL')}
+						{$i18n.t('Install from Github URL')}
 					</div>
 					<div class="flex w-full">
 						<div class="flex-1 mr-2">
 							<input
 								class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
-								placeholder={i18n.t('Enter Github Raw URL')}
+								placeholder={$i18n.t('Enter Github Raw URL')}
 								bind:value={pipelineDownloadUrl}
 							/>
 						</div>
@@ -743,7 +743,6 @@
 										fill="currentColor"
 										xmlns="http://www.w3.org/2000/svg"
 									>
-										
 										<path
 											d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z"
 											opacity=".25"
@@ -773,10 +772,10 @@
 					</div>
 
 					<div class="mt-2 text-xs text-gray-500">
-						<span class=" font-medium dark:text-gray-200">{i18n.t('Warning:')}</span>
-						{i18n.t('Pipelines are a plugin system with arbitrary code execution —')}
+						<span class=" font-medium dark:text-gray-200">{$i18n.t('Warning:')}</span>
+						{$i18n.t('Pipelines are a plugin system with arbitrary code execution —')}
 						<span class=" font-medium dark:text-gray-400"
-							>{i18n.t("don't fetch random pipelines from sources you don't trust.")}</span
+							>{$i18n.t("don't fetch random pipelines from sources you don't trust.")}</span
 						>
 					</div>
 				</div>
@@ -787,7 +786,7 @@
 					{#if pipelines.length > 0}
 						<div class="flex w-full justify-between mb-2">
 							<div class=" self-center text-sm font-medium">
-								{i18n.t('Pipelines Valves')}
+								{$i18n.t('Pipelines Valves')}
 							</div>
 						</div>
 						<div class="space-y-1">
@@ -797,7 +796,7 @@
 										<select
 											class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 											bind:value={selectedPipelineIdx}
-											placeholder={i18n.t('Select a pipeline')}
+											placeholder={$i18n.t('Select a pipeline')}
 											on:change={async () => {
 												await tick();
 												await getValves(selectedPipelineIdx);
@@ -812,7 +811,7 @@
 									</div>
 
 									<button
-										aria-label={i18n.t('Delete')}
+										aria-label={$i18n.t('Delete')}
 										class="px-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-gray-850 dark:hover:bg-gray-800 dark:text-gray-100 rounded-lg transition"
 										on:click={() => {
 											deletePipelineHandler();
@@ -853,9 +852,9 @@
 														}}
 													>
 														{#if (valves[property] ?? null) === null}
-															<span class="ml-2 self-center"> {i18n.t('None')} </span>
+															<span class="ml-2 self-center"> {$i18n.t('None')} </span>
 														{:else}
-															<span class="ml-2 self-center"> {i18n.t('Custom')} </span>
+															<span class="ml-2 self-center"> {$i18n.t('Custom')} </span>
 														{/if}
 													</button>
 												</div>
@@ -878,7 +877,7 @@
 															{:else if (valves_spec.properties[property]?.type ?? null) === 'boolean'}
 																<div class="flex justify-between items-center">
 																	<div class="text-xs text-gray-500">
-																		{valves[property] ? i18n.t('Enabled') : i18n.t('Disabled')}
+																		{valves[property] ? $i18n.t('Enabled') : $i18n.t('Disabled')}
 																	</div>
 
 																	<div class=" pr-2">
@@ -904,12 +903,12 @@
 										<Spinner className="size-5" />
 									{/if}
 								{:else}
-									<div>{i18n.t('No valves')}</div>
+									<div>{$i18n.t('No valves')}</div>
 								{/if}
 							</div>
 						</div>
 					{:else if pipelines.length === 0}
-						<div>{i18n.t('Pipelines Not Detected')}</div>
+						<div>{$i18n.t('Pipelines Not Detected')}</div>
 					{/if}
 				{:else}
 					<div class="flex justify-center">
@@ -919,7 +918,7 @@
 					</div>
 				{/if}
 			{:else}
-				<div>{i18n.t('Pipelines Not Detected')}</div>
+				<div>{$i18n.t('Pipelines Not Detected')}</div>
 			{/if}
 		{:else}
 			<div class="flex justify-center h-full">
@@ -936,7 +935,7 @@
 				class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 				type="submit"
 			>
-				{i18n.t('Save')}
+				{$i18n.t('Save')}
 			</button>
 		</div>
 	{/if}

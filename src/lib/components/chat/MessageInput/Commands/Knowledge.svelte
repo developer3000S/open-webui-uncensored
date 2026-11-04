@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import dayjs from 'dayjs';
@@ -23,13 +23,13 @@
 	import type { Writable } from 'svelte/store';
 
 	export let query: any = '';
-	export let onSelect = (e: any) => {};
+	export let onSelect: any = (e: any) => {};
 
 	let selectedIdx = 0;
 	let items: any = [];
 	let searchDebounceTimer: ReturnType<typeof setTimeout>;
 
-	let filteredItems: any[] = [];
+	export let filteredItems: any[] = [];
 	$: filteredItems = [
 		...(query.startsWith('http')
 			? isYoutubeUrl(query)
@@ -94,14 +94,14 @@
 			.map((folder) => ({
 				...folder,
 				type: 'folder',
-				description: i18n.t('Folder'),
+				description: $i18n.t('Folder'),
 				title: folder.name
 			}))
 			.filter((folder) => folder.name.toLowerCase().includes(query.toLowerCase()));
 	};
 
 	const getKnowledgeItems = async () => {
-		const res = await searchKnowledgeBases(localStorage.token, query).catch(async ()=> {
+		const res = await searchKnowledgeBases(localStorage.token, query).catch(async () => {
 			return null;
 		});
 
@@ -116,7 +116,7 @@
 	};
 
 	const getKnowledgeFileItems = async () => {
-		const res = await searchKnowledgeFiles(localStorage.token, query).catch(async ()=> {
+		const res = await searchKnowledgeFiles(localStorage.token, query).catch(async () => {
 			return null;
 		});
 
@@ -132,6 +132,7 @@
 		}
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		if ($folders === null) {
 			await folders.set(await getFolders(localStorage.token));
@@ -146,11 +147,11 @@
 		{#if idx === 0 || item?.type !== items[idx - 1]?.type}
 			<div class="px-2 text-xs text-gray-500 py-1">
 				{#if item?.type === 'folder'}
-					{i18n.t('Folders')}
+					{$i18n.t('Folders')}
 				{:else if item?.type === 'collection'}
-					{i18n.t('Collections')}
+					{$i18n.t('Collections')}
 				{:else if item?.type === 'file'}
-					{i18n.t('Files')}
+					{$i18n.t('Files')}
 				{/if}
 			</div>
 		{/if}
@@ -177,11 +178,11 @@
 				<div class="  text-black dark:text-gray-100 flex items-center gap-1">
 					<Tooltip
 						content={item?.legacy
-							? i18n.t('Legacy')
+							? $i18n.t('Legacy')
 							: item?.type === 'file'
-								? `${item?.collection?.name} > ${i18n.t('File')}`
+								? `${item?.collection?.name} > ${$i18n.t('File')}`
 								: item?.type === 'collection'
-									? i18n.t('Collection')
+									? $i18n.t('Collection')
 									: ''}
 						placement="top"
 					>
@@ -217,13 +218,13 @@
 					});
 				} else {
 					toast.error(
-						i18n.t('Oops! Looks like the URL is invalid. Please double-check and try again.')
+						$i18n.t('Oops! Looks like the URL is invalid. Please double-check and try again.')
 					);
 				}
 			}}
 		>
 			<div class="  text-black dark:text-gray-100 line-clamp-1 flex items-center gap-1">
-				<Tooltip content={i18n.t('YouTube')} placement="top">
+				<Tooltip content={$i18n.t('YouTube')} placement="top">
 					<Youtube className="size-4" />
 				</Tooltip>
 
@@ -245,13 +246,13 @@
 					});
 				} else {
 					toast.error(
-						i18n.t('Oops! Looks like the URL is invalid. Please double-check and try again.')
+						$i18n.t('Oops! Looks like the URL is invalid. Please double-check and try again.')
 					);
 				}
 			}}
 		>
 			<div class="  text-black dark:text-gray-100 line-clamp-1 flex items-center gap-1">
-				<Tooltip content={i18n.t('Web')} placement="top">
+				<Tooltip content={$i18n.t('Web')} placement="top">
 					<GlobeAlt className="size-4" />
 				</Tooltip>
 
@@ -268,11 +269,11 @@
 		{#if idx === 0 || item?.type !== items[idx - 1]?.type}
 			<div class="px-2 text-xs text-gray-500 py-1">
 				{#if item?.type === 'folder'}
-					{i18n.t('Folders')}
+					{$i18n.t('Folders')}
 				{:else if item?.type === 'collection'}
-					{i18n.t('Collections')}
+					{$i18n.t('Collections')}
 				{:else if item?.type === 'file'}
-					{i18n.t('Files')}
+					{$i18n.t('Files')}
 				{/if}
 			</div>
 		{/if}
@@ -299,11 +300,11 @@
 				<div class="  text-black dark:text-gray-100 flex items-center gap-1">
 					<Tooltip
 						content={item?.legacy
-							? i18n.t('Legacy')
+							? $i18n.t('Legacy')
 							: item?.type === 'file'
-								? `${item?.collection?.name} > ${i18n.t('File')}`
+								? `${item?.collection?.name} > ${$i18n.t('File')}`
 								: item?.type === 'collection'
-									? i18n.t('Collection')
+									? $i18n.t('Collection')
 									: ''}
 						placement="top"
 					>
@@ -339,13 +340,13 @@
 					});
 				} else {
 					toast.error(
-						i18n.t('Oops! Looks like the URL is invalid. Please double-check and try again.')
+						$i18n.t('Oops! Looks like the URL is invalid. Please double-check and try again.')
 					);
 				}
 			}}
 		>
 			<div class="  text-black dark:text-gray-100 line-clamp-1 flex items-center gap-1">
-				<Tooltip content={i18n.t('YouTube')} placement="top">
+				<Tooltip content={$i18n.t('YouTube')} placement="top">
 					<Youtube className="size-4" />
 				</Tooltip>
 
@@ -367,13 +368,13 @@
 					});
 				} else {
 					toast.error(
-						i18n.t('Oops! Looks like the URL is invalid. Please double-check and try again.')
+						$i18n.t('Oops! Looks like the URL is invalid. Please double-check and try again.')
 					);
 				}
 			}}
 		>
 			<div class="  text-black dark:text-gray-100 line-clamp-1 flex items-center gap-1">
-				<Tooltip content={i18n.t('Web')} placement="top">
+				<Tooltip content={$i18n.t('Web')} placement="top">
 					<GlobeAlt className="size-4" />
 				</Tooltip>
 

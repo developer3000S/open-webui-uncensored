@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { decode } from 'html-entities';
 	import { v4 as uuidv4 } from 'uuid';
@@ -28,8 +28,8 @@
 		}
 	}
 
-	// Assuming $languages is an array of language codes
-	$: loadLocale($languages);
+	// Assuming $i18n.languages is an array of language codes
+	$: loadLocale($i18n.languages);
 
 	import { slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
@@ -43,15 +43,16 @@
 	export let buttonClassName: any =
 		'w-fit text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition';
 	export let id: any = '';
-	let title: any = null;
-	let attributes: any = null;
+	export let title: any = null;
+	export let attributes: any = null;
 
 	export let chevron: any = false;
 	export let grow: any = false;
 	export let disabled: any = false;
 	export let messageDone: any = false;
 	export let hide: any = false;
-	export let onChange: Function = () => {};
+	export let onChange: any = () => {};
+	export let dir: any = undefined;
 
 	const toggleOpen = () => {
 		if (disabled) {
@@ -88,26 +89,26 @@
 					{#if attributes?.type === 'reasoning'}
 						{#if (attributes?.done === 'true' || messageDone) && attributes?.duration}
 							{#if attributes.duration < 1}
-								{i18n.t('Thought for less than a second')}
+								{$i18n.t('Thought for less than a second')}
 							{:else if attributes.duration < 60}
-								{i18n.t('Thought for {{DURATION}} seconds', {
+								{$i18n.t('Thought for {{DURATION}} seconds', {
 									DURATION: attributes.duration
 								})}
 							{:else}
-								{i18n.t('Thought for {{DURATION}}', {
+								{$i18n.t('Thought for {{DURATION}}', {
 									DURATION: dayjs.duration(attributes.duration, 'seconds').humanize()
 								})}
 							{/if}
 						{:else if attributes?.done === 'true' || messageDone}
-							{i18n.t('Thought')}
+							{$i18n.t('Thought')}
 						{:else}
-							{i18n.t('Thinking...')}
+							{$i18n.t('Thinking...')}
 						{/if}
 					{:else if attributes?.type === 'code_interpreter'}
 						{#if attributes?.done === 'true' || messageDone}
-							{i18n.t('Analyzed')}
+							{$i18n.t('Analyzed')}
 						{:else}
-							{i18n.t('Analyzing...')}
+							{$i18n.t('Analyzing...')}
 						{/if}
 					{:else}
 						{title}

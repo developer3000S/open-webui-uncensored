@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Banner } from '$lib/types';
 	import { fade } from 'svelte/transition';
@@ -57,13 +57,13 @@
 							classNames['info']}  w-fit px-2 rounded-sm uppercase line-clamp-1 mr-0.5"
 					>
 						{#if banner.type.toLowerCase() === 'info'}
-							{i18n.t('Info')}
+							{$i18n.t('Info')}
 						{:else if banner.type.toLowerCase() === 'warning'}
-							{i18n.t('Warning')}
+							{$i18n.t('Warning')}
 						{:else if banner.type.toLowerCase() === 'error'}
-							{i18n.t('Error')}
+							{$i18n.t('Error')}
 						{:else if banner.type.toLowerCase() === 'success'}
-							{i18n.t('Success')}
+							{$i18n.t('Success')}
 						{:else}
 							{banner.type}
 						{/if}
@@ -76,7 +76,7 @@
 								href="{WEBUI_BASE_URL}/assets/files/whitepaper.pdf"
 								target="_blank"
 							>
-								{i18n.t('Learn More')}
+								{$i18n.t('Learn More')}
 							</a>
 
 							<div
@@ -112,7 +112,7 @@
 						href="/"
 						target="_blank"
 					>
-						{i18n.t('Learn More')}
+						{$i18n.t('Learn More')}
 					</a>
 
 					<div class=" ml-1 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-white">
@@ -135,7 +135,7 @@
 			{/if}
 			<div class="flex self-start">
 				<button
-					aria-label={i18n.t('Close Banner')}
+					aria-label={$i18n.t('Close Banner')}
 					on:click={() => {
 						dismiss(banner.id);
 					}}
@@ -160,13 +160,13 @@
 							classNames['info']}  w-fit px-2 rounded-sm uppercase line-clamp-1 mr-0.5"
 					>
 						{#if banner.type.toLowerCase() === 'info'}
-							{i18n.t('Info')}
+							{$i18n.t('Info')}
 						{:else if banner.type.toLowerCase() === 'warning'}
-							{i18n.t('Warning')}
+							{$i18n.t('Warning')}
 						{:else if banner.type.toLowerCase() === 'error'}
-							{i18n.t('Error')}
+							{$i18n.t('Error')}
 						{:else if banner.type.toLowerCase() === 'success'}
-							{i18n.t('Success')}
+							{$i18n.t('Success')}
 						{:else}
 							{banner.type}
 						{/if}
@@ -179,7 +179,7 @@
 								href="{WEBUI_BASE_URL}/assets/files/whitepaper.pdf"
 								target="_blank"
 							>
-								{i18n.t('Learn More')}
+								{$i18n.t('Learn More')}
 							</a>
 
 							<div
@@ -215,7 +215,7 @@
 						href="/"
 						target="_blank"
 					>
-						{i18n.t('Learn More')}
+						{$i18n.t('Learn More')}
 					</a>
 
 					<div class=" ml-1 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-white">
@@ -238,7 +238,7 @@
 			{/if}
 			<div class="flex self-start">
 				<button
-					aria-label={i18n.t('Close Banner')}
+					aria-label={$i18n.t('Close Banner')}
 					on:click={() => {
 						dismiss(banner.id);
 					}}

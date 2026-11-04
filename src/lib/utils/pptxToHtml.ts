@@ -49,7 +49,7 @@ export async function pptxToImages(
 	const media: Record<string, string> = {};
 	const mediaFiles = Object.keys(zip.files).filter((f) => f.startsWith('ppt/media/'));
 	await Promise.all(
-		mediaFiles.map((path: any)  => {
+		mediaFiles.map(async (path: any)  => {
 			const file = zip.file(path);
 			if (!file) return;
 			const base64 = await file.async('base64');

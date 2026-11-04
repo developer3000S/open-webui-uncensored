@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { models } from '$lib/stores';
 	import { getLeaderboard } from '$lib/apis/evaluations';
@@ -48,11 +48,11 @@
 		loading = true;
 		try {
 			const result = await getLeaderboard(localStorage.token, searchQuery);
-			const statsMap = new Map((result?.entries ?? []).map((e) => [e.model_id, e]));
+			const statsMap = new Map<string, any>((result?.entries ?? []).map((e) => [e.model_id, e]));
 			const modelMap = new Map(($models ?? []).map((m) => [m.id, m]));
 
 			const activeModels = $models
-				.filter((m) => m?.owned_by !== 'arena' && !m?.info?.meta?.hidden)
+				.filter((m: any) => m?.owned_by !== 'arena' && !m?.info?.meta?.hidden)
 				.map((model) => {
 					const s = statsMap.get(model.id);
 					return {
@@ -127,16 +127,16 @@
 	class="pt-0.5 pb-1 gap-1 flex flex-col md:flex-row justify-between sticky top-0 z-10 bg-white dark:bg-gray-900"
 >
 	<div class="flex items-center text-xl font-medium px-0.5 gap-2 shrink-0">
-		{i18n.t('Leaderboard')}
+		{$i18n.t('Leaderboard')}
 		<span class="text-lg text-gray-500">{rankedModels.length}</span>
 	</div>
-	<Tooltip content={i18n.t('Re-rank models by topic similarity')}>
+	<Tooltip content={$i18n.t('Re-rank models by topic similarity')}>
 		<div class="flex flex-1">
 			<Search className="size-3 ml-1 mr-3 self-center" />
 			<input
 				class="w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
 				bind:value={query}
-				placeholder={i18n.t('Search')}
+				placeholder={$i18n.t('Search')}
 			/>
 		</div>
 	</Tooltip>
@@ -154,7 +154,7 @@
 	{/if}
 
 	{#if !rankedModels.length && !loading}
-		<div class="text-center text-xs text-gray-500 py-1">{i18n.t('No models found')}</div>
+		<div class="text-center text-xs text-gray-500 py-1">{$i18n.t('No models found')}</div>
 	{:else if rankedModels.length}
 		<table
 			class="w-full text-sm text-left text-gray-500 dark:text-gray-400 {loading
@@ -172,7 +172,7 @@
 							<div
 								class="flex gap-1.5 items-center {col.class.includes('right') ? 'justify-end' : ''}"
 							>
-								{i18n.t(col.label)}
+								{$i18n.t(col.label)}
 								{#if orderBy === col.key}
 									{#if direction === 'asc'}<ChevronUp className="size-2" />{:else}<ChevronDown
 											className="size-2"
@@ -240,7 +240,7 @@
 <div class="text-gray-500 text-xs mt-1.5 w-full flex justify-end">
 	<div class="text-right">
 		<div class="line-clamp-1">
-			ⓘ {i18n.t(
+			ⓘ {$i18n.t(
 				'The evaluation leaderboard is based on the Elo rating system and is updated in real-time.'
 			)}
 		</div>
@@ -253,16 +253,16 @@
 	class="pt-0.5 pb-1 gap-1 flex flex-col md:flex-row justify-between sticky top-0 z-10 bg-white dark:bg-gray-900"
 >
 	<div class="flex items-center text-xl font-medium px-0.5 gap-2 shrink-0">
-		{i18n.t('Leaderboard')}
+		{$i18n.t('Leaderboard')}
 		<span class="text-lg text-gray-500">{rankedModels.length}</span>
 	</div>
-	<Tooltip content={i18n.t('Re-rank models by topic similarity')}>
+	<Tooltip content={$i18n.t('Re-rank models by topic similarity')}>
 		<div class="flex flex-1">
 			<Search className="size-3 ml-1 mr-3 self-center" />
 			<input
 				class="w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
 				bind:value={query}
-				placeholder={i18n.t('Search')}
+				placeholder={$i18n.t('Search')}
 			/>
 		</div>
 	</Tooltip>
@@ -280,7 +280,7 @@
 	{/if}
 
 	{#if !rankedModels.length && !loading}
-		<div class="text-center text-xs text-gray-500 py-1">{i18n.t('No models found')}</div>
+		<div class="text-center text-xs text-gray-500 py-1">{$i18n.t('No models found')}</div>
 	{:else if rankedModels.length}
 		<table
 			class="w-full text-sm text-left text-gray-500 dark:text-gray-400 {loading
@@ -298,7 +298,7 @@
 							<div
 								class="flex gap-1.5 items-center {col.class.includes('right') ? 'justify-end' : ''}"
 							>
-								{i18n.t(col.label)}
+								{$i18n.t(col.label)}
 								{#if orderBy === col.key}
 									{#if direction === 'asc'}<ChevronUp className="size-2" />{:else}<ChevronDown
 											className="size-2"
@@ -366,7 +366,7 @@
 <div class="text-gray-500 text-xs mt-1.5 w-full flex justify-end">
 	<div class="text-right">
 		<div class="line-clamp-1">
-			ⓘ {i18n.t(
+			ⓘ {$i18n.t(
 				'The evaluation leaderboard is based on the Elo rating system and is updated in real-time.'
 			)}
 		</div>

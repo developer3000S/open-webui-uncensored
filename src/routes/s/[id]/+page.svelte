@@ -1,11 +1,10 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import type { PageData } from '$app/stores';
 
 	import dayjs from 'dayjs';
 
@@ -59,7 +58,7 @@
 	$: messages = createMessagesList(history, history.currentId);
 
 	$: if ($page.params.id) {
-		async (async () => {
+		(async () => {
 			if (await loadSharedChat()) {
 				await tick();
 				loaded = true;
@@ -96,7 +95,7 @@
 			)
 		);
 		await chatId.set($page.params.id);
-		chat = await getChatByShareId(localStorage.token, $chatId).catch(async (error: any)=> {
+		chat = await getChatByShareId(localStorage.token, $chatId).catch(async (error: any) => {
 			await goto('/');
 			return null;
 		});
@@ -139,14 +138,14 @@
 
 	const cloneSharedChat = async () => {
 		if (!($sessionUser?.role === 'admin' || ($sessionUser?.permissions?.chat?.import ?? true))) {
-			toast.error(i18n.t('Access prohibited'));
+			toast.error($i18n.t('Access prohibited'));
 			return;
 		}
 
 		if (!chat) return;
 
 		const res = await cloneSharedChatById(localStorage.token, chat.id!).catch((error) => {
-			toast.error(i18n.t('Failed to clone chat'));
+			toast.error($i18n.t('Failed to clone chat'));
 			return null;
 		});
 
@@ -157,17 +156,17 @@
 </script>
 
 <svelte:head>
-			<title>
+	<title>
 		{title
 			? `${title.length > 30 ? `${title.slice(0, 30)}...` : title} • ${WEBUI_NAME}`
 			: `${WEBUI_NAME}`}
 	</title>
-			<title>
+	<title>
 		{title
 			? `${title.length > 30 ? `${title.slice(0, 30)}...` : title} • ${WEBUI_NAME}`
 			: `${WEBUI_NAME}`}
 	</title>
-		</svelte:head>
+</svelte:head>
 
 {#if loaded}
 	<div
@@ -212,6 +211,10 @@
 							sendMessage={() => {}}
 							continueResponse={() => {}}
 							regenerateResponse={() => {}}
+							showMessage={() => {}}
+							atSelectedModel={null}
+							mergeResponses={() => {}}
+							chatActionHandler={() => {}}
 						/>
 					</div>
 				</div>
@@ -226,7 +229,7 @@
 							class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 							on:click={cloneSharedChat}
 						>
-							{i18n.t('Clone Chat')}
+							{$i18n.t('Clone Chat')}
 						</button>
 					</div>
 				</div>
@@ -235,8 +238,6 @@
 	</div>
 {/if}
 
-
-
 {#if loaded}
 	<div
 		class="h-screen max-h-[100dvh] w-full flex flex-col text-gray-700 dark:text-gray-100 bg-white dark:bg-gray-900"
@@ -280,6 +281,10 @@
 							sendMessage={() => {}}
 							continueResponse={() => {}}
 							regenerateResponse={() => {}}
+							showMessage={() => {}}
+							atSelectedModel={null}
+							mergeResponses={() => {}}
+							chatActionHandler={() => {}}
 						/>
 					</div>
 				</div>
@@ -294,7 +299,7 @@
 							class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 							on:click={cloneSharedChat}
 						>
-							{i18n.t('Clone Chat')}
+							{$i18n.t('Clone Chat')}
 						</button>
 					</div>
 				</div>

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Dropdown from '$lib/components/common/Dropdown.svelte';
 	import DropdownSub from '$lib/components/common/DropdownSub.svelte';
@@ -16,14 +16,14 @@
 	import type { Writable } from 'svelte/store';
 
 	export let show: any = false;
-	export let onDownload = (type: any) => {};
-	export let onDelete = () => {};
-	let onPin: any = null;
+	export let onDownload: any = (type: any) => {};
+	export let onDelete: any = () => {};
+	export let onPin: any = null;
 	export let isPinned: any = false;
-	let onCopyLink: any = null;
-	let onCopyToClipboard: any = null;
+	export let onCopyLink: any = null;
+	export let onCopyToClipboard: any = null;
 
-	export let onChange = () => {};
+	export let onChange: any = () => {};
 </script>
 
 <Dropdown
@@ -46,7 +46,7 @@
 					class="flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl w-full"
 				>
 					<Download strokeWidth="2" />
-					<div class="flex items-center">{i18n.t('Download')}</div>
+					<div class="flex items-center">{$i18n.t('Download')}</div>
 				</button>
 
 				<button
@@ -55,7 +55,7 @@
 						onDownload('txt');
 					}}
 				>
-					<div class="flex items-center line-clamp-1">{i18n.t('Plain text (.txt)')}</div>
+					<div class="flex items-center line-clamp-1">{$i18n.t('Plain text (.txt)')}</div>
 				</button>
 
 				<button
@@ -64,7 +64,7 @@
 						onDownload('md');
 					}}
 				>
-					<div class="flex items-center line-clamp-1">{i18n.t('Plain text (.md)')}</div>
+					<div class="flex items-center line-clamp-1">{$i18n.t('Plain text (.md)')}</div>
 				</button>
 
 				<button
@@ -73,7 +73,7 @@
 						onDownload('pdf');
 					}}
 				>
-					<div class="flex items-center line-clamp-1">{i18n.t('PDF document (.pdf)')}</div>
+					<div class="flex items-center line-clamp-1">{$i18n.t('PDF document (.pdf)')}</div>
 				</button>
 			</DropdownSub>
 
@@ -84,7 +84,7 @@
 						class="flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl w-full"
 					>
 						<Share strokeWidth="2" />
-						<div class="flex items-center">{i18n.t('Share')}</div>
+						<div class="flex items-center">{$i18n.t('Share')}</div>
 					</button>
 
 					{#if onCopyLink}
@@ -95,7 +95,7 @@
 							}}
 						>
 							<Link />
-							<div class="flex items-center">{i18n.t('Copy link')}</div>
+							<div class="flex items-center">{$i18n.t('Copy link')}</div>
 						</button>
 					{/if}
 
@@ -107,7 +107,7 @@
 							}}
 						>
 							<DocumentDuplicate strokeWidth="2" />
-							<div class="flex items-center">{i18n.t('Copy to clipboard')}</div>
+							<div class="flex items-center">{$i18n.t('Copy to clipboard')}</div>
 						</button>
 					{/if}
 				</DropdownSub>
@@ -123,10 +123,10 @@
 				>
 					{#if isPinned}
 						<PinSlash />
-						<div class="flex items-center">{i18n.t('Unpin')}</div>
+						<div class="flex items-center">{$i18n.t('Unpin')}</div>
 					{:else}
 						<Pin />
-						<div class="flex items-center">{i18n.t('Pin to Sidebar')}</div>
+						<div class="flex items-center">{$i18n.t('Pin to Sidebar')}</div>
 					{/if}
 				</button>
 			{/if}
@@ -138,7 +138,7 @@
 				}}
 			>
 				<GarbageBin />
-				<div class="flex items-center">{i18n.t('Delete')}</div>
+				<div class="flex items-center">{$i18n.t('Delete')}</div>
 			</button>
 		</div>
 	</div>
@@ -164,7 +164,7 @@
 					class="flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl w-full"
 				>
 					<Download strokeWidth="2" />
-					<div class="flex items-center">{i18n.t('Download')}</div>
+					<div class="flex items-center">{$i18n.t('Download')}</div>
 				</button>
 
 				<button
@@ -173,7 +173,7 @@
 						onDownload('txt');
 					}}
 				>
-					<div class="flex items-center line-clamp-1">{i18n.t('Plain text (.txt)')}</div>
+					<div class="flex items-center line-clamp-1">{$i18n.t('Plain text (.txt)')}</div>
 				</button>
 
 				<button
@@ -182,7 +182,7 @@
 						onDownload('md');
 					}}
 				>
-					<div class="flex items-center line-clamp-1">{i18n.t('Plain text (.md)')}</div>
+					<div class="flex items-center line-clamp-1">{$i18n.t('Plain text (.md)')}</div>
 				</button>
 
 				<button
@@ -191,7 +191,7 @@
 						onDownload('pdf');
 					}}
 				>
-					<div class="flex items-center line-clamp-1">{i18n.t('PDF document (.pdf)')}</div>
+					<div class="flex items-center line-clamp-1">{$i18n.t('PDF document (.pdf)')}</div>
 				</button>
 			</DropdownSub>
 
@@ -202,7 +202,7 @@
 						class="flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl w-full"
 					>
 						<Share strokeWidth="2" />
-						<div class="flex items-center">{i18n.t('Share')}</div>
+						<div class="flex items-center">{$i18n.t('Share')}</div>
 					</button>
 
 					{#if onCopyLink}
@@ -213,7 +213,7 @@
 							}}
 						>
 							<Link />
-							<div class="flex items-center">{i18n.t('Copy link')}</div>
+							<div class="flex items-center">{$i18n.t('Copy link')}</div>
 						</button>
 					{/if}
 
@@ -225,7 +225,7 @@
 							}}
 						>
 							<DocumentDuplicate strokeWidth="2" />
-							<div class="flex items-center">{i18n.t('Copy to clipboard')}</div>
+							<div class="flex items-center">{$i18n.t('Copy to clipboard')}</div>
 						</button>
 					{/if}
 				</DropdownSub>
@@ -241,10 +241,10 @@
 				>
 					{#if isPinned}
 						<PinSlash />
-						<div class="flex items-center">{i18n.t('Unpin')}</div>
+						<div class="flex items-center">{$i18n.t('Unpin')}</div>
 					{:else}
 						<Pin />
-						<div class="flex items-center">{i18n.t('Pin to Sidebar')}</div>
+						<div class="flex items-center">{$i18n.t('Pin to Sidebar')}</div>
 					{/if}
 				</button>
 			{/if}
@@ -256,7 +256,7 @@
 				}}
 			>
 				<GarbageBin />
-				<div class="flex items-center">{i18n.t('Delete')}</div>
+				<div class="flex items-center">{$i18n.t('Delete')}</div>
 			</button>
 		</div>
 	</div>

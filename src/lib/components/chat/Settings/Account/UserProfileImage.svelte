@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 
@@ -13,7 +13,7 @@
 	import { WEBUI_BASE_URL } from '$lib/constants';
 
 	export let profileImageUrl: any;
-	let user: any = null;
+	export let user: any = null;
 
 	export let imageClassName: any = 'size-14 md:size-18';
 	let profileImageInputElement;
@@ -118,7 +118,7 @@
 			type="button"
 			on:click={async () => {
 				profileImageUrl = `${WEBUI_BASE_URL}/user.png`;
-			}}>{i18n.t('Remove')}</button
+			}}>{$i18n.t('Remove')}</button
 		>
 
 		<button
@@ -129,7 +129,7 @@
 					profileImageUrl = generateInitialsImage(user?.name);
 				} else {
 					toast.info(
-						i18n.t(
+						$i18n.t(
 							'Fingerprint spoofing detected: Unable to use initials as avatar. Defaulting to default profile image.'
 						),
 						{
@@ -137,7 +137,7 @@
 						}
 					);
 				}
-			}}>{i18n.t('Initials')}</button
+			}}>{$i18n.t('Initials')}</button
 		>
 
 		<button
@@ -147,7 +147,7 @@
 				const url = await getGravatarUrl(localStorage.token, user?.email);
 
 				profileImageUrl = url;
-			}}>{i18n.t('Gravatar')}</button
+			}}>{$i18n.t('Gravatar')}</button
 		>
 	</div>
 </div>
@@ -251,7 +251,7 @@
 			type="button"
 			on:click={async () => {
 				profileImageUrl = `${WEBUI_BASE_URL}/user.png`;
-			}}>{i18n.t('Remove')}</button
+			}}>{$i18n.t('Remove')}</button
 		>
 
 		<button
@@ -262,7 +262,7 @@
 					profileImageUrl = generateInitialsImage(user?.name);
 				} else {
 					toast.info(
-						i18n.t(
+						$i18n.t(
 							'Fingerprint spoofing detected: Unable to use initials as avatar. Defaulting to default profile image.'
 						),
 						{
@@ -270,7 +270,7 @@
 						}
 					);
 				}
-			}}>{i18n.t('Initials')}</button
+			}}>{$i18n.t('Initials')}</button
 		>
 
 		<button
@@ -280,7 +280,7 @@
 				const url = await getGravatarUrl(localStorage.token, user?.email);
 
 				profileImageUrl = url;
-			}}>{i18n.t('Gravatar')}</button
+			}}>{$i18n.t('Gravatar')}</button
 		>
 	</div>
 </div>

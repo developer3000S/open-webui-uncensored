@@ -21,6 +21,9 @@ const sharedGlobals = {
   ...globals.es2021,
   APP_VERSION: 'readonly',
   APP_BUILD_HASH: 'readonly',
+  // Web/Worker standard types used as type annotations (not values) in sources.
+  RequestInit: 'readonly',
+  Transferable: 'readonly',
   // Google platform scripts loaded at runtime in the browser
   // (src/lib/utils/google-drive-picker.ts uses gapi/google pickers).
   gapi: 'readonly',

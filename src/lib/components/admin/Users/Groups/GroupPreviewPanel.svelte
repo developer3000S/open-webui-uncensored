@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { getGroupPreview } from '$lib/apis/groups';
 	import Spinner from '$lib/components/common/Spinner.svelte';
@@ -40,13 +40,13 @@
 		<div class="text-red-500 text-xs text-center py-4">{error}</div>
 	{:else if preview}
 		<div>
-			<div class=" mb-2 text-sm font-medium">{i18n.t('Models')}</div>
+			<div class=" mb-2 text-sm font-medium">{$i18n.t('Models')}</div>
 
 			<div class="flex flex-col w-full">
 				{#if preview.models.items.length === 0}
 					<div class="flex w-full justify-between my-1">
 						<div class=" self-center text-xs text-gray-500">
-							{i18n.t('No models accessible')}
+							{$i18n.t('No models accessible')}
 						</div>
 					</div>
 				{:else}
@@ -59,7 +59,7 @@
 					{#if preview.models.total > preview.models.items.length}
 						<div class="flex w-full justify-between my-1">
 							<div class=" self-center text-xs text-gray-500">
-								{i18n.t('{{count}} of {{total}} accessible', {
+								{$i18n.t('{{count}} of {{total}} accessible', {
 									count: preview.models.items.length,
 									total: preview.models.total
 								})}
@@ -73,13 +73,13 @@
 		<hr class="border-gray-50 dark:border-gray-850/30 my-1" />
 
 		<div>
-			<div class=" mb-2 text-sm font-medium">{i18n.t('Knowledge')}</div>
+			<div class=" mb-2 text-sm font-medium">{$i18n.t('Knowledge')}</div>
 
 			<div class="flex flex-col w-full">
 				{#if preview.knowledge.items.length === 0}
 					<div class="flex w-full justify-between my-1">
 						<div class=" self-center text-xs text-gray-500">
-							{i18n.t('No knowledge bases accessible')}
+							{$i18n.t('No knowledge bases accessible')}
 						</div>
 					</div>
 				{:else}
@@ -92,7 +92,7 @@
 					{#if preview.knowledge.total > preview.knowledge.items.length}
 						<div class="flex w-full justify-between my-1">
 							<div class=" self-center text-xs text-gray-500">
-								{i18n.t('{{count}} of {{total}} accessible', {
+								{$i18n.t('{{count}} of {{total}} accessible', {
 									count: preview.knowledge.items.length,
 									total: preview.knowledge.total
 								})}
@@ -106,13 +106,13 @@
 		<hr class="border-gray-50 dark:border-gray-850/30 my-1" />
 
 		<div>
-			<div class=" mb-2 text-sm font-medium">{i18n.t('Tools')}</div>
+			<div class=" mb-2 text-sm font-medium">{$i18n.t('Tools')}</div>
 
 			<div class="flex flex-col w-full">
 				{#if preview.tools.items.length === 0}
 					<div class="flex w-full justify-between my-1">
 						<div class=" self-center text-xs text-gray-500">
-							{i18n.t('No tools accessible')}
+							{$i18n.t('No tools accessible')}
 						</div>
 					</div>
 				{:else}
@@ -125,7 +125,7 @@
 					{#if preview.tools.total > preview.tools.items.length}
 						<div class="flex w-full justify-between my-1">
 							<div class=" self-center text-xs text-gray-500">
-								{i18n.t('{{count}} of {{total}} accessible', {
+								{$i18n.t('{{count}} of {{total}} accessible', {
 									count: preview.tools.items.length,
 									total: preview.tools.total
 								})}
@@ -147,13 +147,13 @@
 		<div class="text-red-500 text-xs text-center py-4">{error}</div>
 	{:else if preview}
 		<div>
-			<div class=" mb-2 text-sm font-medium">{i18n.t('Models')}</div>
+			<div class=" mb-2 text-sm font-medium">{$i18n.t('Models')}</div>
 
 			<div class="flex flex-col w-full">
 				{#if preview.models.items.length === 0}
 					<div class="flex w-full justify-between my-1">
 						<div class=" self-center text-xs text-gray-500">
-							{i18n.t('No models accessible')}
+							{$i18n.t('No models accessible')}
 						</div>
 					</div>
 				{:else}
@@ -166,7 +166,7 @@
 					{#if preview.models.total > preview.models.items.length}
 						<div class="flex w-full justify-between my-1">
 							<div class=" self-center text-xs text-gray-500">
-								{i18n.t('{{count}} of {{total}} accessible', {
+								{$i18n.t('{{count}} of {{total}} accessible', {
 									count: preview.models.items.length,
 									total: preview.models.total
 								})}
@@ -180,13 +180,13 @@
 		<hr class="border-gray-50 dark:border-gray-850/30 my-1" />
 
 		<div>
-			<div class=" mb-2 text-sm font-medium">{i18n.t('Knowledge')}</div>
+			<div class=" mb-2 text-sm font-medium">{$i18n.t('Knowledge')}</div>
 
 			<div class="flex flex-col w-full">
 				{#if preview.knowledge.items.length === 0}
 					<div class="flex w-full justify-between my-1">
 						<div class=" self-center text-xs text-gray-500">
-							{i18n.t('No knowledge bases accessible')}
+							{$i18n.t('No knowledge bases accessible')}
 						</div>
 					</div>
 				{:else}
@@ -199,7 +199,7 @@
 					{#if preview.knowledge.total > preview.knowledge.items.length}
 						<div class="flex w-full justify-between my-1">
 							<div class=" self-center text-xs text-gray-500">
-								{i18n.t('{{count}} of {{total}} accessible', {
+								{$i18n.t('{{count}} of {{total}} accessible', {
 									count: preview.knowledge.items.length,
 									total: preview.knowledge.total
 								})}
@@ -213,13 +213,13 @@
 		<hr class="border-gray-50 dark:border-gray-850/30 my-1" />
 
 		<div>
-			<div class=" mb-2 text-sm font-medium">{i18n.t('Tools')}</div>
+			<div class=" mb-2 text-sm font-medium">{$i18n.t('Tools')}</div>
 
 			<div class="flex flex-col w-full">
 				{#if preview.tools.items.length === 0}
 					<div class="flex w-full justify-between my-1">
 						<div class=" self-center text-xs text-gray-500">
-							{i18n.t('No tools accessible')}
+							{$i18n.t('No tools accessible')}
 						</div>
 					</div>
 				{:else}
@@ -232,7 +232,7 @@
 					{#if preview.tools.total > preview.tools.items.length}
 						<div class="flex w-full justify-between my-1">
 							<div class=" self-center text-xs text-gray-500">
-								{i18n.t('{{count}} of {{total}} accessible', {
+								{$i18n.t('{{count}} of {{total}} accessible', {
 									count: preview.tools.items.length,
 									total: preview.tools.total
 								})}

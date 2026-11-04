@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 
@@ -24,7 +24,7 @@
 		loading = true;
 
 		if (name.trim() === '' || description.trim() === '') {
-			toast.error(i18n.t('Please fill in all fields.'));
+			toast.error($i18n.t('Please fill in all fields.'));
 			name = '';
 			description = '';
 			loading = false;
@@ -38,7 +38,7 @@
 		);
 
 		if (res) {
-			toast.success(i18n.t('Knowledge created successfully.'));
+			toast.success($i18n.t('Knowledge created successfully.'));
 			goto(`/workspace/knowledge/${res.id}`);
 		}
 
@@ -67,7 +67,7 @@
 				/>
 			</svg>
 		</div>
-		<div class=" self-center font-medium text-sm">{i18n.t('Back')}</div>
+		<div class=" self-center font-medium text-sm">{$i18n.t('Back')}</div>
 	</button>
 
 	<form
@@ -78,33 +78,33 @@
 	>
 		<div class=" w-full flex flex-col justify-center">
 			<div class=" text-2xl font-medium font-primary mb-2.5">
-				{i18n.t('Create a knowledge base')}
+				{$i18n.t('Create a knowledge base')}
 			</div>
 
 			<div class="w-full flex flex-col gap-2.5">
 				<div class="w-full">
-					<div class=" text-sm mb-2">{i18n.t('What are you working on?')}</div>
+					<div class=" text-sm mb-2">{$i18n.t('What are you working on?')}</div>
 
 					<div class="w-full mt-1">
 						<input
 							class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 							type="text"
 							bind:value={name}
-							placeholder={i18n.t('Name your knowledge base')}
+							placeholder={$i18n.t('Name your knowledge base')}
 							required
 						/>
 					</div>
 				</div>
 
 				<div>
-					<div class="text-sm mb-2">{i18n.t('What are you trying to achieve?')}</div>
+					<div class="text-sm mb-2">{$i18n.t('What are you trying to achieve?')}</div>
 
 					<div class=" w-full mt-1">
 						<textarea
 							class="w-full resize-none rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 							rows="4"
 							bind:value={description}
-							placeholder={i18n.t('Describe your knowledge base and objectives')}
+							placeholder={$i18n.t('Describe your knowledge base and objectives')}
 							required
 						></textarea>
 					</div>
@@ -132,7 +132,7 @@
 					type="submit"
 					disabled={loading}
 				>
-					<div class=" self-center font-medium">{i18n.t('Create Knowledge')}</div>
+					<div class=" self-center font-medium">{$i18n.t('Create Knowledge')}</div>
 
 					{#if loading}
 						<div class="ml-1.5 self-center">
@@ -166,7 +166,7 @@
 				/>
 			</svg>
 		</div>
-		<div class=" self-center font-medium text-sm">{i18n.t('Back')}</div>
+		<div class=" self-center font-medium text-sm">{$i18n.t('Back')}</div>
 	</button>
 
 	<form
@@ -177,33 +177,33 @@
 	>
 		<div class=" w-full flex flex-col justify-center">
 			<div class=" text-2xl font-medium font-primary mb-2.5">
-				{i18n.t('Create a knowledge base')}
+				{$i18n.t('Create a knowledge base')}
 			</div>
 
 			<div class="w-full flex flex-col gap-2.5">
 				<div class="w-full">
-					<div class=" text-sm mb-2">{i18n.t('What are you working on?')}</div>
+					<div class=" text-sm mb-2">{$i18n.t('What are you working on?')}</div>
 
 					<div class="w-full mt-1">
 						<input
 							class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 							type="text"
 							bind:value={name}
-							placeholder={i18n.t('Name your knowledge base')}
+							placeholder={$i18n.t('Name your knowledge base')}
 							required
 						/>
 					</div>
 				</div>
 
 				<div>
-					<div class="text-sm mb-2">{i18n.t('What are you trying to achieve?')}</div>
+					<div class="text-sm mb-2">{$i18n.t('What are you trying to achieve?')}</div>
 
 					<div class=" w-full mt-1">
 						<textarea
 							class="w-full resize-none rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 							rows="4"
 							bind:value={description}
-							placeholder={i18n.t('Describe your knowledge base and objectives')}
+							placeholder={$i18n.t('Describe your knowledge base and objectives')}
 							required
 						></textarea>
 					</div>
@@ -231,7 +231,7 @@
 					type="submit"
 					disabled={loading}
 				>
-					<div class=" self-center font-medium">{i18n.t('Create Knowledge')}</div>
+					<div class=" self-center font-medium">{$i18n.t('Create Knowledge')}</div>
 
 					{#if loading}
 						<div class="ml-1.5 self-center">

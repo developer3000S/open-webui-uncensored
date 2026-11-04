@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import type { Writable } from 'svelte/store';
@@ -15,7 +15,7 @@
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 
 	export let show: any = false;
-	export let onSave = () => {};
+	export let onSave: any = () => {};
 
 	export let floatingActionButtons: any = null;
 
@@ -34,11 +34,11 @@
 	<div>
 		<div class=" flex justify-between dark:text-gray-100 px-5 pt-4 pb-1.5">
 			<h1 class="text-lg font-medium self-center font-primary">
-				{i18n.t('Quick Actions')}
+				{$i18n.t('Quick Actions')}
 			</h1>
 			<button
 				class="self-center"
-				aria-label={i18n.t('Close modal')}
+				aria-label={$i18n.t('Close modal')}
 				on:click={() => {
 					show = false;
 				}}
@@ -58,7 +58,7 @@
 				>
 					<div>
 						<div class="text-xs flex items-center justify-between mb-2">
-							<div class="font-medium">{i18n.t('Actions')}</div>
+							<div class="font-medium">{$i18n.t('Actions')}</div>
 
 							<div class="flex items-center gap-2 text-gray-700 dark:text-gray-300">
 								<button
@@ -68,15 +68,15 @@
 											floatingActionButtons = [
 												{
 													id: 'ask',
-													label: i18n.t('Ask'),
+													label: $i18n.t('Ask'),
 													input: true,
 													prompt: `{{SELECTED_CONTENT}}\n\n\n{{INPUT_CONTENT}}`
 												},
 												{
 													id: 'explain',
-													label: i18n.t('Explain'),
+													label: $i18n.t('Explain'),
 													input: false,
-													prompt: `{{SELECTED_CONTENT}}\n\n\n${i18n.t('Explain')}`
+													prompt: `{{SELECTED_CONTENT}}\n\n\n${$i18n.t('Explain')}`
 												}
 											];
 										} else {
@@ -85,9 +85,9 @@
 									}}
 								>
 									{#if floatingActionButtons === null}
-										<span class="">{i18n.t('Default')}</span>
+										<span class="">{$i18n.t('Default')}</span>
 									{:else}
-										<span class="">{i18n.t('Custom')}</span>
+										<span class="">{$i18n.t('Custom')}</span>
 									{/if}
 								</button>
 
@@ -108,7 +108,7 @@
 												...floatingActionButtons,
 												{
 													id: id,
-													label: `${i18n.t('New Button')}`,
+													label: `${$i18n.t('New Button')}`,
 													input: true,
 													prompt: `{{CONTENT}}\n\n\n{{INPUT_CONTENT}}`
 												}
@@ -123,7 +123,7 @@
 
 						{#if floatingActionButtons === null || floatingActionButtons.length === 0}
 							<div class="text-gray-500 dark:text-gray-400 text-xs w-full text-center py-5">
-								{i18n.t('Default action buttons will be used.')}
+								{$i18n.t('Default action buttons will be used.')}
 							</div>
 						{:else}
 							{#each floatingActionButtons as button, buttonIdx}
@@ -131,15 +131,15 @@
 									<div class="flex flex-col items-start pr-2">
 										<input
 											class=" self-center text-xs outline-none w-20"
-											placeholder={i18n.t('Button Label')}
-											aria-label={i18n.t('Button Label')}
+											placeholder={$i18n.t('Button Label')}
+											aria-label={$i18n.t('Button Label')}
 											bind:value={button.label}
 										/>
 
 										<input
 											class=" self-center text-xs outline-none w-20 text-gray-600 dark:text-gray-400"
-											placeholder={i18n.t('Button ID')}
-											aria-label={i18n.t('Button ID')}
+											placeholder={$i18n.t('Button ID')}
+											aria-label={$i18n.t('Button ID')}
 											bind:value={button.id}
 										/>
 									</div>
@@ -147,15 +147,15 @@
 									<div class="flex items-center gap-2 w-full">
 										<Textarea
 											className=" self-center text-xs w-full outline-none"
-											placeholder={i18n.t('Button Prompt')}
-											ariaLabel={i18n.t('Button Prompt')}
+											placeholder={$i18n.t('Button Prompt')}
+											ariaLabel={$i18n.t('Button Prompt')}
 											minSize={30}
 											bind:value={button.prompt}
 										/>
 									</div>
 									<button
 										class="pl-3 text-xs flex rounded-sm transition"
-										aria-label={i18n.t('Remove action')}
+										aria-label={$i18n.t('Remove action')}
 										on:click={() => {
 											floatingActionButtons = floatingActionButtons.filter(
 												(b) => b.id !== button.id
@@ -177,7 +177,7 @@
 							class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 							type="submit"
 						>
-							{i18n.t('Save')}
+							{$i18n.t('Save')}
 						</button>
 					</div>
 				</form>
@@ -190,11 +190,11 @@
 	<div>
 		<div class=" flex justify-between dark:text-gray-100 px-5 pt-4 pb-1.5">
 			<h1 class="text-lg font-medium self-center font-primary">
-				{i18n.t('Quick Actions')}
+				{$i18n.t('Quick Actions')}
 			</h1>
 			<button
 				class="self-center"
-				aria-label={i18n.t('Close modal')}
+				aria-label={$i18n.t('Close modal')}
 				on:click={() => {
 					show = false;
 				}}
@@ -214,7 +214,7 @@
 				>
 					<div>
 						<div class="text-xs flex items-center justify-between mb-2">
-							<div class="font-medium">{i18n.t('Actions')}</div>
+							<div class="font-medium">{$i18n.t('Actions')}</div>
 
 							<div class="flex items-center gap-2 text-gray-700 dark:text-gray-300">
 								<button
@@ -224,15 +224,15 @@
 											floatingActionButtons = [
 												{
 													id: 'ask',
-													label: i18n.t('Ask'),
+													label: $i18n.t('Ask'),
 													input: true,
 													prompt: `{{SELECTED_CONTENT}}\n\n\n{{INPUT_CONTENT}}`
 												},
 												{
 													id: 'explain',
-													label: i18n.t('Explain'),
+													label: $i18n.t('Explain'),
 													input: false,
-													prompt: `{{SELECTED_CONTENT}}\n\n\n${i18n.t('Explain')}`
+													prompt: `{{SELECTED_CONTENT}}\n\n\n${$i18n.t('Explain')}`
 												}
 											];
 										} else {
@@ -241,9 +241,9 @@
 									}}
 								>
 									{#if floatingActionButtons === null}
-										<span class="">{i18n.t('Default')}</span>
+										<span class="">{$i18n.t('Default')}</span>
 									{:else}
-										<span class="">{i18n.t('Custom')}</span>
+										<span class="">{$i18n.t('Custom')}</span>
 									{/if}
 								</button>
 
@@ -264,7 +264,7 @@
 												...floatingActionButtons,
 												{
 													id: id,
-													label: `${i18n.t('New Button')}`,
+													label: `${$i18n.t('New Button')}`,
 													input: true,
 													prompt: `{{CONTENT}}\n\n\n{{INPUT_CONTENT}}`
 												}
@@ -279,7 +279,7 @@
 
 						{#if floatingActionButtons === null || floatingActionButtons.length === 0}
 							<div class="text-gray-500 dark:text-gray-400 text-xs w-full text-center py-5">
-								{i18n.t('Default action buttons will be used.')}
+								{$i18n.t('Default action buttons will be used.')}
 							</div>
 						{:else}
 							{#each floatingActionButtons as button, buttonIdx}
@@ -287,15 +287,15 @@
 									<div class="flex flex-col items-start pr-2">
 										<input
 											class=" self-center text-xs outline-none w-20"
-											placeholder={i18n.t('Button Label')}
-											aria-label={i18n.t('Button Label')}
+											placeholder={$i18n.t('Button Label')}
+											aria-label={$i18n.t('Button Label')}
 											bind:value={button.label}
 										/>
 
 										<input
 											class=" self-center text-xs outline-none w-20 text-gray-600 dark:text-gray-400"
-											placeholder={i18n.t('Button ID')}
-											aria-label={i18n.t('Button ID')}
+											placeholder={$i18n.t('Button ID')}
+											aria-label={$i18n.t('Button ID')}
 											bind:value={button.id}
 										/>
 									</div>
@@ -303,15 +303,15 @@
 									<div class="flex items-center gap-2 w-full">
 										<Textarea
 											className=" self-center text-xs w-full outline-none"
-											placeholder={i18n.t('Button Prompt')}
-											ariaLabel={i18n.t('Button Prompt')}
+											placeholder={$i18n.t('Button Prompt')}
+											ariaLabel={$i18n.t('Button Prompt')}
 											minSize={30}
 											bind:value={button.prompt}
 										/>
 									</div>
 									<button
 										class="pl-3 text-xs flex rounded-sm transition"
-										aria-label={i18n.t('Remove action')}
+										aria-label={$i18n.t('Remove action')}
 										on:click={() => {
 											floatingActionButtons = floatingActionButtons.filter(
 												(b) => b.id !== button.id
@@ -333,7 +333,7 @@
 							class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 							type="submit"
 						>
-							{i18n.t('Save')}
+							{$i18n.t('Save')}
 						</button>
 					</div>
 				</form>

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { WEBUI_API_BASE_URL, WEBUI_BASE_URL } from '$lib/constants';
 	import { marked } from 'marked';
@@ -18,9 +18,9 @@
 
 	import type { Writable } from 'svelte/store';
 	export let modelIds: any = [];
-	let models: any[] = [];
+	export let models: any[] = [];
 	export let atSelectedModel: any;
-	export let onSelect = (e: any) => {};
+	export let onSelect: any = (e: any) => {};
 
 	let mounted = false;
 	let selectedModelIdx = 0;
@@ -57,7 +57,7 @@
 							placement="right"
 						>
 							<img
-								src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${model?.id}&lang=${$language}`}
+								src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${model?.id}&lang=${$i18n.language}`}
 								class=" size-[2.7rem] rounded-full border-[1px] border-gray-100 dark:border-none"
 								alt="logo"
 								draggable="false"
@@ -73,12 +73,12 @@
 
 		{#if $temporaryChatEnabled}
 			<Tooltip
-				content={i18n.t("This chat won't appear in history and your messages will not be saved.")}
+				content={$i18n.t("This chat won't appear in history and your messages will not be saved.")}
 				className="w-full flex justify-start mb-0.5"
 				placement="top"
 			>
 				<div class="flex items-center gap-2 text-gray-500 text-lg mt-2 w-fit">
-					<EyeSlash strokeWidth="2.5" className="size-5" />{i18n.t('Temporary Chat')}
+					<EyeSlash strokeWidth="2.5" className="size-5" />{$i18n.t('Temporary Chat')}
 				</div>
 			</Tooltip>
 		{/if}
@@ -91,7 +91,7 @@
 					{#if models[selectedModelIdx]?.name}
 						{models[selectedModelIdx]?.name}
 					{:else}
-						{i18n.t('Hello, {{name}}', { name: $user?.name })}
+						{$i18n.t('Hello, {{name}}', { name: $user?.name })}
 					{/if}
 				</div>
 
@@ -126,7 +126,7 @@
 						{/if}
 					{:else}
 						<div class=" text-gray-400 dark:text-gray-500 line-clamp-1 font-p">
-							{i18n.t('How can I help you today?')}
+							{$i18n.t('How can I help you today?')}
 						</div>
 					{/if}
 				</div>

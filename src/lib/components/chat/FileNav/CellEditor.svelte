@@ -23,6 +23,7 @@
 		return await language?.load();
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		const isDark = document.documentElement.classList.contains('dark');
 

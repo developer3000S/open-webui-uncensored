@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
@@ -21,19 +21,19 @@
 		<div
 			class="px-2 py-1 text-sm font-semibold uppercase min-w-[6rem] text-left border-radius: 0.5rem; transition"
 		>
-			{i18n.t(message.role)}
+			{$i18n.t(message.role)}
 		</div>
 	</div>
 
 	<div class="flex-1">
-		<!-- i18n.t('a user') -->
-		<!-- i18n.t('an assistant') -->
+		<!-- $i18n.t('a user') -->
+		<!-- $i18n.t('an assistant') -->
 		<textarea
 			id="{message.role}-{idx}-textarea"
 			bind:this={textAreaElement}
 			class="w-full bg-transparent outline-hidden border-radius: 0.5rem; p-2 text-sm resize-none overflow-hidden"
-			placeholder={i18n.t(`Enter {{role}} message here`, {
-				role: message.role === 'user' ? i18n.t('a user') : i18n.t('an assistant')
+			placeholder={$i18n.t(`Enter {{role}} message here`, {
+				role: message.role === 'user' ? $i18n.t('a user') : $i18n.t('an assistant')
 			})}
 			rows="1"
 			on:input={(e) => {
@@ -52,7 +52,7 @@
 
 	<div class=" pt-1">
 		<button
-			aria-label={i18n.t('Delete')}
+			aria-label={$i18n.t('Delete')}
 			class="group-hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-300 transition"
 			on:click={() => {
 				onDelete();
@@ -81,19 +81,19 @@
 		<div
 			class="px-2 py-1 text-sm font-semibold uppercase min-w-[6rem] text-left border-radius: 0.5rem; transition"
 		>
-			{i18n.t(message.role)}
+			{$i18n.t(message.role)}
 		</div>
 	</div>
 
 	<div class="flex-1">
-		<!-- i18n.t('a user') -->
-		<!-- i18n.t('an assistant') -->
+		<!-- $i18n.t('a user') -->
+		<!-- $i18n.t('an assistant') -->
 		<textarea
 			id="{message.role}-{idx}-textarea"
 			bind:this={textAreaElement}
 			class="w-full bg-transparent outline-hidden border-radius: 0.5rem; p-2 text-sm resize-none overflow-hidden"
-			placeholder={i18n.t(`Enter {{role}} message here`, {
-				role: message.role === 'user' ? i18n.t('a user') : i18n.t('an assistant')
+			placeholder={$i18n.t(`Enter {{role}} message here`, {
+				role: message.role === 'user' ? $i18n.t('a user') : $i18n.t('an assistant')
 			})}
 			rows="1"
 			on:input={(e) => {
@@ -112,7 +112,7 @@
 
 	<div class=" pt-1">
 		<button
-			aria-label={i18n.t('Delete')}
+			aria-label={$i18n.t('Delete')}
 			class="group-hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-300 transition"
 			on:click={() => {
 				onDelete();

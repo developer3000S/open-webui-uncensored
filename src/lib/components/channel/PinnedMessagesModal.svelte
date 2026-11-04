@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import type { Writable } from 'svelte/store';
@@ -16,8 +16,8 @@
 	import Loader from '../common/Loader.svelte';
 
 	export let show: any = false;
-	let channel: any = null;
-	export let onPin = (messageId: any, pinned: any) => {};
+	export let channel: any = null;
+	export let onPin: any = (messageId: any, pinned: any) => {};
 
 	let page = 1;
 	let pinnedMessages: any = null;
@@ -75,7 +75,7 @@
 			<div class=" flex justify-between dark:text-gray-100 px-5 pt-4 mb-1.5">
 				<div class="self-center text-base">
 					<div class="flex items-center gap-0.5 shrink-0">
-						{i18n.t('Pinned Messages')}
+						{$i18n.t('Pinned Messages')}
 					</div>
 				</div>
 				<button
@@ -101,7 +101,7 @@
 							>
 								{#if pinnedMessages.length === 0}
 									<div class=" text-center text-xs text-gray-500 dark:text-gray-400 py-6">
-										{i18n.t('No pinned messages')}
+										{$i18n.t('No pinned messages')}
 									</div>
 								{:else}
 									{#each pinnedMessages as message, messageIdx (message.id)}
@@ -146,7 +146,7 @@
 													class="w-full flex justify-center py-1 text-xs animate-pulse items-center gap-2"
 												>
 													<Spinner className=" size-4" />
-													<div class=" ">{i18n.t('Loading...')}</div>
+													<div class=" ">{$i18n.t('Loading...')}</div>
 												</div>
 											</Loader>
 										{/if}
@@ -167,7 +167,7 @@
 			<div class=" flex justify-between dark:text-gray-100 px-5 pt-4 mb-1.5">
 				<div class="self-center text-base">
 					<div class="flex items-center gap-0.5 shrink-0">
-						{i18n.t('Pinned Messages')}
+						{$i18n.t('Pinned Messages')}
 					</div>
 				</div>
 				<button
@@ -193,7 +193,7 @@
 							>
 								{#if pinnedMessages.length === 0}
 									<div class=" text-center text-xs text-gray-500 dark:text-gray-400 py-6">
-										{i18n.t('No pinned messages')}
+										{$i18n.t('No pinned messages')}
 									</div>
 								{:else}
 									{#each pinnedMessages as message, messageIdx (message.id)}
@@ -238,7 +238,7 @@
 													class="w-full flex justify-center py-1 text-xs animate-pulse items-center gap-2"
 												>
 													<Spinner className=" size-4" />
-													<div class=" ">{i18n.t('Loading...')}</div>
+													<div class=" ">{$i18n.t('Loading...')}</div>
 												</div>
 											</Loader>
 										{/if}

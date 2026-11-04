@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { goto } from '$app/navigation';
 
@@ -18,7 +18,7 @@
 	let loading = false;
 	let showConfirm = false;
 
-	export let onSave = () => {};
+	export let onSave: any = () => {};
 
 	export let edit: any = false;
 	export let clone: any = false;
@@ -347,7 +347,7 @@ class Pipe:
 				<div class="w-full mb-2 flex flex-col gap-0.5">
 					<div class="flex w-full items-center">
 						<div class=" shrink-0 mr-2">
-							<Tooltip content={i18n.t('Back')}>
+							<Tooltip content={$i18n.t('Back')}>
 								<button
 									class="w-full text-left text-sm py-1.5 px-1 rounded-lg dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-gray-850"
 									on:click={() => {
@@ -361,11 +361,11 @@ class Pipe:
 						</div>
 
 						<div class="flex-1">
-							<Tooltip content={i18n.t('e.g. My Filter')} placement="top-start">
+							<Tooltip content={$i18n.t('e.g. My Filter')} placement="top-start">
 								<input
 									class="w-full text-2xl font-medium bg-transparent outline-hidden font-primary"
 									type="text"
-									placeholder={i18n.t('Function Name')}
+									placeholder={$i18n.t('Function Name')}
 									bind:value={name}
 									required
 								/>
@@ -378,13 +378,13 @@ class Pipe:
 									class="text-xs bg-transparent border border-gray-100 dark:border-gray-800 rounded-lg px-2 py-1 outline-hidden"
 									bind:value={starterType}
 									on:change={(event) => selectStarterType(event.currentTarget.value)}
-									aria-label={i18n.t('Function starter')}
+									aria-label={$i18n.t('Function starter')}
 								>
-									<option value="filter">{i18n.t('Filter')}</option>
-									<option value="event">{i18n.t('Event')}</option>
+									<option value="filter">{$i18n.t('Filter')}</option>
+									<option value="event">{$i18n.t('Event')}</option>
 								</select>
 							{/if}
-							<Badge type="muted" content={i18n.t('Function')} />
+							<Badge type="muted" content={$i18n.t('Function')} />
 						</div>
 					</div>
 
@@ -394,11 +394,11 @@ class Pipe:
 								{id}
 							</div>
 						{:else}
-							<Tooltip className="w-full" content={i18n.t('e.g. my_filter')} placement="top-start">
+							<Tooltip className="w-full" content={$i18n.t('e.g. my_filter')} placement="top-start">
 								<input
 									class="w-full text-sm disabled:text-gray-500 bg-transparent outline-hidden"
 									type="text"
-									placeholder={i18n.t('Function ID')}
+									placeholder={$i18n.t('Function ID')}
 									bind:value={id}
 									required
 									disabled={edit}
@@ -408,13 +408,13 @@ class Pipe:
 
 						<Tooltip
 							className="w-full self-center items-center flex"
-							content={i18n.t('e.g. A filter to remove profanity from text')}
+							content={$i18n.t('e.g. A filter to remove profanity from text')}
 							placement="top-start"
 						>
 							<input
 								class="w-full text-sm bg-transparent outline-hidden"
 								type="text"
-								placeholder={i18n.t('Function Description')}
+								placeholder={$i18n.t('Function Description')}
 								bind:value={meta.description}
 								required
 							/>
@@ -452,10 +452,10 @@ class Pipe:
 				<div class="pb-3 flex justify-between">
 					<div class="flex-1 pr-3">
 						<div class="text-xs text-gray-500 line-clamp-2">
-							<span class=" font-semibold dark:text-gray-200">{i18n.t('Warning:')}</span>
-							{i18n.t('Functions allow arbitrary code execution.')} <br />—
+							<span class=" font-semibold dark:text-gray-200">{$i18n.t('Warning:')}</span>
+							{$i18n.t('Functions allow arbitrary code execution.')} <br />—
 							<span class=" font-medium dark:text-gray-400"
-								>{i18n.t(`don't install random functions from sources you don't trust.`)}</span
+								>{$i18n.t(`don't install random functions from sources you don't trust.`)}</span
 							>
 						</div>
 					</div>
@@ -464,7 +464,7 @@ class Pipe:
 						class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 						type="submit"
 					>
-						{i18n.t('Save')}
+						{$i18n.t('Save')}
 					</button>
 				</div>
 			</div>
@@ -480,16 +480,16 @@ class Pipe:
 >
 	<div class="text-sm text-gray-500">
 		<div class=" bg-yellow-500/20 text-yellow-700 dark:text-yellow-200 rounded-lg px-4 py-3">
-			<div>{i18n.t('Please carefully review the following warnings:')}</div>
+			<div>{$i18n.t('Please carefully review the following warnings:')}</div>
 
 			<ul class=" mt-1 list-disc pl-4 text-xs">
-				<li>{i18n.t('Functions allow arbitrary code execution.')}</li>
-				<li>{i18n.t('Do not install functions from sources you do not fully trust.')}</li>
+				<li>{$i18n.t('Functions allow arbitrary code execution.')}</li>
+				<li>{$i18n.t('Do not install functions from sources you do not fully trust.')}</li>
 			</ul>
 		</div>
 
 		<div class="my-3">
-			{i18n.t(
+			{$i18n.t(
 				'I acknowledge that I have read and I understand the implications of my action. I am aware of the risks associated with executing arbitrary code and I have verified the trustworthiness of the source.'
 			)}
 		</div>
@@ -513,7 +513,7 @@ class Pipe:
 				<div class="w-full mb-2 flex flex-col gap-0.5">
 					<div class="flex w-full items-center">
 						<div class=" shrink-0 mr-2">
-							<Tooltip content={i18n.t('Back')}>
+							<Tooltip content={$i18n.t('Back')}>
 								<button
 									class="w-full text-left text-sm py-1.5 px-1 rounded-lg dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-gray-850"
 									on:click={() => {
@@ -527,11 +527,11 @@ class Pipe:
 						</div>
 
 						<div class="flex-1">
-							<Tooltip content={i18n.t('e.g. My Filter')} placement="top-start">
+							<Tooltip content={$i18n.t('e.g. My Filter')} placement="top-start">
 								<input
 									class="w-full text-2xl font-medium bg-transparent outline-hidden font-primary"
 									type="text"
-									placeholder={i18n.t('Function Name')}
+									placeholder={$i18n.t('Function Name')}
 									bind:value={name}
 									required
 								/>
@@ -544,13 +544,13 @@ class Pipe:
 									class="text-xs bg-transparent border border-gray-100 dark:border-gray-800 rounded-lg px-2 py-1 outline-hidden"
 									bind:value={starterType}
 									on:change={(event) => selectStarterType(event.currentTarget.value)}
-									aria-label={i18n.t('Function starter')}
+									aria-label={$i18n.t('Function starter')}
 								>
-									<option value="filter">{i18n.t('Filter')}</option>
-									<option value="event">{i18n.t('Event')}</option>
+									<option value="filter">{$i18n.t('Filter')}</option>
+									<option value="event">{$i18n.t('Event')}</option>
 								</select>
 							{/if}
-							<Badge type="muted" content={i18n.t('Function')} />
+							<Badge type="muted" content={$i18n.t('Function')} />
 						</div>
 					</div>
 
@@ -560,11 +560,11 @@ class Pipe:
 								{id}
 							</div>
 						{:else}
-							<Tooltip className="w-full" content={i18n.t('e.g. my_filter')} placement="top-start">
+							<Tooltip className="w-full" content={$i18n.t('e.g. my_filter')} placement="top-start">
 								<input
 									class="w-full text-sm disabled:text-gray-500 bg-transparent outline-hidden"
 									type="text"
-									placeholder={i18n.t('Function ID')}
+									placeholder={$i18n.t('Function ID')}
 									bind:value={id}
 									required
 									disabled={edit}
@@ -574,13 +574,13 @@ class Pipe:
 
 						<Tooltip
 							className="w-full self-center items-center flex"
-							content={i18n.t('e.g. A filter to remove profanity from text')}
+							content={$i18n.t('e.g. A filter to remove profanity from text')}
 							placement="top-start"
 						>
 							<input
 								class="w-full text-sm bg-transparent outline-hidden"
 								type="text"
-								placeholder={i18n.t('Function Description')}
+								placeholder={$i18n.t('Function Description')}
 								bind:value={meta.description}
 								required
 							/>
@@ -618,10 +618,10 @@ class Pipe:
 				<div class="pb-3 flex justify-between">
 					<div class="flex-1 pr-3">
 						<div class="text-xs text-gray-500 line-clamp-2">
-							<span class=" font-semibold dark:text-gray-200">{i18n.t('Warning:')}</span>
-							{i18n.t('Functions allow arbitrary code execution.')} <br />—
+							<span class=" font-semibold dark:text-gray-200">{$i18n.t('Warning:')}</span>
+							{$i18n.t('Functions allow arbitrary code execution.')} <br />—
 							<span class=" font-medium dark:text-gray-400"
-								>{i18n.t(`don't install random functions from sources you don't trust.`)}</span
+								>{$i18n.t(`don't install random functions from sources you don't trust.`)}</span
 							>
 						</div>
 					</div>
@@ -630,7 +630,7 @@ class Pipe:
 						class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 						type="submit"
 					>
-						{i18n.t('Save')}
+						{$i18n.t('Save')}
 					</button>
 				</div>
 			</div>
@@ -646,16 +646,16 @@ class Pipe:
 >
 	<div class="text-sm text-gray-500">
 		<div class=" bg-yellow-500/20 text-yellow-700 dark:text-yellow-200 rounded-lg px-4 py-3">
-			<div>{i18n.t('Please carefully review the following warnings:')}</div>
+			<div>{$i18n.t('Please carefully review the following warnings:')}</div>
 
 			<ul class=" mt-1 list-disc pl-4 text-xs">
-				<li>{i18n.t('Functions allow arbitrary code execution.')}</li>
-				<li>{i18n.t('Do not install functions from sources you do not fully trust.')}</li>
+				<li>{$i18n.t('Functions allow arbitrary code execution.')}</li>
+				<li>{$i18n.t('Do not install functions from sources you do not fully trust.')}</li>
 			</ul>
 		</div>
 
 		<div class="my-3">
-			{i18n.t(
+			{$i18n.t(
 				'I acknowledge that I have read and I understand the implications of my action. I am aware of the risks associated with executing arbitrary code and I have verified the trustworthiness of the source.'
 			)}
 		</div>

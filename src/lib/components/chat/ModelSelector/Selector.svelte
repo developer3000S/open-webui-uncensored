@@ -1,7 +1,8 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
+	import type { Writable } from 'svelte/store';
 	import { createEventDispatcher, getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { marked } from 'marked';
 	import Fuse from 'fuse.js';
@@ -28,6 +29,7 @@
 		settings,
 		config
 	} from '$lib/stores';
+	import type { Model } from '$lib/stores';
 	import { toast } from 'svelte-sonner';
 	import { capitalizeFirstLetter, sanitizeResponseContent, splitStream } from '$lib/utils';
 	import { getModels } from '$lib/apis';
@@ -41,21 +43,19 @@
 
 	import ModelItem from './ModelItem.svelte';
 
-	import type { Writable } from 'svelte/store';
 	const dispatch = createEventDispatcher();
 
 	export let id: any = '';
 	export let value: string | null = '';
-	export let placeholder = i18n.t('Select a model');
+	export let placeholder = $i18n.t('Select a model');
 	export let searchEnabled: any = true;
-	export let searchPlaceholder = i18n.t('Search a model');
+	export let searchPlaceholder = $i18n.t('Search a model');
 	export let selectionOnly: any = false;
 	export let includeHidden: any = false;
 	export let items: {
 		label: string;
 		value: string;
 		model: Model;
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		[key: string]: any;
 	}[] = [];
 
@@ -126,7 +126,7 @@
 
 	let tags: any = [];
 
-	let selectedModel = '';
+	let selectedModel: any = '';
 	$: selectedModel = items.find((item) => item.value === value) ?? '';
 
 	let searchValue = '';
@@ -141,9 +141,9 @@
 		items.map((item) => {
 			const _item = {
 				...item,
-				modelName: item.model?.name,
-				tags: (item.model?.tags ?? []).map((tag) => tag.name).join(' '),
-				desc: item.model?.info?.meta?.description
+				modelName: (item.model as any)?.name,
+				tags: ((item.model as any)?.tags ?? []).map((tag) => tag.name).join(' '),
+				desc: (item.model as any)?.info?.meta?.description
 			};
 			return _item;
 		}),
@@ -159,9 +159,9 @@
 				items.map((item) => {
 					const _item = {
 						...item,
-						modelName: item.model?.name,
-						tags: (item.model?.tags ?? []).map((tag) => tag.name).join(' '),
-						desc: item.model?.info?.meta?.description
+						modelName: (item.model as any)?.name,
+						tags: ((item.model as any)?.tags ?? []).map((tag) => tag.name).join(' '),
+						desc: (item.model as any)?.info?.meta?.description
 					};
 					return _item;
 				})
@@ -185,7 +185,7 @@
 							return true;
 						}
 
-						return (item.model?.tags ?? [])
+						return ((item.model as any)?.tags ?? [])
 							.map((tag) => tag.name.toLowerCase())
 							.includes(selectedTag.toLowerCase());
 					})
@@ -193,13 +193,13 @@
 						if (selectedConnectionType === '') {
 							return true;
 						} else if (selectedConnectionType === 'local') {
-							return item.model?.connection_type === 'local';
+							return (item.model as any)?.connection_type === 'local';
 						} else if (selectedConnectionType === 'studio') {
-							return item.model?.connection_type === 'studio';
+							return (item.model as any)?.connection_type === 'studio';
 						} else if (selectedConnectionType === 'external') {
-							return item.model?.connection_type === 'external';
+							return (item.model as any)?.connection_type === 'external';
 						} else if (selectedConnectionType === 'direct') {
-							return item.model?.direct;
+							return (item.model as any)?.direct;
 						}
 					})
 			: items
@@ -207,7 +207,7 @@
 						if (selectedTag === '') {
 							return true;
 						}
-						return (item.model?.tags ?? [])
+						return ((item.model as any)?.tags ?? [])
 							.map((tag) => tag.name.toLowerCase())
 							.includes(selectedTag.toLowerCase());
 					})
@@ -215,16 +215,16 @@
 						if (selectedConnectionType === '') {
 							return true;
 						} else if (selectedConnectionType === 'local') {
-							return item.model?.connection_type === 'local';
+							return (item.model as any)?.connection_type === 'local';
 						} else if (selectedConnectionType === 'studio') {
-							return item.model?.connection_type === 'studio';
+							return (item.model as any)?.connection_type === 'studio';
 						} else if (selectedConnectionType === 'external') {
-							return item.model?.connection_type === 'external';
+							return (item.model as any)?.connection_type === 'external';
 						} else if (selectedConnectionType === 'direct') {
-							return item.model?.direct;
+							return (item.model as any)?.direct;
 						}
 					})
-	).filter((item) => includeHidden || !(item.model?.info?.meta?.hidden ?? false));
+	).filter((item) => includeHidden || !((item.model as any)?.info?.meta?.hidden ?? false));
 
 	$: if (
 		selectedTag !== undefined ||
@@ -268,7 +268,7 @@
 		console.log($MODEL_DOWNLOAD_POOL);
 		if ($MODEL_DOWNLOAD_POOL[sanitizedModelTag]) {
 			toast.error(
-				i18n.t(`Model '{{modelTag}}' is already in queue for downloading.`, {
+				$i18n.t(`Model '{{modelTag}}' is already in queue for downloading.`, {
 					modelTag: sanitizedModelTag
 				})
 			);
@@ -276,12 +276,12 @@
 		}
 		if (Object.keys($MODEL_DOWNLOAD_POOL).length === 3) {
 			toast.error(
-				i18n.t('Maximum of 3 models can be downloaded simultaneously. Please try again later.')
+				$i18n.t('Maximum of 3 models can be downloaded simultaneously. Please try again later.')
 			);
 			return;
 		}
 
-		const [res, controller] = await pullModel(localStorage.token, sanitizedModelTag, '0').catch(
+		const [res, controller] = await pullModel(localStorage.token, sanitizedModelTag, null).catch(
 			(error) => {
 				toast.error(`${error}`);
 				return null;
@@ -367,7 +367,7 @@
 
 			if ($MODEL_DOWNLOAD_POOL[sanitizedModelTag].done) {
 				toast.success(
-					i18n.t(`Model '{{modelName}}' has been successfully downloaded.`, {
+					$i18n.t(`Model '{{modelName}}' has been successfully downloaded.`, {
 						modelName: sanitizedModelTag
 					})
 				);
@@ -379,7 +379,7 @@
 					)
 				);
 			} else {
-				toast.error(i18n.t('Download canceled'));
+				toast.error($i18n.t('Download canceled'));
 			}
 
 			delete $MODEL_DOWNLOAD_POOL[sanitizedModelTag];
@@ -394,14 +394,15 @@
 		ollamaVersion = await getOllamaVersion(localStorage.token).catch((error) => false);
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		if (items) {
 			tags = items
-				.filter((item) => includeHidden || !(item.model?.info?.meta?.hidden ?? false))
-				.flatMap((item) => item.model?.tags ?? [])
-				.map((tag) => tag.name.toLowerCase());
+				.filter((item) => includeHidden || !((item.model as any)?.info?.meta?.hidden ?? false))
+				.flatMap((item) => (item.model as any)?.tags ?? [])
+				.map((tag: any) => String((tag as any)?.name ?? tag).toLowerCase());
 			// Remove duplicates and sort
-			tags = Array.from(new Set(tags)).sort((a, b) => a.localeCompare(b));
+			tags = Array.from(new Set(tags)).sort((a: any, b: any) => a.localeCompare(b));
 		}
 	});
 
@@ -421,17 +422,17 @@
 				...$MODEL_DOWNLOAD_POOL
 			});
 			await deleteModel(localStorage.token, model);
-			toast.success(i18n.t('{{model}} download has been canceled', { model: model }));
+			toast.success($i18n.t('{{model}} download has been canceled', { model: model }));
 		}
 	};
 
 	const unloadModelHandler = async (model: string) => {
-		const res = await unloadModel(localStorage.token, model).catch(async (error)=> {
-			toast.error(i18n.t('Error unloading model: {{error}}', { error }));
+		const res = await unloadModel(localStorage.token, model).catch(async (error) => {
+			toast.error($i18n.t('Error unloading model: {{error}}', { error }));
 		});
 
 		if (res) {
-			toast.success(i18n.t('Model unloaded successfully'));
+			toast.success($i18n.t('Model unloaded successfully'));
 			models.set(
 				await getModels(
 					localStorage.token,
@@ -453,14 +454,14 @@
 		const model = deleteModelTarget;
 		if (!model) return;
 
-		const res = await deleteModel(localStorage.token, model.id).catch(async (error)=> {
-			toast.error(i18n.t('Error deleting model: {{error}}', { error }));
+		const res = await deleteModel(localStorage.token, model.id).catch(async (error) => {
+			toast.error($i18n.t('Error deleting model: {{error}}', { error }));
 		});
 
 		if (res) {
-			// i18n.t('Model {{modelId}} not found')
+			// $i18n.t('Model {{modelId}} not found')
 			toast.success(
-				i18n.t('Model {{modelName}} deleted successfully', { modelName: model.name ?? model.id })
+				$i18n.t('Model {{modelName}} deleted successfully', { modelName: model.name ?? model.id })
 			);
 
 			// If the deleted model was selected, clear the selection
@@ -494,8 +495,8 @@
 
 <ConfirmDialog
 	bind:show={showDeleteConfirm}
-	title={i18n.t('Delete Model')}
-	message={i18n.t('Are you sure you want to delete **{{modelName}}**?', {
+	title={$i18n.t('Delete Model')}
+	message={$i18n.t('Are you sure you want to delete **{{modelName}}**?', {
 		modelName: deleteModelTarget?.name ?? deleteModelTarget?.id ?? ''
 	})}
 	on:confirm={() => {
@@ -503,7 +504,14 @@
 	}}
 />
 
-<svelte:window on:pointerdown={handlePointerDown} on:keydown={handleKeydown} on:resize={updatePosition} on:pointerdown={handlePointerDown} on:keydown={handleKeydown} on:resize={updatePosition} />
+<svelte:window
+	on:pointerdown={handlePointerDown}
+	on:keydown={handleKeydown}
+	on:resize={updatePosition}
+	on:pointerdown={handlePointerDown}
+	on:keydown={handleKeydown}
+	on:resize={updatePosition}
+/>
 
 <div class="relative w-full">
 	<button
@@ -512,7 +520,7 @@
 			? ''
 			: 'outline-hidden focus:outline-hidden'}"
 		aria-label={selectedModel
-			? i18n.t('Selected model: {{modelName}}', { modelName: selectedModel.label })
+			? $i18n.t('Selected model: {{modelName}}', { modelName: selectedModel.label })
 			: placeholder}
 		aria-haspopup="listbox"
 		aria-expanded={show}
@@ -570,7 +578,7 @@
 								class="w-full text-sm bg-transparent outline-hidden"
 								placeholder={searchPlaceholder}
 								autocomplete="off"
-								aria-label={i18n.t('Search In Models')}
+								aria-label={$i18n.t('Search In Models')}
 								on:keydown={(e) => {
 									if (e.code === 'Enter' && filteredItems.length > 0) {
 										value = filteredItems[selectedModelIdx].value;
@@ -599,7 +607,7 @@
 					{/if}
 
 					<div class="px-2">
-						{#if tags && items.filter((item) => includeHidden || !(item.model?.info?.meta?.hidden ?? false)).length > 0}
+						{#if tags && items.filter((item) => includeHidden || !((item.model as any)?.info?.meta?.hidden ?? false)).length > 0}
 							<div
 								class=" flex w-full bg-white dark:bg-gray-850 overflow-x-auto scrollbar-none font-[450] mb-0.5"
 								on:wheel={(e) => {
@@ -613,7 +621,7 @@
 									class="flex gap-1 w-fit text-center text-sm rounded-full bg-transparent px-1.5 whitespace-nowrap"
 									bind:this={tagsContainerElement}
 								>
-									{#if items.find((item) => item.model?.connection_type === 'local') || items.find((item) => item.model?.connection_type === 'studio') || items.find((item) => item.model?.connection_type === 'external') || items.find((item) => item.model?.direct) || tags.length > 0}
+									{#if items.find((item) => (item.model as any)?.connection_type === 'local') || items.find((item) => (item.model as any)?.connection_type === 'studio') || items.find((item) => (item.model as any)?.connection_type === 'external') || items.find((item) => (item.model as any)?.direct) || tags.length > 0}
 										<button
 											class="min-w-fit outline-none px-1.5 py-0.5 {selectedTag === '' &&
 											selectedConnectionType === ''
@@ -625,11 +633,11 @@
 												selectedTag = '';
 											}}
 										>
-											{i18n.t('All')}
+											{$i18n.t('All')}
 										</button>
 									{/if}
 
-									{#if items.find((item) => item.model?.connection_type === 'local')}
+									{#if items.find((item) => (item.model as any)?.connection_type === 'local')}
 										<button
 											class="min-w-fit outline-none px-1.5 py-0.5 {selectedConnectionType ===
 											'local'
@@ -641,11 +649,11 @@
 												selectedConnectionType = 'local';
 											}}
 										>
-											{i18n.t('Ollama')}
+											{$i18n.t('Ollama')}
 										</button>
 									{/if}
 
-									{#if items.find((item) => item.model?.connection_type === 'studio')}
+									{#if items.find((item) => (item.model as any)?.connection_type === 'studio')}
 										<button
 											class="min-w-fit outline-none px-1.5 py-0.5 {selectedConnectionType ===
 											'studio'
@@ -657,11 +665,11 @@
 												selectedConnectionType = 'studio';
 											}}
 										>
-											{i18n.t('Studio')}
+											{$i18n.t('Studio')}
 										</button>
 									{/if}
 
-									{#if items.find((item) => item.model?.connection_type === 'external')}
+									{#if items.find((item) => (item.model as any)?.connection_type === 'external')}
 										<button
 											class="min-w-fit outline-none px-1.5 py-0.5 {selectedConnectionType ===
 											'external'
@@ -673,11 +681,11 @@
 												selectedConnectionType = 'external';
 											}}
 										>
-											{i18n.t('External')}
+											{$i18n.t('External')}
 										</button>
 									{/if}
 
-									{#if items.find((item) => item.model?.direct)}
+									{#if items.find((item) => (item.model as any)?.direct)}
 										<button
 											class="min-w-fit outline-none px-1.5 py-0.5 {selectedConnectionType ===
 											'direct'
@@ -689,7 +697,7 @@
 												selectedConnectionType = 'direct';
 											}}
 										>
-											{i18n.t('Direct')}
+											{$i18n.t('Direct')}
 										</button>
 									{/if}
 
@@ -719,10 +727,10 @@
 							{#if items.length === 0 && $user?.role === 'admin'}
 								<div class="flex flex-col items-start justify-center py-6 px-4 text-start">
 									<div class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
-										{i18n.t('No models available')}
+										{$i18n.t('No models available')}
 									</div>
 									<div class="text-xs text-gray-500 dark:text-gray-400 mb-4">
-										{i18n.t('Connect to an AI provider to start chatting')}
+										{$i18n.t('Connect to an AI provider to start chatting')}
 									</div>
 									<a
 										href="/admin/settings/connections"
@@ -731,13 +739,13 @@
 											show = false;
 										}}
 									>
-										{i18n.t('Manage Connections')}
+										{$i18n.t('Manage Connections')}
 									</a>
 								</div>
 							{:else}
 								<div class="">
 									<div class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-100">
-										{i18n.t('No results found')}
+										{$i18n.t('No results found')}
 									</div>
 								</div>
 							{/if}
@@ -746,7 +754,7 @@
 							<div
 								class="max-h-64 overflow-y-auto"
 								role="listbox"
-								aria-label={i18n.t('Available models')}
+								aria-label={$i18n.t('Available models')}
 								bind:this={listContainer}
 								on:scroll={() => {
 									listScrollTop = listContainer.scrollTop;
@@ -778,7 +786,7 @@
 
 						{#if !selectionOnly && !(searchValue.trim() in $MODEL_DOWNLOAD_POOL) && searchValue && ollamaVersion && $user?.role === 'admin'}
 							<Tooltip
-								content={i18n.t(`Pull "{{searchValue}}" from Ollama.com`, {
+								content={$i18n.t(`Pull "{{searchValue}}" from Ollama.com`, {
 									searchValue: searchValue
 								})}
 								placement="top-start"
@@ -790,7 +798,7 @@
 									}}
 								>
 									<div class=" truncate">
-										{i18n.t(`Pull "{{searchValue}}" from Ollama.com`, {
+										{$i18n.t(`Pull "{{searchValue}}" from Ollama.com`, {
 											searchValue: searchValue
 										})}
 									</div>
@@ -829,10 +837,10 @@
 								</div>
 
 								<div class="mr-2 ml-1 translate-y-0.5">
-									<Tooltip content={i18n.t('Cancel')}>
+									<Tooltip content={$i18n.t('Cancel')}>
 										<button
 											class="text-gray-800 dark:text-gray-100"
-											aria-label={i18n.t('Cancel download of {{model}}', { model: model })}
+											aria-label={$i18n.t('Cancel download of {{model}}', { model: model })}
 											on:click={() => {
 												cancelModelPullHandler(model);
 											}}
@@ -873,16 +881,14 @@
 
 <ConfirmDialog
 	bind:show={showDeleteConfirm}
-	title={i18n.t('Delete Model')}
-	message={i18n.t('Are you sure you want to delete **{{modelName}}**?', {
+	title={$i18n.t('Delete Model')}
+	message={$i18n.t('Are you sure you want to delete **{{modelName}}**?', {
 		modelName: deleteModelTarget?.name ?? deleteModelTarget?.id ?? ''
 	})}
 	on:confirm={() => {
 		confirmDeleteModel();
 	}}
 />
-
-
 
 <div class="relative w-full">
 	<button
@@ -891,7 +897,7 @@
 			? ''
 			: 'outline-hidden focus:outline-hidden'}"
 		aria-label={selectedModel
-			? i18n.t('Selected model: {{modelName}}', { modelName: selectedModel.label })
+			? $i18n.t('Selected model: {{modelName}}', { modelName: selectedModel.label })
 			: placeholder}
 		aria-haspopup="listbox"
 		aria-expanded={show}
@@ -949,7 +955,7 @@
 								class="w-full text-sm bg-transparent outline-hidden"
 								placeholder={searchPlaceholder}
 								autocomplete="off"
-								aria-label={i18n.t('Search In Models')}
+								aria-label={$i18n.t('Search In Models')}
 								on:keydown={(e) => {
 									if (e.code === 'Enter' && filteredItems.length > 0) {
 										value = filteredItems[selectedModelIdx].value;
@@ -978,7 +984,7 @@
 					{/if}
 
 					<div class="px-2">
-						{#if tags && items.filter((item) => includeHidden || !(item.model?.info?.meta?.hidden ?? false)).length > 0}
+						{#if tags && items.filter((item) => includeHidden || !((item.model as any)?.info?.meta?.hidden ?? false)).length > 0}
 							<div
 								class=" flex w-full bg-white dark:bg-gray-850 overflow-x-auto scrollbar-none font-[450] mb-0.5"
 								on:wheel={(e) => {
@@ -992,7 +998,7 @@
 									class="flex gap-1 w-fit text-center text-sm rounded-full bg-transparent px-1.5 whitespace-nowrap"
 									bind:this={tagsContainerElement}
 								>
-									{#if items.find((item) => item.model?.connection_type === 'local') || items.find((item) => item.model?.connection_type === 'studio') || items.find((item) => item.model?.connection_type === 'external') || items.find((item) => item.model?.direct) || tags.length > 0}
+									{#if items.find((item) => (item.model as any)?.connection_type === 'local') || items.find((item) => (item.model as any)?.connection_type === 'studio') || items.find((item) => (item.model as any)?.connection_type === 'external') || items.find((item) => (item.model as any)?.direct) || tags.length > 0}
 										<button
 											class="min-w-fit outline-none px-1.5 py-0.5 {selectedTag === '' &&
 											selectedConnectionType === ''
@@ -1004,11 +1010,11 @@
 												selectedTag = '';
 											}}
 										>
-											{i18n.t('All')}
+											{$i18n.t('All')}
 										</button>
 									{/if}
 
-									{#if items.find((item) => item.model?.connection_type === 'local')}
+									{#if items.find((item) => (item.model as any)?.connection_type === 'local')}
 										<button
 											class="min-w-fit outline-none px-1.5 py-0.5 {selectedConnectionType ===
 											'local'
@@ -1020,11 +1026,11 @@
 												selectedConnectionType = 'local';
 											}}
 										>
-											{i18n.t('Ollama')}
+											{$i18n.t('Ollama')}
 										</button>
 									{/if}
 
-									{#if items.find((item) => item.model?.connection_type === 'studio')}
+									{#if items.find((item) => (item.model as any)?.connection_type === 'studio')}
 										<button
 											class="min-w-fit outline-none px-1.5 py-0.5 {selectedConnectionType ===
 											'studio'
@@ -1036,11 +1042,11 @@
 												selectedConnectionType = 'studio';
 											}}
 										>
-											{i18n.t('Studio')}
+											{$i18n.t('Studio')}
 										</button>
 									{/if}
 
-									{#if items.find((item) => item.model?.connection_type === 'external')}
+									{#if items.find((item) => (item.model as any)?.connection_type === 'external')}
 										<button
 											class="min-w-fit outline-none px-1.5 py-0.5 {selectedConnectionType ===
 											'external'
@@ -1052,11 +1058,11 @@
 												selectedConnectionType = 'external';
 											}}
 										>
-											{i18n.t('External')}
+											{$i18n.t('External')}
 										</button>
 									{/if}
 
-									{#if items.find((item) => item.model?.direct)}
+									{#if items.find((item) => (item.model as any)?.direct)}
 										<button
 											class="min-w-fit outline-none px-1.5 py-0.5 {selectedConnectionType ===
 											'direct'
@@ -1068,7 +1074,7 @@
 												selectedConnectionType = 'direct';
 											}}
 										>
-											{i18n.t('Direct')}
+											{$i18n.t('Direct')}
 										</button>
 									{/if}
 
@@ -1098,10 +1104,10 @@
 							{#if items.length === 0 && $user?.role === 'admin'}
 								<div class="flex flex-col items-start justify-center py-6 px-4 text-start">
 									<div class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
-										{i18n.t('No models available')}
+										{$i18n.t('No models available')}
 									</div>
 									<div class="text-xs text-gray-500 dark:text-gray-400 mb-4">
-										{i18n.t('Connect to an AI provider to start chatting')}
+										{$i18n.t('Connect to an AI provider to start chatting')}
 									</div>
 									<a
 										href="/admin/settings/connections"
@@ -1110,13 +1116,13 @@
 											show = false;
 										}}
 									>
-										{i18n.t('Manage Connections')}
+										{$i18n.t('Manage Connections')}
 									</a>
 								</div>
 							{:else}
 								<div class="">
 									<div class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-100">
-										{i18n.t('No results found')}
+										{$i18n.t('No results found')}
 									</div>
 								</div>
 							{/if}
@@ -1125,7 +1131,7 @@
 							<div
 								class="max-h-64 overflow-y-auto"
 								role="listbox"
-								aria-label={i18n.t('Available models')}
+								aria-label={$i18n.t('Available models')}
 								bind:this={listContainer}
 								on:scroll={() => {
 									listScrollTop = listContainer.scrollTop;
@@ -1157,7 +1163,7 @@
 
 						{#if !selectionOnly && !(searchValue.trim() in $MODEL_DOWNLOAD_POOL) && searchValue && ollamaVersion && $user?.role === 'admin'}
 							<Tooltip
-								content={i18n.t(`Pull "{{searchValue}}" from Ollama.com`, {
+								content={$i18n.t(`Pull "{{searchValue}}" from Ollama.com`, {
 									searchValue: searchValue
 								})}
 								placement="top-start"
@@ -1169,7 +1175,7 @@
 									}}
 								>
 									<div class=" truncate">
-										{i18n.t(`Pull "{{searchValue}}" from Ollama.com`, {
+										{$i18n.t(`Pull "{{searchValue}}" from Ollama.com`, {
 											searchValue: searchValue
 										})}
 									</div>
@@ -1208,10 +1214,10 @@
 								</div>
 
 								<div class="mr-2 ml-1 translate-y-0.5">
-									<Tooltip content={i18n.t('Cancel')}>
+									<Tooltip content={$i18n.t('Cancel')}>
 										<button
 											class="text-gray-800 dark:text-gray-100"
-											aria-label={i18n.t('Cancel download of {{model}}', { model: model })}
+											aria-label={$i18n.t('Cancel download of {{model}}', { model: model })}
 											on:click={() => {
 												cancelModelPullHandler(model);
 											}}

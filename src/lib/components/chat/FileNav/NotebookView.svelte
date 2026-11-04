@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { marked } from 'marked';
 	import DOMPurify from 'dompurify';
@@ -227,7 +227,7 @@
 				on:click={runAll}
 				disabled={runAllActive || runningCell !== null}
 			>
-				{i18n.t('Run All')}
+				{$i18n.t('Run All')}
 			</button>
 			{#if kernelReady}
 				<button
@@ -237,10 +237,10 @@
 						await startSession();
 					}}
 				>
-					{i18n.t('Restart')}
+					{$i18n.t('Restart')}
 				</button>
 				<button class="nb-btn text-[0.6rem]" on:click={stopSession}>
-					{i18n.t('Stop')}
+					{$i18n.t('Stop')}
 				</button>
 			{/if}
 
@@ -248,11 +248,11 @@
 
 			<div class="flex items-center select-none">
 				{#if kernelStarting}
-					<Tooltip content={i18n.t('Starting kernel...')} placement="bottom"
+					<Tooltip content={$i18n.t('Starting kernel...')} placement="bottom"
 						><Spinner className="size-2" /></Tooltip
 					>
 				{:else if runningCell !== null}
-					<Tooltip content={i18n.t('Running')} placement="bottom"
+					<Tooltip content={$i18n.t('Running')} placement="bottom"
 						><Spinner className="size-2" /></Tooltip
 					>
 				{:else if kernelReady}
@@ -260,7 +260,7 @@
 						><span class="size-1.5 rounded-full bg-green-500 inline-block"></span></Tooltip
 					>
 				{:else}
-					<Tooltip content={i18n.t('No kernel')} placement="bottom"
+					<Tooltip content={$i18n.t('No kernel')} placement="bottom"
 						><span class="size-1.5 rounded-full bg-gray-400 dark:bg-gray-600 inline-block"
 						></span></Tooltip
 					>
@@ -891,187 +891,3 @@
 		text-decoration: var(--shiki-dark-text-decoration) !important;
 	}
 </style>
-
-<div class="notebook-view">
-	<!-- Toolbar -->
-	{#if baseUrl && apiKey && filePath}
-		<div class="nb-toolbar flex items-center gap-1 px-2 py-0.5">
-			<button
-				class="nb-btn text-[0.6rem]"
-				on:click={runAll}
-				disabled={runAllActive || runningCell !== null}
-			>
-				{i18n.t('Run All')}
-			</button>
-			{#if kernelReady}
-				<button
-					class="nb-btn text-[0.6rem]"
-					on:click={async () => {
-						await stopSession();
-						await startSession();
-					}}
-				>
-					{i18n.t('Restart')}
-				</button>
-				<button class="nb-btn text-[0.6rem]" on:click={stopSession}>
-					{i18n.t('Stop')}
-				</button>
-			{/if}
-
-			<div class="flex-1"></div>
-
-			<div class="flex items-center select-none">
-				{#if kernelStarting}
-					<Tooltip content={i18n.t('Starting kernel...')} placement="bottom"
-						><Spinner className="size-2" /></Tooltip
-					>
-				{:else if runningCell !== null}
-					<Tooltip content={i18n.t('Running')} placement="bottom"
-						><Spinner className="size-2" /></Tooltip
-					>
-				{:else if kernelReady}
-					<Tooltip content="Jupyter" placement="bottom"
-						><span class="size-1.5 rounded-full bg-green-500 inline-block"></span></Tooltip
-					>
-				{:else}
-					<Tooltip content={i18n.t('No kernel')} placement="bottom"
-						><span class="size-1.5 rounded-full bg-gray-400 dark:bg-gray-600 inline-block"
-						></span></Tooltip
-					>
-				{/if}
-			</div>
-		</div>
-
-		{#if kernelError}
-			<div
-				class="px-2 py-1 text-[0.65rem] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 whitespace-pre-wrap font-mono"
-			>
-				{kernelError}
-			</div>
-		{/if}
-	{/if}
-
-	<!-- Cells -->
-	{#each cells as cell, i}
-		<div class="nb-cell nb-cell-{cell.cell_type}">
-			{#if cell.cell_type === 'markdown'}
-				{#if editingCell[i]}
-					<textarea
-						class="nb-edit-textarea text-sm"
-						bind:value={editedSources[i]}
-						on:input={autoResize}
-						on:blur={() => cancelEditing(i)}
-						on:keydown={(e) => {
-							if (e.key === 'Escape') cancelEditing(i);
-						}}
-					></textarea>
-				{:else}
-					<!-- svelte-ignore a11y-click-events-have-key-events -->
-					<div
-						class="nb-markdown prose dark:prose-invert max-w-full text-sm cursor-text"
-						role="textbox"
-						tabindex="0"
-						on:dblclick={() => startEditing(i)}
-					>
-						{@html renderMarkdown(toStr(cell.source))}
-					</div>
-				{/if}
-			{:else if cell.cell_type === 'code'}
-				<div class="nb-code-wrap">
-					<div class="nb-cell-gutter">
-						{#if runningCell === i}
-							<div class="nb-cell-label"><Spinner className="size-3" /></div>
-						{:else if baseUrl && apiKey && filePath}
-							<button
-								class="nb-run-btn"
-								on:click={() => runCell(i)}
-								disabled={runningCell !== null}
-								title="Run cell (⌘+Enter)"
-							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke-width="2"
-									stroke="currentColor"
-									class="size-3"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"
-									/>
-								</svg>
-							</button>
-						{/if}
-						<div class="nb-cell-label">
-							{#if cell.execution_count !== undefined && cell.execution_count !== null}
-								[{cell.execution_count}]
-							{:else}
-								[ ]
-							{/if}
-						</div>
-					</div>
-					<div class="nb-code-content">
-						{#if editingCell[i]}
-							<CellEditor
-								value={editedSources[i]}
-								{lang}
-								on:change={(e) => {
-									editedSources[i] = e.detail;
-								}}
-								on:run={() => runCell(i)}
-								on:cancel={() => cancelEditing(i)}
-							/>
-						{:else}
-							<!-- svelte-ignore a11y-click-events-have-key-events -->
-							<div
-								class="nb-code-source-clickable"
-								role="textbox"
-								tabindex="0"
-								on:dblclick={() => startEditing(i)}
-							>
-								{#if highlightedCells[i]}
-									<div class="nb-code-source shiki-preview">
-										{@html highlightedCells[i]}
-									</div>
-								{:else}
-									<pre class="nb-code-source-raw">{toStr(cell.source)}</pre>
-								{/if}
-							</div>
-						{/if}
-
-						{#if cell.outputs && cell.outputs.length > 0}
-							<div class="nb-outputs">
-								{#each cell.outputs as output}
-									{#if output.output_type === 'error'}
-										<pre class="nb-error">{stripAnsi(
-												(output.traceback ?? []).join('\n') || `${output.ename}: ${output.evalue}`
-											)}</pre>
-									{:else}
-										{@const html = getOutputHtml(output)}
-										{@const images = getOutputImages(output)}
-										{@const text = getOutputText(output)}
-										{#if html}
-											<div class="nb-output-html">{@html html}</div>
-										{/if}
-										{#each images as src}
-											<img {src} alt="Output" class="nb-output-img" />
-										{/each}
-										{#if text}
-											<pre class="nb-output-text">{text}</pre>
-										{/if}
-									{/if}
-								{/each}
-							</div>
-						{/if}
-					</div>
-				</div>
-			{:else if cell.cell_type === 'raw'}
-				<pre class="nb-raw">{toStr(cell.source)}</pre>
-			{/if}
-		</div>
-	{/each}
-</div>
-
-

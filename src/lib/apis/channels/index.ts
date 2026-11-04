@@ -145,7 +145,7 @@ export const getChannelMembersById = async (
 	page = 1
 ) => {
 	let error: any = null;
-	let res: any = null;
+	let res: any;
 
 	const searchParams = new URLSearchParams();
 

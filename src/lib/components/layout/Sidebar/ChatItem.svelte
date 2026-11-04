@@ -1,9 +1,9 @@
 <script context="module" lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
-		/** Shared 1×1 transparent drag preview; avoids one Image per sidebar row */
+	/** Shared 1×1 transparent drag preview; avoids one Image per sidebar row */
 	const invisibleDragImage = new Image();
 	invisibleDragImage.src =
 		'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
@@ -71,7 +71,7 @@
 	export let ownerName: string | null = null;
 	export let ownerUserId: string | null = null;
 
-	export let onDragEnd = () => {};
+	export let onDragEnd: any = () => {};
 
 	function formatTimeAgo(timestamp: number): string {
 		const now = Date.now();
@@ -84,12 +84,12 @@
 		const weeks = Math.floor(days / 7);
 		const years = Math.floor(days / 365);
 
-		if (years > 0) return i18n.t('{{COUNT}}y', { COUNT: years, context: 'time_ago' });
-		if (weeks > 0) return i18n.t('{{COUNT}}w', { COUNT: weeks, context: 'time_ago' });
-		if (days > 0) return i18n.t('{{COUNT}}d', { COUNT: days, context: 'time_ago' });
-		if (hours > 0) return i18n.t('{{COUNT}}h', { COUNT: hours, context: 'time_ago' });
-		if (minutes > 0) return i18n.t('{{COUNT}}m', { COUNT: minutes, context: 'time_ago' });
-		return i18n.t('1m', { context: 'time_ago' });
+		if (years > 0) return $i18n.t('{{COUNT}}y', { COUNT: years, context: 'time_ago' });
+		if (weeks > 0) return $i18n.t('{{COUNT}}w', { COUNT: weeks, context: 'time_ago' });
+		if (days > 0) return $i18n.t('{{COUNT}}d', { COUNT: days, context: 'time_ago' });
+		if (hours > 0) return $i18n.t('{{COUNT}}h', { COUNT: hours, context: 'time_ago' });
+		if (minutes > 0) return $i18n.t('{{COUNT}}m', { COUNT: minutes, context: 'time_ago' });
+		return $i18n.t('1m', { context: 'time_ago' });
 	}
 
 	let chat: any = null;
@@ -112,6 +112,8 @@
 		!$activeChatIds.has(id) &&
 		(effectiveReadAt === null || (updatedAt !== null && updatedAt > effectiveReadAt));
 
+	let draggable = true;
+
 	const loadChat = async () => {
 		if (!chat) {
 			draggable = false;
@@ -127,7 +129,7 @@
 
 	const editChatTitle = async (id: any, title: any) => {
 		if (title === '') {
-			toast.error(i18n.t('Title cannot be an empty string.'));
+			toast.error($i18n.t('Title cannot be an empty string.'));
 		} else {
 			await updateChatById(localStorage.token, id, {
 				title: title
@@ -147,17 +149,17 @@
 
 	const cloneChatHandler = async (id: any) => {
 		if (!($user?.role === 'admin' || ($user?.permissions?.chat?.import ?? true))) {
-			toast.error(i18n.t('Access prohibited'));
+			toast.error($i18n.t('Access prohibited'));
 			return;
 		}
 
 		const res = await cloneChatById(
 			localStorage.token,
 			id,
-			i18n.t('Clone of {{TITLE}}', {
+			$i18n.t('Clone of {{TITLE}}', {
 				TITLE: title
 			})
-		).catch(async (error)=> {
+		).catch(async (error) => {
 			toast.error(`${error}`);
 			return null;
 		});
@@ -177,7 +179,7 @@
 		if (deleting) return;
 		deleting = true;
 
-		const res = await deleteChatById(localStorage.token, id).catch(async (error)=> {
+		const res = await deleteChatById(localStorage.token, id).catch(async (error) => {
 			toast.error(`${error}`);
 			return null;
 		});
@@ -212,10 +214,10 @@
 			}
 
 			dispatch('change');
-			toast.success(i18n.t('Chat archived.'));
+			toast.success($i18n.t('Chat archived.'));
 		} catch (error) {
 			console.error('Error archiving chat:', error);
-			toast.error(i18n.t('Failed to archive chat.'));
+			toast.error($i18n.t('Failed to archive chat.'));
 		} finally {
 			archiving = false;
 		}
@@ -223,7 +225,8 @@
 
 	const moveChatHandler = async (chatId: any, folderId: any) => {
 		if (chatId && folderId) {
-			const res = await updateChatFolderIdById(localStorage.token, chatId, folderId).catch(async (error)=> {
+			const res = await updateChatFolderIdById(localStorage.token, chatId, folderId).catch(
+				async (error) => {
 					toast.error(`${error}`);
 					return null;
 				}
@@ -236,10 +239,10 @@
 
 				dispatch('change');
 
-				toast.success(i18n.t('Chat moved successfully'));
+				toast.success($i18n.t('Chat moved successfully'));
 			}
 		} else {
-			toast.error(i18n.t('Failed to move chat'));
+			toast.error($i18n.t('Failed to move chat'));
 		}
 	};
 
@@ -430,13 +433,13 @@
 
 <DeleteConfirmDialog
 	bind:show={showDeleteConfirm}
-	title={i18n.t('Delete chat?')}
+	title={$i18n.t('Delete chat?')}
 	on:confirm={() => {
 		deleteChatHandler(id);
 	}}
 >
 	<div class=" text-sm text-gray-500 flex-1 line-clamp-3">
-		{i18n.t('This will delete')} <span class="  font-semibold">{title}</span>.
+		{$i18n.t('This will delete')} <span class="  font-semibold">{title}</span>.
 	</div>
 </DeleteConfirmDialog>
 
@@ -479,7 +482,7 @@
 				id="chat-title-input-{id}"
 				bind:value={chatTitle}
 				class=" bg-transparent w-full outline-hidden mr-10"
-				placeholder={generating ? i18n.t('Generating...') : ''}
+				placeholder={generating ? $i18n.t('Generating...') : ''}
 				disabled={generating}
 				on:keydown={chatTitleInputKeydownHandler}
 				on:blur={async (e: any) => {
@@ -617,7 +620,7 @@
 				<div
 					class="flex self-center items-center space-x-1.5 z-10 translate-y-[0.5px] -translate-x-[0.5px]"
 				>
-					<Tooltip content={i18n.t('Generate')}>
+					<Tooltip content={$i18n.t('Generate')}>
 						<button
 							class=" self-center dark:hover:text-white transition disabled:cursor-not-allowed"
 							id="generate-title-button"
@@ -632,7 +635,7 @@
 				</div>
 			{:else if shiftKey && mouseOver}
 				<div class=" flex items-center self-center space-x-1.5">
-					<Tooltip content={i18n.t('Archive')} className="flex items-center">
+					<Tooltip content={$i18n.t('Archive')} className="flex items-center">
 						<button
 							class=" self-center dark:hover:text-white transition disabled:cursor-not-allowed"
 							disabled={archiving}
@@ -645,7 +648,7 @@
 						</button>
 					</Tooltip>
 
-					<Tooltip content={i18n.t('Delete')}>
+					<Tooltip content={$i18n.t('Delete')}>
 						<button
 							class=" self-center dark:hover:text-white transition disabled:cursor-not-allowed"
 							disabled={deleting}
@@ -706,7 +709,7 @@
 					{#if id === $chatId}
 						<!-- Shortcut support using "delete-chat-button" id -->
 						<button
-							aria-label={i18n.t('Delete Chat')}
+							aria-label={$i18n.t('Delete Chat')}
 							id="delete-chat-button"
 							class="hidden"
 							on:click={() => {
@@ -735,13 +738,13 @@
 
 <DeleteConfirmDialog
 	bind:show={showDeleteConfirm}
-	title={i18n.t('Delete chat?')}
+	title={$i18n.t('Delete chat?')}
 	on:confirm={() => {
 		deleteChatHandler(id);
 	}}
 >
 	<div class=" text-sm text-gray-500 flex-1 line-clamp-3">
-		{i18n.t('This will delete')} <span class="  font-semibold">{title}</span>.
+		{$i18n.t('This will delete')} <span class="  font-semibold">{title}</span>.
 	</div>
 </DeleteConfirmDialog>
 
@@ -784,7 +787,7 @@
 				id="chat-title-input-{id}"
 				bind:value={chatTitle}
 				class=" bg-transparent w-full outline-hidden mr-10"
-				placeholder={generating ? i18n.t('Generating...') : ''}
+				placeholder={generating ? $i18n.t('Generating...') : ''}
 				disabled={generating}
 				on:keydown={chatTitleInputKeydownHandler}
 				on:blur={async (e: any) => {
@@ -922,7 +925,7 @@
 				<div
 					class="flex self-center items-center space-x-1.5 z-10 translate-y-[0.5px] -translate-x-[0.5px]"
 				>
-					<Tooltip content={i18n.t('Generate')}>
+					<Tooltip content={$i18n.t('Generate')}>
 						<button
 							class=" self-center dark:hover:text-white transition disabled:cursor-not-allowed"
 							id="generate-title-button"
@@ -937,7 +940,7 @@
 				</div>
 			{:else if shiftKey && mouseOver}
 				<div class=" flex items-center self-center space-x-1.5">
-					<Tooltip content={i18n.t('Archive')} className="flex items-center">
+					<Tooltip content={$i18n.t('Archive')} className="flex items-center">
 						<button
 							class=" self-center dark:hover:text-white transition disabled:cursor-not-allowed"
 							disabled={archiving}
@@ -950,7 +953,7 @@
 						</button>
 					</Tooltip>
 
-					<Tooltip content={i18n.t('Delete')}>
+					<Tooltip content={$i18n.t('Delete')}>
 						<button
 							class=" self-center dark:hover:text-white transition disabled:cursor-not-allowed"
 							disabled={deleting}
@@ -1011,7 +1014,7 @@
 					{#if id === $chatId}
 						<!-- Shortcut support using "delete-chat-button" id -->
 						<button
-							aria-label={i18n.t('Delete Chat')}
+							aria-label={$i18n.t('Delete Chat')}
 							id="delete-chat-button"
 							class="hidden"
 							on:click={() => {

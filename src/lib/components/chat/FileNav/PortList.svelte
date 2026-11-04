@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext, onDestroy } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { ListeningPort } from '$lib/apis/terminal';
 	import { getListeningPorts, getPortProxyUrl } from '$lib/apis/terminal';
@@ -73,7 +73,7 @@
 				clip-rule="evenodd"
 			/>
 		</svg>
-		{i18n.t('Ports')}
+		{$i18n.t('Ports')}
 		<span class="ml-auto flex items-center gap-1">
 			{#if ports.length > 0}
 				<span
@@ -82,11 +82,11 @@
 					{ports.length}
 				</span>
 			{/if}
-			<Tooltip content={i18n.t('Refresh')}>
+			<Tooltip content={$i18n.t('Refresh')}>
 				<button
 					class="p-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 					on:click|stopPropagation={loadPorts}
-					aria-label={i18n.t('Refresh')}
+					aria-label={$i18n.t('Refresh')}
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -109,7 +109,7 @@
 		<div class="mt-1 space-y-0.5 max-h-[150px] overflow-y-auto">
 			{#if ports.length === 0}
 				<div class="text-xs text-gray-400 dark:text-gray-500 px-1 py-1">
-					{i18n.t('No servers detected')}
+					{$i18n.t('No servers detected')}
 				</div>
 			{:else}
 				{#each ports as port}
@@ -123,7 +123,7 @@
 						<span class="text-gray-500 dark:text-gray-400 truncate flex-1 text-left">
 							{port.process ?? ''}
 						</span>
-						<Tooltip content={i18n.t('Open in new tab')}>
+						<Tooltip content={$i18n.t('Open in new tab')}>
 							<!-- svelte-ignore a11y-click-events-have-key-events -->
 							<span
 								role="button"
@@ -169,7 +169,7 @@
 				clip-rule="evenodd"
 			/>
 		</svg>
-		{i18n.t('Ports')}
+		{$i18n.t('Ports')}
 		<span class="ml-auto flex items-center gap-1">
 			{#if ports.length > 0}
 				<span
@@ -178,11 +178,11 @@
 					{ports.length}
 				</span>
 			{/if}
-			<Tooltip content={i18n.t('Refresh')}>
+			<Tooltip content={$i18n.t('Refresh')}>
 				<button
 					class="p-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
 					on:click|stopPropagation={loadPorts}
-					aria-label={i18n.t('Refresh')}
+					aria-label={$i18n.t('Refresh')}
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -205,7 +205,7 @@
 		<div class="mt-1 space-y-0.5 max-h-[150px] overflow-y-auto">
 			{#if ports.length === 0}
 				<div class="text-xs text-gray-400 dark:text-gray-500 px-1 py-1">
-					{i18n.t('No servers detected')}
+					{$i18n.t('No servers detected')}
 				</div>
 			{:else}
 				{#each ports as port}
@@ -219,7 +219,7 @@
 						<span class="text-gray-500 dark:text-gray-400 truncate flex-1 text-left">
 							{port.process ?? ''}
 						</span>
-						<Tooltip content={i18n.t('Open in new tab')}>
+						<Tooltip content={$i18n.t('Open in new tab')}>
 							<!-- svelte-ignore a11y-click-events-have-key-events -->
 							<span
 								role="button"

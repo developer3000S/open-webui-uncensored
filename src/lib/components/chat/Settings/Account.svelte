@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 
@@ -22,8 +22,8 @@
 
 	import type { Writable } from 'svelte/store';
 
-	export let saveHandler: Function;
-	export let saveSettings: Function;
+	export let saveHandler: any;
+	export let saveSettings: any;
 
 	let loaded = false;
 
@@ -66,13 +66,13 @@
 			bio: bio ? bio : null,
 			gender: gender ? gender : null,
 			date_of_birth: dateOfBirth ? dateOfBirth : null
-		}).catch(async (error)=> {
+		}).catch(async (error) => {
 			toast.error(`${error}`);
 		});
 
 		if (updatedUser) {
 			// Get Session User Info
-			const sessionUser = await getSessionUser(localStorage.token).catch(async (error)=> {
+			const sessionUser = await getSessionUser(localStorage.token).catch(async (error) => {
 				toast.error(`${error}`);
 				return null;
 			});
@@ -86,12 +86,13 @@
 	const createAPIKeyHandler = async () => {
 		APIKey = await createAPIKey(localStorage.token);
 		if (APIKey) {
-			toast.success(i18n.t('API Key created.'));
+			toast.success($i18n.t('API Key created.'));
 		} else {
-			toast.error(i18n.t('Failed to create API Key.'));
+			toast.error($i18n.t('Failed to create API Key.'));
 		}
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		const user = await getSessionUser(localStorage.token).catch((error) => {
 			toast.error(`${error}`);
@@ -131,14 +132,14 @@
 	<div class=" overflow-y-scroll max-h-[28rem] md:max-h-full">
 		<div class="space-y-1">
 			<div>
-				<div class="text-base font-medium">{i18n.t('Your Account')}</div>
+				<div class="text-base font-medium">{$i18n.t('Your Account')}</div>
 
 				<div class="text-xs text-gray-500 mt-0.5">
-					{i18n.t('Manage your account information.')}
+					{$i18n.t('Manage your account information.')}
 				</div>
 			</div>
 
-			<!-- <div class=" text-sm font-medium">{i18n.t('Account')}</div> -->
+			<!-- <div class=" text-sm font-medium">{$i18n.t('Account')}</div> -->
 
 			<div class="flex space-x-5 my-4">
 				<UserProfileImage bind:profileImageUrl user={$user} />
@@ -146,42 +147,42 @@
 				<div class="flex flex-1 flex-col">
 					<div class=" flex-1">
 						<div class="flex flex-col w-full">
-							<div class=" mb-1 text-xs font-medium">{i18n.t('Name')}</div>
+							<div class=" mb-1 text-xs font-medium">{$i18n.t('Name')}</div>
 
 							<div class="flex-1">
 								<input
 									class="w-full text-sm dark:text-gray-300 bg-transparent outline-hidden"
 									type="text"
 									bind:value={name}
-									aria-label={i18n.t('Name')}
+									aria-label={$i18n.t('Name')}
 									required
-									placeholder={i18n.t('Enter your name')}
+									placeholder={$i18n.t('Enter your name')}
 								/>
 							</div>
 						</div>
 
 						<div class="flex flex-col w-full mt-2">
-							<div class=" mb-1 text-xs font-medium">{i18n.t('Bio')}</div>
+							<div class=" mb-1 text-xs font-medium">{$i18n.t('Bio')}</div>
 
 							<div class="flex-1">
 								<Textarea
 									className="w-full text-sm dark:text-gray-300 bg-transparent outline-hidden"
 									minSize={60}
 									bind:value={bio}
-									ariaLabel={i18n.t('Bio')}
-									placeholder={i18n.t('Share your background and interests')}
+									ariaLabel={$i18n.t('Bio')}
+									placeholder={$i18n.t('Share your background and interests')}
 								/>
 							</div>
 						</div>
 
 						<div class="flex flex-col w-full mt-2">
-							<div class=" mb-1 text-xs font-medium">{i18n.t('Gender')}</div>
+							<div class=" mb-1 text-xs font-medium">{$i18n.t('Gender')}</div>
 
 							<div class="flex-1">
 								<select
 									class="w-full text-sm dark:text-gray-300 bg-transparent outline-hidden"
 									bind:value={_gender}
-									aria-label={i18n.t('Gender')}
+									aria-label={$i18n.t('Gender')}
 									on:change={(e) => {
 										console.log(_gender);
 
@@ -193,10 +194,10 @@
 										}
 									}}
 								>
-									<option value="" selected>{i18n.t('Prefer not to say')}</option>
-									<option value="male">{i18n.t('Male')}</option>
-									<option value="female">{i18n.t('Female')}</option>
-									<option value="custom">{i18n.t('Custom')}</option>
+									<option value="" selected>{$i18n.t('Prefer not to say')}</option>
+									<option value="male">{$i18n.t('Male')}</option>
+									<option value="female">{$i18n.t('Female')}</option>
+									<option value="custom">{$i18n.t('Custom')}</option>
 								</select>
 							</div>
 
@@ -205,21 +206,21 @@
 									class="w-full text-sm dark:text-gray-300 bg-transparent outline-hidden mt-1"
 									type="text"
 									required
-									aria-label={i18n.t('Custom Gender')}
-									placeholder={i18n.t('Enter your gender')}
+									aria-label={$i18n.t('Custom Gender')}
+									placeholder={$i18n.t('Enter your gender')}
 									bind:value={gender}
 								/>
 							{/if}
 						</div>
 
 						<div class="flex flex-col w-full mt-2">
-							<div class=" mb-1 text-xs font-medium">{i18n.t('Birth Date')}</div>
+							<div class=" mb-1 text-xs font-medium">{$i18n.t('Birth Date')}</div>
 
 							<div class="flex-1">
 								<input
 									class="w-full text-sm dark:text-gray-300 dark:placeholder:text-gray-300 bg-transparent outline-hidden"
 									type="date"
-									aria-label={i18n.t('Birth Date')}
+									aria-label={$i18n.t('Birth Date')}
 									bind:value={dateOfBirth}
 									required
 								/>
@@ -233,14 +234,14 @@
 		{#if $config?.features?.enable_user_webhooks && ($user?.role === 'admin' || ($user?.permissions?.features?.webhooks ?? false))}
 			<div class="mt-2">
 				<div class="flex flex-col w-full">
-					<div class=" mb-1 text-xs font-medium">{i18n.t('Notification Webhook')}</div>
+					<div class=" mb-1 text-xs font-medium">{$i18n.t('Notification Webhook')}</div>
 
 					<div class="flex-1">
 						<input
 							class="w-full text-sm outline-hidden"
 							type="url"
-							placeholder={i18n.t('Enter your webhook URL')}
-							aria-label={i18n.t('Notification Webhook')}
+							placeholder={$i18n.t('Enter your webhook URL')}
+							aria-label={$i18n.t('Notification Webhook')}
 							bind:value={webhookUrl}
 							required
 						/>
@@ -259,13 +260,13 @@
 
 		{#if ($config?.features?.enable_api_keys ?? true) && ($user?.role === 'admin' || ($user?.permissions?.features?.api_keys ?? false))}
 			<div class="flex justify-between items-center text-sm mt-2">
-				<div class="  font-medium">{i18n.t('API keys')}</div>
+				<div class="  font-medium">{$i18n.t('API keys')}</div>
 				<button
 					class=" text-xs font-medium text-gray-500"
 					type="button"
 					on:click={() => {
 						showAPIKeys = !showAPIKeys;
-					}}>{showAPIKeys ? i18n.t('Hide') : i18n.t('Show')}</button
+					}}>{showAPIKeys ? $i18n.t('Hide') : $i18n.t('Show')}</button
 				>
 			</div>
 
@@ -274,7 +275,7 @@
 					{#if $user?.role === 'admin'}
 						<div class="justify-between w-full mt-2">
 							<div class="flex justify-between w-full">
-								<div class="self-center text-xs font-medium mb-1">{i18n.t('JWT Token')}</div>
+								<div class="self-center text-xs font-medium mb-1">{$i18n.t('JWT Token')}</div>
 							</div>
 
 							<div class="flex">
@@ -282,7 +283,7 @@
 
 								<button
 									class="ml-1.5 px-1.5 py-1 dark:hover:bg-gray-850 transition rounded-lg"
-									aria-label={i18n.t('Copy Token')}
+									aria-label={$i18n.t('Copy Token')}
 									on:click={() => {
 										copyToClipboard(localStorage.token);
 										JWTTokenCopied = true;
@@ -332,7 +333,7 @@
 						<div class="justify-between w-full mt-2">
 							{#if $user?.role === 'admin'}
 								<div class="flex justify-between w-full">
-									<div class="self-center text-xs font-medium mb-1">{i18n.t('API Key')}</div>
+									<div class="self-center text-xs font-medium mb-1">{$i18n.t('API Key')}</div>
 								</div>
 							{/if}
 							<div class="flex">
@@ -341,7 +342,7 @@
 
 									<button
 										class="ml-1.5 px-1.5 py-1 dark:hover:bg-gray-850 transition rounded-lg"
-										aria-label={i18n.t('Copy API Key')}
+										aria-label={$i18n.t('Copy API Key')}
 										on:click={() => {
 											copyToClipboard(APIKey);
 											APIKeyCopied = true;
@@ -384,10 +385,10 @@
 										{/if}
 									</button>
 
-									<Tooltip content={i18n.t('Create new key')}>
+									<Tooltip content={$i18n.t('Create new key')}>
 										<button
 											class=" px-1.5 py-1 dark:hover:bg-gray-850transition rounded-lg"
-											aria-label={i18n.t('Create new key')}
+											aria-label={$i18n.t('Create new key')}
 											on:click={() => {
 												createAPIKeyHandler();
 											}}
@@ -417,7 +418,7 @@
 									>
 										<Plus strokeWidth="2" className=" size-3.5" />
 
-										{i18n.t('Create new secret key')}</button
+										{$i18n.t('Create new secret key')}</button
 									>
 								{/if}
 							</div>
@@ -439,7 +440,7 @@
 				}
 			}}
 		>
-			{i18n.t('Save')}
+			{$i18n.t('Save')}
 		</button>
 	</div>
 </div>
@@ -448,14 +449,14 @@
 	<div class=" overflow-y-scroll max-h-[28rem] md:max-h-full">
 		<div class="space-y-1">
 			<div>
-				<div class="text-base font-medium">{i18n.t('Your Account')}</div>
+				<div class="text-base font-medium">{$i18n.t('Your Account')}</div>
 
 				<div class="text-xs text-gray-500 mt-0.5">
-					{i18n.t('Manage your account information.')}
+					{$i18n.t('Manage your account information.')}
 				</div>
 			</div>
 
-			<!-- <div class=" text-sm font-medium">{i18n.t('Account')}</div> -->
+			<!-- <div class=" text-sm font-medium">{$i18n.t('Account')}</div> -->
 
 			<div class="flex space-x-5 my-4">
 				<UserProfileImage bind:profileImageUrl user={$user} />
@@ -463,42 +464,42 @@
 				<div class="flex flex-1 flex-col">
 					<div class=" flex-1">
 						<div class="flex flex-col w-full">
-							<div class=" mb-1 text-xs font-medium">{i18n.t('Name')}</div>
+							<div class=" mb-1 text-xs font-medium">{$i18n.t('Name')}</div>
 
 							<div class="flex-1">
 								<input
 									class="w-full text-sm dark:text-gray-300 bg-transparent outline-hidden"
 									type="text"
 									bind:value={name}
-									aria-label={i18n.t('Name')}
+									aria-label={$i18n.t('Name')}
 									required
-									placeholder={i18n.t('Enter your name')}
+									placeholder={$i18n.t('Enter your name')}
 								/>
 							</div>
 						</div>
 
 						<div class="flex flex-col w-full mt-2">
-							<div class=" mb-1 text-xs font-medium">{i18n.t('Bio')}</div>
+							<div class=" mb-1 text-xs font-medium">{$i18n.t('Bio')}</div>
 
 							<div class="flex-1">
 								<Textarea
 									className="w-full text-sm dark:text-gray-300 bg-transparent outline-hidden"
 									minSize={60}
 									bind:value={bio}
-									ariaLabel={i18n.t('Bio')}
-									placeholder={i18n.t('Share your background and interests')}
+									ariaLabel={$i18n.t('Bio')}
+									placeholder={$i18n.t('Share your background and interests')}
 								/>
 							</div>
 						</div>
 
 						<div class="flex flex-col w-full mt-2">
-							<div class=" mb-1 text-xs font-medium">{i18n.t('Gender')}</div>
+							<div class=" mb-1 text-xs font-medium">{$i18n.t('Gender')}</div>
 
 							<div class="flex-1">
 								<select
 									class="w-full text-sm dark:text-gray-300 bg-transparent outline-hidden"
 									bind:value={_gender}
-									aria-label={i18n.t('Gender')}
+									aria-label={$i18n.t('Gender')}
 									on:change={(e) => {
 										console.log(_gender);
 
@@ -510,10 +511,10 @@
 										}
 									}}
 								>
-									<option value="" selected>{i18n.t('Prefer not to say')}</option>
-									<option value="male">{i18n.t('Male')}</option>
-									<option value="female">{i18n.t('Female')}</option>
-									<option value="custom">{i18n.t('Custom')}</option>
+									<option value="" selected>{$i18n.t('Prefer not to say')}</option>
+									<option value="male">{$i18n.t('Male')}</option>
+									<option value="female">{$i18n.t('Female')}</option>
+									<option value="custom">{$i18n.t('Custom')}</option>
 								</select>
 							</div>
 
@@ -522,21 +523,21 @@
 									class="w-full text-sm dark:text-gray-300 bg-transparent outline-hidden mt-1"
 									type="text"
 									required
-									aria-label={i18n.t('Custom Gender')}
-									placeholder={i18n.t('Enter your gender')}
+									aria-label={$i18n.t('Custom Gender')}
+									placeholder={$i18n.t('Enter your gender')}
 									bind:value={gender}
 								/>
 							{/if}
 						</div>
 
 						<div class="flex flex-col w-full mt-2">
-							<div class=" mb-1 text-xs font-medium">{i18n.t('Birth Date')}</div>
+							<div class=" mb-1 text-xs font-medium">{$i18n.t('Birth Date')}</div>
 
 							<div class="flex-1">
 								<input
 									class="w-full text-sm dark:text-gray-300 dark:placeholder:text-gray-300 bg-transparent outline-hidden"
 									type="date"
-									aria-label={i18n.t('Birth Date')}
+									aria-label={$i18n.t('Birth Date')}
 									bind:value={dateOfBirth}
 									required
 								/>
@@ -550,14 +551,14 @@
 		{#if $config?.features?.enable_user_webhooks && ($user?.role === 'admin' || ($user?.permissions?.features?.webhooks ?? false))}
 			<div class="mt-2">
 				<div class="flex flex-col w-full">
-					<div class=" mb-1 text-xs font-medium">{i18n.t('Notification Webhook')}</div>
+					<div class=" mb-1 text-xs font-medium">{$i18n.t('Notification Webhook')}</div>
 
 					<div class="flex-1">
 						<input
 							class="w-full text-sm outline-hidden"
 							type="url"
-							placeholder={i18n.t('Enter your webhook URL')}
-							aria-label={i18n.t('Notification Webhook')}
+							placeholder={$i18n.t('Enter your webhook URL')}
+							aria-label={$i18n.t('Notification Webhook')}
 							bind:value={webhookUrl}
 							required
 						/>
@@ -576,13 +577,13 @@
 
 		{#if ($config?.features?.enable_api_keys ?? true) && ($user?.role === 'admin' || ($user?.permissions?.features?.api_keys ?? false))}
 			<div class="flex justify-between items-center text-sm mt-2">
-				<div class="  font-medium">{i18n.t('API keys')}</div>
+				<div class="  font-medium">{$i18n.t('API keys')}</div>
 				<button
 					class=" text-xs font-medium text-gray-500"
 					type="button"
 					on:click={() => {
 						showAPIKeys = !showAPIKeys;
-					}}>{showAPIKeys ? i18n.t('Hide') : i18n.t('Show')}</button
+					}}>{showAPIKeys ? $i18n.t('Hide') : $i18n.t('Show')}</button
 				>
 			</div>
 
@@ -591,7 +592,7 @@
 					{#if $user?.role === 'admin'}
 						<div class="justify-between w-full mt-2">
 							<div class="flex justify-between w-full">
-								<div class="self-center text-xs font-medium mb-1">{i18n.t('JWT Token')}</div>
+								<div class="self-center text-xs font-medium mb-1">{$i18n.t('JWT Token')}</div>
 							</div>
 
 							<div class="flex">
@@ -599,7 +600,7 @@
 
 								<button
 									class="ml-1.5 px-1.5 py-1 dark:hover:bg-gray-850 transition rounded-lg"
-									aria-label={i18n.t('Copy Token')}
+									aria-label={$i18n.t('Copy Token')}
 									on:click={() => {
 										copyToClipboard(localStorage.token);
 										JWTTokenCopied = true;
@@ -649,7 +650,7 @@
 						<div class="justify-between w-full mt-2">
 							{#if $user?.role === 'admin'}
 								<div class="flex justify-between w-full">
-									<div class="self-center text-xs font-medium mb-1">{i18n.t('API Key')}</div>
+									<div class="self-center text-xs font-medium mb-1">{$i18n.t('API Key')}</div>
 								</div>
 							{/if}
 							<div class="flex">
@@ -658,7 +659,7 @@
 
 									<button
 										class="ml-1.5 px-1.5 py-1 dark:hover:bg-gray-850 transition rounded-lg"
-										aria-label={i18n.t('Copy API Key')}
+										aria-label={$i18n.t('Copy API Key')}
 										on:click={() => {
 											copyToClipboard(APIKey);
 											APIKeyCopied = true;
@@ -701,10 +702,10 @@
 										{/if}
 									</button>
 
-									<Tooltip content={i18n.t('Create new key')}>
+									<Tooltip content={$i18n.t('Create new key')}>
 										<button
 											class=" px-1.5 py-1 dark:hover:bg-gray-850transition rounded-lg"
-											aria-label={i18n.t('Create new key')}
+											aria-label={$i18n.t('Create new key')}
 											on:click={() => {
 												createAPIKeyHandler();
 											}}
@@ -734,7 +735,7 @@
 									>
 										<Plus strokeWidth="2" className=" size-3.5" />
 
-										{i18n.t('Create new secret key')}</button
+										{$i18n.t('Create new secret key')}</button
 									>
 								{/if}
 							</div>
@@ -756,7 +757,7 @@
 				}
 			}}
 		>
-			{i18n.t('Save')}
+			{$i18n.t('Save')}
 		</button>
 	</div>
 </div>

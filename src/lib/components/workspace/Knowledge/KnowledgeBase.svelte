@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Fuse from 'fuse.js';
 	import { toast } from 'svelte-sonner';
@@ -339,7 +339,7 @@
 			}
 		} catch (e: any) {
 			if (selectedFileId === file.id) {
-				toast.error(i18n.t('Failed to load file content.'));
+				toast.error($i18n.t('Failed to load file content.'));
 			}
 		} finally {
 			if (selectedFileId === file.id) {
@@ -397,10 +397,12 @@
 		for (const fileItem of newFileItems) {
 			try {
 				console.log(fileItem);
-				const res = await processWeb(localStorage.token, '', fileItem.url, false).catch(async (e)=> {
-					console.error('Error processing web URL:', e);
-					return null;
-				});
+				const res = await processWeb(localStorage.token, '', fileItem.url, false).catch(
+					async (e) => {
+						console.error('Error processing web URL:', e);
+						return null;
+					}
+				);
 
 				if (res) {
 					console.log(res);
@@ -435,16 +437,16 @@
 							toast.warning(uploadedFile.error);
 							fileItems = fileItems.filter((file) => file.id !== uploadedFile.id);
 						} else {
-							toast.success(i18n.t('File added successfully.'));
+							toast.success($i18n.t('File added successfully.'));
 							init();
 						}
 					} else {
-						toast.error(i18n.t('Failed to upload file.'));
+						toast.error($i18n.t('Failed to upload file.'));
 					}
 				} else {
 					// remove the item from fileItems
 					fileItems = fileItems.filter((item) => item.itemId !== fileItem.itemId);
-					toast.error(i18n.t('Failed to process URL: {{url}}', { url: fileItem.url }));
+					toast.error($i18n.t('Failed to process URL: {{url}}', { url: fileItem.url }));
 				}
 			} catch (e: any) {
 				// remove the item from fileItems
@@ -473,7 +475,7 @@
 		};
 
 		if (fileItem.size == 0) {
-			toast.error(i18n.t('You cannot upload an empty file.'));
+			toast.error($i18n.t('You cannot upload an empty file.'));
 			return null;
 		}
 
@@ -486,7 +488,7 @@
 				maxSize: ($config?.file?.max_size ?? 0) * 1024 * 1024
 			});
 			toast.error(
-				i18n.t(`File size should not exceed {{maxSize}} MB.`, {
+				$i18n.t(`File size should not exceed {{maxSize}} MB.`, {
 					maxSize: $config?.file?.max_size
 				})
 			);
@@ -557,11 +559,11 @@
 					toast.warning(uploadedFile.error);
 					fileItems = fileItems.filter((file) => file.id !== uploadedFile.id);
 				} else {
-					toast.success(i18n.t('File added successfully.'));
+					toast.success($i18n.t('File added successfully.'));
 					init();
 				}
 			} else {
-				toast.error(i18n.t('Failed to upload file.'));
+				toast.error($i18n.t('Failed to upload file.'));
 				// Without this the row keeps `status: 'uploading'` and its last progress tick,
 				// so a failed upload haunts the list as a frozen "Uploading 0%" forever.
 				fileItems = (fileItems ?? []).filter((item) => !isThisRow(item));
@@ -587,9 +589,9 @@
 	// Error handler
 	const handleUploadError = (error: any) => {
 		if (error.name === 'AbortError') {
-			toast.info(i18n.t('Directory selection was cancelled'));
+			toast.info($i18n.t('Directory selection was cancelled'));
 		} else {
-			toast.error(i18n.t('Error accessing directory'));
+			toast.error($i18n.t('Error accessing directory'));
 			console.error('Directory access error:', error);
 		}
 	};
@@ -603,8 +605,8 @@
 				const dirHandle = await window.showDirectoryPicker();
 				const collected: DirectoryFileEntry[] = [];
 
-				const traverse = async (handle: FileSystemDirectoryHandle, dirPath: string = '') {
-					for await (const entry of handle.values()) {
+				const traverse = async (handle: FileSystemDirectoryHandle, dirPath: string = '') => {
+					for await (const entry of (handle as any).values()) {
 						if (entry.name.startsWith('.')) continue;
 						const entryPath = dirPath ? `${dirPath}/${entry.name}` : entry.name;
 						if (hasHiddenFolder(entryPath)) continue;
@@ -616,7 +618,7 @@
 							await traverse(entry, entryPath);
 						}
 					}
-				}
+				};
 
 				await traverse(dirHandle, dirHandle.name);
 				return collected;
@@ -670,7 +672,7 @@
 		entries: DirectoryFileEntry[]
 	): Promise<DirectoryManifestEntry[]> => {
 		return Promise.all(
-			entries.map((entry: any) ({
+			entries.map(async (entry: any) => ({
 				...entry,
 				checksum: await computeFileHash(entry.file),
 				size: entry.file.size
@@ -712,10 +714,10 @@
 		if (!knowledge) return;
 
 		try {
-			syncing = i18n.t('Computing checksums ({{count}} files)', { count: entries.length });
+			syncing = $i18n.t('Computing checksums ({{count}} files)', { count: entries.length });
 			const manifest = await buildDirectoryManifest(entries);
 
-			syncing = i18n.t('Comparing with knowledge base...');
+			syncing = $i18n.t('Comparing with knowledge base...');
 			const diff = await syncKnowledgeDiff(
 				localStorage.token,
 				id,
@@ -728,7 +730,7 @@
 			);
 
 			if (!diff) {
-				toast.error(i18n.t('Failed to compare files.'));
+				toast.error($i18n.t('Failed to compare files.'));
 				return;
 			}
 
@@ -738,7 +740,7 @@
 			for (const entry of manifest) {
 				uploadedCount++;
 				const displayPath = entry.path ? `${entry.path}/${entry.filename}` : entry.filename;
-				syncing = i18n.t('Uploading {{current}}/{{total}}: {{file}}', {
+				syncing = $i18n.t('Uploading {{current}}/{{total}}: {{file}}', {
 					current: uploadedCount,
 					total: manifest.length,
 					file: displayPath
@@ -757,7 +759,7 @@
 				});
 			}
 
-			toast.success(i18n.t('File uploaded successfully'));
+			toast.success($i18n.t('File uploaded successfully'));
 			init();
 		} catch (e: any) {
 			toast.error(`${e}`);
@@ -772,14 +774,14 @@
 
 		try {
 			// ── 2. Compute checksums ──
-			syncing = i18n.t('Computing checksums ({{count}} files)', {
+			syncing = $i18n.t('Computing checksums ({{count}} files)', {
 				count: pendingSyncFiles.length
 			});
 			const manifest = await buildDirectoryManifest(pendingSyncFiles);
 			pendingSyncFiles = null;
 
 			// ── 3. Diff against knowledge base ──
-			syncing = i18n.t('Comparing with knowledge base...');
+			syncing = $i18n.t('Comparing with knowledge base...');
 			const diff = await syncKnowledgeDiff(
 				localStorage.token,
 				id,
@@ -787,7 +789,7 @@
 			);
 
 			if (!diff) {
-				toast.error(i18n.t('Failed to compare files.'));
+				toast.error($i18n.t('Failed to compare files.'));
 				return;
 			}
 
@@ -798,7 +800,7 @@
 			];
 
 			if (staleFileIds.length > 0 || diff.rmdir.length > 0) {
-				syncing = i18n.t('Removing {{count}} stale files...', { count: staleFileIds.length });
+				syncing = $i18n.t('Removing {{count}} stale files...', { count: staleFileIds.length });
 				await syncKnowledgeCleanup(localStorage.token, id, staleFileIds, diff.rmdir);
 			}
 
@@ -816,7 +818,7 @@
 			for (const entry of filesToUpload) {
 				uploadedCount++;
 				const displayPath = entry.path ? `${entry.path}/${entry.filename}` : entry.filename;
-				syncing = i18n.t('Uploading {{current}}/{{total}}: {{file}}', {
+				syncing = $i18n.t('Uploading {{current}}/{{total}}: {{file}}', {
 					current: uploadedCount,
 					total: filesToUpload.length,
 					file: displayPath
@@ -832,7 +834,7 @@
 
 			// ── 7. Report ──
 			toast.success(
-				i18n.t(
+				$i18n.t(
 					'Sync complete: {{added}} added, {{modified}} modified, {{deleted}} deleted, {{unmodified}} unmodified',
 					{
 						added: diff.added.length,
@@ -878,10 +880,10 @@
 		}
 
 		if (res) {
-			toast.success(i18n.t('File added successfully.'));
+			toast.success($i18n.t('File added successfully.'));
 			init();
 		} else {
-			toast.error(i18n.t('Failed to add file.'));
+			toast.error($i18n.t('Failed to add file.'));
 			fileItems = fileItems.filter((file) => file.id !== fileId);
 		}
 	};
@@ -903,10 +905,10 @@
 		});
 
 		if (res) {
-			toast.success(i18n.t('File added successfully.'));
+			toast.success($i18n.t('File added successfully.'));
 			init();
 		} else {
-			toast.error(i18n.t('Failed to add file.'));
+			toast.error($i18n.t('Failed to add file.'));
 			fileItems = fileItems.filter((file) => file.id !== fileId);
 		}
 	};
@@ -928,13 +930,13 @@
 			knowledge.id,
 			name,
 			currentDirectoryId
-		).catch(async (e)=> {
+		).catch(async (e) => {
 			toast.error(`${e}`);
 			return null;
 		});
 
 		if (res) {
-			toast.success(i18n.t('Directory created.'));
+			toast.success($i18n.t('Directory created.'));
 			getItemsPage();
 		}
 	};
@@ -942,13 +944,13 @@
 	const renameDirectoryHandler = async (dirId: string, name: string) => {
 		const res = await updateKnowledgeDirectory(localStorage.token, knowledge.id, dirId, {
 			name
-		}).catch(async (e)=> {
+		}).catch(async (e) => {
 			toast.error(`${e}`);
 			return null;
 		});
 
 		if (res) {
-			toast.success(i18n.t('Directory renamed.'));
+			toast.success($i18n.t('Directory renamed.'));
 			getItemsPage();
 		}
 	};
@@ -966,13 +968,13 @@
 			knowledge.id,
 			pendingDeleteDirectoryId,
 			moveFiles
-		).catch(async (e)=> {
+		).catch(async (e) => {
 			toast.error(`${e}`);
 			return null;
 		});
 
 		if (res) {
-			toast.success(i18n.t('Directory deleted.'));
+			toast.success($i18n.t('Directory deleted.'));
 			getItemsPage();
 		}
 		pendingDeleteDirectoryId = null;
@@ -984,13 +986,13 @@
 			knowledge.id,
 			fileId,
 			directoryId
-		).catch(async (e)=> {
+		).catch(async (e) => {
 			toast.error(`${e}`);
 			return null;
 		});
 
 		if (res) {
-			toast.success(i18n.t('File moved.'));
+			toast.success($i18n.t('File moved.'));
 			getItemsPage();
 		}
 	};
@@ -1005,7 +1007,7 @@
 		});
 
 		if (res) {
-			toast.success(i18n.t('Directory moved.'));
+			toast.success($i18n.t('Directory moved.'));
 			getItemsPage();
 		}
 	};
@@ -1049,7 +1051,7 @@
 		try {
 			const res = await cancelFileEmbedding(localStorage.token, id, pendingCancelFileId);
 			if (res?.cancelled) {
-				toast.success(i18n.t('Embedding cancelled.'));
+				toast.success($i18n.t('Embedding cancelled.'));
 				fileItems = fileItems.filter((item) => item.id !== pendingCancelFileId);
 				if (pendingPollTimer) {
 					clearInterval(pendingPollTimer);
@@ -1057,7 +1059,7 @@
 				}
 				getItemsPage();
 			} else {
-				toast.error(i18n.t('Failed to cancel embedding.'));
+				toast.error($i18n.t('Failed to cancel embedding.'));
 			}
 		} catch (e: any) {
 			toast.error(`${e}`);
@@ -1076,7 +1078,7 @@
 			console.log('Knowledge base updated:', res);
 
 			if (res) {
-				toast.success(i18n.t('File removed successfully.'));
+				toast.success($i18n.t('File removed successfully.'));
 				await init();
 			}
 		} catch (e: any) {
@@ -1089,7 +1091,7 @@
 		try {
 			const res = await renameFileById(localStorage.token, fileId, name);
 			if (res) {
-				toast.success(i18n.t('File renamed.'));
+				toast.success($i18n.t('File renamed.'));
 				getItemsPage();
 			}
 		} catch (e: any) {
@@ -1115,13 +1117,13 @@
 				localStorage.token,
 				selectedFile.id,
 				selectedFileContent
-			).catch(async (e)=> {
+			).catch(async (e) => {
 				toast.error(`${e}`);
 				return null;
 			});
 
 			if (res) {
-				toast.success(i18n.t('File content updated successfully.'));
+				toast.success($i18n.t('File content updated successfully.'));
 
 				selectedFileId = null;
 				selectedFile = null;
@@ -1142,7 +1144,7 @@
 
 		debounceTimeout = setTimeout(async () => {
 			if (knowledge.name.trim() === '' || knowledge.description.trim() === '') {
-				toast.error(i18n.t('Please fill in all fields.'));
+				toast.error($i18n.t('Please fill in all fields.'));
 				return;
 			}
 
@@ -1151,12 +1153,12 @@
 				name: knowledge.name,
 				description: knowledge.description,
 				access_grants: knowledge.access_grants ?? []
-			}).catch(async (e)=> {
+			}).catch(async (e) => {
 				toast.error(`${e}`);
 			});
 
 			if (res) {
-				toast.success(i18n.t('Knowledge updated successfully'));
+				toast.success($i18n.t('Knowledge updated successfully'));
 			}
 		}, 1000);
 	};
@@ -1236,7 +1238,7 @@
 		dragged = false;
 
 		if (!knowledge?.write_access) {
-			toast.error(i18n.t('You do not have permission to upload files to this knowledge base.'));
+			toast.error($i18n.t('You do not have permission to upload files to this knowledge base.'));
 			return;
 		}
 
@@ -1270,12 +1272,13 @@
 						await uploadDirectoryEntries(directoryEntries);
 					}
 				} else {
-					toast.error(i18n.t(`File not found.`));
+					toast.error($i18n.t(`File not found.`));
 				}
 			}
 		}
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		// listen to resize 1024px
 		mediaQuery = window.matchMedia('(min-width: 1024px)');
@@ -1360,7 +1363,7 @@
 <FilesOverlay show={dragged} />
 <SyncConfirmDialog
 	bind:show={showSyncConfirmModal}
-	message={i18n.t(
+	message={$i18n.t(
 		'{{count}} files selected. Only new and modified files will be uploaded. Deleted files will be removed. The folder structure will be mirrored. Continue?',
 		{ count: pendingSyncFiles?.length ?? 0 }
 	)}
@@ -1398,7 +1401,7 @@
 	bind:show={showMoveFileModal}
 	directories={allDirectories}
 	excludeId={pendingMoveFileId}
-	title={i18n.t('Move file to folder')}
+	title={$i18n.t('Move file to folder')}
 	on:move={(e: any) => {
 		handleMoveFileConfirm(e.detail.directoryId);
 	}}
@@ -1406,14 +1409,14 @@
 
 <ConfirmDialog
 	bind:show={showCancelEmbeddingModal}
-	title={i18n.t('Cancel embedding?')}
+	title={$i18n.t('Cancel embedding?')}
 	on:confirm={handleCancelEmbeddingConfirm}
 	on:cancel={() => {
 		pendingCancelFileId = null;
 	}}
 >
 	<div class="text-sm text-gray-700 dark:text-gray-300 flex-1 line-clamp-3">
-		{i18n.t(
+		{$i18n.t(
 			'Are you sure you want to cancel embedding for this file? This will stop processing and the file will not be indexed.'
 		)}
 	</div>
@@ -1438,7 +1441,7 @@
 				fileInputElement.value = '';
 			}
 		} else {
-			toast.error(i18n.t(`File not found.`));
+			toast.error($i18n.t(`File not found.`));
 		}
 	}}
 />
@@ -1455,7 +1458,7 @@
 			onChange={async () => {
 				try {
 					await updateKnowledgeAccessGrants(localStorage.token, id, knowledge.access_grants ?? []);
-					toast.success(i18n.t('Saved'));
+					toast.success($i18n.t('Saved'));
 				} catch (error: any) {
 					toast.error(`${error}`);
 				}
@@ -1471,8 +1474,8 @@
 								type="text"
 								class="text-left w-full text-lg bg-transparent outline-hidden flex-1"
 								bind:value={knowledge.name}
-								aria-label={i18n.t('Knowledge Name')}
-								placeholder={i18n.t('Knowledge Name')}
+								aria-label={$i18n.t('Knowledge Name')}
+								placeholder={$i18n.t('Knowledge Name')}
 								disabled={!knowledge?.write_access}
 								on:input={() => {
 									changeDebounceHandler();
@@ -1482,8 +1485,8 @@
 							<div class="shrink-0 mr-2.5">
 								{#if fileItemsTotal}
 									<div class="text-xs text-gray-500">
-										<!-- {i18n.t('{{COUNT}} files')} -->
-										{i18n.t('{{COUNT}} files', {
+										<!-- {$i18n.t('{{COUNT}} files')} -->
+										{$i18n.t('{{COUNT}} files', {
 											COUNT: fileItemsTotal
 										})}
 									</div>
@@ -1503,13 +1506,13 @@
 									<LockClosed strokeWidth="2.5" className="size-3.5" />
 
 									<div class="text-sm font-medium shrink-0">
-										{i18n.t('Access')}
+										{$i18n.t('Access')}
 									</div>
 								</button>
 							</div>
 						{:else}
 							<div class="text-xs shrink-0 text-gray-500">
-								{i18n.t('Read Only')}
+								{$i18n.t('Read Only')}
 							</div>
 						{/if}
 					</div>
@@ -1519,8 +1522,8 @@
 							type="text"
 							class="text-left text-xs w-full text-gray-500 bg-transparent outline-hidden flex-1"
 							bind:value={knowledge.description}
-							aria-label={i18n.t('Knowledge Description')}
-							placeholder={i18n.t('Knowledge Description')}
+							aria-label={$i18n.t('Knowledge Description')}
+							placeholder={$i18n.t('Knowledge Description')}
 							disabled={!knowledge?.write_access}
 							on:input={() => {
 								changeDebounceHandler();
@@ -1528,12 +1531,12 @@
 						/>
 
 						<div class="hidden md:block">
-							<Tooltip content={i18n.t('Click to copy ID')}>
+							<Tooltip content={$i18n.t('Click to copy ID')}>
 								<button
 									class="text-xs text-gray-500 font-mono shrink-0 px-2 py-1 rounded-lg cursor-pointer hover:underline transition whitespace-nowrap"
 									on:click={() => {
 										copyToClipboard(id);
-										toast.success(i18n.t('ID copied to clipboard'));
+										toast.success($i18n.t('ID copied to clipboard'));
 									}}
 								>
 									{id}
@@ -1552,60 +1555,60 @@
 				<div class="p-5 flex flex-col gap-4">
 					<div class="flex flex-wrap gap-2 text-xs">
 						<div class="px-2 py-1 rounded-lg bg-gray-50 dark:bg-gray-850">
-							{i18n.t('Connected')}
+							{$i18n.t('Connected')}
 						</div>
 						<div class="px-2 py-1 rounded-lg bg-gray-50 dark:bg-gray-850">
-							{i18n.t('Read Only')}
+							{$i18n.t('Read Only')}
 						</div>
 						<div class="px-2 py-1 rounded-lg bg-gray-50 dark:bg-gray-850">
-							{knowledge?.meta?.external?.provider ?? i18n.t('Provider')}
+							{knowledge?.meta?.external?.provider ?? $i18n.t('Provider')}
 						</div>
 						<div class="px-2 py-1 rounded-lg bg-gray-50 dark:bg-gray-850">
-							{i18n.t('Service Account')}
+							{$i18n.t('Service Account')}
 						</div>
 					</div>
 
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
 						<div>
-							<div class="text-xs text-gray-500 mb-1">{i18n.t('Mapped Source')}</div>
+							<div class="text-xs text-gray-500 mb-1">{$i18n.t('Mapped Source')}</div>
 							<div class="rounded-xl bg-gray-50 dark:bg-gray-850 px-3 py-2">
-								{knowledge?.meta?.external?.source?.name ?? i18n.t('Not configured')}
+								{knowledge?.meta?.external?.source?.name ?? $i18n.t('Not configured')}
 							</div>
 						</div>
 						<div>
-							<div class="text-xs text-gray-500 mb-1">{i18n.t('Auth Mode')}</div>
+							<div class="text-xs text-gray-500 mb-1">{$i18n.t('Auth Mode')}</div>
 							<div class="rounded-xl bg-gray-50 dark:bg-gray-850 px-3 py-2">
-								{i18n.t('Admin-managed service account')}
+								{$i18n.t('Admin-managed service account')}
 							</div>
 						</div>
 					</div>
 
 					<div class="text-xs text-gray-500">
-						{i18n.t(
+						{$i18n.t(
 							'This knowledge base retrieves from a connected source. Open WebUI can query it, but cannot upload, sync, edit, delete, reset, or reindex its source data.'
 						)}
 					</div>
 
 					<div class="flex flex-col gap-2">
-						<div class="font-medium text-sm">{i18n.t('Test Query')}</div>
+						<div class="font-medium text-sm">{$i18n.t('Test Query')}</div>
 						<div class="flex gap-2">
 							<input
 								class="w-full text-sm rounded-xl bg-gray-50 dark:bg-gray-850 px-3 py-2 outline-hidden"
 								bind:value={externalTestQuery}
-								placeholder={i18n.t('Ask this knowledge source a test question')}
+								placeholder={$i18n.t('Ask this knowledge source a test question')}
 							/>
 							<button
 								class="px-3 py-2 rounded-xl bg-black text-white dark:bg-white dark:text-black text-sm"
 								on:click={externalTestHandler}
 							>
-								{i18n.t('Test')}
+								{$i18n.t('Test')}
 							</button>
 						</div>
 					</div>
 
 					{#if externalTestResult}
 						<div class="rounded-xl bg-gray-50 dark:bg-gray-850 p-3 text-xs">
-							<div class="font-medium mb-2">{i18n.t('Preview')}</div>
+							<div class="font-medium mb-2">{$i18n.t('Preview')}</div>
 							{#each externalTestResult.documents ?? [] as document, idx}
 								<div class="border-t border-gray-100 dark:border-gray-800 py-2">
 									<div class="line-clamp-4">{document}</div>
@@ -1627,8 +1630,8 @@
 							class=" w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
 							bind:value={query}
 							on:input={handleSearchInput}
-							aria-label={i18n.t('Search Collection')}
-							placeholder={i18n.t('Search Collection')}
+							aria-label={$i18n.t('Search Collection')}
+							placeholder={$i18n.t('Search Collection')}
 							on:focus={() => {
 								selectedFileId = null;
 								selectedFile = null;
@@ -1662,7 +1665,7 @@
 												includeContent = e.detail === 'checked';
 											}}
 										/>
-										{i18n.t('File content')}
+										{$i18n.t('File content')}
 									</button>
 								</div>
 							</div>
@@ -1717,9 +1720,9 @@
 								className="flex shrink-0 items-center gap-2 px-3 py-1.5 text-sm bg-gray-50 dark:bg-gray-850 rounded-xl placeholder-gray-400 outline-hidden focus:outline-hidden"
 								bind:value={viewOption}
 								items={[
-									{ value: null, label: i18n.t('All') },
-									{ value: 'created', label: i18n.t('Created by you') },
-									{ value: 'shared', label: i18n.t('Shared with you') }
+									{ value: null, label: $i18n.t('All') },
+									{ value: 'created', label: $i18n.t('Created by you') },
+									{ value: 'shared', label: $i18n.t('Shared with you') }
 								]}
 								onChange={(value) => {
 									if (value) {
@@ -1733,11 +1736,11 @@
 							<DropdownOptions
 								align="start"
 								bind:value={sortKey}
-								placeholder={i18n.t('Sort')}
+								placeholder={$i18n.t('Sort')}
 								items={[
-									{ value: 'name', label: i18n.t('Name') },
-									{ value: 'created_at', label: i18n.t('Created At') },
-									{ value: 'updated_at', label: i18n.t('Updated At') }
+									{ value: 'name', label: $i18n.t('Name') },
+									{ value: 'created_at', label: $i18n.t('Created At') },
+									{ value: 'updated_at', label: $i18n.t('Updated At') }
 								]}
 							/>
 
@@ -1746,8 +1749,8 @@
 									align="start"
 									bind:value={direction}
 									items={[
-										{ value: 'asc', label: i18n.t('Asc') },
-										{ value: null, label: i18n.t('Desc') }
+										{ value: 'asc', label: $i18n.t('Asc') },
+										{ value: null, label: $i18n.t('Desc') }
 									]}
 								/>
 							{/if}
@@ -1834,7 +1837,7 @@
 											class="my-3 flex flex-col justify-center text-center text-gray-500 text-xs"
 										>
 											<div>
-												{i18n.t('No content found')}
+												{$i18n.t('No content found')}
 											</div>
 										</div>
 									{/if}
@@ -1859,7 +1862,7 @@
 											<div class="mr-2">
 												<button
 													class="w-full text-left text-sm p-1.5 rounded-lg dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-gray-850"
-													aria-label={i18n.t('Close')}
+													aria-label={$i18n.t('Close')}
 													on:click={() => {
 														selectedFileId = null;
 														selectedFile = null;
@@ -1883,7 +1886,7 @@
 															updateFileContentHandler();
 														}}
 													>
-														{i18n.t('Save')}
+														{$i18n.t('Save')}
 														{#if isSaving}
 															<div class="ml-2 self-center">
 																<Spinner />
@@ -1899,8 +1902,8 @@
 												class="w-full h-full text-sm outline-none resize-none px-3 py-2"
 												bind:value={selectedFileContent}
 												disabled={!knowledge?.write_access || loadingFileContent}
-												aria-label={i18n.t('File content')}
-												placeholder={i18n.t('Add content here')}
+												aria-label={$i18n.t('File content')}
+												placeholder={$i18n.t('Add content here')}
 											></textarea>
 										{/key}
 									</div>
@@ -1922,7 +1925,7 @@
 
 <ConfirmDialog
 	bind:show={showDeleteDirectoryConfirm}
-	title={i18n.t('Delete directory?')}
+	title={$i18n.t('Delete directory?')}
 	on:confirm={() => {
 		deleteDirectoryHandler(!deleteDirectoryContents);
 	}}
@@ -1931,28 +1934,28 @@
 	}}
 >
 	<div class="text-sm text-gray-700 dark:text-gray-300 flex-1 line-clamp-3 mb-2">
-		{i18n.t(`Are you sure you want to delete this directory?`)}
+		{$i18n.t(`Are you sure you want to delete this directory?`)}
 	</div>
 
 	<div class="flex items-center gap-1.5">
 		<input type="checkbox" bind:checked={deleteDirectoryContents} />
 
 		<div class="text-xs text-gray-500">
-			{i18n.t('Delete all contents inside this directory')}
+			{$i18n.t('Delete all contents inside this directory')}
 		</div>
 	</div>
 </ConfirmDialog>
 
 <ConfirmDialog
 	bind:show={showDuplicateConfirm}
-	title={i18n.t('Duplicate file?')}
+	title={$i18n.t('Duplicate file?')}
 	on:confirm={addDuplicateFileHandler}
 	on:cancel={() => {
 		pendingDuplicateFileId = null;
 	}}
 >
 	<div class="text-sm text-gray-700 dark:text-gray-300 flex-1 line-clamp-3">
-		{i18n.t(
+		{$i18n.t(
 			'A file with the same content already exists in this knowledge base. Add it anyway as a duplicate?'
 		)}
 	</div>
@@ -1960,15 +1963,15 @@
 
 <ConfirmDialog
 	bind:show={showResetConfirm}
-	title={i18n.t('Reset knowledge base?')}
+	title={$i18n.t('Reset knowledge base?')}
 	on:confirm={async () => {
 		await resetKnowledgeById(localStorage.token, id);
-		toast.success(i18n.t('Knowledge base has been reset'));
+		toast.success($i18n.t('Knowledge base has been reset'));
 		init();
 	}}
 >
 	<div class="text-sm text-gray-700 dark:text-gray-300 flex-1 line-clamp-3">
-		{i18n.t(
+		{$i18n.t(
 			'This will remove all files and directories from this knowledge base. This action cannot be undone.'
 		)}
 	</div>
@@ -1977,7 +1980,7 @@
 <FilesOverlay show={dragged} />
 <SyncConfirmDialog
 	bind:show={showSyncConfirmModal}
-	message={i18n.t(
+	message={$i18n.t(
 		'{{count}} files selected. Only new and modified files will be uploaded. Deleted files will be removed. The folder structure will be mirrored. Continue?',
 		{ count: pendingSyncFiles?.length ?? 0 }
 	)}
@@ -2015,7 +2018,7 @@
 	bind:show={showMoveFileModal}
 	directories={allDirectories}
 	excludeId={pendingMoveFileId}
-	title={i18n.t('Move file to folder')}
+	title={$i18n.t('Move file to folder')}
 	on:move={(e: any) => {
 		handleMoveFileConfirm(e.detail.directoryId);
 	}}
@@ -2023,14 +2026,14 @@
 
 <ConfirmDialog
 	bind:show={showCancelEmbeddingModal}
-	title={i18n.t('Cancel embedding?')}
+	title={$i18n.t('Cancel embedding?')}
 	on:confirm={handleCancelEmbeddingConfirm}
 	on:cancel={() => {
 		pendingCancelFileId = null;
 	}}
 >
 	<div class="text-sm text-gray-700 dark:text-gray-300 flex-1 line-clamp-3">
-		{i18n.t(
+		{$i18n.t(
 			'Are you sure you want to cancel embedding for this file? This will stop processing and the file will not be indexed.'
 		)}
 	</div>
@@ -2055,7 +2058,7 @@
 				fileInputElement.value = '';
 			}
 		} else {
-			toast.error(i18n.t(`File not found.`));
+			toast.error($i18n.t(`File not found.`));
 		}
 	}}
 />
@@ -2072,7 +2075,7 @@
 			onChange={async () => {
 				try {
 					await updateKnowledgeAccessGrants(localStorage.token, id, knowledge.access_grants ?? []);
-					toast.success(i18n.t('Saved'));
+					toast.success($i18n.t('Saved'));
 				} catch (error: any) {
 					toast.error(`${error}`);
 				}
@@ -2088,8 +2091,8 @@
 								type="text"
 								class="text-left w-full text-lg bg-transparent outline-hidden flex-1"
 								bind:value={knowledge.name}
-								aria-label={i18n.t('Knowledge Name')}
-								placeholder={i18n.t('Knowledge Name')}
+								aria-label={$i18n.t('Knowledge Name')}
+								placeholder={$i18n.t('Knowledge Name')}
 								disabled={!knowledge?.write_access}
 								on:input={() => {
 									changeDebounceHandler();
@@ -2099,8 +2102,8 @@
 							<div class="shrink-0 mr-2.5">
 								{#if fileItemsTotal}
 									<div class="text-xs text-gray-500">
-										<!-- {i18n.t('{{COUNT}} files')} -->
-										{i18n.t('{{COUNT}} files', {
+										<!-- {$i18n.t('{{COUNT}} files')} -->
+										{$i18n.t('{{COUNT}} files', {
 											COUNT: fileItemsTotal
 										})}
 									</div>
@@ -2120,13 +2123,13 @@
 									<LockClosed strokeWidth="2.5" className="size-3.5" />
 
 									<div class="text-sm font-medium shrink-0">
-										{i18n.t('Access')}
+										{$i18n.t('Access')}
 									</div>
 								</button>
 							</div>
 						{:else}
 							<div class="text-xs shrink-0 text-gray-500">
-								{i18n.t('Read Only')}
+								{$i18n.t('Read Only')}
 							</div>
 						{/if}
 					</div>
@@ -2136,8 +2139,8 @@
 							type="text"
 							class="text-left text-xs w-full text-gray-500 bg-transparent outline-hidden flex-1"
 							bind:value={knowledge.description}
-							aria-label={i18n.t('Knowledge Description')}
-							placeholder={i18n.t('Knowledge Description')}
+							aria-label={$i18n.t('Knowledge Description')}
+							placeholder={$i18n.t('Knowledge Description')}
 							disabled={!knowledge?.write_access}
 							on:input={() => {
 								changeDebounceHandler();
@@ -2145,12 +2148,12 @@
 						/>
 
 						<div class="hidden md:block">
-							<Tooltip content={i18n.t('Click to copy ID')}>
+							<Tooltip content={$i18n.t('Click to copy ID')}>
 								<button
 									class="text-xs text-gray-500 font-mono shrink-0 px-2 py-1 rounded-lg cursor-pointer hover:underline transition whitespace-nowrap"
 									on:click={() => {
 										copyToClipboard(id);
-										toast.success(i18n.t('ID copied to clipboard'));
+										toast.success($i18n.t('ID copied to clipboard'));
 									}}
 								>
 									{id}
@@ -2169,60 +2172,60 @@
 				<div class="p-5 flex flex-col gap-4">
 					<div class="flex flex-wrap gap-2 text-xs">
 						<div class="px-2 py-1 rounded-lg bg-gray-50 dark:bg-gray-850">
-							{i18n.t('Connected')}
+							{$i18n.t('Connected')}
 						</div>
 						<div class="px-2 py-1 rounded-lg bg-gray-50 dark:bg-gray-850">
-							{i18n.t('Read Only')}
+							{$i18n.t('Read Only')}
 						</div>
 						<div class="px-2 py-1 rounded-lg bg-gray-50 dark:bg-gray-850">
-							{knowledge?.meta?.external?.provider ?? i18n.t('Provider')}
+							{knowledge?.meta?.external?.provider ?? $i18n.t('Provider')}
 						</div>
 						<div class="px-2 py-1 rounded-lg bg-gray-50 dark:bg-gray-850">
-							{i18n.t('Service Account')}
+							{$i18n.t('Service Account')}
 						</div>
 					</div>
 
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
 						<div>
-							<div class="text-xs text-gray-500 mb-1">{i18n.t('Mapped Source')}</div>
+							<div class="text-xs text-gray-500 mb-1">{$i18n.t('Mapped Source')}</div>
 							<div class="rounded-xl bg-gray-50 dark:bg-gray-850 px-3 py-2">
-								{knowledge?.meta?.external?.source?.name ?? i18n.t('Not configured')}
+								{knowledge?.meta?.external?.source?.name ?? $i18n.t('Not configured')}
 							</div>
 						</div>
 						<div>
-							<div class="text-xs text-gray-500 mb-1">{i18n.t('Auth Mode')}</div>
+							<div class="text-xs text-gray-500 mb-1">{$i18n.t('Auth Mode')}</div>
 							<div class="rounded-xl bg-gray-50 dark:bg-gray-850 px-3 py-2">
-								{i18n.t('Admin-managed service account')}
+								{$i18n.t('Admin-managed service account')}
 							</div>
 						</div>
 					</div>
 
 					<div class="text-xs text-gray-500">
-						{i18n.t(
+						{$i18n.t(
 							'This knowledge base retrieves from a connected source. Open WebUI can query it, but cannot upload, sync, edit, delete, reset, or reindex its source data.'
 						)}
 					</div>
 
 					<div class="flex flex-col gap-2">
-						<div class="font-medium text-sm">{i18n.t('Test Query')}</div>
+						<div class="font-medium text-sm">{$i18n.t('Test Query')}</div>
 						<div class="flex gap-2">
 							<input
 								class="w-full text-sm rounded-xl bg-gray-50 dark:bg-gray-850 px-3 py-2 outline-hidden"
 								bind:value={externalTestQuery}
-								placeholder={i18n.t('Ask this knowledge source a test question')}
+								placeholder={$i18n.t('Ask this knowledge source a test question')}
 							/>
 							<button
 								class="px-3 py-2 rounded-xl bg-black text-white dark:bg-white dark:text-black text-sm"
 								on:click={externalTestHandler}
 							>
-								{i18n.t('Test')}
+								{$i18n.t('Test')}
 							</button>
 						</div>
 					</div>
 
 					{#if externalTestResult}
 						<div class="rounded-xl bg-gray-50 dark:bg-gray-850 p-3 text-xs">
-							<div class="font-medium mb-2">{i18n.t('Preview')}</div>
+							<div class="font-medium mb-2">{$i18n.t('Preview')}</div>
 							{#each externalTestResult.documents ?? [] as document, idx}
 								<div class="border-t border-gray-100 dark:border-gray-800 py-2">
 									<div class="line-clamp-4">{document}</div>
@@ -2244,8 +2247,8 @@
 							class=" w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
 							bind:value={query}
 							on:input={handleSearchInput}
-							aria-label={i18n.t('Search Collection')}
-							placeholder={i18n.t('Search Collection')}
+							aria-label={$i18n.t('Search Collection')}
+							placeholder={$i18n.t('Search Collection')}
 							on:focus={() => {
 								selectedFileId = null;
 								selectedFile = null;
@@ -2279,7 +2282,7 @@
 												includeContent = e.detail === 'checked';
 											}}
 										/>
-										{i18n.t('File content')}
+										{$i18n.t('File content')}
 									</button>
 								</div>
 							</div>
@@ -2334,9 +2337,9 @@
 								className="flex shrink-0 items-center gap-2 px-3 py-1.5 text-sm bg-gray-50 dark:bg-gray-850 rounded-xl placeholder-gray-400 outline-hidden focus:outline-hidden"
 								bind:value={viewOption}
 								items={[
-									{ value: null, label: i18n.t('All') },
-									{ value: 'created', label: i18n.t('Created by you') },
-									{ value: 'shared', label: i18n.t('Shared with you') }
+									{ value: null, label: $i18n.t('All') },
+									{ value: 'created', label: $i18n.t('Created by you') },
+									{ value: 'shared', label: $i18n.t('Shared with you') }
 								]}
 								onChange={(value) => {
 									if (value) {
@@ -2350,11 +2353,11 @@
 							<DropdownOptions
 								align="start"
 								bind:value={sortKey}
-								placeholder={i18n.t('Sort')}
+								placeholder={$i18n.t('Sort')}
 								items={[
-									{ value: 'name', label: i18n.t('Name') },
-									{ value: 'created_at', label: i18n.t('Created At') },
-									{ value: 'updated_at', label: i18n.t('Updated At') }
+									{ value: 'name', label: $i18n.t('Name') },
+									{ value: 'created_at', label: $i18n.t('Created At') },
+									{ value: 'updated_at', label: $i18n.t('Updated At') }
 								]}
 							/>
 
@@ -2363,8 +2366,8 @@
 									align="start"
 									bind:value={direction}
 									items={[
-										{ value: 'asc', label: i18n.t('Asc') },
-										{ value: null, label: i18n.t('Desc') }
+										{ value: 'asc', label: $i18n.t('Asc') },
+										{ value: null, label: $i18n.t('Desc') }
 									]}
 								/>
 							{/if}
@@ -2451,7 +2454,7 @@
 											class="my-3 flex flex-col justify-center text-center text-gray-500 text-xs"
 										>
 											<div>
-												{i18n.t('No content found')}
+												{$i18n.t('No content found')}
 											</div>
 										</div>
 									{/if}
@@ -2476,7 +2479,7 @@
 											<div class="mr-2">
 												<button
 													class="w-full text-left text-sm p-1.5 rounded-lg dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-gray-850"
-													aria-label={i18n.t('Close')}
+													aria-label={$i18n.t('Close')}
 													on:click={() => {
 														selectedFileId = null;
 														selectedFile = null;
@@ -2500,7 +2503,7 @@
 															updateFileContentHandler();
 														}}
 													>
-														{i18n.t('Save')}
+														{$i18n.t('Save')}
 														{#if isSaving}
 															<div class="ml-2 self-center">
 																<Spinner />
@@ -2516,8 +2519,8 @@
 												class="w-full h-full text-sm outline-none resize-none px-3 py-2"
 												bind:value={selectedFileContent}
 												disabled={!knowledge?.write_access || loadingFileContent}
-												aria-label={i18n.t('File content')}
-												placeholder={i18n.t('Add content here')}
+												aria-label={$i18n.t('File content')}
+												placeholder={$i18n.t('Add content here')}
 											></textarea>
 										{/key}
 									</div>
@@ -2539,7 +2542,7 @@
 
 <ConfirmDialog
 	bind:show={showDeleteDirectoryConfirm}
-	title={i18n.t('Delete directory?')}
+	title={$i18n.t('Delete directory?')}
 	on:confirm={() => {
 		deleteDirectoryHandler(!deleteDirectoryContents);
 	}}
@@ -2548,28 +2551,28 @@
 	}}
 >
 	<div class="text-sm text-gray-700 dark:text-gray-300 flex-1 line-clamp-3 mb-2">
-		{i18n.t(`Are you sure you want to delete this directory?`)}
+		{$i18n.t(`Are you sure you want to delete this directory?`)}
 	</div>
 
 	<div class="flex items-center gap-1.5">
 		<input type="checkbox" bind:checked={deleteDirectoryContents} />
 
 		<div class="text-xs text-gray-500">
-			{i18n.t('Delete all contents inside this directory')}
+			{$i18n.t('Delete all contents inside this directory')}
 		</div>
 	</div>
 </ConfirmDialog>
 
 <ConfirmDialog
 	bind:show={showDuplicateConfirm}
-	title={i18n.t('Duplicate file?')}
+	title={$i18n.t('Duplicate file?')}
 	on:confirm={addDuplicateFileHandler}
 	on:cancel={() => {
 		pendingDuplicateFileId = null;
 	}}
 >
 	<div class="text-sm text-gray-700 dark:text-gray-300 flex-1 line-clamp-3">
-		{i18n.t(
+		{$i18n.t(
 			'A file with the same content already exists in this knowledge base. Add it anyway as a duplicate?'
 		)}
 	</div>
@@ -2577,15 +2580,15 @@
 
 <ConfirmDialog
 	bind:show={showResetConfirm}
-	title={i18n.t('Reset knowledge base?')}
+	title={$i18n.t('Reset knowledge base?')}
 	on:confirm={async () => {
 		await resetKnowledgeById(localStorage.token, id);
-		toast.success(i18n.t('Knowledge base has been reset'));
+		toast.success($i18n.t('Knowledge base has been reset'));
 		init();
 	}}
 >
 	<div class="text-sm text-gray-700 dark:text-gray-300 flex-1 line-clamp-3">
-		{i18n.t(
+		{$i18n.t(
 			'This will remove all files and directories from this knowledge base. This action cannot be undone.'
 		)}
 	</div>

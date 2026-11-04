@@ -4,7 +4,7 @@
 	import { tick, getContext, onMount, createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 	import type { Writable } from 'svelte/store';
-	
+
 	import { settings } from '$lib/stores';
 	import { copyToClipboard } from '$lib/utils';
 
@@ -15,10 +15,14 @@
 	export let chatId: any;
 	export let selectedModels: any = [];
 	export let idx: any = 0;
-	export let history: { messages?: Record<string, any>; currentId?: string | null; [key: string]: any } = {};
+	export let history: {
+		messages?: Record<string, any>;
+		currentId?: string | null;
+		[key: string]: any;
+	} = {};
 	export let messageId: any;
 	export let user: any;
-	export let setInputText: Function = () => {};
+	export let setInputText: any = () => {};
 	export let gotoMessage: any;
 	export let showPreviousMessage: any;
 	export let showNextMessage: any;

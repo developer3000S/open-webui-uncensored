@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
@@ -33,7 +33,7 @@
 	import Emoji from '$lib/components/common/Emoji.svelte';
 	import EmojiPicker from '$lib/components/common/EmojiPicker.svelte';
 
-	let folder: any = null;
+	export let folder: any = null;
 	export let readOnly: boolean = false;
 
 	export let onUpdate: (folderId: string) => void = (folderId) => {};
@@ -45,9 +45,9 @@
 	let showDeleteConfirm = false;
 	let deleteFolderContents = true;
 
-	const updateHandler = async ({ name, meta, data }: { name: string; meta?: any; data?: any })  => {
+	const updateHandler = async ({ name, meta, data }: { name: string; meta?: any; data?: any }) => {
 		if (name === '') {
-			toast.error(i18n.t('Folder name cannot be empty.'));
+			toast.error($i18n.t('Folder name cannot be empty.'));
 			return;
 		}
 
@@ -60,7 +60,7 @@
 			name,
 			...(meta ? { meta } : {}),
 			...(data ? { data } : {})
-		}).catch(async (error)=> {
+		}).catch(async (error) => {
 			toast.error(`${error}`);
 
 			folder.name = currentName;
@@ -73,9 +73,9 @@
 				folder.data = data;
 			}
 
-			toast.success(i18n.t('Folder updated successfully'));
+			toast.success($i18n.t('Folder updated successfully'));
 
-			const _folder = await getFolderById(localStorage.token, folder.id).catch(async (error)=> {
+			const _folder = await getFolderById(localStorage.token, folder.id).catch(async (error) => {
 				toast.error(`${error}`);
 				return null;
 			});
@@ -90,7 +90,7 @@
 			meta: {
 				icon: iconName ?? ''
 			}
-		}).catch(async (error)=> {
+		}).catch(async (error) => {
 			toast.error(`${error}`);
 			return null;
 		});
@@ -98,9 +98,9 @@
 		if (res) {
 			folder.meta = { ...folder.meta, icon: iconName ?? '' };
 
-			toast.success(i18n.t('Folder updated successfully'));
+			toast.success($i18n.t('Folder updated successfully'));
 
-			const _folder = await getFolderById(localStorage.token, folder.id).catch(async (error)=> {
+			const _folder = await getFolderById(localStorage.token, folder.id).catch(async (error) => {
 				toast.error(`${error}`);
 				return null;
 			});
@@ -111,14 +111,15 @@
 	};
 
 	const deleteHandler = async () => {
-		const res = await deleteFolderById(localStorage.token, folder.id, deleteFolderContents).catch(async (error)=> {
+		const res = await deleteFolderById(localStorage.token, folder.id, deleteFolderContents).catch(
+			async (error) => {
 				toast.error(`${error}`);
 				return null;
 			}
 		);
 
 		if (res) {
-			toast.success(i18n.t('Folder deleted successfully'));
+			toast.success($i18n.t('Folder deleted successfully'));
 			onDelete(folder);
 		}
 	};
@@ -141,7 +142,7 @@
 
 	const createSubFolderHandler = async ({ name, meta, data, parent_id }) => {
 		if (name === '') {
-			toast.error(i18n.t('Folder name cannot be empty.'));
+			toast.error($i18n.t('Folder name cannot be empty.'));
 			return;
 		}
 
@@ -158,8 +159,8 @@
 		});
 
 		if (res) {
-			toast.success(i18n.t('Folder created successfully'));
-			onUpdate();
+			toast.success($i18n.t('Folder created successfully'));
+			onUpdate('');
 		}
 	};
 </script>
@@ -182,17 +183,17 @@
 
 	<DeleteConfirmDialog
 		bind:show={showDeleteConfirm}
-		title={i18n.t('Delete folder?')}
+		title={$i18n.t('Delete folder?')}
 		on:confirm={() => {
 			deleteHandler();
 		}}
 	>
 		<div class=" text-sm text-gray-700 dark:text-gray-300 flex-1 line-clamp-3 mb-2">
-			<!-- {i18n.t('This will delete <strong>{{NAME}}</strong> and <strong>all its contents</strong>.', {
+			<!-- {$i18n.t('This will delete <strong>{{NAME}}</strong> and <strong>all its contents</strong>.', {
 				NAME: folder.name
 			})} -->
 
-			{i18n.t(`Are you sure you want to delete "{{NAME}}"?`, {
+			{$i18n.t(`Are you sure you want to delete "{{NAME}}"?`, {
 				NAME: folder.name
 			})}
 		</div>
@@ -201,7 +202,7 @@
 			<input type="checkbox" bind:checked={deleteFolderContents} />
 
 			<div class="text-xs text-gray-500">
-				{i18n.t('Delete all contents inside this folder')}
+				{$i18n.t('Delete all contents inside this folder')}
 			</div>
 		</div>
 	</DeleteConfirmDialog>
@@ -228,7 +229,7 @@
 					}}
 				>
 					<button
-						aria-label={i18n.t('Change folder icon')}
+						aria-label={$i18n.t('Change folder icon')}
 						class=" rounded-full bg-gray-50 dark:bg-gray-800 size-11 flex justify-center items-center"
 					>
 						{#if folder?.meta?.icon}
@@ -267,7 +268,7 @@
 				>
 					<button
 						class="p-1.5 dark:hover:bg-gray-850 rounded-full touch-auto"
-						aria-label={i18n.t('Folder options')}
+						aria-label={$i18n.t('Folder options')}
 						on:click={(e) => {}}
 					>
 						<EllipsisHorizontal className="size-4" strokeWidth="2.5" />
@@ -296,17 +297,17 @@
 
 	<DeleteConfirmDialog
 		bind:show={showDeleteConfirm}
-		title={i18n.t('Delete folder?')}
+		title={$i18n.t('Delete folder?')}
 		on:confirm={() => {
 			deleteHandler();
 		}}
 	>
 		<div class=" text-sm text-gray-700 dark:text-gray-300 flex-1 line-clamp-3 mb-2">
-			<!-- {i18n.t('This will delete <strong>{{NAME}}</strong> and <strong>all its contents</strong>.', {
+			<!-- {$i18n.t('This will delete <strong>{{NAME}}</strong> and <strong>all its contents</strong>.', {
 				NAME: folder.name
 			})} -->
 
-			{i18n.t(`Are you sure you want to delete "{{NAME}}"?`, {
+			{$i18n.t(`Are you sure you want to delete "{{NAME}}"?`, {
 				NAME: folder.name
 			})}
 		</div>
@@ -315,7 +316,7 @@
 			<input type="checkbox" bind:checked={deleteFolderContents} />
 
 			<div class="text-xs text-gray-500">
-				{i18n.t('Delete all contents inside this folder')}
+				{$i18n.t('Delete all contents inside this folder')}
 			</div>
 		</div>
 	</DeleteConfirmDialog>
@@ -342,7 +343,7 @@
 					}}
 				>
 					<button
-						aria-label={i18n.t('Change folder icon')}
+						aria-label={$i18n.t('Change folder icon')}
 						class=" rounded-full bg-gray-50 dark:bg-gray-800 size-11 flex justify-center items-center"
 					>
 						{#if folder?.meta?.icon}
@@ -381,7 +382,7 @@
 				>
 					<button
 						class="p-1.5 dark:hover:bg-gray-850 rounded-full touch-auto"
-						aria-label={i18n.t('Folder options')}
+						aria-label={$i18n.t('Folder options')}
 						on:click={(e) => {}}
 					>
 						<EllipsisHorizontal className="size-4" strokeWidth="2.5" />

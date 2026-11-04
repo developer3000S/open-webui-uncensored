@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 
@@ -82,14 +82,15 @@
 			}
 
 			if (tab === 'tools') {
-				const res = await updateToolUserValvesById(localStorage.token, selectedId, valves).catch(async (error)=> {
+				const res = await updateToolUserValvesById(localStorage.token, selectedId, valves).catch(
+					async (error) => {
 						toast.error(`${error}`);
 						return null;
 					}
 				);
 
 				if (res) {
-					toast.success(i18n.t('Valves updated'));
+					toast.success($i18n.t('Valves updated'));
 					valves = res;
 				}
 			} else if (tab === 'functions') {
@@ -97,13 +98,13 @@
 					localStorage.token,
 					selectedId,
 					valves
-				).catch(async (error)=> {
+				).catch(async (error) => {
 					toast.error(`${error}`);
 					return null;
 				});
 
 				if (res) {
-					toast.success(i18n.t('Valves updated'));
+					toast.success($i18n.t('Valves updated'));
 					valves = res;
 				}
 			}
@@ -151,11 +152,11 @@
 						<select
 							class="  w-full rounded-sm text-xs py-2 px-1 bg-transparent outline-hidden"
 							bind:value={tab}
-							placeholder={i18n.t('Select')}
+							placeholder={$i18n.t('Select')}
 						>
-							<option value="tools" class="bg-gray-100 dark:bg-gray-800">{i18n.t('Tools')}</option>
+							<option value="tools" class="bg-gray-100 dark:bg-gray-800">{$i18n.t('Tools')}</option>
 							<option value="functions" class="bg-gray-100 dark:bg-gray-800"
-								>{i18n.t('Functions')}</option
+								>{$i18n.t('Functions')}</option
 							>
 						</select>
 					</div>
@@ -170,7 +171,7 @@
 						>
 							{#if tab === 'tools'}
 								<option value="" selected disabled class="bg-gray-100 dark:bg-gray-800"
-									>{i18n.t('Select a tool')}</option
+									>{$i18n.t('Select a tool')}</option
 								>
 
 								{#each $tools
@@ -180,7 +181,7 @@
 								{/each}
 							{:else if tab === 'functions'}
 								<option value="" selected disabled class="bg-gray-100 dark:bg-gray-800"
-									>{i18n.t('Select a function')}</option
+									>{$i18n.t('Select a function')}</option
 								>
 
 								{#each $functions.sort( (a, b) => (a.name ?? '').localeCompare(b.name ?? '') ) as func, funcIdx}
@@ -230,11 +231,11 @@
 						<select
 							class="  w-full rounded-sm text-xs py-2 px-1 bg-transparent outline-hidden"
 							bind:value={tab}
-							placeholder={i18n.t('Select')}
+							placeholder={$i18n.t('Select')}
 						>
-							<option value="tools" class="bg-gray-100 dark:bg-gray-800">{i18n.t('Tools')}</option>
+							<option value="tools" class="bg-gray-100 dark:bg-gray-800">{$i18n.t('Tools')}</option>
 							<option value="functions" class="bg-gray-100 dark:bg-gray-800"
-								>{i18n.t('Functions')}</option
+								>{$i18n.t('Functions')}</option
 							>
 						</select>
 					</div>
@@ -249,7 +250,7 @@
 						>
 							{#if tab === 'tools'}
 								<option value="" selected disabled class="bg-gray-100 dark:bg-gray-800"
-									>{i18n.t('Select a tool')}</option
+									>{$i18n.t('Select a tool')}</option
 								>
 
 								{#each $tools
@@ -259,7 +260,7 @@
 								{/each}
 							{:else if tab === 'functions'}
 								<option value="" selected disabled class="bg-gray-100 dark:bg-gray-800"
-									>{i18n.t('Select a function')}</option
+									>{$i18n.t('Select a function')}</option
 								>
 
 								{#each $functions.sort( (a, b) => (a.name ?? '').localeCompare(b.name ?? '') ) as func, funcIdx}

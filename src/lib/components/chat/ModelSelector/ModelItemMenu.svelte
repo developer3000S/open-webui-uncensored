@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { goto } from '$app/navigation';
 
@@ -19,10 +19,10 @@
 	export let show: any = false;
 	export let model: any;
 	export let pinModelHandler: (modelId: string) => void = () => {};
-	export let copyLinkHandler: Function = () => {};
-	export let deleteModelHandler: Function = () => {};
+	export let copyLinkHandler: any = () => {};
+	export let deleteModelHandler: any = () => {};
 
-	export let onClose: Function = () => {};
+	export let onClose: any = () => {};
 </script>
 
 <Dropdown
@@ -36,7 +36,7 @@
 	}}
 >
 	<Tooltip
-		content={i18n.t('More')}
+		content={$i18n.t('More')}
 		className={($settings?.highContrastMode ?? false)
 			? ''
 			: 'group-hover/item:opacity-100 opacity-0'}
@@ -66,7 +66,7 @@
 				>
 					<Pencil className="size-4" />
 
-					<div class="flex items-center">{i18n.t('Edit')}</div>
+					<div class="flex items-center">{$i18n.t('Edit')}</div>
 				</button>
 
 				{#if $user?.role === 'admin' && model?.owned_by === 'ollama'}
@@ -96,7 +96,7 @@
 							/>
 						</svg>
 
-						<div class="flex items-center">{i18n.t('Delete')}</div>
+						<div class="flex items-center">{$i18n.t('Delete')}</div>
 					</button>
 				{/if}
 
@@ -123,9 +123,9 @@
 
 				<div class="flex items-center">
 					{#if ($settings?.pinnedModels ?? []).includes(model?.id)}
-						{i18n.t('Hide from Sidebar')}
+						{$i18n.t('Hide from Sidebar')}
 					{:else}
-						{i18n.t('Keep in Sidebar')}
+						{$i18n.t('Keep in Sidebar')}
 					{/if}
 				</div>
 			</button>
@@ -143,7 +143,7 @@
 			>
 				<Link />
 
-				<div class="flex items-center">{i18n.t('Copy Link')}</div>
+				<div class="flex items-center">{$i18n.t('Copy Link')}</div>
 			</button>
 
 			{#if $config?.features.enable_community_sharing}
@@ -165,7 +165,7 @@
 				>
 					<GlobeAlt className="size-4" />
 
-					<div class="flex items-center">{i18n.t('Community Reviews')}</div>
+					<div class="flex items-center">{$i18n.t('Community Reviews')}</div>
 				</button>
 			{/if}
 		</div>
@@ -183,7 +183,7 @@
 	}}
 >
 	<Tooltip
-		content={i18n.t('More')}
+		content={$i18n.t('More')}
 		className={($settings?.highContrastMode ?? false)
 			? ''
 			: 'group-hover/item:opacity-100 opacity-0'}
@@ -213,7 +213,7 @@
 				>
 					<Pencil className="size-4" />
 
-					<div class="flex items-center">{i18n.t('Edit')}</div>
+					<div class="flex items-center">{$i18n.t('Edit')}</div>
 				</button>
 
 				{#if $user?.role === 'admin' && model?.owned_by === 'ollama'}
@@ -243,7 +243,7 @@
 							/>
 						</svg>
 
-						<div class="flex items-center">{i18n.t('Delete')}</div>
+						<div class="flex items-center">{$i18n.t('Delete')}</div>
 					</button>
 				{/if}
 
@@ -270,9 +270,9 @@
 
 				<div class="flex items-center">
 					{#if ($settings?.pinnedModels ?? []).includes(model?.id)}
-						{i18n.t('Hide from Sidebar')}
+						{$i18n.t('Hide from Sidebar')}
 					{:else}
-						{i18n.t('Keep in Sidebar')}
+						{$i18n.t('Keep in Sidebar')}
 					{/if}
 				</div>
 			</button>
@@ -290,7 +290,7 @@
 			>
 				<Link />
 
-				<div class="flex items-center">{i18n.t('Copy Link')}</div>
+				<div class="flex items-center">{$i18n.t('Copy Link')}</div>
 			</button>
 
 			{#if $config?.features.enable_community_sharing}
@@ -312,7 +312,7 @@
 				>
 					<GlobeAlt className="size-4" />
 
-					<div class="flex items-center">{i18n.t('Community Reviews')}</div>
+					<div class="flex items-center">{$i18n.t('Community Reviews')}</div>
 				</button>
 			{/if}
 		</div>

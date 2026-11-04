@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 
@@ -86,9 +86,9 @@
 			const res = await validateCoderGitHubConnection(token);
 			validation = res;
 			if (res.valid) {
-				toast.success(`${i18n.t('Connection is valid')} (${res.login ?? ''})`);
+				toast.success(`${$i18n.t('Connection is valid')} (${res.login ?? ''})`);
 			} else {
-				toast.error(res.warning ?? i18n.t('Connection is invalid'));
+				toast.error(res.warning ?? $i18n.t('Connection is invalid'));
 			}
 			// a valid OAuth connection may grant org access — refresh the filter list
 			loadOrganizations();
@@ -118,7 +118,7 @@
 		connectingInstallation = installationId;
 		try {
 			const res = await connectCoderGitHubAppInstallation(token, installationId);
-			toast.success(`${i18n.t('GitHub App connected')}: ${res.github_login ?? installationId}`);
+			toast.success(`${$i18n.t('GitHub App connected')}: ${res.github_login ?? installationId}`);
 			await Promise.all([refresh(), loadOrganizations()]);
 		} catch (e: any) {
 			toast.error(e?.detail?.message ?? e?.message ?? 'Failed to connect installation');
@@ -142,7 +142,7 @@
 		<input
 			bind:value={query}
 			on:input={handleQueryInput}
-			placeholder={i18n.t('Search a repository')}
+			placeholder={$i18n.t('Search a repository')}
 			class="flex-1 min-w-0 rounded-xl bg-gray-50 dark:bg-gray-850 px-3 py-2 text-xs outline-hidden ring-1 ring-transparent focus:ring-gray-300 dark:focus:ring-gray-700"
 		/>
 		<button
@@ -150,9 +150,9 @@
 			class="shrink-0 rounded-xl border border-gray-200 dark:border-gray-700 px-2.5 py-2 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
 			on:click={handleValidate}
 			disabled={validating}
-			title={i18n.t('Check GitHub connection validity')}
+			title={$i18n.t('Check GitHub connection validity')}
 		>
-			{#if validating}…{:else}{i18n.t('Check')}{/if}
+			{#if validating}…{:else}{$i18n.t('Check')}{/if}
 		</button>
 	</div>
 
@@ -163,8 +163,8 @@
 				: 'text-red-500'}"
 		>
 			{validation.valid
-				? i18n.t('Connection is valid')
-				: (validation.warning ?? i18n.t('Connection is invalid'))}
+				? $i18n.t('Connection is valid')
+				: (validation.warning ?? $i18n.t('Connection is invalid'))}
 		</div>
 	{/if}
 
@@ -174,7 +174,7 @@
 			on:change={handleOrgChange}
 			class="w-full rounded-xl bg-gray-50 dark:bg-gray-850 px-3 py-2 text-xs outline-hidden ring-1 ring-transparent focus:ring-gray-300 dark:focus:ring-gray-700"
 		>
-			<option value="">{i18n.t('All organizations & personal')}</option>
+			<option value="">{$i18n.t('All organizations & personal')}</option>
 			{#each organizations as o (o.login)}
 				<option value={o.login}>{o.login}</option>
 			{/each}
@@ -186,7 +186,7 @@
 			class="flex flex-col gap-1 rounded-xl border border-gray-200 dark:border-gray-700 px-2.5 py-2"
 		>
 			<div class="text-[10px] uppercase tracking-wide text-gray-400">
-				{i18n.t('GitHub App installations')}
+				{$i18n.t('GitHub App installations')}
 			</div>
 			{#each appStatus.installations as inst (inst.installation_id)}
 				<button
@@ -197,7 +197,7 @@
 				>
 					<span class="truncate">{inst.account_login ?? inst.installation_id}</span>
 					<span class="shrink-0 text-[10px] text-gray-400"
-						>{connectingInstallation === inst.installation_id ? '…' : i18n.t('Use')}</span
+						>{connectingInstallation === inst.installation_id ? '…' : $i18n.t('Use')}</span
 					>
 				</button>
 			{/each}
@@ -209,23 +209,23 @@
 			rel="noopener noreferrer"
 			class="rounded-xl border border-dashed border-gray-300 dark:border-gray-600 px-3 py-2 text-xs text-blue-500 hover:bg-gray-50 dark:hover:bg-gray-800/60"
 		>
-			{i18n.t('Install the GitHub App on your repositories')} →
+			{$i18n.t('Install the GitHub App on your repositories')} →
 		</a>
 	{/if}
 
 	{#if loading}
-		<div class="px-2 py-3 text-xs text-gray-500">{i18n.t('Loading repositories')}…</div>
+		<div class="px-2 py-3 text-xs text-gray-500">{$i18n.t('Loading repositories')}…</div>
 	{:else if repos.length === 0}
 		<div class="px-2 py-3 text-xs text-gray-500">
 			{#if errored}
-				{i18n.t('Failed to load repositories.')}
+				{$i18n.t('Failed to load repositories.')}
 				<button type="button" class="underline text-blue-500" on:click={refresh}
-					>{i18n.t('Try again')}</button
+					>{$i18n.t('Try again')}</button
 				>
 			{:else if query}
-				{i18n.t('No repositories found')}
+				{$i18n.t('No repositories found')}
 			{:else}
-				{i18n.t('No repositories found')} — {i18n.t(
+				{$i18n.t('No repositories found')} — {$i18n.t(
 					'reconnect your GitHub account with the repo permission, then press Refresh'
 				)}
 			{/if}
@@ -245,7 +245,7 @@
 					<div class="flex-1 min-w-0">
 						<div class="text-sm font-medium truncate text-black dark:text-white">{r.full_name}</div>
 						<div class="text-[11px] text-gray-500 truncate">
-							{i18n.t('Default branch')}: {r.default_branch ?? '—'}
+							{$i18n.t('Default branch')}: {r.default_branch ?? '—'}
 						</div>
 					</div>
 					<div class="flex items-center gap-1.5 shrink-0">
@@ -258,16 +258,16 @@
 						{#if r.push_allowed}
 							<span
 								class="text-[10px] px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-950/50 text-green-700 dark:text-green-400"
-								>{i18n.t('write')}</span
+								>{$i18n.t('write')}</span
 							>
 						{/if}
 						{#if selectedRepo === r.full_name}
 							<span
 								class="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400"
-								>{i18n.t('loaded')}</span
+								>{$i18n.t('loaded')}</span
 							>
 						{:else}
-							<span class="text-[11px] text-gray-400">{i18n.t('Load')}</span>
+							<span class="text-[11px] text-gray-400">{$i18n.t('Load')}</span>
 						{/if}
 					</div>
 				</button>
@@ -281,7 +281,7 @@
 		<input
 			bind:value={query}
 			on:input={handleQueryInput}
-			placeholder={i18n.t('Search a repository')}
+			placeholder={$i18n.t('Search a repository')}
 			class="flex-1 min-w-0 rounded-xl bg-gray-50 dark:bg-gray-850 px-3 py-2 text-xs outline-hidden ring-1 ring-transparent focus:ring-gray-300 dark:focus:ring-gray-700"
 		/>
 		<button
@@ -289,9 +289,9 @@
 			class="shrink-0 rounded-xl border border-gray-200 dark:border-gray-700 px-2.5 py-2 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
 			on:click={handleValidate}
 			disabled={validating}
-			title={i18n.t('Check GitHub connection validity')}
+			title={$i18n.t('Check GitHub connection validity')}
 		>
-			{#if validating}…{:else}{i18n.t('Check')}{/if}
+			{#if validating}…{:else}{$i18n.t('Check')}{/if}
 		</button>
 	</div>
 
@@ -302,8 +302,8 @@
 				: 'text-red-500'}"
 		>
 			{validation.valid
-				? i18n.t('Connection is valid')
-				: (validation.warning ?? i18n.t('Connection is invalid'))}
+				? $i18n.t('Connection is valid')
+				: (validation.warning ?? $i18n.t('Connection is invalid'))}
 		</div>
 	{/if}
 
@@ -313,7 +313,7 @@
 			on:change={handleOrgChange}
 			class="w-full rounded-xl bg-gray-50 dark:bg-gray-850 px-3 py-2 text-xs outline-hidden ring-1 ring-transparent focus:ring-gray-300 dark:focus:ring-gray-700"
 		>
-			<option value="">{i18n.t('All organizations & personal')}</option>
+			<option value="">{$i18n.t('All organizations & personal')}</option>
 			{#each organizations as o (o.login)}
 				<option value={o.login}>{o.login}</option>
 			{/each}
@@ -325,7 +325,7 @@
 			class="flex flex-col gap-1 rounded-xl border border-gray-200 dark:border-gray-700 px-2.5 py-2"
 		>
 			<div class="text-[10px] uppercase tracking-wide text-gray-400">
-				{i18n.t('GitHub App installations')}
+				{$i18n.t('GitHub App installations')}
 			</div>
 			{#each appStatus.installations as inst (inst.installation_id)}
 				<button
@@ -336,7 +336,7 @@
 				>
 					<span class="truncate">{inst.account_login ?? inst.installation_id}</span>
 					<span class="shrink-0 text-[10px] text-gray-400"
-						>{connectingInstallation === inst.installation_id ? '…' : i18n.t('Use')}</span
+						>{connectingInstallation === inst.installation_id ? '…' : $i18n.t('Use')}</span
 					>
 				</button>
 			{/each}
@@ -348,23 +348,23 @@
 			rel="noopener noreferrer"
 			class="rounded-xl border border-dashed border-gray-300 dark:border-gray-600 px-3 py-2 text-xs text-blue-500 hover:bg-gray-50 dark:hover:bg-gray-800/60"
 		>
-			{i18n.t('Install the GitHub App on your repositories')} →
+			{$i18n.t('Install the GitHub App on your repositories')} →
 		</a>
 	{/if}
 
 	{#if loading}
-		<div class="px-2 py-3 text-xs text-gray-500">{i18n.t('Loading repositories')}…</div>
+		<div class="px-2 py-3 text-xs text-gray-500">{$i18n.t('Loading repositories')}…</div>
 	{:else if repos.length === 0}
 		<div class="px-2 py-3 text-xs text-gray-500">
 			{#if errored}
-				{i18n.t('Failed to load repositories.')}
+				{$i18n.t('Failed to load repositories.')}
 				<button type="button" class="underline text-blue-500" on:click={refresh}
-					>{i18n.t('Try again')}</button
+					>{$i18n.t('Try again')}</button
 				>
 			{:else if query}
-				{i18n.t('No repositories found')}
+				{$i18n.t('No repositories found')}
 			{:else}
-				{i18n.t('No repositories found')} — {i18n.t(
+				{$i18n.t('No repositories found')} — {$i18n.t(
 					'reconnect your GitHub account with the repo permission, then press Refresh'
 				)}
 			{/if}
@@ -384,7 +384,7 @@
 					<div class="flex-1 min-w-0">
 						<div class="text-sm font-medium truncate text-black dark:text-white">{r.full_name}</div>
 						<div class="text-[11px] text-gray-500 truncate">
-							{i18n.t('Default branch')}: {r.default_branch ?? '—'}
+							{$i18n.t('Default branch')}: {r.default_branch ?? '—'}
 						</div>
 					</div>
 					<div class="flex items-center gap-1.5 shrink-0">
@@ -397,16 +397,16 @@
 						{#if r.push_allowed}
 							<span
 								class="text-[10px] px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-950/50 text-green-700 dark:text-green-400"
-								>{i18n.t('write')}</span
+								>{$i18n.t('write')}</span
 							>
 						{/if}
 						{#if selectedRepo === r.full_name}
 							<span
 								class="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400"
-								>{i18n.t('loaded')}</span
+								>{$i18n.t('loaded')}</span
 							>
 						{:else}
-							<span class="text-[11px] text-gray-400">{i18n.t('Load')}</span>
+							<span class="text-[11px] text-gray-400">{$i18n.t('Load')}</span>
 						{/if}
 					</div>
 				</button>

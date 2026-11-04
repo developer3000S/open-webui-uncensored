@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import Image from '$lib/components/common/Image.svelte';
@@ -52,7 +52,7 @@
 			<p class="text-sm text-gray-600 dark:text-gray-300 truncate">{content}</p>
 		{:else if files.length === 0}
 			<p class="text-sm text-gray-400 dark:text-gray-500 truncate italic">
-				{i18n.t('Empty message')}
+				{$i18n.t('Empty message')}
 			</p>
 		{/if}
 	</div>
@@ -60,12 +60,12 @@
 	<!-- Actions -->
 	<div class="flex items-center gap-1 shrink-0">
 		<!-- Send immediately -->
-		<Tooltip content={i18n.t('Send now')}>
+		<Tooltip content={$i18n.t('Send now')}>
 			<button
 				type="button"
 				class="p-1 text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
 				on:click={() => onSendNow(id)}
-				aria-label={i18n.t('Send now')}
+				aria-label={$i18n.t('Send now')}
 			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -85,24 +85,24 @@
 		</Tooltip>
 
 		<!-- Edit -->
-		<Tooltip content={i18n.t('Edit')}>
+		<Tooltip content={$i18n.t('Edit')}>
 			<button
 				type="button"
 				class="p-1 text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
 				on:click={() => onEdit(id)}
-				aria-label={i18n.t('Edit')}
+				aria-label={$i18n.t('Edit')}
 			>
 				<EditPencil className="size-3.5" />
 			</button>
 		</Tooltip>
 
 		<!-- Delete -->
-		<Tooltip content={i18n.t('Delete')}>
+		<Tooltip content={$i18n.t('Delete')}>
 			<button
 				type="button"
 				class="p-1 text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
 				on:click={() => onDelete(id)}
-				aria-label={i18n.t('Delete')}
+				aria-label={$i18n.t('Delete')}
 			>
 				<GarbageBin className="size-3.5" />
 			</button>
@@ -142,7 +142,7 @@
 			<p class="text-sm text-gray-600 dark:text-gray-300 truncate">{content}</p>
 		{:else if files.length === 0}
 			<p class="text-sm text-gray-400 dark:text-gray-500 truncate italic">
-				{i18n.t('Empty message')}
+				{$i18n.t('Empty message')}
 			</p>
 		{/if}
 	</div>
@@ -150,12 +150,12 @@
 	<!-- Actions -->
 	<div class="flex items-center gap-1 shrink-0">
 		<!-- Send immediately -->
-		<Tooltip content={i18n.t('Send now')}>
+		<Tooltip content={$i18n.t('Send now')}>
 			<button
 				type="button"
 				class="p-1 text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
 				on:click={() => onSendNow(id)}
-				aria-label={i18n.t('Send now')}
+				aria-label={$i18n.t('Send now')}
 			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -175,24 +175,24 @@
 		</Tooltip>
 
 		<!-- Edit -->
-		<Tooltip content={i18n.t('Edit')}>
+		<Tooltip content={$i18n.t('Edit')}>
 			<button
 				type="button"
 				class="p-1 text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
 				on:click={() => onEdit(id)}
-				aria-label={i18n.t('Edit')}
+				aria-label={$i18n.t('Edit')}
 			>
 				<EditPencil className="size-3.5" />
 			</button>
 		</Tooltip>
 
 		<!-- Delete -->
-		<Tooltip content={i18n.t('Delete')}>
+		<Tooltip content={$i18n.t('Delete')}>
 			<button
 				type="button"
 				class="p-1 text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
 				on:click={() => onDelete(id)}
-				aria-label={i18n.t('Delete')}
+				aria-label={$i18n.t('Delete')}
 			>
 				<GarbageBin className="size-3.5" />
 			</button>

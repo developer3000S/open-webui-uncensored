@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 
@@ -30,16 +30,16 @@
 
 	import type { Writable } from 'svelte/store';
 
-	let id: any = null;
-	let channel: any = null;
+	export let id: any = null;
+	export let channel: any = null;
 	export let messages: any = [];
-	let replyToMessage: any = null;
+	export let replyToMessage: any = null;
 	export let top: any = false;
 	export let thread: any = false;
-	export let onLoad: Function = () => {};
-	export let onReply: Function = () => {};
-	export let onThread: Function = () => {};
-	export let onPin: Function = () => {};
+	export let onLoad: any = () => {};
+	export let onReply: any = () => {};
+	export let onThread: any = () => {};
+	export let onPin: any = () => {};
 
 	let messagesLoading = false;
 
@@ -71,7 +71,7 @@
 			>
 				<div class="w-full flex justify-center py-1 text-xs animate-pulse items-center gap-2">
 					<Spinner className=" size-4" />
-					<div class=" ">{i18n.t('Loading...')}</div>
+					<div class=" ">{$i18n.t('Loading...')}</div>
 				</div>
 			</Loader>
 		{:else if !thread}
@@ -105,7 +105,7 @@
 						</div>
 
 						<div class=" text-gray-500">
-							{i18n.t(
+							{$i18n.t(
 								'This channel was created on {{createdAt}}. This is the very beginning of the {{channelName}} channel.',
 								{
 									createdAt: dayjs(channel.created_at / 1000000).format('MMMM D, YYYY'),
@@ -116,7 +116,7 @@
 					</div>
 				{:else}
 					<div class="flex justify-center text-xs items-center gap-2 py-5">
-						<div class=" ">{i18n.t('Start of the channel')}</div>
+						<div class=" ">{$i18n.t('Start of the channel')}</div>
 					</div>
 				{/if}
 
@@ -276,7 +276,7 @@
 			>
 				<div class="w-full flex justify-center py-1 text-xs animate-pulse items-center gap-2">
 					<Spinner className=" size-4" />
-					<div class=" ">{i18n.t('Loading...')}</div>
+					<div class=" ">{$i18n.t('Loading...')}</div>
 				</div>
 			</Loader>
 		{:else if !thread}
@@ -310,7 +310,7 @@
 						</div>
 
 						<div class=" text-gray-500">
-							{i18n.t(
+							{$i18n.t(
 								'This channel was created on {{createdAt}}. This is the very beginning of the {{channelName}} channel.',
 								{
 									createdAt: dayjs(channel.created_at / 1000000).format('MMMM D, YYYY'),
@@ -321,7 +321,7 @@
 					</div>
 				{:else}
 					<div class="flex justify-center text-xs items-center gap-2 py-5">
-						<div class=" ">{i18n.t('Start of the channel')}</div>
+						<div class=" ">{$i18n.t('Start of the channel')}</div>
 					</div>
 				{/if}
 

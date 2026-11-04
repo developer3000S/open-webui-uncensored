@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { marked } from 'marked';
 	import DOMPurify from 'dompurify';
@@ -48,7 +48,7 @@
 	// This rule eliminates that hack so <pre><code> content is untouched.
 	turndownService.addRule('singleNewlineParagraphs', {
 		filter: 'p',
-		replacement: (content: any)  => {
+		replacement: (content: any) => {
 			return '\n' + content + '\n';
 		}
 	});
@@ -59,7 +59,7 @@
 	// Add custom table header rule before using GFM plugin
 	turndownService.addRule('tableHeaders', {
 		filter: 'th',
-		replacement: (content: any, node: any)  => {
+		replacement: (content: any, node: any) => {
 			return content;
 		}
 	});
@@ -67,15 +67,15 @@
 	// Add custom table rule to handle headers properly
 	turndownService.addRule('tables', {
 		filter: 'table',
-		replacement: (content: any, node: any)  => {
+		replacement: (content: any, node: any) => {
 			// Extract rows
-			const rows = Array.from(node.querySelectorAll('tr'));
+			const rows = Array.from(node.querySelectorAll('tr')) as HTMLTableRowElement[];
 			if (rows.length === 0) return content;
 
 			let markdown = '\n';
 
 			rows.forEach((row, rowIndex) => {
-				const cells = Array.from(row.querySelectorAll('th, td'));
+				const cells = Array.from(row.querySelectorAll('th, td')) as HTMLTableCellElement[];
 				const cellContents = cells.map((cell) => {
 					// Get the text content and clean it up
 					let cellContent = turndownService.turndown(cell.innerHTML).trim();
@@ -99,11 +99,11 @@
 	});
 
 	turndownService.addRule('taskListItems', {
-		filter: (node) =>
+		filter: (node: HTMLElement) =>
 			node.nodeName === 'LI' &&
 			(node.getAttribute('data-checked') === 'true' ||
 				node.getAttribute('data-checked') === 'false'),
-		replacement: (content: any, node: any)  => {
+		replacement: (content: any, node: any) => {
 			const checked = node.getAttribute('data-checked') === 'true';
 			content = content.replace(/^\s+/, '');
 			return `- [${checked ? 'x' : ' '}] ${content}\n`;
@@ -112,8 +112,9 @@
 
 	// Convert TipTap mention spans -> <@id>
 	turndownService.addRule('mentions', {
-		filter: (node) => node.nodeName === 'SPAN' && node.getAttribute('data-type') === 'mention',
-		replacement: (_content, node: HTMLElement) => {
+		filter: (node: HTMLElement) =>
+			node.nodeName === 'SPAN' && node.getAttribute('data-type') === 'mention',
+		replacement: (_content: string, node: HTMLElement) => {
 			const id = node.getAttribute('data-id') || '';
 			// TipTap stores the trigger char in data-mention-suggestion-char (usually "@")
 			const ch = node.getAttribute('data-mention-suggestion-char') || '@';
@@ -130,9 +131,15 @@
 	import { Fragment, DOMParser } from 'prosemirror-model';
 	import { EditorState, Plugin, PluginKey, TextSelection, Selection } from 'prosemirror-state';
 	import { Decoration, DecorationSet } from 'prosemirror-view';
-	import { Editor, Extension, markInputRule, mergeAttributes } from '@tiptap/core';
+	import {
+		Editor,
+		Extension,
+		getHTMLFromFragment,
+		markInputRule,
+		mergeAttributes
+	} from '@tiptap/core';
 
-	import { AIAutocompletion } from './RichTextInput/AutoCompletion.js';
+	import { AIAutocompletion } from './RichTextInput/AutoCompletion';
 
 	import StarterKit from '@tiptap/starter-kit';
 
@@ -180,9 +187,9 @@
 
 	import type { SocketIOCollaborationProvider } from './RichTextInput/Collaboration';
 
-	export let oncompositionstart = (e: any) => {};
-	export let oncompositionend = (e: any) => {};
-	export let onChange = (e: any) => {};
+	export let oncompositionstart: any = (e: any) => {};
+	export let oncompositionend: any = (e: any) => {};
+	export let onChange: any = (e: any) => {};
 
 	// create a lowlight instance with all languages loaded
 	const lowlight = createLowlight(
@@ -197,13 +204,13 @@
 
 	export let editor: Editor | null = null;
 
-	let socket: any = null;
-	let user: any = null;
+	export let socket: any = null;
+	export let user: any = null;
 	export let files: any = [];
 
 	export let documentId: any = '';
 	export let className: any = 'input-prose min-h-fit h-full';
-	export let placeholder = i18n.t('Type here...');
+	export let placeholder = $i18n.t('Type here...');
 	let _placeholder = placeholder;
 
 	$: if (placeholder !== _placeholder) {
@@ -222,10 +229,10 @@
 	export let link: any = false;
 	export let image: any = false;
 	export let fileHandler: any = false;
-	let suggestions: any = null;
+	export let suggestions: any = null;
 
-	export let onFileDrop = (currentEditor: any, files: any, pos: any) => {
-		files.forEach((file) => {
+	export let onFileDrop: any = (currentEditor: any, files: any, pos: any) => {
+		files.forEach((file: File) => {
 			const fileReader = new FileReader();
 
 			fileReader.readAsDataURL(file);
@@ -244,8 +251,8 @@
 		});
 	};
 
-	export let onFilePaste = (currentEditor: any, files: any, htmlContent: any) => {
-		files.forEach((file) => {
+	export let onFilePaste: any = (currentEditor: any, files: any, htmlContent: any) => {
+		files.forEach((file: File) => {
 			if (htmlContent) {
 				// if there is htmlContent, stop manual insertion & let other extensions handle insertion via inputRule
 				// you could extract the pasted file from this url string and upload it to a server for example
@@ -271,7 +278,7 @@
 		});
 	};
 
-	export let onSelectionUpdate = (e: any) => {};
+	export let onSelectionUpdate: any = (e: any) => {};
 
 	export let id: any = '';
 	export let value: any = '';
@@ -282,7 +289,7 @@
 	export let collaboration: any = false;
 	export let showFormattingToolbar: any = true;
 	export let preserveBreaks: any = false;
-	export let generateAutoCompletion: Function = async () => null;
+	export let generateAutoCompletion: any = async () => null;
 	export let autocomplete: any = false;
 	export let messageInput: any = false;
 	export let shiftEnter: any = false;
@@ -291,13 +298,13 @@
 	export let floatingMenuPlacement: any = 'bottom-start';
 	let content: any = null;
 	let htmlValue = '';
-	let jsonValue = '';
+	let jsonValue: any = '';
 	let mdValue = '';
 
 	let provider: SocketIOCollaborationProvider | null = null;
 
-	let floatingMenuElement: Element | null = null;
-	let bubbleMenuElement: Element | null = null;
+	let floatingMenuElement: HTMLElement | null = null;
+	let bubbleMenuElement: HTMLElement | null = null;
 	let element: Element | null = null;
 
 	let pendingUpdate: any = null;
@@ -355,7 +362,9 @@
 		};
 	}
 
-	export const replaceCommandWithText = async (text: any) => {
+	export const replaceCommandWithText = async (text: string) => {
+		if (!editor) return;
+
 		const { state, dispatch } = editor.view;
 		const { selection } = state;
 		const pos = selection.from;
@@ -400,16 +409,17 @@
 
 			tr = tr.replaceWith(start, end, nodesToInsert);
 			// Calculate new position
-			const newPos = start + nodesToInsert.reduce((sum, node) => sum + node.nodeSize, 0);
+			const newPos =
+				start + nodesToInsert.reduce((sum: number, node: any) => sum + node.nodeSize, 0);
 			tr = tr.setSelection(Selection.near(tr.doc.resolve(newPos)));
 		} else {
 			if (text.includes('\n')) {
 				// Split the text into lines and create a <p> node for each line
 				const lines = text.split('\n');
 				const nodes: any = lines.map(
-					(line, index) =>
+					(line: string, index: number) =>
 						index === 0
-							? state.schema.text(line ? line : []) // First line is plain text
+							? state.schema.text(line) // First line is plain text
 							: state.schema.nodes.paragraph.create({}, line ? state.schema.text(line) : undefined) // Subsequent lines are paragraphs
 				);
 
@@ -434,9 +444,7 @@
 					text !== '' ? state.schema.text(text) : []
 				);
 
-				tr = tr.setSelection(
-					state.selection.constructor.near(tr.doc.resolve(start + text.length + 1))
-				);
+				tr = tr.setSelection(Selection.near(tr.doc.resolve(start + text.length + 1)));
 			}
 		}
 
@@ -486,7 +494,7 @@
 		focus();
 	};
 
-	export const insertContent = (content) => {
+	export const insertContent = (content: string) => {
 		if (!editor || !editor.view) return;
 		const { state, view } = editor;
 		const { schema, tr } = state;
@@ -501,17 +509,17 @@
 	};
 
 	// Convert text to ProseMirror nodes, using hardBreak for newlines
-	const textToNodes = (state, text) => {
+	const textToNodes = (state: any, text: string) => {
 		if (!text.includes('\n')) return state.schema.text(text);
 		const nodes: any = [];
-		text.split('\n').forEach((line, i) => {
+		text.split('\n').forEach((line: string, i: number) => {
 			if (i > 0) nodes.push(state.schema.nodes.hardBreak.create());
 			if (line) nodes.push(state.schema.text(line));
 		});
 		return nodes;
 	};
 
-	export const replaceVariables = (variables) => {
+	export const replaceVariables = (variables: Record<string, any>) => {
 		if (!editor || !editor.view) return;
 		const { state, view } = editor;
 		const { doc } = state;
@@ -521,7 +529,7 @@
 		let offset = 0; // Track position changes due to text length differences
 
 		// Collect all replacements first to avoid position conflicts
-		const replacements: any = [];
+		const replacements: { from: number; to: number; text: string }[] = [];
 
 		doc.descendants((node, pos) => {
 			if (node.isText && node.text) {
@@ -573,12 +581,12 @@
 	};
 
 	// Function to find the next template in the document
-	(doc: any, from: any = 0) => {
+	const findNextTemplate = (doc: any, from: any = 0) => {
 		const patterns = [{ start: '{{', end: '}}' }];
 
 		let result: any = null;
 
-		doc.nodesBetween(from, doc.content.size, (node, pos) => {
+		doc.nodesBetween(from, doc.content.size, (node: any, pos: number) => {
 			if (result) return false; // Stop if we've found a match
 			if (node.isText) {
 				const text = node.text;
@@ -602,7 +610,7 @@
 		});
 
 		return result;
-	}
+	};
 
 	// Function to select the next template in the document
 	function selectNextTemplate(state: any, dispatch: any) {
@@ -631,6 +639,8 @@
 	}
 
 	export const setContent = (content: any) => {
+		if (!editor) return;
+
 		editor.commands.setContent(content);
 	};
 
@@ -638,6 +648,8 @@
 		if (value !== '') {
 			// After updating the state, try to find and select the next template
 			setTimeout(() => {
+				if (!editor) return;
+
 				const templateFound = selectNextTemplate(editor.view.state, editor.view.dispatch);
 				if (!templateFound) {
 					editor.commands.focus('end');
@@ -655,9 +667,9 @@
 					props: {
 						decorations: (state) => {
 							const { selection } = state;
-							const { focused } = this.editor;
+							const { isFocused } = this.editor;
 
-							if (focused || selection.empty) {
+							if (isFocused || selection.empty) {
 								return null;
 							}
 
@@ -673,7 +685,7 @@
 		}
 	});
 
-	import { listDragHandlePlugin } from './RichTextInput/listDragHandlePlugin.js';
+	import { listDragHandlePlugin } from './RichTextInput/listDragHandlePlugin';
 
 	const ListItemDragHandle = Extension.create({
 		name: 'listItemDragHandle',
@@ -687,6 +699,7 @@
 		}
 	});
 
+	// @ts-ignore
 	onMount(async () => {
 		content = value;
 
@@ -698,14 +711,14 @@
 			if (preserveBreaks) {
 				turndownService.addRule('preserveBreaks', {
 					filter: 'br', // Target <br> elements
-					replacement: (content: any)  => {
+					replacement: (content: any) => {
 						return '<br/>';
 					}
 				});
 			}
 
 			if (!raw) {
-				async (value: any, attempts: any = 3, interval: any = 100) => {
+				const tryParse = async (value: any, attempts: any = 3, interval: any = 100) => {
 					try {
 						// Try parsing the value
 						return marked.parse(value.replaceAll(`\n<br/>`, `<br/>`), {
@@ -720,7 +733,7 @@
 						await new Promise((resolve) => setTimeout(resolve, interval));
 						return tryParse(value, attempts - 1, interval); // Recursive call
 					}
-				}
+				};
 
 				// Usage example
 				content = await tryParse(value);
@@ -979,7 +992,8 @@
 						});
 
 						const fragment = Fragment.fromArray(nodes);
-						dispatch(state.tr.replaceSelectionWith(fragment, false).scrollIntoView());
+						const { from, to } = state.selection;
+						dispatch(state.tr.replaceWith(from, to, fragment).scrollIntoView());
 
 						return true; // handled
 					}
@@ -1057,7 +1071,7 @@
 								if (isInCodeBlock) {
 									// Handle tab in code block - insert tab character or spaces
 									const tabChar = '\t'; // or '    ' for 4 spaces
-									editor.commands.insertContent(tabChar);
+									editor?.commands.insertContent(tabChar);
 									event.preventDefault();
 									return true; // Prevent further propagation
 								} else {
@@ -1083,7 +1097,7 @@
 										return false; // Let ProseMirror handle the Enter key normally
 									}
 
-									editor.commands.enter(); // Insert a new line
+									editor?.commands.enter(); // Insert a new line
 									view.dispatch(view.state.tr.scrollIntoView()); // Move viewport to the cursor
 									event.preventDefault();
 									return true;
@@ -1110,7 +1124,7 @@
 							// Handle shift + Enter for a line break
 							if (shiftEnter) {
 								if (event.key === 'Enter' && event.shiftKey && !event.ctrlKey && !event.metaKey) {
-									editor.commands.setHardBreak(); // Insert a hard break
+									editor?.commands.setHardBreak(); // Insert a hard break
 									view.dispatch(view.state.tr.scrollIntoView()); // Move viewport to the cursor
 									event.preventDefault();
 									return true;
@@ -1203,7 +1217,7 @@
 						// Only take the selected text & HTML, not the full doc
 						const plain = state.doc.textBetween(from, to, '\n');
 						const slice = state.doc.cut(from, to);
-						const html = editor.schema ? editor.getHTML(slice) : editor.getHTML(); // depending on your editor API
+						const html = getHTMLFromFragment(slice.content, state.schema);
 
 						event.clipboardData.setData('text/plain', plain);
 						event.clipboardData.setData('text/html', html);
@@ -1215,7 +1229,7 @@
 			},
 			onBeforeCreate: ({ editor }) => {
 				if (files) {
-					editor.storage.files = files;
+					(editor.storage as { files?: any }).files = files;
 				}
 			},
 			onSelectionUpdate: onSelectionUpdate,
@@ -1308,32 +1322,6 @@
 		}
 	};
 </script>
-
-{#if richText && showFormattingToolbar}
-	<div
-		bind:this={bubbleMenuElement}
-		id="bubble-menu"
-		class="p-0"
-		style="visibility: hidden; opacity: 0; position: absolute; z-index: 9999;"
-	>
-		<FormattingButtons {editor} />
-	</div>
-
-	<div
-		bind:this={floatingMenuElement}
-		id="floating-menu"
-		class="p-0"
-		style="visibility: hidden; opacity: 0; position: absolute; z-index: 9999;"
-	>
-		<FormattingButtons {editor} />
-	</div>
-{/if}
-
-<div
-	bind:this={element}
-	dir="auto"
-	class="relative w-full min-w-full {className} {!editable ? 'cursor-not-allowed' : ''}"
-></div>
 
 {#if richText && showFormattingToolbar}
 	<div

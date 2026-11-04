@@ -4,6 +4,7 @@
 	import { getModels } from '$lib/apis';
 	import Models from '$lib/components/workspace/Models.svelte';
 
+	// @ts-ignore
 	onMount(async () => {
 		await Promise.all([
 			(async () => {

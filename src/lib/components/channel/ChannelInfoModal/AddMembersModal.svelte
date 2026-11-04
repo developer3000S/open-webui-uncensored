@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import type { Writable } from 'svelte/store';
@@ -14,9 +14,9 @@
 	import Spinner from '$lib/components/common/Spinner.svelte';
 
 	export let show: any = false;
-	let channel: any = null;
+	export let channel: any = null;
 
-	export let onUpdate = () => {};
+	export let onUpdate: any = () => {};
 
 	let groupIds: any = [];
 	let userIds: any = [];
@@ -33,11 +33,11 @@
 		});
 
 		if (res) {
-			toast.success(i18n.t('Members added successfully'));
+			toast.success($i18n.t('Members added successfully'));
 			onUpdate();
 			show = false;
 		} else {
-			toast.error(i18n.t('Failed to add members'));
+			toast.error($i18n.t('Failed to add members'));
 		}
 	};
 
@@ -58,7 +58,7 @@
 			<div class=" flex justify-between dark:text-gray-100 px-5 pt-4 mb-1.5">
 				<div class="self-center text-base">
 					<div class="flex items-center gap-0.5 shrink-0">
-						{i18n.t('Add Members')}
+						{$i18n.t('Add Members')}
 					</div>
 				</div>
 				<button
@@ -92,7 +92,7 @@
 								type="submit"
 								disabled={loading}
 							>
-								{i18n.t('Add')}
+								{$i18n.t('Add')}
 
 								{#if loading}
 									<div class="ml-2 self-center">
@@ -114,7 +114,7 @@
 			<div class=" flex justify-between dark:text-gray-100 px-5 pt-4 mb-1.5">
 				<div class="self-center text-base">
 					<div class="flex items-center gap-0.5 shrink-0">
-						{i18n.t('Add Members')}
+						{$i18n.t('Add Members')}
 					</div>
 				</div>
 				<button
@@ -148,7 +148,7 @@
 								type="submit"
 								disabled={loading}
 							>
-								{i18n.t('Add')}
+								{$i18n.t('Add')}
 
 								{#if loading}
 									<div class="ml-2 self-center">

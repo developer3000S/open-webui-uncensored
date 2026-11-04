@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import type { Writable } from 'svelte/store';
@@ -54,7 +54,7 @@
 	dayjs.extend(localizedFormat);
 
 	export let show: any = false;
-	export let onClose = () => {};
+	export let onClose: any = () => {};
 
 	let showShareChatModal = false;
 	let showDeleteConfirm = false;
@@ -86,10 +86,10 @@
 		const res = await cloneChatById(
 			localStorage.token,
 			id,
-			i18n.t('Clone of {{TITLE}}', {
+			$i18n.t('Clone of {{TITLE}}', {
 				TITLE: chat?.title ?? 'Chat'
 			})
-		).catch(async (error)=> {
+		).catch(async (error) => {
 			toast.error(`${error}`);
 			return null;
 		});
@@ -112,14 +112,14 @@
 			}
 
 			await refreshSidebar();
-			toast.success(i18n.t('Chat archived.'));
+			toast.success($i18n.t('Chat archived.'));
 		} catch (error) {
-			toast.error(i18n.t('Failed to archive chat.'));
+			toast.error($i18n.t('Failed to archive chat.'));
 		}
 	};
 
 	const deleteChatHandler = async (id: any) => {
-		const res = await deleteChatById(localStorage.token, id).catch(async (error)=> {
+		const res = await deleteChatById(localStorage.token, id).catch(async (error) => {
 			toast.error(`${error}`);
 			return null;
 		});
@@ -139,7 +139,8 @@
 
 	const moveChatHandler = async (chatId: any, folderId: any) => {
 		if (chatId && folderId) {
-			const res = await updateChatFolderIdById(localStorage.token, chatId, folderId).catch(async (error)=> {
+			const res = await updateChatFolderIdById(localStorage.token, chatId, folderId).catch(
+				async (error) => {
 					toast.error(`${error}`);
 					return null;
 				}
@@ -148,7 +149,7 @@
 			if (res) {
 				chatList = chatList?.filter((c) => c.id !== chatId) ?? null;
 				await refreshSidebar();
-				toast.success(i18n.t('Chat moved successfully'));
+				toast.success($i18n.t('Chat moved successfully'));
 			}
 		}
 	};
@@ -170,7 +171,7 @@
 
 		const trimmed = editingChatTitle.trim();
 		if (trimmed === '') {
-			toast.error(i18n.t('Title cannot be an empty string.'));
+			toast.error($i18n.t('Title cannot be an empty string.'));
 			return;
 		}
 
@@ -197,7 +198,7 @@
 		const chat = await getChatById(localStorage.token, editingChatId).catch(() => null);
 
 		if (!chat) {
-			toast.error(i18n.t('Failed to load chat'));
+			toast.error($i18n.t('Failed to load chat'));
 			generating = false;
 			return;
 		}
@@ -237,7 +238,8 @@
 
 		editingChatTitle = '';
 
-		const generatedTitle = await generateTitle(localStorage.token, model, msgList).catch(async (error)=> {
+		const generatedTitle = await generateTitle(localStorage.token, model, msgList).catch(
+			async (error) => {
 				toast.error(`${error}`);
 				return null;
 			}
@@ -256,7 +258,7 @@
 
 	let actions = [
 		{
-			label: i18n.t('Start a new conversation'),
+			label: $i18n.t('Start a new conversation'),
 			onClick: async () => {
 				await goto(`/${query ? `?q=${query}` : ''}`);
 				show = false;
@@ -342,7 +344,7 @@
 
 		const chatId = chatList[selectedChatIdx].id;
 
-		const chat = await getChatById(localStorage.token, chatId).catch(async (error: any)=> {
+		const chat = await getChatById(localStorage.token, chatId).catch(async (error: any) => {
 			return null;
 		});
 
@@ -366,7 +368,7 @@
 				messages = [];
 			}
 		} else {
-			toast.error(i18n.t('Failed to load chat preview'));
+			toast.error($i18n.t('Failed to load chat preview'));
 			selectedChat = null;
 			messages = null;
 			history = null;
@@ -399,7 +401,7 @@
 						allChatsLoaded = false;
 					}
 				} catch (error) {
-					toast.error(i18n.t('Failed to load search results'));
+					toast.error($i18n.t('Failed to load search results'));
 				} finally {
 					chatListLoading = false;
 				}
@@ -519,7 +521,7 @@
 			($user?.role === 'admin' || ($user?.permissions?.features?.notes ?? true))
 				? [
 						{
-							label: i18n.t('Create a new note'),
+							label: $i18n.t('Create a new note'),
 							onClick: async () => {
 								await goto(`/notes?content=${query}`);
 								show = false;
@@ -550,13 +552,13 @@
 
 <DeleteConfirmDialog
 	bind:show={showDeleteConfirm}
-	title={i18n.t('Delete chat?')}
+	title={$i18n.t('Delete chat?')}
 	on:confirm={() => {
 		deleteChatHandler(menuChatId);
 	}}
 >
 	<div class="text-sm text-gray-500 flex-1 line-clamp-3">
-		{i18n.t('This will delete')} <span class="font-semibold">{menuChatTitle}</span>.
+		{$i18n.t('This will delete')} <span class="font-semibold">{menuChatTitle}</span>.
 	</div>
 </DeleteConfirmDialog>
 
@@ -566,7 +568,7 @@
 			<SearchInput
 				bind:value={query}
 				on:input={searchHandler}
-				placeholder={i18n.t('Search')}
+				placeholder={$i18n.t('Search')}
 				showClearButton={true}
 				onFocus={() => {
 					selectedIdx = null;
@@ -604,7 +606,7 @@
 				class="flex flex-col overflow-y-auto h-96 md:h-[40rem] max-h-full scrollbar-hidden w-full flex-1 pr-2"
 			>
 				<div class="w-full text-xs text-gray-500 dark:text-gray-500 font-medium pb-2 px-2">
-					{i18n.t('Actions')}
+					{$i18n.t('Actions')}
 				</div>
 
 				{#each actions as action, idx (action.label)}
@@ -614,7 +616,7 @@
 							? 'bg-gray-50 dark:bg-gray-850'
 							: ''}"
 						data-arrow-selected={selectedIdx === idx ? 'true' : undefined}
-						dragabble="false"
+						draggable="false"
 						on:mouseenter={() => {
 							selectedIdx = idx;
 						}}
@@ -627,7 +629,7 @@
 						</div>
 						<div class=" flex-1 text-left">
 							<div class="text-ellipsis line-clamp-1 w-full">
-								{i18n.t(action.label)}
+								{$i18n.t(action.label)}
 							</div>
 						</div>
 					</button>
@@ -638,7 +640,7 @@
 
 					{#if chatList.length === 0}
 						<div class="text-xs text-gray-500 dark:text-gray-400 text-center px-5 py-4">
-							{i18n.t('No results found')}
+							{$i18n.t('No results found')}
 						</div>
 					{/if}
 
@@ -649,24 +651,24 @@
 									? ''
 									: 'pt-5'} pb-2 px-2"
 							>
-								{i18n.t(chat.time_range)}
+								{$i18n.t(chat.time_range)}
 								<!-- localisation keys for time_range to be recognized from the i18next parser (so they don't get automatically removed):
-							{i18n.t('Today')}
-							{i18n.t('Yesterday')}
-							{i18n.t('Previous 7 days')}
-							{i18n.t('Previous 30 days')}
-							{i18n.t('January')}
-							{i18n.t('February')}
-							{i18n.t('March')}
-							{i18n.t('April')}
-							{i18n.t('May')}
-							{i18n.t('June')}
-							{i18n.t('July')}
-							{i18n.t('August')}
-							{i18n.t('September')}
-							{i18n.t('October')}
-							{i18n.t('November')}
-							{i18n.t('December')}
+							{$i18n.t('Today')}
+							{$i18n.t('Yesterday')}
+							{$i18n.t('Previous 7 days')}
+							{$i18n.t('Previous 30 days')}
+							{$i18n.t('January')}
+							{$i18n.t('February')}
+							{$i18n.t('March')}
+							{$i18n.t('April')}
+							{$i18n.t('May')}
+							{$i18n.t('June')}
+							{$i18n.t('July')}
+							{$i18n.t('August')}
+							{$i18n.t('September')}
+							{$i18n.t('October')}
+							{$i18n.t('November')}
+							{$i18n.t('December')}
 							-->
 							</div>
 						{/if}
@@ -688,7 +690,7 @@
 										id="search-chat-title-input-{chat.id}"
 										bind:value={editingChatTitle}
 										class="bg-transparent w-full outline-none"
-										placeholder={generating ? i18n.t('Generating...') : ''}
+										placeholder={generating ? $i18n.t('Generating...') : ''}
 										disabled={generating}
 										on:keydown={(e) => {
 											e.stopPropagation();
@@ -709,7 +711,7 @@
 								</div>
 
 								<div class="flex items-center shrink-0 pl-1">
-									<Tooltip content={i18n.t('Generate')}>
+									<Tooltip content={$i18n.t('Generate')}>
 										<button
 											class="self-center dark:hover:text-white transition disabled:cursor-not-allowed"
 											disabled={generating}
@@ -762,7 +764,7 @@
 								class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-3 pl-6 shrink-0"
 							>
 								<div class="text-gray-500 dark:text-gray-400 text-xs">
-									{i18n.t(
+									{$i18n.t(
 										dayjs(chat?.updated_at * 1000).calendar(null, {
 											sameDay: '[Today]',
 											nextDay: '[Tomorrow]',
@@ -777,7 +779,7 @@
 								{#if editingChatId !== chat.id}
 									{#if shiftKey}
 										<div class="flex items-center space-x-1.5">
-											<Tooltip content={i18n.t('Archive')} className="flex items-center">
+											<Tooltip content={$i18n.t('Archive')} className="flex items-center">
 												<button
 													class="self-center dark:hover:text-white transition"
 													on:click|stopPropagation={() => {
@@ -789,7 +791,7 @@
 												</button>
 											</Tooltip>
 
-											<Tooltip content={i18n.t('Delete')}>
+											<Tooltip content={$i18n.t('Delete')}>
 												<button
 													class="self-center dark:hover:text-white transition"
 													on:click|stopPropagation={() => {
@@ -863,7 +865,7 @@
 						>
 							<div class="w-full flex justify-center py-4 text-xs animate-pulse items-center gap-2">
 								<Spinner className=" size-4" />
-								<div class=" ">{i18n.t('Loading...')}</div>
+								<div class=" ">{$i18n.t('Loading...')}</div>
 							</div>
 						</Loader>
 					{/if}
@@ -881,7 +883,7 @@
 					<div
 						class="w-full h-full flex justify-center items-center text-gray-500 dark:text-gray-400 text-sm"
 					>
-						{i18n.t('Select a conversation to preview')}
+						{$i18n.t('Select a conversation to preview')}
 					</div>
 				{:else}
 					<div class="w-full h-full flex flex-col">
@@ -897,25 +899,29 @@
 							sendMessage={() => {}}
 							continueResponse={() => {}}
 							regenerateResponse={() => {}}
+							showMessage={() => {}}
+							atSelectedModel={null}
+							mergeResponses={() => {}}
+							chatActionHandler={() => {}}
 						/>
 					</div>
 				{/if}
 			</div>
 		</div>
-	</div>
-</Modal>
+	</div></Modal
+>
 
 <ShareChatModal bind:show={showShareChatModal} chatId={menuChatId} />
 
 <DeleteConfirmDialog
 	bind:show={showDeleteConfirm}
-	title={i18n.t('Delete chat?')}
+	title={$i18n.t('Delete chat?')}
 	on:confirm={() => {
 		deleteChatHandler(menuChatId);
 	}}
 >
 	<div class="text-sm text-gray-500 flex-1 line-clamp-3">
-		{i18n.t('This will delete')} <span class="font-semibold">{menuChatTitle}</span>.
+		{$i18n.t('This will delete')} <span class="font-semibold">{menuChatTitle}</span>.
 	</div>
 </DeleteConfirmDialog>
 
@@ -925,7 +931,7 @@
 			<SearchInput
 				bind:value={query}
 				on:input={searchHandler}
-				placeholder={i18n.t('Search')}
+				placeholder={$i18n.t('Search')}
 				showClearButton={true}
 				onFocus={() => {
 					selectedIdx = null;
@@ -963,7 +969,7 @@
 				class="flex flex-col overflow-y-auto h-96 md:h-[40rem] max-h-full scrollbar-hidden w-full flex-1 pr-2"
 			>
 				<div class="w-full text-xs text-gray-500 dark:text-gray-500 font-medium pb-2 px-2">
-					{i18n.t('Actions')}
+					{$i18n.t('Actions')}
 				</div>
 
 				{#each actions as action, idx (action.label)}
@@ -973,7 +979,7 @@
 							? 'bg-gray-50 dark:bg-gray-850'
 							: ''}"
 						data-arrow-selected={selectedIdx === idx ? 'true' : undefined}
-						dragabble="false"
+						draggable="false"
 						on:mouseenter={() => {
 							selectedIdx = idx;
 						}}
@@ -986,7 +992,7 @@
 						</div>
 						<div class=" flex-1 text-left">
 							<div class="text-ellipsis line-clamp-1 w-full">
-								{i18n.t(action.label)}
+								{$i18n.t(action.label)}
 							</div>
 						</div>
 					</button>
@@ -997,7 +1003,7 @@
 
 					{#if chatList.length === 0}
 						<div class="text-xs text-gray-500 dark:text-gray-400 text-center px-5 py-4">
-							{i18n.t('No results found')}
+							{$i18n.t('No results found')}
 						</div>
 					{/if}
 
@@ -1008,24 +1014,24 @@
 									? ''
 									: 'pt-5'} pb-2 px-2"
 							>
-								{i18n.t(chat.time_range)}
+								{$i18n.t(chat.time_range)}
 								<!-- localisation keys for time_range to be recognized from the i18next parser (so they don't get automatically removed):
-							{i18n.t('Today')}
-							{i18n.t('Yesterday')}
-							{i18n.t('Previous 7 days')}
-							{i18n.t('Previous 30 days')}
-							{i18n.t('January')}
-							{i18n.t('February')}
-							{i18n.t('March')}
-							{i18n.t('April')}
-							{i18n.t('May')}
-							{i18n.t('June')}
-							{i18n.t('July')}
-							{i18n.t('August')}
-							{i18n.t('September')}
-							{i18n.t('October')}
-							{i18n.t('November')}
-							{i18n.t('December')}
+							{$i18n.t('Today')}
+							{$i18n.t('Yesterday')}
+							{$i18n.t('Previous 7 days')}
+							{$i18n.t('Previous 30 days')}
+							{$i18n.t('January')}
+							{$i18n.t('February')}
+							{$i18n.t('March')}
+							{$i18n.t('April')}
+							{$i18n.t('May')}
+							{$i18n.t('June')}
+							{$i18n.t('July')}
+							{$i18n.t('August')}
+							{$i18n.t('September')}
+							{$i18n.t('October')}
+							{$i18n.t('November')}
+							{$i18n.t('December')}
 							-->
 							</div>
 						{/if}
@@ -1047,7 +1053,7 @@
 										id="search-chat-title-input-{chat.id}"
 										bind:value={editingChatTitle}
 										class="bg-transparent w-full outline-none"
-										placeholder={generating ? i18n.t('Generating...') : ''}
+										placeholder={generating ? $i18n.t('Generating...') : ''}
 										disabled={generating}
 										on:keydown={(e) => {
 											e.stopPropagation();
@@ -1068,7 +1074,7 @@
 								</div>
 
 								<div class="flex items-center shrink-0 pl-1">
-									<Tooltip content={i18n.t('Generate')}>
+									<Tooltip content={$i18n.t('Generate')}>
 										<button
 											class="self-center dark:hover:text-white transition disabled:cursor-not-allowed"
 											disabled={generating}
@@ -1121,7 +1127,7 @@
 								class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-3 pl-6 shrink-0"
 							>
 								<div class="text-gray-500 dark:text-gray-400 text-xs">
-									{i18n.t(
+									{$i18n.t(
 										dayjs(chat?.updated_at * 1000).calendar(null, {
 											sameDay: '[Today]',
 											nextDay: '[Tomorrow]',
@@ -1136,7 +1142,7 @@
 								{#if editingChatId !== chat.id}
 									{#if shiftKey}
 										<div class="flex items-center space-x-1.5">
-											<Tooltip content={i18n.t('Archive')} className="flex items-center">
+											<Tooltip content={$i18n.t('Archive')} className="flex items-center">
 												<button
 													class="self-center dark:hover:text-white transition"
 													on:click|stopPropagation={() => {
@@ -1148,7 +1154,7 @@
 												</button>
 											</Tooltip>
 
-											<Tooltip content={i18n.t('Delete')}>
+											<Tooltip content={$i18n.t('Delete')}>
 												<button
 													class="self-center dark:hover:text-white transition"
 													on:click|stopPropagation={() => {
@@ -1222,7 +1228,7 @@
 						>
 							<div class="w-full flex justify-center py-4 text-xs animate-pulse items-center gap-2">
 								<Spinner className=" size-4" />
-								<div class=" ">{i18n.t('Loading...')}</div>
+								<div class=" ">{$i18n.t('Loading...')}</div>
 							</div>
 						</Loader>
 					{/if}
@@ -1240,7 +1246,7 @@
 					<div
 						class="w-full h-full flex justify-center items-center text-gray-500 dark:text-gray-400 text-sm"
 					>
-						{i18n.t('Select a conversation to preview')}
+						{$i18n.t('Select a conversation to preview')}
 					</div>
 				{:else}
 					<div class="w-full h-full flex flex-col">
@@ -1256,6 +1262,10 @@
 							sendMessage={() => {}}
 							continueResponse={() => {}}
 							regenerateResponse={() => {}}
+							showMessage={() => {}}
+							atSelectedModel={null}
+							mergeResponses={() => {}}
+							chatActionHandler={() => {}}
 						/>
 					</div>
 				{/if}

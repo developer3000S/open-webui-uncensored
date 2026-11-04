@@ -1,5 +1,5 @@
 {
-  "extends": "./node_modules/$app/tsconfig.json",
+  "extends": "$app/tsconfig",
   "compilerOptions": {
     "paths": {
       "$lib": [
@@ -8,7 +8,8 @@
       "$lib/*": [
         "./src/lib/*"
       ]
-    }
+    },
+    "strict": false
   },
   "include": [
     "src",

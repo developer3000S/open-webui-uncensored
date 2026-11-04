@@ -6,6 +6,9 @@
 	import { settings } from '$lib/stores';
 
 	export let token: Token;
+	export let id: any = undefined;
+	export let sourceIds: any = [];
+	export let onSourceClick: any = undefined;
 
 	let html: string | null = null;
 
@@ -23,10 +26,7 @@
 				class="w-full my-2"
 				src={videoSrc.replaceAll('&amp;', '&')}
 				title="Video player"
-				frameborder="0"
-				referrerpolicy="strict-origin-when-cross-origin"
 				controls
-				allowfullscreen
 			></video>
 		{:else}
 			{token.text}
@@ -55,10 +55,8 @@
 				class="w-full aspect-video my-2"
 				src={`https://www.youtube.com/embed/${ytId}`}
 				title="YouTube video player"
-				frameborder="0"
 				allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
 				referrerpolicy="strict-origin-when-cross-origin"
-				allowfullscreen
 			>
 			</iframe>
 		{/if}
@@ -70,8 +68,7 @@
 				class="w-full my-2"
 				src={iframeSrc}
 				title="Embedded content"
-				frameborder="0"
-				sandbox
+				sandbox=""
 				on:load={(e) => {
 					try {
 						e.currentTarget.style.height =
@@ -107,12 +104,10 @@
 				class="w-full my-2"
 				src={`${WEBUI_BASE_URL}/api/v1/files/${fileId}/content/html`}
 				title="Content"
-				frameborder="0"
 				sandbox="allow-scripts allow-downloads{($settings?.iframeSandboxAllowForms ?? false)
 					? ' allow-forms'
 					: ''}{($settings?.iframeSandboxAllowSameOrigin ?? false) ? ' allow-same-origin' : ''}"
 				referrerpolicy="strict-origin-when-cross-origin"
-				allowfullscreen
 				width="100%"
 				on:load={(e) => {
 					try {

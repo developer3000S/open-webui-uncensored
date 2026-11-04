@@ -2,7 +2,7 @@
 	import { getContext, createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 	import type { Writable } from 'svelte/store';
-	
+
 	import Cog6 from '$lib/components/icons/Cog6.svelte';
 	import ArenaModelModal from './ArenaModelModal.svelte';
 	import { WEBUI_API_BASE_URL } from '$lib/constants';

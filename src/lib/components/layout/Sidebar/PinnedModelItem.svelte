@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 	import { WEBUI_API_BASE_URL, WEBUI_BASE_URL } from '$lib/constants';
@@ -9,10 +9,10 @@
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import PinSlash from '$lib/components/icons/PinSlash.svelte';
 
-	let model: any = null;
+	export let model: any = null;
 	export let shiftKey: any = false;
-	export let onClick = () => {};
-	export let onUnpin = () => {};
+	export let onClick: any = () => {};
+	export let onUnpin: any = () => {};
 
 	let mouseOver = false;
 </script>
@@ -37,7 +37,7 @@
 		>
 			<div class="self-center shrink-0">
 				<img
-					src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${model.id}&lang=${$language}`}
+					src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${model.id}&lang=${$i18n.language}`}
 					class=" size-5 rounded-full -translate-x-[0.5px]"
 					alt="logo"
 					on:error={(e) => {
@@ -56,7 +56,7 @@
 		{#if mouseOver && shiftKey && onUnpin}
 			<div class="absolute right-5 top-2.5">
 				<div class=" flex items-center self-center space-x-1.5">
-					<Tooltip content={i18n.t('Unpin')} className="flex items-center">
+					<Tooltip content={$i18n.t('Unpin')} className="flex items-center">
 						<button
 							class=" self-center dark:hover:text-white transition"
 							on:click={() => {

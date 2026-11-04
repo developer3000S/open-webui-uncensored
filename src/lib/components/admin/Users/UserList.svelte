@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { WEBUI_API_BASE_URL, WEBUI_BASE_URL } from '$lib/constants';
 	import { WEBUI_NAME, config, user, showSidebar } from '$lib/stores';
@@ -155,6 +155,8 @@
 		<Banner
 			className="mx-0"
 			banner={{
+				id: 'license-error',
+				timestamp: Date.now(),
 				type: 'error',
 				title: 'License Error',
 				content:
@@ -174,7 +176,7 @@
 	>
 		<div class="flex md:self-center text-lg font-medium px-0.5 gap-2">
 			<div class="flex-shrink-0">
-				{i18n.t('Users')}
+				{$i18n.t('Users')}
 			</div>
 
 			<div>
@@ -182,12 +184,12 @@
 					{#if total > $config?.license_metadata?.seats}
 						<span class="text-lg font-medium text-red-500"
 							>{total} of {$config?.license_metadata?.seats}
-							<span class="text-sm font-normal">{i18n.t('available users')}</span></span
+							<span class="text-sm font-normal">{$i18n.t('available users')}</span></span
 						>
 					{:else}
 						<span class="text-lg font-medium text-gray-500 dark:text-gray-300"
 							>{total} of {$config?.license_metadata?.seats}
-							<span class="text-sm font-normal">{i18n.t('available users')}</span></span
+							<span class="text-sm font-normal">{$i18n.t('available users')}</span></span
 						>
 					{/if}
 				{:else}
@@ -217,13 +219,13 @@
 						class=" w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
 						bind:value={query}
 						on:input={handleSearchInput}
-						aria-label={i18n.t('Search')}
-						placeholder={i18n.t('Search')}
+						aria-label={$i18n.t('Search')}
+						placeholder={$i18n.t('Search')}
 					/>
 				</div>
 
 				<div>
-					<Tooltip content={i18n.t('Add User')}>
+					<Tooltip content={$i18n.t('Add User')}>
 						<button
 							class=" p-2 rounded-xl hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-850 transition font-medium text-sm flex items-center space-x-1"
 							on:click={() => {
@@ -248,7 +250,7 @@
 						on:click={() => setSortKey('role')}
 					>
 						<div class="flex gap-1.5 items-center">
-							{i18n.t('Role')}
+							{$i18n.t('Role')}
 
 							{#if orderBy === 'role'}
 								<span class="font-normal"
@@ -271,7 +273,7 @@
 						on:click={() => setSortKey('name')}
 					>
 						<div class="flex gap-1.5 items-center">
-							{i18n.t('Name')}
+							{$i18n.t('Name')}
 
 							{#if orderBy === 'name'}
 								<span class="font-normal"
@@ -294,7 +296,7 @@
 						on:click={() => setSortKey('email')}
 					>
 						<div class="flex gap-1.5 items-center">
-							{i18n.t('Email')}
+							{$i18n.t('Email')}
 
 							{#if orderBy === 'email'}
 								<span class="font-normal"
@@ -318,8 +320,8 @@
 						on:click={() => setSortKey('last_active_at')}
 					>
 						<div class="flex gap-1.5 items-center">
-							{i18n.t('Last Active')}
-							<!-- {i18n.t('Last Modified')} -->
+							{$i18n.t('Last Active')}
+							<!-- {$i18n.t('Last Modified')} -->
 
 							{#if orderBy === 'last_active_at'}
 								<span class="font-normal"
@@ -342,7 +344,7 @@
 						on:click={() => setSortKey('created_at')}
 					>
 						<div class="flex gap-1.5 items-center">
-							{i18n.t('Created at')}
+							{$i18n.t('Created at')}
 							{#if orderBy === 'created_at'}
 								<span class="font-normal"
 									>{#if direction === 'asc'}
@@ -368,7 +370,7 @@
 						<td class="px-3 py-1 min-w-[7rem] w-28">
 							<button
 								class=" translate-y-0.5"
-								aria-label={i18n.t('Change User Role')}
+								aria-label={$i18n.t('Change User Role')}
 								on:click={() => {
 									selectedUser = user;
 									showEditUserModal = !showEditUserModal;
@@ -376,7 +378,7 @@
 							>
 								<Badge
 									type={user.role === 'admin' ? 'info' : user.role === 'user' ? 'success' : 'muted'}
-									content={i18n.t(user.role)}
+									content={$i18n.t(user.role)}
 								/>
 							</button>
 						</td>
@@ -420,10 +422,10 @@
 						<td class="px-3 py-1 text-right">
 							<div class="flex justify-end w-full">
 								{#if $config.features.enable_admin_chat_access && user.role !== 'admin'}
-									<Tooltip content={i18n.t('Chats')}>
+									<Tooltip content={$i18n.t('Chats')}>
 										<button
 											class="self-center w-fit text-sm px-2 py-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
-											aria-label={i18n.t('Chats')}
+											aria-label={$i18n.t('Chats')}
 											on:click={async () => {
 												showUserChatsModal = !showUserChatsModal;
 												selectedUser = user;
@@ -435,10 +437,10 @@
 								{/if}
 
 								{#if user.role !== 'admin'}
-									<Tooltip content={i18n.t('Preview Access')}>
+									<Tooltip content={$i18n.t('Preview Access')}>
 										<button
 											class="self-center w-fit text-sm px-2 py-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
-											aria-label={i18n.t('Preview Access')}
+											aria-label={$i18n.t('Preview Access')}
 											on:click={() => {
 												selectedUser = user;
 												showUserPreviewModal = true;
@@ -467,10 +469,10 @@
 									</Tooltip>
 								{/if}
 
-								<Tooltip content={i18n.t('Edit User')}>
+								<Tooltip content={$i18n.t('Edit User')}>
 									<button
 										class="self-center w-fit text-sm px-2 py-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
-										aria-label={i18n.t('Edit User')}
+										aria-label={$i18n.t('Edit User')}
 										on:click={async () => {
 											showEditUserModal = !showEditUserModal;
 											selectedUser = user;
@@ -494,10 +496,10 @@
 								</Tooltip>
 
 								{#if user.role !== 'admin'}
-									<Tooltip content={i18n.t('Delete User')}>
+									<Tooltip content={$i18n.t('Delete User')}>
 										<button
 											class="self-center w-fit text-sm px-2 py-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
-											aria-label={i18n.t('Delete User')}
+											aria-label={$i18n.t('Delete User')}
 											on:click={async () => {
 												showDeleteConfirmDialog = true;
 												selectedUser = user;
@@ -529,7 +531,7 @@
 	</div>
 
 	<div class=" text-gray-500 text-xs mt-1.5 text-right">
-		ⓘ {i18n.t("Click on the user role button to change a user's role.")}
+		ⓘ {$i18n.t("Click on the user role button to change a user's role.")}
 	</div>
 
 	{#if total > 30}
@@ -601,6 +603,8 @@
 		<Banner
 			className="mx-0"
 			banner={{
+				id: 'license-error',
+				timestamp: Date.now(),
 				type: 'error',
 				title: 'License Error',
 				content:
@@ -620,7 +624,7 @@
 	>
 		<div class="flex md:self-center text-lg font-medium px-0.5 gap-2">
 			<div class="flex-shrink-0">
-				{i18n.t('Users')}
+				{$i18n.t('Users')}
 			</div>
 
 			<div>
@@ -628,12 +632,12 @@
 					{#if total > $config?.license_metadata?.seats}
 						<span class="text-lg font-medium text-red-500"
 							>{total} of {$config?.license_metadata?.seats}
-							<span class="text-sm font-normal">{i18n.t('available users')}</span></span
+							<span class="text-sm font-normal">{$i18n.t('available users')}</span></span
 						>
 					{:else}
 						<span class="text-lg font-medium text-gray-500 dark:text-gray-300"
 							>{total} of {$config?.license_metadata?.seats}
-							<span class="text-sm font-normal">{i18n.t('available users')}</span></span
+							<span class="text-sm font-normal">{$i18n.t('available users')}</span></span
 						>
 					{/if}
 				{:else}
@@ -663,13 +667,13 @@
 						class=" w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
 						bind:value={query}
 						on:input={handleSearchInput}
-						aria-label={i18n.t('Search')}
-						placeholder={i18n.t('Search')}
+						aria-label={$i18n.t('Search')}
+						placeholder={$i18n.t('Search')}
 					/>
 				</div>
 
 				<div>
-					<Tooltip content={i18n.t('Add User')}>
+					<Tooltip content={$i18n.t('Add User')}>
 						<button
 							class=" p-2 rounded-xl hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-850 transition font-medium text-sm flex items-center space-x-1"
 							on:click={() => {
@@ -694,7 +698,7 @@
 						on:click={() => setSortKey('role')}
 					>
 						<div class="flex gap-1.5 items-center">
-							{i18n.t('Role')}
+							{$i18n.t('Role')}
 
 							{#if orderBy === 'role'}
 								<span class="font-normal"
@@ -717,7 +721,7 @@
 						on:click={() => setSortKey('name')}
 					>
 						<div class="flex gap-1.5 items-center">
-							{i18n.t('Name')}
+							{$i18n.t('Name')}
 
 							{#if orderBy === 'name'}
 								<span class="font-normal"
@@ -740,7 +744,7 @@
 						on:click={() => setSortKey('email')}
 					>
 						<div class="flex gap-1.5 items-center">
-							{i18n.t('Email')}
+							{$i18n.t('Email')}
 
 							{#if orderBy === 'email'}
 								<span class="font-normal"
@@ -764,8 +768,8 @@
 						on:click={() => setSortKey('last_active_at')}
 					>
 						<div class="flex gap-1.5 items-center">
-							{i18n.t('Last Active')}
-							<!-- {i18n.t('Last Modified')} -->
+							{$i18n.t('Last Active')}
+							<!-- {$i18n.t('Last Modified')} -->
 
 							{#if orderBy === 'last_active_at'}
 								<span class="font-normal"
@@ -788,7 +792,7 @@
 						on:click={() => setSortKey('created_at')}
 					>
 						<div class="flex gap-1.5 items-center">
-							{i18n.t('Created at')}
+							{$i18n.t('Created at')}
 							{#if orderBy === 'created_at'}
 								<span class="font-normal"
 									>{#if direction === 'asc'}
@@ -814,7 +818,7 @@
 						<td class="px-3 py-1 min-w-[7rem] w-28">
 							<button
 								class=" translate-y-0.5"
-								aria-label={i18n.t('Change User Role')}
+								aria-label={$i18n.t('Change User Role')}
 								on:click={() => {
 									selectedUser = user;
 									showEditUserModal = !showEditUserModal;
@@ -822,7 +826,7 @@
 							>
 								<Badge
 									type={user.role === 'admin' ? 'info' : user.role === 'user' ? 'success' : 'muted'}
-									content={i18n.t(user.role)}
+									content={$i18n.t(user.role)}
 								/>
 							</button>
 						</td>
@@ -866,10 +870,10 @@
 						<td class="px-3 py-1 text-right">
 							<div class="flex justify-end w-full">
 								{#if $config.features.enable_admin_chat_access && user.role !== 'admin'}
-									<Tooltip content={i18n.t('Chats')}>
+									<Tooltip content={$i18n.t('Chats')}>
 										<button
 											class="self-center w-fit text-sm px-2 py-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
-											aria-label={i18n.t('Chats')}
+											aria-label={$i18n.t('Chats')}
 											on:click={async () => {
 												showUserChatsModal = !showUserChatsModal;
 												selectedUser = user;
@@ -881,10 +885,10 @@
 								{/if}
 
 								{#if user.role !== 'admin'}
-									<Tooltip content={i18n.t('Preview Access')}>
+									<Tooltip content={$i18n.t('Preview Access')}>
 										<button
 											class="self-center w-fit text-sm px-2 py-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
-											aria-label={i18n.t('Preview Access')}
+											aria-label={$i18n.t('Preview Access')}
 											on:click={() => {
 												selectedUser = user;
 												showUserPreviewModal = true;
@@ -913,10 +917,10 @@
 									</Tooltip>
 								{/if}
 
-								<Tooltip content={i18n.t('Edit User')}>
+								<Tooltip content={$i18n.t('Edit User')}>
 									<button
 										class="self-center w-fit text-sm px-2 py-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
-										aria-label={i18n.t('Edit User')}
+										aria-label={$i18n.t('Edit User')}
 										on:click={async () => {
 											showEditUserModal = !showEditUserModal;
 											selectedUser = user;
@@ -940,10 +944,10 @@
 								</Tooltip>
 
 								{#if user.role !== 'admin'}
-									<Tooltip content={i18n.t('Delete User')}>
+									<Tooltip content={$i18n.t('Delete User')}>
 										<button
 											class="self-center w-fit text-sm px-2 py-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
-											aria-label={i18n.t('Delete User')}
+											aria-label={$i18n.t('Delete User')}
 											on:click={async () => {
 												showDeleteConfirmDialog = true;
 												selectedUser = user;
@@ -975,7 +979,7 @@
 	</div>
 
 	<div class=" text-gray-500 text-xs mt-1.5 text-right">
-		ⓘ {i18n.t("Click on the user role button to change a user's role.")}
+		ⓘ {$i18n.t("Click on the user role button to change a user's role.")}
 	</div>
 
 	{#if total > 30}

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	const dispatch = createEventDispatcher();
 
@@ -42,8 +42,8 @@
 			bind:this={inputElement}
 			bind:value={tagName}
 			class="w-20 text-sm bg-transparent outline-hidden text-gray-700 dark:text-blue-400 placeholder:text-gray-400 dark:placeholder:text-blue-400/50"
-			placeholder={i18n.t('Add tag')}
-			aria-label={i18n.t('Add a tag')}
+			placeholder={$i18n.t('Add tag')}
+			aria-label={$i18n.t('Add a tag')}
 			list="tagOptions"
 			on:keydown={(event) => {
 				if (event.key === 'Enter' || event.key === ' ') {
@@ -64,7 +64,7 @@
 		on:click={openInput}
 	>
 		<span>+</span>
-		<span>{i18n.t('Add Tag')}</span>
+		<span>{$i18n.t('Add Tag')}</span>
 	</button>
 {/if}
 
@@ -85,8 +85,8 @@
 			bind:this={inputElement}
 			bind:value={tagName}
 			class="w-20 text-sm bg-transparent outline-hidden text-gray-700 dark:text-blue-400 placeholder:text-gray-400 dark:placeholder:text-blue-400/50"
-			placeholder={i18n.t('Add tag')}
-			aria-label={i18n.t('Add a tag')}
+			placeholder={$i18n.t('Add tag')}
+			aria-label={$i18n.t('Add a tag')}
 			list="tagOptions"
 			on:keydown={(event) => {
 				if (event.key === 'Enter' || event.key === ' ') {
@@ -107,7 +107,7 @@
 		on:click={openInput}
 	>
 		<span>+</span>
-		<span>{i18n.t('Add Tag')}</span>
+		<span>{$i18n.t('Add Tag')}</span>
 	</button>
 {/if}
 

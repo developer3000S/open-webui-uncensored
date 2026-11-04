@@ -1,8 +1,6 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
-	import { createEventDispatcher, getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
-
+	import type { i18n as i18nType } from 'i18next';
+	import type { Writable } from 'svelte/store';
 	import DOMPurify from 'dompurify';
 	import { toast } from 'svelte-sonner';
 
@@ -14,6 +12,8 @@
 
 	dayjs.extend(duration);
 	dayjs.extend(relativeTime);
+
+	import { onMount, tick, getContext, createEventDispatcher } from 'svelte';
 
 	import { createPicker, getAuthToken } from '$lib/utils/google-drive-picker';
 	import { pickAndDownloadFile } from '$lib/utils/onedrive-file-picker';
@@ -30,7 +30,6 @@
 		showCallOverlay,
 		tools,
 		skills,
-		toolServers,
 		terminalServers,
 		user as _user,
 		showControls,
@@ -107,42 +106,46 @@
 	import QueuedMessageItem from './MessageInput/QueuedMessageItem.svelte';
 	import TaskList from './Messages/ResponseMessage/TaskList.svelte';
 
-	import type { Writable } from 'svelte/store';
-	export let onUpload: Function = (e: any) => {};
+	const i18n = getContext<Writable<i18nType>>('i18n');
+
+	export let onUpload: Function = (e) => {};
 	export let onChange: Function = () => {};
 	export let onWebSearchToggle: Function = () => {};
 
 	export let createMessagePair: Function;
 	export let stopResponse: Function;
 
-	export let autoScroll: any = false;
-	export let generating: any = false;
-	export let uploadPending: any = false;
-	export let atSelectedModel: Model | undefined = undefined;
-	export let selectedModels: [''];
+	export let autoScroll = false;
+	export let generating = false;
+	export let uploadPending = false;
 
-	let selectedModelIds: any[] = [];
+	export let atSelectedModel: Model | undefined = undefined;
+	export let selectedModels: any = [];
+	export let toolServers: any;
+
+	let selectedModelIds = [];
 	$: selectedModelIds = atSelectedModel !== undefined ? [atSelectedModel.id] : selectedModels;
 
-	export let history: { messages?: Record<string, any>; currentId?: string | null; [key: string]: any } = {};
-	let taskIds: any = null;
+	export let history;
+	export let taskIds = null;
 
 	$: isActive =
 		(taskIds && taskIds.length > 0) ||
 		(history.currentId && history.messages[history.currentId]?.done != true) ||
 		generating;
 
-	export let prompt: any = '';
-	export let files: any = [];
+	export let prompt = '';
+	export let files = [];
 
-	export let selectedToolIds: any = [];
-	export let selectedSkillIds: string[] = [];
-	export let selectedFilterIds: any = [];
+	export let selectedToolIds = [];
+	export let selectedSkillIds = [];
+	export let selectedFilterIds = [];
 
-	export let imageGenerationEnabled: any = false;
-	export let webSearchEnabled: any = false;
-	export let codeInterpreterEnabled: any = false;
-	export let pendingOAuthTools: any = [];
+	export let imageGenerationEnabled = false;
+	export let webSearchEnabled = false;
+	export let codeInterpreterEnabled = false;
+
+	export let pendingOAuthTools = [];
 
 	let showTerminalMenu = false;
 
@@ -151,18 +154,18 @@
 	export let onQueueEdit: (id: string) => void = () => {};
 	export let onQueueDelete: (id: string) => void = () => {};
 
-	export let chatTasks: any = [];
+	export let chatTasks = [];
 
-	let inputContent: any = null;
+	let inputContent = null;
 
 	let showInputVariablesModal = false;
-	let inputVariablesModalCallback = (variableValues: any) => {};
-	let inputVariables: Record<string, any> = {};
-	let inputVariableValues: Record<string, any> = {};
+	let inputVariablesModalCallback = (variableValues) => {};
+	let inputVariables = {};
+	let inputVariableValues = {};
 
 	let showValvesModal = false;
 	let selectedValvesType = 'tool'; // 'tool' or 'function'
-	let selectedValvesItemId: any = null;
+	let selectedValvesItemId = null;
 	let integrationsMenuCloseOnOutsideClick = true;
 
 	$: if (!showValvesModal) {
@@ -210,12 +213,12 @@
 
 	const textVariableHandler = async (text: string) => {
 		if (text.includes('{{CLIPBOARD}}')) {
-			const clipboardText = await navigator.clipboard.readText().catch(async (err)=> {
-				toast.error(i18n.t('Failed to read clipboard contents'));
+			const clipboardText = await navigator.clipboard.readText().catch((err) => {
+				toast.error($i18n.t('Failed to read clipboard contents'));
 				return '{{CLIPBOARD}}';
 			});
 
-			const clipboardItems = await navigator.clipboard.read().catch(async (err)=> {
+			const clipboardItems = await navigator.clipboard.read().catch((err) => {
 				console.error('Failed to read clipboard items:', err);
 				return [];
 			});
@@ -241,7 +244,7 @@
 			try {
 				location = await getUserPosition();
 			} catch (error) {
-				toast.error(i18n.t('Location access not allowed'));
+				toast.error($i18n.t('Location access not allowed'));
 				location = 'LOCATION_UNKNOWN';
 			}
 			text = text.replaceAll('{{USER_LOCATION}}', String(location));
@@ -373,7 +376,7 @@
 		return word;
 	};
 
-	const replaceCommandWithText = (text: any) => {
+	const replaceCommandWithText = (text) => {
 		const chatInput = document.getElementById('chat-input');
 		if (!chatInput) return;
 
@@ -418,10 +421,10 @@
 	};
 
 	let command = '';
-	export let showCommands: any = false;
+	export let showCommands = false;
 	$: showCommands =
 		['/', '#', '@', '$', ':'].includes(command?.charAt(0)) || '\\#' === command?.slice(0, 2);
-	let suggestions: any[] | null = null;
+	let suggestions = null;
 
 	let showTools = false;
 	let showSkills = false;
@@ -456,7 +459,7 @@
 	}
 
 	let chatInputContainerElement;
-	let chatInputElement: HTMLInputElement | null = null;
+	let chatInputElement;
 
 	let filesInputElement;
 	let commandsElement;
@@ -465,11 +468,12 @@
 
 	let showInputModal = false;
 
-	export let dragged: any = false;
+	export let dragged = false;
 	let shiftKey = false;
 
-	let user: any = null;
-	export let placeholder: any = '';
+	let user = null;
+	export let placeholder = '';
+
 	type ModelCapability =
 		'vision' | 'file_upload' | 'web_search' | 'image_generation' | 'code_interpreter' | 'terminal';
 	type ModelCapabilitiesById = Record<string, Partial<Record<ModelCapability, boolean>>>;
@@ -485,51 +489,51 @@
 		capabilitiesById: ModelCapabilitiesById
 	) => modelIds.filter((id) => capabilitiesById[id]?.[capability] ?? true);
 
-	let visionCapableModels: any[] = [];
+	let visionCapableModels = [];
 	$: visionCapableModels = getCapableModelIds(selectedModelIds, 'vision', modelCapabilitiesById);
 
-	let fileUploadCapableModels: any[] = [];
+	let fileUploadCapableModels = [];
 	$: fileUploadCapableModels = getCapableModelIds(
 		selectedModelIds,
 		'file_upload',
 		modelCapabilitiesById
 	);
 
-	let webSearchCapableModels: any[] = [];
+	let webSearchCapableModels = [];
 	$: webSearchCapableModels = getCapableModelIds(
 		selectedModelIds,
 		'web_search',
 		modelCapabilitiesById
 	);
 
-	let imageGenerationCapableModels: any[] = [];
+	let imageGenerationCapableModels = [];
 	$: imageGenerationCapableModels = getCapableModelIds(
 		selectedModelIds,
 		'image_generation',
 		modelCapabilitiesById
 	);
 
-	let codeInterpreterCapableModels: any[] = [];
+	let codeInterpreterCapableModels = [];
 	$: codeInterpreterCapableModels = getCapableModelIds(
 		selectedModelIds,
 		'code_interpreter',
 		modelCapabilitiesById
 	);
 
-	let terminalCapableModels: any[] = [];
+	let terminalCapableModels = [];
 	$: terminalCapableModels = getCapableModelIds(
 		selectedModelIds,
 		'terminal',
 		modelCapabilitiesById
 	);
 
-	let toggleFilters: any[] = [];
+	let toggleFilters = [];
 	$: toggleFilters = (atSelectedModel?.id ? [atSelectedModel.id] : selectedModels)
-		.map((id) => ($models.find((model) => model.id === id) || {})?.filters ?? [])
+		.map((id) => ($models.find((model) => model.id === id) as any)?.filters ?? [])
 		.reduce((acc, filters) => acc.filter((f1) => filters.some((f2) => f2.id === f1.id)));
 
 	let showToolsButton = false;
-	$: showToolsButton = ($tools ?? []).length > 0 || ($toolServers ?? []).length > 0;
+	$: showToolsButton = ($tools ?? []).length > 0 || (toolServers ?? []).length > 0;
 
 	let showSkillsButton = false;
 	$: showSkillsButton = ($skills ?? []).some((skill) => skill.is_active);
@@ -575,7 +579,7 @@
 		try {
 			// Request screen media
 			const mediaStream = await navigator.mediaDevices.getDisplayMedia({
-				video: { cursor: 'never' },
+				video: { cursor: 'never' } as any,
 				audio: false
 			});
 			// Once the user selects a screen, temporarily create a video element
@@ -609,14 +613,14 @@
 		}
 	};
 
-	const uploadFileHandler = async (file: any, process: any = true, itemData: any = {}) => {
+	const uploadFileHandler = async (file, process = true, itemData = {}) => {
 		if ($_user?.role !== 'admin' && !($_user?.permissions?.chat?.file_upload ?? true)) {
-			toast.error(i18n.t('You do not have permission to upload files.'));
+			toast.error($i18n.t('You do not have permission to upload files.'));
 			return null;
 		}
 
 		if (fileUploadCapableModels.length !== selectedModelIds.length) {
-			toast.error(i18n.t('Model(s) do not support file upload'));
+			toast.error($i18n.t('Model(s) do not support file upload'));
 			return null;
 		}
 
@@ -633,10 +637,10 @@
 			error: '',
 			itemId: tempItemId,
 			...itemData
-		};
+		} as any;
 
 		if (fileItem.size == 0) {
-			toast.error(i18n.t('You cannot upload an empty file.'));
+			toast.error($i18n.t('You cannot upload an empty file.'));
 			return null;
 		}
 
@@ -645,7 +649,7 @@
 		if (!$temporaryChatEnabled) {
 			try {
 				// If the file is an audio file, provide the language for STT.
-				let metadata: any = null;
+				let metadata = null;
 				if (
 					(file.type.startsWith('audio/') || file.type.startsWith('video/')) &&
 					$settings?.audio?.stt?.language
@@ -682,7 +686,7 @@
 				} else {
 					files = files.filter((item) => item?.itemId !== tempItemId);
 				}
-			} catch (e: any) {
+			} catch (e) {
 				toast.error(`${e}`);
 				files = files.filter((item) => item?.itemId !== tempItemId);
 			}
@@ -691,13 +695,13 @@
 
 			const content = await extractContentFromFile(file).catch((error) => {
 				toast.error(
-					i18n.t('Failed to extract content from the file: {{error}}', { error: error })
+					$i18n.t('Failed to extract content from the file: {{error}}', { error: error })
 				);
 				return null;
 			});
 
 			if (content === null) {
-				toast.error(i18n.t('Failed to extract content from the file.'));
+				toast.error($i18n.t('Failed to extract content from the file.'));
 				files = files.filter((item) => item?.itemId !== tempItemId);
 				return null;
 			} else {
@@ -717,7 +721,7 @@
 		}
 	};
 
-	const inputFilesHandler = async (inputFiles: any) => {
+	const inputFilesHandler = async (inputFiles) => {
 		console.log('Input files handler called with:', inputFiles);
 
 		if (
@@ -725,14 +729,14 @@
 			files.length + inputFiles.length > $config?.file?.max_count
 		) {
 			toast.error(
-				i18n.t(`You can only chat with a maximum of {{maxCount}} file(s) at a time.`, {
+				$i18n.t(`You can only chat with a maximum of {{maxCount}} file(s) at a time.`, {
 					maxCount: $config?.file?.max_count
 				})
 			);
 			return;
 		}
 
-		inputFiles.forEach(async (file: any) => {
+		inputFiles.forEach(async (file) => {
 			console.log('Processing file:', {
 				name: file.name,
 				type: file.type,
@@ -749,7 +753,7 @@
 					maxSize: ($config?.file?.max_size ?? 0) * 1024 * 1024
 				});
 				toast.error(
-					i18n.t(`File size should not exceed {{maxSize}} MB.`, {
+					$i18n.t(`File size should not exceed {{maxSize}} MB.`, {
 						maxSize: $config?.file?.max_size
 					})
 				);
@@ -758,11 +762,11 @@
 
 			if (file['type'].startsWith('image/')) {
 				if (visionCapableModels.length === 0) {
-					toast.error(i18n.t('Selected model(s) do not support image inputs'));
+					toast.error($i18n.t('Selected model(s) do not support image inputs'));
 					return;
 				}
 
-				const compressImageHandler = (imageUrl: any, settings: any = {}, config: any = {}) => {
+				const compressImageHandler = async (imageUrl, settings: any = {}, config: any = {}) => {
 					// Quick shortcut so we don’t do unnecessary work.
 					const settingsCompression = settings?.imageCompression ?? false;
 					const configWidth = config?.file?.image_compression?.width ?? null;
@@ -774,8 +778,8 @@
 					}
 
 					// Default to null (no compression unless set)
-					let width: any = null;
-					let height: any = null;
+					let width = null;
+					let height = null;
 
 					// If user/settings want compression, pick their preferred size.
 					if (settingsCompression) {
@@ -800,7 +804,7 @@
 
 				let reader = new FileReader();
 
-				reader.onload = (event: any) {
+				reader.onload = async (event) => {
 					let imageUrl = event.target.result;
 
 					// Compress the image if settings or config require it
@@ -815,7 +819,7 @@
 							}
 						];
 					} else {
-						const blob = await (await fetch(imageUrl)).blob();
+						const blob = await (await fetch(imageUrl as string)).blob();
 						const compressedFile = new File([blob], file.name, { type: file.type });
 
 						uploadFileHandler(compressedFile, false);
@@ -831,7 +835,7 @@
 
 	const createNote = async () => {
 		if (inputContent?.md.trim() === '' && inputContent?.html.trim() === '') {
-			toast.error(i18n.t('Cannot create an empty note.'));
+			toast.error($i18n.t('Cannot create an empty note.'));
 			return;
 		}
 
@@ -948,7 +952,7 @@
 		}
 
 		if (e.dataTransfer?.files) {
-			const inputFiles: any = Array.from(e.dataTransfer?.files);
+			const inputFiles = Array.from(e.dataTransfer?.files);
 			if (inputFiles && inputFiles.length > 0) {
 				console.log(inputFiles);
 				inputFilesHandler(inputFiles);
@@ -999,7 +1003,7 @@
 			{
 				char: '@',
 				render: getSuggestionRenderer(CommandSuggestionList, {
-					i18n: _,
+					i18n,
 					onSelect: (e) => {
 						const { type, data } = e;
 
@@ -1037,7 +1041,7 @@
 			{
 				char: '/',
 				render: getSuggestionRenderer(CommandSuggestionList, {
-					i18n: _,
+					i18n,
 					onSelect: (e) => {
 						const { type, data } = e;
 
@@ -1075,7 +1079,7 @@
 			{
 				char: '#',
 				render: getSuggestionRenderer(CommandSuggestionList, {
-					i18n: _,
+					i18n,
 					onSelect: (e) => {
 						const { type, data } = e;
 
@@ -1113,7 +1117,7 @@
 			{
 				char: '$',
 				render: getSuggestionRenderer(CommandSuggestionList, {
-					i18n: _,
+					i18n,
 					onSelect: (e) => {
 						document.getElementById('chat-input')?.focus();
 					},
@@ -1132,7 +1136,7 @@
 					editor.chain().focus().deleteRange(range).insertContent(emoji).run();
 				},
 				render: getSuggestionRenderer(CommandSuggestionList, {
-					i18n: _,
+					i18n,
 					onSelect: (e) => {
 						document.getElementById('chat-input')?.focus();
 					},
@@ -1214,7 +1218,7 @@
 	bind:show={showInputModal}
 	bind:value={prompt}
 	bind:inputContent
-	onChange={(content: any) => {
+	onChange={(content) => {
 		console.log(content);
 		chatInputElement?.setContent(content?.json ?? null);
 	}}
@@ -1238,7 +1242,6 @@
 							class=" absolute -top-12 left-0 right-0 flex justify-center z-30 pointer-events-none"
 						>
 							<button
-								aria-label={i18n.t('Scroll to bottom')}
 								class=" bg-white border border-gray-100 dark:border-none dark:bg-white/20 p-1.5 rounded-full pointer-events-auto"
 								on:click={() => {
 									autoScroll = true;
@@ -1282,7 +1285,7 @@
 								const _inputFiles = Array.from(inputFiles);
 								inputFilesHandler(_inputFiles);
 							} else {
-								toast.error(i18n.t(`File not found.`));
+								toast.error($i18n.t(`File not found.`));
 							}
 
 							filesInputElement.value = '';
@@ -1298,7 +1301,7 @@
 								await tick();
 								document.getElementById('chat-input')?.focus();
 							}}
-							onConfirm={async (data: any) => {
+							onConfirm={async (data) => {
 								const { text, filename } = data;
 
 								recording = false;
@@ -1324,9 +1327,8 @@
 						<button
 							id="generate-message-pair-button"
 							class="hidden"
-							aria-label="Generate message pair"
 							on:click={() => createMessagePair(prompt)}
-						></button>
+						/>
 
 						<!-- Task list display -->
 						{#if isActive && chatTasks.length > 0}
@@ -1358,7 +1360,7 @@
 							class="flex-1 flex flex-col relative w-full shadow-lg rounded-3xl border {$temporaryChatEnabled
 								? 'border-dashed border-gray-100 dark:border-gray-800 hover:border-gray-200 focus-within:border-gray-200 hover:dark:border-gray-700 focus-within:dark:border-gray-700'
 								: ' border-gray-100/30 dark:border-gray-850/30 hover:border-gray-200 focus-within:border-gray-100 hover:dark:border-gray-800 focus-within:dark:border-gray-800'}  transition px-1 bg-white/5 dark:bg-gray-500/5 backdrop-blur-sm dark:text-gray-100"
-							dir={$settings?.chatDirection ?? 'auto'}
+							dir={($settings?.chatDirection ?? 'auto') as any}
 						>
 							{#if atSelectedModel !== undefined}
 								<div class="px-3 pt-3 text-left w-full flex flex-col z-10">
@@ -1367,7 +1369,7 @@
 											<img
 												alt="model profile"
 												class="size-3.5 max-w-[28px] object-cover rounded-full"
-												src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${$models.find((model) => model.id === atSelectedModel.id).id}&lang=${$language}`}
+												src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${$models.find((model) => model.id === atSelectedModel.id).id}&lang=${$i18n.language}`}
 											/>
 											<div class="translate-y-[0.5px]">
 												<span class="">{atSelectedModel.name}</span>
@@ -1390,7 +1392,7 @@
 							{#if files.length > 0}
 								<div
 									class="mx-2 mt-2.5 pb-1.5 flex items-center flex-wrap gap-2"
-									dir={$settings?.chatDirection ?? 'auto'}
+									dir={($settings?.chatDirection ?? 'auto') as any}
 								>
 									{#each files as file, fileIdx}
 										{#if file.type === 'image' || (file?.content_type ?? '').startsWith('image/')}
@@ -1408,7 +1410,7 @@
 													{#if selectedModelIds.length !== visionCapableModels.length}
 														<Tooltip
 															className=" absolute top-1 left-1"
-															content={i18n.t('{{ models }}', {
+															content={$i18n.t('{{ models }}', {
 																models: selectedModelIds
 																	.filter((id) => !visionCapableModels.includes(id))
 																	.join(', ')
@@ -1437,7 +1439,7 @@
 															? ''
 															: 'outline-hidden focus:outline-hidden group-hover:visible invisible transition'}"
 														type="button"
-														aria-label={i18n.t('Remove file')}
+														aria-label={$i18n.t('Remove file')}
 														on:click={() => {
 															files.splice(fileIdx, 1);
 															files = files;
@@ -1516,7 +1518,7 @@
 													bind:this={chatInputElement}
 													id="chat-input"
 													editable={!showInputModal}
-													onChange={(content: any) => {
+													onChange={(content) => {
 														prompt = content.md;
 														inputContent = content;
 														command = getCommand();
@@ -1532,13 +1534,13 @@
 														!(
 															'ontouchstart' in window ||
 															navigator.maxTouchPoints > 0 ||
-															navigator.msMaxTouchPoints > 0
+															(navigator as any).msMaxTouchPoints > 0
 														)}
-													placeholder={placeholder ? placeholder : i18n.t('Send a Message')}
+													placeholder={placeholder ? placeholder : $i18n.t('Send a Message')}
 													largeTextAsFile={($settings?.largeTextAsFile ?? false) && !shiftKey}
 													autocomplete={$config?.features?.enable_autocomplete_generation &&
 														($settings?.promptAutocomplete ?? false)}
-													generateAutoCompletion={async (text: any) => {
+													generateAutoCompletion={async (text) => {
 														if (selectedModelIds.length === 0 || !selectedModelIds.at(0)) {
 															return null;
 														}
@@ -1561,7 +1563,7 @@
 													}}
 													{suggestions}
 													oncompositionstart={() => (isComposing = true)}
-													oncompositionend={(e: any) => {
+													oncompositionend={(e) => {
 														compositionEndedAt = e.timeStamp;
 														isComposing = false;
 													}}
@@ -1599,7 +1601,7 @@
 																!(
 																	'ontouchstart' in window ||
 																	navigator.maxTouchPoints > 0 ||
-																	navigator.msMaxTouchPoints > 0
+																	(navigator as any).msMaxTouchPoints > 0
 																)
 															) {
 																if (inOrNearComposition(e)) {
@@ -1691,7 +1693,7 @@
 										}}
 										uploadGoogleDriveHandler={async () => {
 											try {
-												const fileData = await createPicker();
+												const fileData: any = await createPicker();
 												if (fileData) {
 													const file = new File([fileData.blob], fileData.name, {
 														type: fileData.blob.type
@@ -1703,13 +1705,13 @@
 											} catch (error) {
 												console.error('Google Drive Error:', error);
 												toast.error(
-													i18n.t('Error accessing Google Drive: {{error}}', {
+													$i18n.t('Error accessing Google Drive: {{error}}', {
 														error: error.message
 													})
 												);
 											}
 										}}
-										uploadOneDriveHandler={async (authorityType: any) => {
+										uploadOneDriveHandler={async (authorityType) => {
 											try {
 												const fileData = await pickAndDownloadFile(authorityType);
 												if (fileData) {
@@ -1736,7 +1738,7 @@
 											type="button"
 											id="input-menu-button"
 											class="bg-transparent hover:bg-gray-100 text-gray-700 dark:text-white dark:hover:bg-gray-800 rounded-full size-8 flex justify-center items-center outline-hidden focus:outline-hidden shrink-0"
-											aria-label={i18n.t('More')}
+											aria-label={$i18n.t('More')}
 										>
 											<PlusAlt className="size-5.5" />
 										</button>
@@ -1745,7 +1747,7 @@
 									{#if showWebSearchButton || showImageGenerationButton || showCodeInterpreterButton || showToolsButton || showSkillsButton || (toggleFilters && toggleFilters.length > 0)}
 										<div
 											class="flex self-center w-[1px] h-4 mx-1 bg-gray-200/50 dark:bg-gray-800/50 shrink-0"
-										></div>
+										/>
 									{/if}
 
 									<div class="flex flex-1 items-center min-w-0 overflow-x-auto scrollbar-none">
@@ -1764,7 +1766,7 @@
 												bind:codeInterpreterEnabled
 												{onWebSearchToggle}
 												closeOnOutsideClick={integrationsMenuCloseOnOutsideClick}
-												onShowValves={(e: any) => {
+												onShowValves={(e) => {
 													const { type, id } = e;
 													selectedValvesType = type;
 													selectedValvesItemId = id;
@@ -1782,16 +1784,16 @@
 													type="button"
 													id="integration-menu-button"
 													class="bg-transparent hover:bg-gray-100 text-gray-700 dark:text-white dark:hover:bg-gray-800 rounded-full size-8 flex justify-center items-center outline-hidden focus:outline-hidden shrink-0"
-													aria-label={i18n.t('Integrations')}
+													aria-label={$i18n.t('Integrations')}
 												>
 													<Component className="size-4.5" strokeWidth="1.5" />
 												</button>
 											</IntegrationsMenu>
 										{/if}
 
-										{#if selectedModelIds.length === 1 && $models.find((m) => m.id === selectedModelIds[0])?.has_user_valves}
+										{#if selectedModelIds.length === 1 && ($models.find((m) => m.id === selectedModelIds[0]) as any)?.has_user_valves}
 											<div class="ml-1 flex gap-1.5 shrink-0">
-												<Tooltip content={i18n.t('Valves')} placement="top">
+												<Tooltip content={$i18n.t('Valves')} placement="top">
 													<button
 														type="button"
 														id="model-valves-button"
@@ -1811,7 +1813,7 @@
 										<div class="ml-1 flex gap-1.5 shrink-0">
 											{#if (selectedToolIds ?? []).length > 0}
 												<Tooltip
-													content={i18n.t('{{COUNT}} Available Tools', {
+													content={$i18n.t('{{COUNT}} Available Tools', {
 														COUNT: (selectedToolIds ?? []).length
 													})}
 												>
@@ -1834,7 +1836,7 @@
 
 											{#if (selectedSkillIds ?? []).length > 0}
 												<Tooltip
-													content={i18n.t('{{COUNT}} Available Skills', {
+													content={$i18n.t('{{COUNT}} Available Skills', {
 														COUNT: (selectedSkillIds ?? []).length
 													})}
 												>
@@ -1900,7 +1902,7 @@
 															<!-- svelte-ignore a11y-no-static-element-interactions -->
 															<div
 																class="hidden group-hover:block"
-																on:click={(e: any) => {
+																on:click={(e) => {
 																	e.stopPropagation();
 																	e.preventDefault();
 																	selectedFilterIds = selectedFilterIds.filter(
@@ -1916,7 +1918,7 @@
 											{/each}
 
 											{#if webSearchEnabled}
-												<Tooltip content={i18n.t('Web Search')} placement="top">
+												<Tooltip content={$i18n.t('Web Search')} placement="top">
 													<button
 														on:click|preventDefault={() => (webSearchEnabled = !webSearchEnabled)}
 														type="button"
@@ -1934,7 +1936,7 @@
 											{/if}
 
 											{#if imageGenerationEnabled}
-												<Tooltip content={i18n.t('Image')} placement="top">
+												<Tooltip content={$i18n.t('Image')} placement="top">
 													<button
 														on:click|preventDefault={() =>
 															(imageGenerationEnabled = !imageGenerationEnabled)}
@@ -1952,11 +1954,11 @@
 											{/if}
 
 											{#if codeInterpreterEnabled}
-												<Tooltip content={i18n.t('Code Interpreter')} placement="top">
+												<Tooltip content={$i18n.t('Code Interpreter')} placement="top">
 													<button
 														aria-label={codeInterpreterEnabled
-															? i18n.t('Disable Code Interpreter')
-															: i18n.t('Enable Code Interpreter')}
+															? $i18n.t('Disable Code Interpreter')
+															: $i18n.t('Enable Code Interpreter')}
 														aria-pressed={codeInterpreterEnabled}
 														on:click|preventDefault={() =>
 															(codeInterpreterEnabled = !codeInterpreterEnabled)}
@@ -1978,7 +1980,7 @@
 											{/if}
 
 											{#each pendingOAuthTools as pendingTool (pendingTool.id)}
-												<Tooltip content={i18n.t('Click to connect')} placement="top">
+												<Tooltip content={$i18n.t('Click to connect')} placement="top">
 													<button
 														on:click|preventDefault={() => {
 															initiateOAuthRedirect(pendingTool);
@@ -1999,9 +2001,8 @@
 								<div class="self-end flex space-x-1 mr-1 shrink-0 gap-[0.5px]">
 									{#if isActive && prompt === '' && files.length === 0}
 										<div class=" flex items-center">
-											<Tooltip content={i18n.t('Stop')}>
+											<Tooltip content={$i18n.t('Stop')}>
 												<button
-													aria-label={i18n.t('Stop')}
 													class="bg-white hover:bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-800 transition rounded-full p-1.5"
 													on:click={() => {
 														stopResponse();
@@ -2024,8 +2025,8 @@
 										</div>
 									{:else}
 										{#if prompt !== '' && !history?.currentId && !$selectedTerminalId && ($config?.features?.enable_notes ?? false) && ($_user?.role === 'admin' || ($_user?.permissions?.features?.notes ?? true))}
-											<!-- {i18n.t('Create Note')}  -->
-											<Tooltip content={i18n.t('Create note')} className=" flex items-center">
+											<!-- {$i18n.t('Create Note')}  -->
+											<Tooltip content={$i18n.t('Create note')} className=" flex items-center">
 												<button
 													id="create-note-button"
 													class=" text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 transition rounded-full p-1.5 -mr-1 self-center"
@@ -2050,8 +2051,8 @@
 											{/if}
 
 											{#if $_user?.role === 'admin' || ($_user?.permissions?.chat?.stt ?? true)}
-												<!-- {i18n.t('Record voice')} -->
-												<Tooltip content={i18n.t('Dictate')}>
+												<!-- {$i18n.t('Record voice')} -->
+												<Tooltip content={$i18n.t('Dictate')}>
 													<button
 														id="voice-input-button"
 														class=" text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 transition rounded-full p-1.5 self-center mr-0.5"
@@ -2060,9 +2061,9 @@
 															try {
 																let stream = await navigator.mediaDevices
 																	.getUserMedia({ audio: true })
-																	.catch((err: any) => {
+																	.catch(function (err) {
 																		toast.error(
-																			i18n.t(
+																			$i18n.t(
 																				`Permission denied when accessing microphone: {{error}}`,
 																				{
 																					error: err
@@ -2079,7 +2080,7 @@
 																}
 																stream = null;
 															} catch {
-																toast.error(i18n.t('Permission denied when accessing microphone'));
+																toast.error($i18n.t('Permission denied when accessing microphone'));
 															}
 														}}
 														aria-label="Voice Input"
@@ -2102,21 +2103,21 @@
 
 										{#if prompt === '' && files.length === 0 && ($_user?.role === 'admin' || ($_user?.permissions?.chat?.call ?? true))}
 											<div class=" flex items-center">
-												<!-- {i18n.t('Call')} -->
-												<Tooltip content={i18n.t('Voice mode')}>
+												<!-- {$i18n.t('Call')} -->
+												<Tooltip content={$i18n.t('Voice mode')}>
 													<button
 														class=" bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full p-1.5 self-center"
 														type="button"
 														on:click={async () => {
 															if (selectedModels.length > 1) {
-																toast.error(i18n.t('Select only one model to call'));
+																toast.error($i18n.t('Select only one model to call'));
 
 																return;
 															}
 
 															if ($config.audio.stt.engine === 'web') {
 																toast.error(
-																	i18n.t('Call feature is not supported when using Web STT engine')
+																	$i18n.t('Call feature is not supported when using Web STT engine')
 																);
 
 																return;
@@ -2141,7 +2142,7 @@
 																		await TTSWorker.set(
 																			new KokoroWorker({
 																				dtype: $settings.audio?.tts?.engineConfig?.dtype ?? 'fp32'
-																			})
+																			} as any)
 																		);
 
 																		await $TTSWorker.init();
@@ -2153,11 +2154,11 @@
 															} catch (err) {
 																// If the user denies the permission or an error occurs, show an error message
 																toast.error(
-																	i18n.t('Permission denied when accessing media devices')
+																	$i18n.t('Permission denied when accessing media devices')
 																);
 															}
 														}}
-														aria-label={i18n.t('Voice mode')}
+														aria-label={$i18n.t('Voice mode')}
 													>
 														<Voice className="size-5" strokeWidth="2.5" />
 													</button>
@@ -2167,8 +2168,8 @@
 											<div class=" flex items-center">
 												<Tooltip
 													content={uploadPending
-														? i18n.t('Waiting for upload...')
-														: i18n.t('Send message')}
+														? $i18n.t('Waiting for upload...')
+														: $i18n.t('Send message')}
 												>
 													<button
 														id="send-message-button"
@@ -2208,7 +2209,7 @@
 								{@html DOMPurify.sanitize(marked($config?.license_metadata?.input_footer))}
 							</div>
 						{:else}
-							<div class="mb-1"></div>
+							<div class="mb-1" />
 						{/if}
 					</form>
 				</div>

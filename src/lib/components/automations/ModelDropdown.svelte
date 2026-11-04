@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { models } from '$lib/stores';
 	import { WEBUI_API_BASE_URL } from '$lib/constants';
@@ -23,7 +23,7 @@
 
 	$: modelLabel = model_id
 		? $models.find((m) => m.id === model_id)?.name || model_id
-		: i18n.t('Select model');
+		: $i18n.t('Select model');
 
 	$: filteredModels = (
 		modelSearch
@@ -78,7 +78,7 @@
 			<input
 				bind:value={modelSearch}
 				class="w-full text-sm bg-transparent outline-hidden"
-				placeholder={i18n.t('Search a model')}
+				placeholder={$i18n.t('Search a model')}
 				autocomplete="off"
 				on:click={(e) => e.stopPropagation()}
 			/>
@@ -86,7 +86,7 @@
 
 		<div class="overflow-y-auto scrollbar-thin max-h-60">
 			<div class="px-2 text-xs text-gray-500 py-1">
-				{i18n.t('Models')}
+				{$i18n.t('Models')}
 			</div>
 
 			{#each filteredModels as model (model.id)}
@@ -109,7 +109,7 @@
 							class="rounded-full size-5 items-center mr-2"
 							loading="lazy"
 							on:error={(e) => {
-								e.currentTarget.src = '/favicon.png';
+								(e.currentTarget as HTMLImageElement).src = '/favicon.png';
 							}}
 						/>
 						<div class="truncate">
@@ -119,7 +119,7 @@
 				</button>
 			{:else}
 				<div class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-100">
-					{i18n.t('No results found')}
+					{$i18n.t('No results found')}
 				</div>
 			{/each}
 		</div>
@@ -168,7 +168,7 @@
 			<input
 				bind:value={modelSearch}
 				class="w-full text-sm bg-transparent outline-hidden"
-				placeholder={i18n.t('Search a model')}
+				placeholder={$i18n.t('Search a model')}
 				autocomplete="off"
 				on:click={(e) => e.stopPropagation()}
 			/>
@@ -176,7 +176,7 @@
 
 		<div class="overflow-y-auto scrollbar-thin max-h-60">
 			<div class="px-2 text-xs text-gray-500 py-1">
-				{i18n.t('Models')}
+				{$i18n.t('Models')}
 			</div>
 
 			{#each filteredModels as model (model.id)}
@@ -199,7 +199,7 @@
 							class="rounded-full size-5 items-center mr-2"
 							loading="lazy"
 							on:error={(e) => {
-								e.currentTarget.src = '/favicon.png';
+								(e.currentTarget as HTMLImageElement).src = '/favicon.png';
 							}}
 						/>
 						<div class="truncate">
@@ -209,7 +209,7 @@
 				</button>
 			{:else}
 				<div class="block px-3 py-2 text-sm text-gray-700 dark:text-gray-100">
-					{i18n.t('No results found')}
+					{$i18n.t('No results found')}
 				</div>
 			{/each}
 		</div>

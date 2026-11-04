@@ -5,12 +5,13 @@
 	let mapElement;
 
 	export let setViewLocation = [51.505, -0.09];
-	let points: any[] = [];
+	export let points: any[] = [];
 
-	export let onClick = (e) => {};
+	export let onClick: any = (e) => {};
 
 	let markerGroupLayer: any = null;
 
+	// @ts-ignore
 	onMount(async () => {
 		const [{ default: L }] = await Promise.all([
 			import('leaflet'),

@@ -4,7 +4,7 @@
 
 	const dispatch = createEventDispatcher();
 	import type { Writable } from 'svelte/store';
-	
+
 	import { onMount, tick } from 'svelte';
 
 	import { writable } from 'svelte/store';
@@ -22,8 +22,13 @@
 	const { fitView, getViewport } = useSvelteFlow();
 	const nodesInitialized = useNodesInitialized();
 
-	export let history: { messages?: Record<string, any>; currentId?: string | null; [key: string]: any } = {};
+	export let history: {
+		messages?: Record<string, any>;
+		currentId?: string | null;
+		[key: string]: any;
+	} = {};
 	export let onNodeClick: any;
+	export let onClose: any = undefined;
 	let selectedMessageId: any = null;
 
 	const nodes = writable([]);
@@ -139,7 +144,7 @@
 	onMount(() => {
 		drawFlow(layoutDirection);
 
-		nodesInitialized.subscribe(async (initialized: any)  => {
+		nodesInitialized.subscribe(async (initialized: any) => {
 			if (initialized) {
 				await tick();
 				const res = await fitView({ nodes: [{ id: history.currentId }] });

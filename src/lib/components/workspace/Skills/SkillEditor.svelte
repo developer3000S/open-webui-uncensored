@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Textarea from '$lib/components/common/Textarea.svelte';
 	import { toast } from 'svelte-sonner';
@@ -15,9 +15,9 @@
 	import { updateSkillAccessGrants } from '$lib/apis/skills';
 	import { goto } from '$app/navigation';
 
-	export let onSubmit: Function;
+	export let onSubmit: any;
 	export let edit: any = false;
-	let skill: any = null;
+	export let skill: any = null;
 	export let clone: any = false;
 	export let disabled: any = false;
 	import type { Writable } from 'svelte/store';
@@ -49,7 +49,7 @@
 
 	const submitHandler = async () => {
 		if (disabled) {
-			toast.error(i18n.t('You do not have permission to edit this skill.'));
+			toast.error($i18n.t('You do not have permission to edit this skill.'));
 			return;
 		}
 		loading = true;
@@ -67,6 +67,7 @@
 		loading = false;
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		if (skill) {
 			name = skill.name || '';
@@ -90,7 +91,7 @@
 		if (edit && skill?.id) {
 			try {
 				await updateSkillAccessGrants(localStorage.token, skill.id, accessGrants);
-				toast.success(i18n.t('Saved'));
+				toast.success($i18n.t('Saved'));
 			} catch (error) {
 				toast.error(`${error}`);
 			}
@@ -105,10 +106,10 @@
 				<div class="w-full mb-2 flex flex-col gap-0.5">
 					<div class="flex w-full items-center">
 						<div class=" shrink-0 mr-2">
-							<Tooltip content={i18n.t('Back')}>
+							<Tooltip content={$i18n.t('Back')}>
 								<button
 									class="w-full text-left text-sm py-1.5 px-1 rounded-lg dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-gray-850"
-									aria-label={i18n.t('Back')}
+									aria-label={$i18n.t('Back')}
 									on:click={() => {
 										goto('/workspace/skills');
 									}}
@@ -120,12 +121,12 @@
 						</div>
 
 						<div class="flex-1">
-							<Tooltip content={i18n.t('e.g. Code Review Guidelines')} placement="top-start">
+							<Tooltip content={$i18n.t('e.g. Code Review Guidelines')} placement="top-start">
 								<input
 									class="w-full text-2xl bg-transparent outline-hidden"
 									type="text"
-									placeholder={i18n.t('Skill Name')}
-									aria-label={i18n.t('Skill Name')}
+									placeholder={$i18n.t('Skill Name')}
+									aria-label={$i18n.t('Skill Name')}
 									bind:value={name}
 									required
 									{disabled}
@@ -143,13 +144,13 @@
 									<LockClosed strokeWidth="2.5" className="size-3.5" />
 
 									<div class="text-sm font-medium shrink-0">
-										{i18n.t('Access')}
+										{$i18n.t('Access')}
 									</div>
 								</button>
 							{:else}
 								<span
 									class="text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full"
-									>{i18n.t('Read Only')}</span
+									>{$i18n.t('Read Only')}</span
 								>
 							{/if}
 						</div>
@@ -163,14 +164,14 @@
 						{:else}
 							<Tooltip
 								className="w-full"
-								content={i18n.t('e.g. code-review-guidelines')}
+								content={$i18n.t('e.g. code-review-guidelines')}
 								placement="top-start"
 							>
 								<input
 									class="w-full text-sm disabled:text-gray-500 bg-transparent outline-hidden"
 									type="text"
-									placeholder={i18n.t('Skill ID')}
-									aria-label={i18n.t('Skill ID')}
+									placeholder={$i18n.t('Skill ID')}
+									aria-label={$i18n.t('Skill ID')}
 									bind:value={id}
 									required
 									disabled={edit}
@@ -180,14 +181,14 @@
 
 						<Tooltip
 							className="w-full self-center items-center flex"
-							content={i18n.t('e.g. Step-by-step instructions for code reviews')}
+							content={$i18n.t('e.g. Step-by-step instructions for code reviews')}
 							placement="top-start"
 						>
 							<input
 								class="w-full text-sm bg-transparent outline-hidden"
 								type="text"
-								placeholder={i18n.t('Skill Description')}
-								aria-label={i18n.t('Skill Description')}
+								placeholder={$i18n.t('Skill Description')}
+								aria-label={$i18n.t('Skill Description')}
 								bind:value={description}
 								{disabled}
 							/>
@@ -209,8 +210,8 @@
 									class="w-full flex-1 text-xs bg-transparent outline-hidden resize-none font-mono px-4 py-3"
 									bind:value={content}
 									on:input={handleContentInput}
-									placeholder={i18n.t('Enter skill instructions in markdown...')}
-									aria-label={i18n.t('Skill Instructions')}
+									placeholder={$i18n.t('Enter skill instructions in markdown...')}
+									aria-label={$i18n.t('Skill Instructions')}
 									required
 								></textarea>
 							{/if}
@@ -225,7 +226,7 @@
 							type="submit"
 							disabled={loading}
 						>
-							{i18n.t(edit ? 'Save' : 'Save & Create')}
+							{$i18n.t(edit ? 'Save' : 'Save & Create')}
 							{#if loading}
 								<span class="shrink-0">
 									<Spinner />
@@ -250,7 +251,7 @@
 		if (edit && skill?.id) {
 			try {
 				await updateSkillAccessGrants(localStorage.token, skill.id, accessGrants);
-				toast.success(i18n.t('Saved'));
+				toast.success($i18n.t('Saved'));
 			} catch (error) {
 				toast.error(`${error}`);
 			}
@@ -265,10 +266,10 @@
 				<div class="w-full mb-2 flex flex-col gap-0.5">
 					<div class="flex w-full items-center">
 						<div class=" shrink-0 mr-2">
-							<Tooltip content={i18n.t('Back')}>
+							<Tooltip content={$i18n.t('Back')}>
 								<button
 									class="w-full text-left text-sm py-1.5 px-1 rounded-lg dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-gray-850"
-									aria-label={i18n.t('Back')}
+									aria-label={$i18n.t('Back')}
 									on:click={() => {
 										goto('/workspace/skills');
 									}}
@@ -280,12 +281,12 @@
 						</div>
 
 						<div class="flex-1">
-							<Tooltip content={i18n.t('e.g. Code Review Guidelines')} placement="top-start">
+							<Tooltip content={$i18n.t('e.g. Code Review Guidelines')} placement="top-start">
 								<input
 									class="w-full text-2xl bg-transparent outline-hidden"
 									type="text"
-									placeholder={i18n.t('Skill Name')}
-									aria-label={i18n.t('Skill Name')}
+									placeholder={$i18n.t('Skill Name')}
+									aria-label={$i18n.t('Skill Name')}
 									bind:value={name}
 									required
 									{disabled}
@@ -303,13 +304,13 @@
 									<LockClosed strokeWidth="2.5" className="size-3.5" />
 
 									<div class="text-sm font-medium shrink-0">
-										{i18n.t('Access')}
+										{$i18n.t('Access')}
 									</div>
 								</button>
 							{:else}
 								<span
 									class="text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full"
-									>{i18n.t('Read Only')}</span
+									>{$i18n.t('Read Only')}</span
 								>
 							{/if}
 						</div>
@@ -323,14 +324,14 @@
 						{:else}
 							<Tooltip
 								className="w-full"
-								content={i18n.t('e.g. code-review-guidelines')}
+								content={$i18n.t('e.g. code-review-guidelines')}
 								placement="top-start"
 							>
 								<input
 									class="w-full text-sm disabled:text-gray-500 bg-transparent outline-hidden"
 									type="text"
-									placeholder={i18n.t('Skill ID')}
-									aria-label={i18n.t('Skill ID')}
+									placeholder={$i18n.t('Skill ID')}
+									aria-label={$i18n.t('Skill ID')}
 									bind:value={id}
 									required
 									disabled={edit}
@@ -340,14 +341,14 @@
 
 						<Tooltip
 							className="w-full self-center items-center flex"
-							content={i18n.t('e.g. Step-by-step instructions for code reviews')}
+							content={$i18n.t('e.g. Step-by-step instructions for code reviews')}
 							placement="top-start"
 						>
 							<input
 								class="w-full text-sm bg-transparent outline-hidden"
 								type="text"
-								placeholder={i18n.t('Skill Description')}
-								aria-label={i18n.t('Skill Description')}
+								placeholder={$i18n.t('Skill Description')}
+								aria-label={$i18n.t('Skill Description')}
 								bind:value={description}
 								{disabled}
 							/>
@@ -369,8 +370,8 @@
 									class="w-full flex-1 text-xs bg-transparent outline-hidden resize-none font-mono px-4 py-3"
 									bind:value={content}
 									on:input={handleContentInput}
-									placeholder={i18n.t('Enter skill instructions in markdown...')}
-									aria-label={i18n.t('Skill Instructions')}
+									placeholder={$i18n.t('Enter skill instructions in markdown...')}
+									aria-label={$i18n.t('Skill Instructions')}
 									required
 								></textarea>
 							{/if}
@@ -385,7 +386,7 @@
 							type="submit"
 							disabled={loading}
 						>
-							{i18n.t(edit ? 'Save' : 'Save & Create')}
+							{$i18n.t(edit ? 'Save' : 'Save & Create')}
 							{#if loading}
 								<span class="shrink-0">
 									<Spinner />

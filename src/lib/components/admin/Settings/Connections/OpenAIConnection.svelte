@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
@@ -13,13 +13,13 @@
 
 	import { connect } from 'socket.io-client';
 
-	export let onDelete = () => {};
-	export let onSubmit = () => {};
+	export let onDelete: any = () => {};
+	export let onSubmit: any = () => {};
 
 	export let pipeline: any = false;
 	export let url: any = '';
 	export let key: any = '';
-	let config: Record<string, any> = {};
+	export let config: Record<string, any> = {};
 
 	let showConfigModal = false;
 </script>
@@ -47,7 +47,7 @@
 <div class="flex w-full gap-2 items-center">
 	<Tooltip
 		className="w-full relative"
-		content={i18n.t(`WebUI will make requests to "{{url}}/chat/completions"`, {
+		content={$i18n.t(`WebUI will make requests to "{{url}}/chat/completions"`, {
 			url
 		})}
 		placement="top-start"
@@ -61,7 +61,7 @@
 			<div class="flex-1 relative">
 				<input
 					class=" outline-hidden w-full bg-transparent {pipeline ? 'pr-8' : ''}"
-					placeholder={i18n.t('API Base URL')}
+					placeholder={$i18n.t('API Base URL')}
 					bind:value={url}
 					autocomplete="off"
 					readonly={true}
@@ -94,7 +94,7 @@
 	</Tooltip>
 
 	<div class="flex gap-1 items-center">
-		<Tooltip content={i18n.t('Configure')} className="self-start">
+		<Tooltip content={$i18n.t('Configure')} className="self-start">
 			<button
 				class="self-center p-1 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition"
 				on:click={() => {
@@ -106,7 +106,7 @@
 			</button>
 		</Tooltip>
 
-		<Tooltip content={(config?.enable ?? true) ? i18n.t('Enabled') : i18n.t('Disabled')}>
+		<Tooltip content={(config?.enable ?? true) ? $i18n.t('Enabled') : $i18n.t('Disabled')}>
 			<Switch
 				bind:state={config.enable}
 				on:change={() => {
@@ -141,7 +141,7 @@
 <div class="flex w-full gap-2 items-center">
 	<Tooltip
 		className="w-full relative"
-		content={i18n.t(`WebUI will make requests to "{{url}}/chat/completions"`, {
+		content={$i18n.t(`WebUI will make requests to "{{url}}/chat/completions"`, {
 			url
 		})}
 		placement="top-start"
@@ -155,7 +155,7 @@
 			<div class="flex-1 relative">
 				<input
 					class=" outline-hidden w-full bg-transparent {pipeline ? 'pr-8' : ''}"
-					placeholder={i18n.t('API Base URL')}
+					placeholder={$i18n.t('API Base URL')}
 					bind:value={url}
 					autocomplete="off"
 					readonly={true}
@@ -188,7 +188,7 @@
 	</Tooltip>
 
 	<div class="flex gap-1 items-center">
-		<Tooltip content={i18n.t('Configure')} className="self-start">
+		<Tooltip content={$i18n.t('Configure')} className="self-start">
 			<button
 				class="self-center p-1 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition"
 				on:click={() => {
@@ -200,7 +200,7 @@
 			</button>
 		</Tooltip>
 
-		<Tooltip content={(config?.enable ?? true) ? i18n.t('Enabled') : i18n.t('Disabled')}>
+		<Tooltip content={(config?.enable ?? true) ? $i18n.t('Enabled') : $i18n.t('Disabled')}>
 			<Switch
 				bind:state={config.enable}
 				on:change={() => {

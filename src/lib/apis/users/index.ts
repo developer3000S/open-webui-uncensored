@@ -151,7 +151,7 @@ export const getUsers = async (
 	page = 1
 ) => {
 	let error: any = null;
-	let res: any = null;
+	let res: any;
 
 	const searchParams = new URLSearchParams();
 
@@ -201,7 +201,7 @@ export const searchUsers = async (
 	page = 1
 ) => {
 	let error: any = null;
-	let res: any = null;
+	let res: any;
 
 	const searchParams = new URLSearchParams();
 
@@ -245,7 +245,7 @@ export const searchUsers = async (
 
 export const getAllUsers = async (token: string) => {
 	let error: any = null;
-	let res: any = null;
+	let res: any;
 
 	res = await fetch(`${WEBUI_API_BASE_URL}/users/all`, {
 		method: 'GET',

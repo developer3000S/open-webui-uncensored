@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 
@@ -22,7 +22,7 @@
 	import type { Writable } from 'svelte/store';
 
 	export let show: any = false;
-	let channel: any = null;
+	export let channel: any = null;
 
 	let webhooks: any = [];
 	let isLoading = false;
@@ -68,7 +68,7 @@
 			}
 			pendingChanges = {};
 			await loadWebhooks();
-			toast.success(i18n.t('Saved'));
+			toast.success($i18n.t('Saved'));
 		} catch (error) {
 			toast.error(`${error}`);
 		}
@@ -81,7 +81,7 @@
 		try {
 			await deleteChannelWebhook(localStorage.token, channel.id, selectedWebhookId);
 			webhooks = webhooks.filter((webhook) => webhook.id !== selectedWebhookId);
-			toast.success(i18n.t('Deleted'));
+			toast.success($i18n.t('Deleted'));
 		} catch (error) {
 			toast.error(`${error}`);
 		}
@@ -105,7 +105,7 @@
 			<div class="flex justify-between dark:text-gray-100 px-5 pt-4 mb-1.5">
 				<div class="flex w-full justify-between items-center mr-3">
 					<div class="self-center text-base flex gap-1.5 items-center">
-						<div>{i18n.t('Webhooks')}</div>
+						<div>{$i18n.t('Webhooks')}</div>
 						<span class="text-sm text-gray-500">{webhooks.length}</span>
 					</div>
 
@@ -116,7 +116,7 @@
 						disabled={isSaving}
 					>
 						<Plus className="size-3.5" />
-						<span>{i18n.t('New Webhook')}</span>
+						<span>{$i18n.t('New Webhook')}</span>
 					</button>
 				</div>
 
@@ -157,7 +157,7 @@
 						</div>
 					{:else}
 						<div class="text-gray-500 text-xs text-center py-8 px-10">
-							{i18n.t('No webhooks yet')}
+							{$i18n.t('No webhooks yet')}
 						</div>
 					{/if}
 
@@ -169,7 +169,7 @@
 							type="submit"
 							disabled={isSaving}
 						>
-							{i18n.t('Save')}
+							{$i18n.t('Save')}
 							{#if isSaving}
 								<span class="shrink-0">
 									<Spinner />
@@ -191,7 +191,7 @@
 			<div class="flex justify-between dark:text-gray-100 px-5 pt-4 mb-1.5">
 				<div class="flex w-full justify-between items-center mr-3">
 					<div class="self-center text-base flex gap-1.5 items-center">
-						<div>{i18n.t('Webhooks')}</div>
+						<div>{$i18n.t('Webhooks')}</div>
 						<span class="text-sm text-gray-500">{webhooks.length}</span>
 					</div>
 
@@ -202,7 +202,7 @@
 						disabled={isSaving}
 					>
 						<Plus className="size-3.5" />
-						<span>{i18n.t('New Webhook')}</span>
+						<span>{$i18n.t('New Webhook')}</span>
 					</button>
 				</div>
 
@@ -243,7 +243,7 @@
 						</div>
 					{:else}
 						<div class="text-gray-500 text-xs text-center py-8 px-10">
-							{i18n.t('No webhooks yet')}
+							{$i18n.t('No webhooks yet')}
 						</div>
 					{/if}
 
@@ -255,7 +255,7 @@
 							type="submit"
 							disabled={isSaving}
 						>
-							{i18n.t('Save')}
+							{$i18n.t('Save')}
 							{#if isSaving}
 								<span class="shrink-0">
 									<Spinner />

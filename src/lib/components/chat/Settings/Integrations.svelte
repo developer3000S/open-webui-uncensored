@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import { getToolServersData } from '$lib/apis';
@@ -19,7 +19,7 @@
 
 	import AddToolServerModal from '$lib/components/AddToolServerModal.svelte';
 
-	export let saveSettings: Function;
+	export let saveSettings: any;
 
 	let servers: any = null;
 	let terminalServerConfigs: { url: string; key: string; name?: string; enabled: boolean }[] = [];
@@ -40,7 +40,7 @@
 		toolServersData = toolServersData.filter((data) => {
 			if (data.error) {
 				toast.error(
-					i18n.t(`Failed to connect to {{URL}} OpenAPI tool server`, { URL: data?.url })
+					$i18n.t(`Failed to connect to {{URL}} OpenAPI tool server`, { URL: data?.url })
 				);
 				return false;
 			}
@@ -53,7 +53,7 @@
 		const activeTerminals = terminalServerConfigs.filter((s) => s.enabled);
 		if (activeTerminals.length > 0) {
 			let terminalServersData = await getToolServersData(
-				activeTerminals.map((t) => ({
+				activeTerminals.map((t: any) => ({
 					url: t.url,
 					auth_type: t.auth_type ?? 'bearer',
 					key: t.key ?? '',
@@ -68,6 +68,7 @@
 		}
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		servers = $settings?.toolServers ?? [];
 		terminalServerConfigs = $settings?.terminalServers ?? [];
@@ -89,11 +90,11 @@
 				<div class="pr-1.5">
 					<div class="">
 						<div class="flex justify-between items-center mb-0.5">
-							<div class="font-medium">{i18n.t('Manage Tool Servers')}</div>
+							<div class="font-medium">{$i18n.t('Manage Tool Servers')}</div>
 
-							<Tooltip content={i18n.t('Add Connection')}>
+							<Tooltip content={$i18n.t('Add Connection')}>
 								<button
-									aria-label={i18n.t('Add Connection')}
+									aria-label={$i18n.t('Add Connection')}
 									class="px-1"
 									on:click={() => (showConnectionModal = true)}
 									type="button"
@@ -122,9 +123,9 @@
 						<div
 							class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 						>
-							{i18n.t('Connect to your own OpenAPI compatible external tool servers.')}
+							{$i18n.t('Connect to your own OpenAPI compatible external tool servers.')}
 							<br />
-							{i18n.t(
+							{$i18n.t(
 								'CORS must be properly configured by the provider to allow requests from Open WebUI.'
 							)}
 						</div>
@@ -134,7 +135,7 @@
 						<a
 							class="underline"
 							href="https://github.com/open-webui/openapi-servers"
-							target="_blank">{i18n.t('Learn more about OpenAPI tool servers.')} ↗</a
+							target="_blank">{$i18n.t('Learn more about OpenAPI tool servers.')} ↗</a
 						>
 					</div>
 				</div>
@@ -148,7 +149,7 @@
 						<div
 							class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 						>
-							{i18n.t(
+							{$i18n.t(
 								'Connect to Open Terminal instances to browse files and use them as always-on tools. Only one can be active at a time.'
 							)}
 						</div>
@@ -157,7 +158,7 @@
 							<a
 								class="underline"
 								href="https://github.com/open-webui/open-terminal"
-								target="_blank">{i18n.t('Learn more about Open Terminal')} ↗</a
+								target="_blank">{$i18n.t('Learn more about Open Terminal')} ↗</a
 							>
 						</div>
 					</div>
@@ -177,7 +178,7 @@
 			class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 			type="submit"
 		>
-			{i18n.t('Save')}
+			{$i18n.t('Save')}
 		</button>
 	</div>
 </form>
@@ -197,11 +198,11 @@
 				<div class="pr-1.5">
 					<div class="">
 						<div class="flex justify-between items-center mb-0.5">
-							<div class="font-medium">{i18n.t('Manage Tool Servers')}</div>
+							<div class="font-medium">{$i18n.t('Manage Tool Servers')}</div>
 
-							<Tooltip content={i18n.t('Add Connection')}>
+							<Tooltip content={$i18n.t('Add Connection')}>
 								<button
-									aria-label={i18n.t('Add Connection')}
+									aria-label={$i18n.t('Add Connection')}
 									class="px-1"
 									on:click={() => (showConnectionModal = true)}
 									type="button"
@@ -230,9 +231,9 @@
 						<div
 							class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 						>
-							{i18n.t('Connect to your own OpenAPI compatible external tool servers.')}
+							{$i18n.t('Connect to your own OpenAPI compatible external tool servers.')}
 							<br />
-							{i18n.t(
+							{$i18n.t(
 								'CORS must be properly configured by the provider to allow requests from Open WebUI.'
 							)}
 						</div>
@@ -242,7 +243,7 @@
 						<a
 							class="underline"
 							href="https://github.com/open-webui/openapi-servers"
-							target="_blank">{i18n.t('Learn more about OpenAPI tool servers.')} ↗</a
+							target="_blank">{$i18n.t('Learn more about OpenAPI tool servers.')} ↗</a
 						>
 					</div>
 				</div>
@@ -256,7 +257,7 @@
 						<div
 							class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 						>
-							{i18n.t(
+							{$i18n.t(
 								'Connect to Open Terminal instances to browse files and use them as always-on tools. Only one can be active at a time.'
 							)}
 						</div>
@@ -265,7 +266,7 @@
 							<a
 								class="underline"
 								href="https://github.com/open-webui/open-terminal"
-								target="_blank">{i18n.t('Learn more about Open Terminal')} ↗</a
+								target="_blank">{$i18n.t('Learn more about Open Terminal')} ↗</a
 							>
 						</div>
 					</div>
@@ -285,7 +286,7 @@
 			class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 			type="submit"
 		>
-			{i18n.t('Save')}
+			{$i18n.t('Save')}
 		</button>
 	</div>
 </form>

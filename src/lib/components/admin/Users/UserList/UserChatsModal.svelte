@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 
@@ -111,10 +111,10 @@
 	bind:query
 	bind:orderBy
 	bind:direction
-	title={i18n.t("{{user}}'s Chats", {
+	title={$i18n.t("{{user}}'s Chats", {
 		user: user.name.length > 32 ? `${user.name.slice(0, 32)}...` : user.name
 	})}
-	emptyPlaceholder={i18n.t('No chats found for this user.')}
+	emptyPlaceholder={$i18n.t('No chats found for this user.')}
 	shareUrl={true}
 	{chatList}
 	{allChatsLoaded}
@@ -130,10 +130,10 @@
 	bind:query
 	bind:orderBy
 	bind:direction
-	title={i18n.t("{{user}}'s Chats", {
+	title={$i18n.t("{{user}}'s Chats", {
 		user: user.name.length > 32 ? `${user.name.slice(0, 32)}...` : user.name
 	})}
-	emptyPlaceholder={i18n.t('No chats found for this user.')}
+	emptyPlaceholder={$i18n.t('No chats found for this user.')}
 	shareUrl={true}
 	{chatList}
 	{allChatsLoaded}

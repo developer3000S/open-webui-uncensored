@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
@@ -17,9 +17,9 @@
 
 	export let webhook: any;
 	export let expanded: any = false;
-	export let onClick = () => {};
-	export let onDelete = () => {};
-	export let onUpdate = (changes: { name: string; profile_image_url: string }) => {};
+	export let onClick: any = () => {};
+	export let onDelete: any = () => {};
+	export let onUpdate: any = (changes: { name: string; profile_image_url: string }) => {};
 
 	let name = webhook.name;
 	let image = webhook.profile_image_url || '';
@@ -71,7 +71,7 @@
 		navigator.clipboard.writeText(
 			`${WEBUI_API_BASE_URL}/channels/webhooks/${webhook.id}/${webhook.token}`
 		);
-		toast.success(i18n.t('Copied'));
+		toast.success($i18n.t('Copied'));
 	};
 </script>
 
@@ -101,11 +101,11 @@
 				{name}
 			</div>
 			<div class="text-gray-500 text-xs">
-				{i18n.t('Created on {{date}}', {
+				{$i18n.t('Created on {{date}}', {
 					date: dayjs(webhook.created_at / 1000000).format('MMM D, YYYY')
 				})}
 				{#if webhook.user?.name}
-					{i18n.t('by {{name}}', { name: webhook.user.name })}
+					{$i18n.t('by {{name}}', { name: webhook.user.name })}
 				{/if}
 			</div>
 		</div>
@@ -132,16 +132,16 @@
 					/>
 				</button>
 				<div class="flex-1">
-					<div class=" text-gray-500 text-xs">{i18n.t('Name')}</div>
+					<div class=" text-gray-500 text-xs">{$i18n.t('Name')}</div>
 					<input
 						type="text"
 						class="w-full text-sm bg-transparent outline-none placeholder:text-gray-300 dark:placeholder:text-gray-700"
 						bind:value={name}
-						placeholder={i18n.t('Webhook Name')}
+						placeholder={$i18n.t('Webhook Name')}
 					/>
 				</div>
 				<div class="flex items-center gap-1">
-					<Tooltip content={i18n.t('Copy URL')}>
+					<Tooltip content={$i18n.t('Copy URL')}>
 						<button
 							type="button"
 							class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
@@ -150,7 +150,7 @@
 							<Clipboard className="size-4 text-gray-500" />
 						</button>
 					</Tooltip>
-					<Tooltip content={i18n.t('Delete')}>
+					<Tooltip content={$i18n.t('Delete')}>
 						<button
 							type="button"
 							class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
@@ -191,11 +191,11 @@
 				{name}
 			</div>
 			<div class="text-gray-500 text-xs">
-				{i18n.t('Created on {{date}}', {
+				{$i18n.t('Created on {{date}}', {
 					date: dayjs(webhook.created_at / 1000000).format('MMM D, YYYY')
 				})}
 				{#if webhook.user?.name}
-					{i18n.t('by {{name}}', { name: webhook.user.name })}
+					{$i18n.t('by {{name}}', { name: webhook.user.name })}
 				{/if}
 			</div>
 		</div>
@@ -222,16 +222,16 @@
 					/>
 				</button>
 				<div class="flex-1">
-					<div class=" text-gray-500 text-xs">{i18n.t('Name')}</div>
+					<div class=" text-gray-500 text-xs">{$i18n.t('Name')}</div>
 					<input
 						type="text"
 						class="w-full text-sm bg-transparent outline-none placeholder:text-gray-300 dark:placeholder:text-gray-700"
 						bind:value={name}
-						placeholder={i18n.t('Webhook Name')}
+						placeholder={$i18n.t('Webhook Name')}
 					/>
 				</div>
 				<div class="flex items-center gap-1">
-					<Tooltip content={i18n.t('Copy URL')}>
+					<Tooltip content={$i18n.t('Copy URL')}>
 						<button
 							type="button"
 							class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
@@ -240,7 +240,7 @@
 							<Clipboard className="size-4 text-gray-500" />
 						</button>
 					</Tooltip>
-					<Tooltip content={i18n.t('Delete')}>
+					<Tooltip content={$i18n.t('Delete')}>
 						<button
 							type="button"
 							class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"

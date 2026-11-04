@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
@@ -20,6 +20,7 @@
 
 	let loaded = false;
 
+	// @ts-ignore
 	onMount(async () => {
 		if (
 			$page.url.searchParams.get('content') !== null ||
@@ -51,7 +52,7 @@
 				{#if $mobile}
 					<div class="{$showSidebar ? 'md:hidden' : ''} flex flex-none items-center">
 						<Tooltip
-							content={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
+							content={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
 							interactive={true}
 						>
 							<button
@@ -75,7 +76,7 @@
 							class="flex gap-1 scrollbar-none overflow-x-auto w-fit text-center text-sm font-medium bg-transparent py-1 touch-auto pointer-events-auto"
 						>
 							<a class="min-w-fit transition" href="/notes">
-								{i18n.t('Notes')}
+								{$i18n.t('Notes')}
 							</a>
 						</div>
 					</div>
@@ -129,7 +130,7 @@
 				{#if $mobile}
 					<div class="{$showSidebar ? 'md:hidden' : ''} flex flex-none items-center">
 						<Tooltip
-							content={$showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
+							content={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
 							interactive={true}
 						>
 							<button
@@ -153,7 +154,7 @@
 							class="flex gap-1 scrollbar-none overflow-x-auto w-fit text-center text-sm font-medium bg-transparent py-1 touch-auto pointer-events-auto"
 						>
 							<a class="min-w-fit transition" href="/notes">
-								{i18n.t('Notes')}
+								{$i18n.t('Notes')}
 							</a>
 						</div>
 					</div>

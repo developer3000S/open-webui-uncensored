@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { getUserAnalytics } from '$lib/apis/analytics';
 	import Spinner from '$lib/components/common/Spinner.svelte';
@@ -53,8 +53,8 @@
 	class="pt-0.5 pb-1 gap-1 flex flex-col md:flex-row justify-between sticky top-0 z-10 bg-white dark:bg-gray-900"
 >
 	<div class="flex items-center text-xl font-medium px-0.5 gap-2 shrink-0">
-		{i18n.t('User Activity')}
-		<span class="text-lg text-gray-500">{userStats.length} {i18n.t('users')}</span>
+		{$i18n.t('User Activity')}
+		<span class="text-lg text-gray-500">{userStats.length} {$i18n.t('users')}</span>
 	</div>
 </div>
 
@@ -70,7 +70,7 @@
 	{/if}
 
 	{#if !userStats.length && !loading}
-		<div class="text-center text-xs text-gray-500 py-1">{i18n.t('No data found')}</div>
+		<div class="text-center text-xs text-gray-500 py-1">{$i18n.t('No data found')}</div>
 	{:else if userStats.length}
 		<table
 			class="w-full text-sm text-left text-gray-500 dark:text-gray-400 {loading
@@ -86,7 +86,7 @@
 						on:click={() => toggleSort('user_id')}
 					>
 						<div class="flex gap-1.5 items-center">
-							{i18n.t('User')}
+							{$i18n.t('User')}
 							{#if orderBy === 'user_id'}
 								{#if direction === 'asc'}<ChevronUp className="size-2" />{:else}<ChevronDown
 										className="size-2"
@@ -102,7 +102,7 @@
 						on:click={() => toggleSort('count')}
 					>
 						<div class="flex gap-1.5 items-center justify-end">
-							{i18n.t('Messages')}
+							{$i18n.t('Messages')}
 							{#if orderBy === 'count'}
 								{#if direction === 'asc'}<ChevronUp className="size-2" />{:else}<ChevronDown
 										className="size-2"
@@ -118,7 +118,7 @@
 						on:click={() => toggleSort('percentage')}
 					>
 						<div class="flex gap-1.5 items-center justify-end">
-							{i18n.t('Share')}
+							{$i18n.t('Share')}
 							{#if orderBy === 'percentage'}
 								{#if direction === 'asc'}<ChevronUp className="size-2" />{:else}<ChevronDown
 										className="size-2"
@@ -158,7 +158,7 @@
 
 <div class="text-gray-500 text-xs mt-1.5 w-full flex justify-end">
 	<div class="text-right">
-		ⓘ {i18n.t('Showing all messages (user + assistant) per user.')}
+		ⓘ {$i18n.t('Showing all messages (user + assistant) per user.')}
 	</div>
 </div>
 
@@ -166,8 +166,8 @@
 	class="pt-0.5 pb-1 gap-1 flex flex-col md:flex-row justify-between sticky top-0 z-10 bg-white dark:bg-gray-900"
 >
 	<div class="flex items-center text-xl font-medium px-0.5 gap-2 shrink-0">
-		{i18n.t('User Activity')}
-		<span class="text-lg text-gray-500">{userStats.length} {i18n.t('users')}</span>
+		{$i18n.t('User Activity')}
+		<span class="text-lg text-gray-500">{userStats.length} {$i18n.t('users')}</span>
 	</div>
 </div>
 
@@ -183,7 +183,7 @@
 	{/if}
 
 	{#if !userStats.length && !loading}
-		<div class="text-center text-xs text-gray-500 py-1">{i18n.t('No data found')}</div>
+		<div class="text-center text-xs text-gray-500 py-1">{$i18n.t('No data found')}</div>
 	{:else if userStats.length}
 		<table
 			class="w-full text-sm text-left text-gray-500 dark:text-gray-400 {loading
@@ -199,7 +199,7 @@
 						on:click={() => toggleSort('user_id')}
 					>
 						<div class="flex gap-1.5 items-center">
-							{i18n.t('User')}
+							{$i18n.t('User')}
 							{#if orderBy === 'user_id'}
 								{#if direction === 'asc'}<ChevronUp className="size-2" />{:else}<ChevronDown
 										className="size-2"
@@ -215,7 +215,7 @@
 						on:click={() => toggleSort('count')}
 					>
 						<div class="flex gap-1.5 items-center justify-end">
-							{i18n.t('Messages')}
+							{$i18n.t('Messages')}
 							{#if orderBy === 'count'}
 								{#if direction === 'asc'}<ChevronUp className="size-2" />{:else}<ChevronDown
 										className="size-2"
@@ -231,7 +231,7 @@
 						on:click={() => toggleSort('percentage')}
 					>
 						<div class="flex gap-1.5 items-center justify-end">
-							{i18n.t('Share')}
+							{$i18n.t('Share')}
 							{#if orderBy === 'percentage'}
 								{#if direction === 'asc'}<ChevronUp className="size-2" />{:else}<ChevronDown
 										className="size-2"
@@ -271,6 +271,6 @@
 
 <div class="text-gray-500 text-xs mt-1.5 w-full flex justify-end">
 	<div class="text-right">
-		ⓘ {i18n.t('Showing all messages (user + assistant) per user.')}
+		ⓘ {$i18n.t('Showing all messages (user + assistant) per user.')}
 	</div>
 </div>

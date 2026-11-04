@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
@@ -20,7 +20,7 @@
 	import Emoji from '$lib/components/common/Emoji.svelte';
 
 	export let show: any = false;
-	export let onSave: Function = () => {};
+	export let onSave: any = () => {};
 
 	let emoji = '';
 	let message = '';
@@ -39,10 +39,10 @@
 		});
 
 		if (res) {
-			toast.success(i18n.t('Status updated successfully'));
+			toast.success($i18n.t('Status updated successfully'));
 			onSave();
 		} else {
-			toast.error(i18n.t('Failed to update status'));
+			toast.error($i18n.t('Failed to update status'));
 		}
 
 		show = false;
@@ -78,7 +78,7 @@
 	<div>
 		<div class=" flex justify-between dark:text-gray-300 px-5 pt-4 pb-1">
 			<div class=" text-lg font-medium self-center">
-				{i18n.t('Set your status')}
+				{$i18n.t('Set your status')}
 			</div>
 			<button
 				class="self-center"
@@ -100,7 +100,7 @@
 				>
 					<div>
 						<div class="text-xs text-gray-500 mb-1.5">
-							{i18n.t('Status')}
+							{$i18n.t('Status')}
 						</div>
 
 						<div
@@ -127,7 +127,7 @@
 								type="text"
 								bind:value={message}
 								class={`w-full flex-1 text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
-								placeholder={i18n.t("What's on your mind?")}
+								placeholder={$i18n.t("What's on your mind?")}
 								autocomplete="off"
 								required
 							/>
@@ -152,7 +152,7 @@
 							type="submit"
 							disabled={loading}
 						>
-							{i18n.t('Save')}
+							{$i18n.t('Save')}
 
 							{#if loading}
 								<div class="ml-2 self-center">
@@ -171,7 +171,7 @@
 	<div>
 		<div class=" flex justify-between dark:text-gray-300 px-5 pt-4 pb-1">
 			<div class=" text-lg font-medium self-center">
-				{i18n.t('Set your status')}
+				{$i18n.t('Set your status')}
 			</div>
 			<button
 				class="self-center"
@@ -193,7 +193,7 @@
 				>
 					<div>
 						<div class="text-xs text-gray-500 mb-1.5">
-							{i18n.t('Status')}
+							{$i18n.t('Status')}
 						</div>
 
 						<div
@@ -220,7 +220,7 @@
 								type="text"
 								bind:value={message}
 								class={`w-full flex-1 text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
-								placeholder={i18n.t("What's on your mind?")}
+								placeholder={$i18n.t("What's on your mind?")}
 								autocomplete="off"
 								required
 							/>
@@ -245,7 +245,7 @@
 							type="submit"
 							disabled={loading}
 						>
-							{i18n.t('Save')}
+							{$i18n.t('Save')}
 
 							{#if loading}
 								<div class="ml-2 self-center">

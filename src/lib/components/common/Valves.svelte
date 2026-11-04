@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import DOMPurify from 'dompurify';
 	import { marked } from 'marked';
@@ -14,8 +14,8 @@
 	import NativeSelect from './NativeSelect.svelte';
 	import MapSelector from './Valves/MapSelector.svelte';
 
-	let valvesSpec: any = null;
-	let valves: Record<string, any> = {};
+	export let valvesSpec: any = null;
+	export let valves: Record<string, any> = {};
 </script>
 
 {#if valvesSpec && Object.keys(valvesSpec?.properties ?? {}).length}
@@ -54,13 +54,13 @@
 					{#if (valves[property] ?? null) === null}
 						<span class="ml-2 self-center">
 							{#if (valvesSpec?.required ?? []).includes(property)}
-								{i18n.t('None')}
+								{$i18n.t('None')}
 							{:else}
-								{i18n.t('Default')}
+								{$i18n.t('Default')}
 							{/if}
 						</span>
 					{:else}
-						<span class="ml-2 self-center"> {i18n.t('Custom')} </span>
+						<span class="ml-2 self-center"> {$i18n.t('Custom')} </span>
 					{/if}
 				</button>
 			</div>
@@ -86,7 +86,7 @@
 						{:else if (valvesSpec.properties[property]?.type ?? null) === 'boolean'}
 							<div class="flex justify-between items-center">
 								<div class="text-xs text-gray-500">
-									{valves[property] ? i18n.t('Enabled') : i18n.t('Disabled')}
+									{valves[property] ? $i18n.t('Enabled') : $i18n.t('Disabled')}
 								</div>
 
 								<div class=" pr-2">
@@ -131,7 +131,7 @@
 									bind:value={valves[property]}
 									options={valvesSpec.properties[property].input.options}
 									placeholder={valvesSpec.properties[property]?.description ??
-										i18n.t('Select an option')}
+										$i18n.t('Select an option')}
 									on:change={() => {
 										dispatch('change');
 									}}
@@ -154,7 +154,7 @@
 									<input
 										type="text"
 										class="flex-1 rounded-lg py-2 text-sm dark:text-gray-300 dark:bg-gray-850 outline-hidden border border-gray-100/30 dark:border-gray-850/30"
-										placeholder={i18n.t('Enter hex color (e.g. #FF0000)')}
+										placeholder={$i18n.t('Enter hex color (e.g. #FF0000)')}
 										bind:value={valves[property]}
 										autocomplete="off"
 										disabled
@@ -180,7 +180,7 @@
 										<input
 											type="text"
 											class=" w-full rounded-lg py-1 text-left text-sm dark:text-gray-300 dark:bg-gray-850 outline-hidden border border-gray-100/30 dark:border-gray-850/30"
-											placeholder={i18n.t('Enter coordinates (e.g. 51.505, -0.09)')}
+											placeholder={$i18n.t('Enter coordinates (e.g. 51.505, -0.09)')}
 											bind:value={valves[property]}
 											autocomplete="off"
 											on:change={() => {
@@ -217,7 +217,7 @@
 		</div>
 	{/each}
 {:else}
-	<div class="text-xs">{i18n.t('No valves')}</div>
+	<div class="text-xs">{$i18n.t('No valves')}</div>
 {/if}
 
 {#if valvesSpec && Object.keys(valvesSpec?.properties ?? {}).length}
@@ -256,13 +256,13 @@
 					{#if (valves[property] ?? null) === null}
 						<span class="ml-2 self-center">
 							{#if (valvesSpec?.required ?? []).includes(property)}
-								{i18n.t('None')}
+								{$i18n.t('None')}
 							{:else}
-								{i18n.t('Default')}
+								{$i18n.t('Default')}
 							{/if}
 						</span>
 					{:else}
-						<span class="ml-2 self-center"> {i18n.t('Custom')} </span>
+						<span class="ml-2 self-center"> {$i18n.t('Custom')} </span>
 					{/if}
 				</button>
 			</div>
@@ -288,7 +288,7 @@
 						{:else if (valvesSpec.properties[property]?.type ?? null) === 'boolean'}
 							<div class="flex justify-between items-center">
 								<div class="text-xs text-gray-500">
-									{valves[property] ? i18n.t('Enabled') : i18n.t('Disabled')}
+									{valves[property] ? $i18n.t('Enabled') : $i18n.t('Disabled')}
 								</div>
 
 								<div class=" pr-2">
@@ -333,7 +333,7 @@
 									bind:value={valves[property]}
 									options={valvesSpec.properties[property].input.options}
 									placeholder={valvesSpec.properties[property]?.description ??
-										i18n.t('Select an option')}
+										$i18n.t('Select an option')}
 									on:change={() => {
 										dispatch('change');
 									}}
@@ -356,7 +356,7 @@
 									<input
 										type="text"
 										class="flex-1 rounded-lg py-2 text-sm dark:text-gray-300 dark:bg-gray-850 outline-hidden border border-gray-100/30 dark:border-gray-850/30"
-										placeholder={i18n.t('Enter hex color (e.g. #FF0000)')}
+										placeholder={$i18n.t('Enter hex color (e.g. #FF0000)')}
 										bind:value={valves[property]}
 										autocomplete="off"
 										disabled
@@ -382,7 +382,7 @@
 										<input
 											type="text"
 											class=" w-full rounded-lg py-1 text-left text-sm dark:text-gray-300 dark:bg-gray-850 outline-hidden border border-gray-100/30 dark:border-gray-850/30"
-											placeholder={i18n.t('Enter coordinates (e.g. 51.505, -0.09)')}
+											placeholder={$i18n.t('Enter coordinates (e.g. 51.505, -0.09)')}
 											bind:value={valves[property]}
 											autocomplete="off"
 											on:change={() => {
@@ -419,5 +419,5 @@
 		</div>
 	{/each}
 {:else}
-	<div class="text-xs">{i18n.t('No valves')}</div>
+	<div class="text-xs">{$i18n.t('No valves')}</div>
 {/if}

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import type { Writable } from 'svelte/store';
@@ -29,7 +29,7 @@
 	export let direct: any = false;
 	export let connection: any = null;
 
-	export let onSubmit: Function = () => {};
+	export let onSubmit: any = () => {};
 	export let onDelete: () => void = () => {};
 
 	let url = '';
@@ -127,7 +127,7 @@
 	const verifyHandler = async () => {
 		const _url = url.replace(/\/$/, '');
 		if (!_url) {
-			toast.error(i18n.t('Please enter a valid URL'));
+			toast.error($i18n.t('Please enter a valid URL'));
 			return;
 		}
 
@@ -145,7 +145,7 @@
 				if (type) {
 					serverType = type;
 					toast.success(
-						i18n.t('Connected ({{type}})', {
+						$i18n.t('Connected ({{type}})', {
 							type: type === 'orchestrator' ? 'Orchestrator' : 'Terminal'
 						})
 					);
@@ -162,20 +162,20 @@
 					}
 				} else {
 					serverType = null;
-					toast.error(i18n.t('Server connection failed'));
+					toast.error($i18n.t('Server connection failed'));
 				}
 			} else {
 				// Direct connection: verify from browser
 				const res = await getTerminalConfig(_url, key);
 				if (res) {
-					toast.success(i18n.t('Server connection verified'));
+					toast.success($i18n.t('Server connection verified'));
 				} else {
-					toast.error(i18n.t('Server connection failed'));
+					toast.error($i18n.t('Server connection failed'));
 				}
 			}
 		} catch {
 			serverType = null;
-			toast.error(i18n.t('Server connection failed'));
+			toast.error($i18n.t('Server connection failed'));
 		} finally {
 			verifying = false;
 		}
@@ -185,12 +185,12 @@
 		try {
 			const parsed = JSON.parse(value || '{}');
 			if (!parsed || Array.isArray(parsed) || typeof parsed !== 'object') {
-				toast.error(i18n.t('{{label}} must be a JSON object', { label }));
+				toast.error($i18n.t('{{label}} must be a JSON object', { label }));
 				return null;
 			}
 			return parsed;
 		} catch {
-			toast.error(i18n.t('{{label}} contains invalid JSON', { label }));
+			toast.error($i18n.t('{{label}} contains invalid JSON', { label }));
 			return null;
 		}
 	};
@@ -226,7 +226,7 @@
 
 	const refreshHandler = async () => {
 		if (!policyId) {
-			toast.error(i18n.t('Policy ID is required'));
+			toast.error($i18n.t('Policy ID is required'));
 			return;
 		}
 
@@ -244,12 +244,12 @@
 				auth_type
 			);
 			toast.success(
-				i18n.t('Refresh requested: {{count}} terminal(s)', {
+				$i18n.t('Refresh requested: {{count}} terminal(s)', {
 					count: (result as { refreshed?: number } | null)?.refreshed ?? 0
 				})
 			);
 		} catch (err) {
-			toast.error(i18n.t('Failed to refresh terminals: {{error}}', { error: err }));
+			toast.error($i18n.t('Failed to refresh terminals: {{error}}', { error: err }));
 		} finally {
 			refreshing = false;
 		}
@@ -257,7 +257,7 @@
 
 	const submitHandler = async () => {
 		if (url === '') {
-			toast.error(i18n.t('Please enter a valid URL'));
+			toast.error($i18n.t('Please enter a valid URL'));
 			return;
 		}
 
@@ -286,7 +286,7 @@
 					auth_type
 				);
 			} catch (err) {
-				toast.error(i18n.t('Failed to save policy: {{error}}', { error: err }));
+				toast.error($i18n.t('Failed to save policy: {{error}}', { error: err }));
 				return;
 			}
 		}
@@ -318,15 +318,15 @@
 		<div class="flex justify-between dark:text-gray-100 px-5 pt-4 pb-2">
 			<h1 class="text-lg font-medium self-center font-primary">
 				{#if edit}
-					{i18n.t('Edit Terminal Connection')}
+					{$i18n.t('Edit Terminal Connection')}
 				{:else}
-					{i18n.t('Add Terminal Connection')}
+					{$i18n.t('Add Terminal Connection')}
 				{/if}
 			</h1>
 
 			<button
 				class="self-center"
-				aria-label={i18n.t('Close')}
+				aria-label={$i18n.t('Close')}
 				on:click={() => {
 					show = false;
 				}}
@@ -345,7 +345,7 @@
 									<label
 										for="terminal-name"
 										class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
-										>{i18n.t('Name')}</label
+										>{$i18n.t('Name')}</label
 									>
 								</div>
 
@@ -355,7 +355,7 @@
 										class={`w-full flex-1 text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 										type="text"
 										bind:value={name}
-										placeholder={i18n.t('My Terminal')}
+										placeholder={$i18n.t('My Terminal')}
 										autocomplete="off"
 									/>
 								</div>
@@ -366,8 +366,8 @@
 										<label
 											for="terminal-id"
 											class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
-											>{i18n.t('ID')}
-											<span class="opacity-50">({i18n.t('optional')})</span></label
+											>{$i18n.t('ID')}
+											<span class="opacity-50">({$i18n.t('optional')})</span></label
 										>
 									</div>
 									<div class="flex flex-1 items-center">
@@ -390,7 +390,7 @@
 									<label
 										for="terminal-url"
 										class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
-										>{i18n.t('URL')}</label
+										>{$i18n.t('URL')}</label
 									>
 								</div>
 
@@ -407,7 +407,7 @@
 								</div>
 							</div>
 
-							<Tooltip content={i18n.t('Verify Connection')} className="self-end -mb-1">
+							<Tooltip content={$i18n.t('Verify Connection')} className="self-end -mb-1">
 								<button
 									class="self-center p-1 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition"
 									on:click={() => {
@@ -415,7 +415,7 @@
 									}}
 									type="button"
 									disabled={verifying}
-									aria-label={i18n.t('Verify Connection')}
+									aria-label={$i18n.t('Verify Connection')}
 								>
 									{#if verifying}
 										<svg
@@ -465,7 +465,7 @@
 										<div
 											class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 										>
-											{i18n.t('Policy ID')}
+											{$i18n.t('Policy ID')}
 										</div>
 									</div>
 									<div class="flex flex-1 items-center">
@@ -488,8 +488,8 @@
 										<div
 											class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 										>
-											{i18n.t('Image')}
-											<span class="opacity-50">({i18n.t('optional')})</span>
+											{$i18n.t('Image')}
+											<span class="opacity-50">({$i18n.t('optional')})</span>
 										</div>
 									</div>
 									<div class="flex flex-1 items-center">
@@ -511,7 +511,7 @@
 										<div
 											class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 										>
-											{i18n.t('CPU')}
+											{$i18n.t('CPU')}
 										</div>
 									</div>
 									<div class="flex flex-1 items-center">
@@ -530,7 +530,7 @@
 										<div
 											class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 										>
-											{i18n.t('Memory')}
+											{$i18n.t('Memory')}
 										</div>
 									</div>
 									<div class="flex flex-1 items-center">
@@ -552,7 +552,7 @@
 										<div
 											class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 										>
-											{i18n.t('Storage')}
+											{$i18n.t('Storage')}
 										</div>
 									</div>
 									<div class="flex gap-2">
@@ -561,8 +561,8 @@
 												class={`dark:bg-gray-900 w-full text-sm bg-transparent pr-5 ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 												bind:value={policyStorage}
 											>
-												<option value="ephemeral">{i18n.t('Ephemeral')}</option>
-												<option value="persistent">{i18n.t('Persistent')}</option>
+												<option value="ephemeral">{$i18n.t('Ephemeral')}</option>
+												<option value="persistent">{$i18n.t('Persistent')}</option>
 											</select>
 										</div>
 										{#if policyStorage === 'persistent'}
@@ -585,8 +585,8 @@
 										<div
 											class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 										>
-											{i18n.t('Idle Timeout')}
-											<span class="opacity-50">({i18n.t('min')})</span>
+											{$i18n.t('Idle Timeout')}
+											<span class="opacity-50">({$i18n.t('min')})</span>
 										</div>
 									</div>
 									<div class="flex flex-1 items-center">
@@ -610,7 +610,7 @@
 										<div
 											class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 										>
-											{i18n.t('Environment Variables')}
+											{$i18n.t('Environment Variables')}
 										</div>
 										<button
 											type="button"
@@ -618,7 +618,7 @@
 											on:click={() =>
 												(policyEnvPairs = [...policyEnvPairs, { key: '', value: '' }])}
 										>
-											+ {i18n.t('Add')}
+											+ {$i18n.t('Add')}
 										</button>
 									</div>
 									{#each policyEnvPairs as pair, idx}
@@ -654,7 +654,7 @@
 										<div
 											class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 										>
-											{i18n.t('Lifecycle JSON')}
+											{$i18n.t('Lifecycle JSON')}
 										</div>
 									</div>
 									<textarea
@@ -671,11 +671,11 @@
 								<div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
 									<label class="flex items-center gap-1.5">
 										<input type="checkbox" bind:checked={refreshOnlyIdle} />
-										<span>{i18n.t('Idle only')}</span>
+										<span>{$i18n.t('Idle only')}</span>
 									</label>
 									<label class="flex items-center gap-1.5">
 										<input type="checkbox" bind:checked={refreshReset} />
-										<span>{i18n.t('Reset persisted files')}</span>
+										<span>{$i18n.t('Reset persisted files')}</span>
 									</label>
 								</div>
 								<button
@@ -684,7 +684,7 @@
 									disabled={refreshing}
 									on:click={refreshHandler}
 								>
-									{refreshing ? i18n.t('Refreshing...') : i18n.t('Refresh Terminals')}
+									{refreshing ? $i18n.t('Refreshing...') : $i18n.t('Refresh Terminals')}
 								</button>
 							</div>
 						{/if}
@@ -707,7 +707,7 @@
 										clip-rule="evenodd"
 									/>
 								</svg>
-								{i18n.t('Advanced')}
+								{$i18n.t('Advanced')}
 							</button>
 
 							{#if !direct}
@@ -721,7 +721,7 @@
 									<LockClosed strokeWidth="2.5" className="size-3.5 shrink-0" />
 
 									<div class="text-xs font-medium shrink-0">
-										{i18n.t('Access')}
+										{$i18n.t('Access')}
 									</div>
 								</button>
 							{/if}
@@ -735,7 +735,7 @@
 											<div
 												class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 											>
-												{i18n.t('OpenAPI Spec')}
+												{$i18n.t('OpenAPI Spec')}
 											</div>
 										</div>
 									</div>
@@ -744,14 +744,14 @@
 										<div class="flex flex-1 items-center">
 											<div class="flex-1 flex items-center">
 												<label for="openapi-path" class="sr-only"
-													>{i18n.t('openapi.json URL or Path')}</label
+													>{$i18n.t('openapi.json URL or Path')}</label
 												>
 												<input
 													class={`w-full text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 													type="text"
 													id="openapi-path"
 													bind:value={path}
-													placeholder={i18n.t('openapi.json URL or Path')}
+													placeholder={$i18n.t('openapi.json URL or Path')}
 													autocomplete="off"
 													required
 												/>
@@ -762,7 +762,7 @@
 									<div
 										class={`text-xs mt-1 ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 									>
-										{i18n.t(`WebUI will make requests to "{{url}}"`, {
+										{$i18n.t(`WebUI will make requests to "{{url}}"`, {
 											url: path.includes('://')
 												? path
 												: `${url}${path.startsWith('/') ? '' : '/'}${path}`
@@ -779,7 +779,7 @@
 										<div
 											class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 										>
-											{i18n.t('Auth')}
+											{$i18n.t('Auth')}
 										</div>
 									</div>
 								</div>
@@ -790,11 +790,11 @@
 											class={`dark:bg-gray-900 w-full text-sm bg-transparent pr-5 ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 											bind:value={auth_type}
 										>
-											<option value="none">{i18n.t('None')}</option>
-											<option value="bearer">{i18n.t('Bearer')}</option>
+											<option value="none">{$i18n.t('None')}</option>
+											<option value="bearer">{$i18n.t('Bearer')}</option>
 											{#if !direct}
-												<option value="session">{i18n.t('Session')}</option>
-												<option value="system_oauth">{i18n.t('OAuth')}</option>
+												<option value="session">{$i18n.t('Session')}</option>
+												<option value="system_oauth">{$i18n.t('OAuth')}</option>
 											{/if}
 										</select>
 									</div>
@@ -803,26 +803,26 @@
 										{#if auth_type === 'bearer'}
 											<SensitiveInput
 												bind:value={key}
-												placeholder={i18n.t('API Key')}
+												placeholder={$i18n.t('API Key')}
 												required={false}
 											/>
 										{:else if auth_type === 'none'}
 											<div
 												class={`text-xs self-center translate-y-[1px] ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 											>
-												{i18n.t('No authentication')}
+												{$i18n.t('No authentication')}
 											</div>
 										{:else if auth_type === 'session'}
 											<div
 												class={`text-xs self-center translate-y-[1px] ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 											>
-												{i18n.t('Forwards system user session credentials to authenticate')}
+												{$i18n.t('Forwards system user session credentials to authenticate')}
 											</div>
 										{:else if auth_type === 'system_oauth'}
 											<div
 												class={`text-xs self-center translate-y-[1px] ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 											>
-												{i18n.t('Forwards system user OAuth access token to authenticate')}
+												{$i18n.t('Forwards system user OAuth access token to authenticate')}
 											</div>
 										{/if}
 									</div>
@@ -840,7 +840,7 @@
 											showDeleteConfirmDialog = true;
 										}}
 									>
-										{i18n.t('Delete')}
+										{$i18n.t('Delete')}
 									</button>
 								{/if}
 							</div>
@@ -849,7 +849,7 @@
 								class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full flex flex-row space-x-1 items-center"
 								type="submit"
 							>
-								{i18n.t('Save')}
+								{$i18n.t('Save')}
 							</button>
 						</div>
 					</div>
@@ -863,10 +863,10 @@
 
 <ConfirmDialog
 	bind:show={showDeleteConfirmDialog}
-	message={i18n.t(
+	message={$i18n.t(
 		'Are you sure you want to delete this connection? This action cannot be undone.'
 	)}
-	confirmLabel={i18n.t('Delete')}
+	confirmLabel={$i18n.t('Delete')}
 	on:confirm={() => {
 		onDelete();
 		show = false;
@@ -878,15 +878,15 @@
 		<div class="flex justify-between dark:text-gray-100 px-5 pt-4 pb-2">
 			<h1 class="text-lg font-medium self-center font-primary">
 				{#if edit}
-					{i18n.t('Edit Terminal Connection')}
+					{$i18n.t('Edit Terminal Connection')}
 				{:else}
-					{i18n.t('Add Terminal Connection')}
+					{$i18n.t('Add Terminal Connection')}
 				{/if}
 			</h1>
 
 			<button
 				class="self-center"
-				aria-label={i18n.t('Close')}
+				aria-label={$i18n.t('Close')}
 				on:click={() => {
 					show = false;
 				}}
@@ -905,7 +905,7 @@
 									<label
 										for="terminal-name"
 										class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
-										>{i18n.t('Name')}</label
+										>{$i18n.t('Name')}</label
 									>
 								</div>
 
@@ -915,7 +915,7 @@
 										class={`w-full flex-1 text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 										type="text"
 										bind:value={name}
-										placeholder={i18n.t('My Terminal')}
+										placeholder={$i18n.t('My Terminal')}
 										autocomplete="off"
 									/>
 								</div>
@@ -926,8 +926,8 @@
 										<label
 											for="terminal-id"
 											class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
-											>{i18n.t('ID')}
-											<span class="opacity-50">({i18n.t('optional')})</span></label
+											>{$i18n.t('ID')}
+											<span class="opacity-50">({$i18n.t('optional')})</span></label
 										>
 									</div>
 									<div class="flex flex-1 items-center">
@@ -950,7 +950,7 @@
 									<label
 										for="terminal-url"
 										class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
-										>{i18n.t('URL')}</label
+										>{$i18n.t('URL')}</label
 									>
 								</div>
 
@@ -967,7 +967,7 @@
 								</div>
 							</div>
 
-							<Tooltip content={i18n.t('Verify Connection')} className="self-end -mb-1">
+							<Tooltip content={$i18n.t('Verify Connection')} className="self-end -mb-1">
 								<button
 									class="self-center p-1 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition"
 									on:click={() => {
@@ -975,7 +975,7 @@
 									}}
 									type="button"
 									disabled={verifying}
-									aria-label={i18n.t('Verify Connection')}
+									aria-label={$i18n.t('Verify Connection')}
 								>
 									{#if verifying}
 										<svg
@@ -1025,7 +1025,7 @@
 										<div
 											class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 										>
-											{i18n.t('Policy ID')}
+											{$i18n.t('Policy ID')}
 										</div>
 									</div>
 									<div class="flex flex-1 items-center">
@@ -1048,8 +1048,8 @@
 										<div
 											class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 										>
-											{i18n.t('Image')}
-											<span class="opacity-50">({i18n.t('optional')})</span>
+											{$i18n.t('Image')}
+											<span class="opacity-50">({$i18n.t('optional')})</span>
 										</div>
 									</div>
 									<div class="flex flex-1 items-center">
@@ -1071,7 +1071,7 @@
 										<div
 											class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 										>
-											{i18n.t('CPU')}
+											{$i18n.t('CPU')}
 										</div>
 									</div>
 									<div class="flex flex-1 items-center">
@@ -1090,7 +1090,7 @@
 										<div
 											class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 										>
-											{i18n.t('Memory')}
+											{$i18n.t('Memory')}
 										</div>
 									</div>
 									<div class="flex flex-1 items-center">
@@ -1112,7 +1112,7 @@
 										<div
 											class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 										>
-											{i18n.t('Storage')}
+											{$i18n.t('Storage')}
 										</div>
 									</div>
 									<div class="flex gap-2">
@@ -1121,8 +1121,8 @@
 												class={`dark:bg-gray-900 w-full text-sm bg-transparent pr-5 ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 												bind:value={policyStorage}
 											>
-												<option value="ephemeral">{i18n.t('Ephemeral')}</option>
-												<option value="persistent">{i18n.t('Persistent')}</option>
+												<option value="ephemeral">{$i18n.t('Ephemeral')}</option>
+												<option value="persistent">{$i18n.t('Persistent')}</option>
 											</select>
 										</div>
 										{#if policyStorage === 'persistent'}
@@ -1145,8 +1145,8 @@
 										<div
 											class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 										>
-											{i18n.t('Idle Timeout')}
-											<span class="opacity-50">({i18n.t('min')})</span>
+											{$i18n.t('Idle Timeout')}
+											<span class="opacity-50">({$i18n.t('min')})</span>
 										</div>
 									</div>
 									<div class="flex flex-1 items-center">
@@ -1170,7 +1170,7 @@
 										<div
 											class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 										>
-											{i18n.t('Environment Variables')}
+											{$i18n.t('Environment Variables')}
 										</div>
 										<button
 											type="button"
@@ -1178,7 +1178,7 @@
 											on:click={() =>
 												(policyEnvPairs = [...policyEnvPairs, { key: '', value: '' }])}
 										>
-											+ {i18n.t('Add')}
+											+ {$i18n.t('Add')}
 										</button>
 									</div>
 									{#each policyEnvPairs as pair, idx}
@@ -1214,7 +1214,7 @@
 										<div
 											class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 										>
-											{i18n.t('Lifecycle JSON')}
+											{$i18n.t('Lifecycle JSON')}
 										</div>
 									</div>
 									<textarea
@@ -1231,11 +1231,11 @@
 								<div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
 									<label class="flex items-center gap-1.5">
 										<input type="checkbox" bind:checked={refreshOnlyIdle} />
-										<span>{i18n.t('Idle only')}</span>
+										<span>{$i18n.t('Idle only')}</span>
 									</label>
 									<label class="flex items-center gap-1.5">
 										<input type="checkbox" bind:checked={refreshReset} />
-										<span>{i18n.t('Reset persisted files')}</span>
+										<span>{$i18n.t('Reset persisted files')}</span>
 									</label>
 								</div>
 								<button
@@ -1244,7 +1244,7 @@
 									disabled={refreshing}
 									on:click={refreshHandler}
 								>
-									{refreshing ? i18n.t('Refreshing...') : i18n.t('Refresh Terminals')}
+									{refreshing ? $i18n.t('Refreshing...') : $i18n.t('Refresh Terminals')}
 								</button>
 							</div>
 						{/if}
@@ -1267,7 +1267,7 @@
 										clip-rule="evenodd"
 									/>
 								</svg>
-								{i18n.t('Advanced')}
+								{$i18n.t('Advanced')}
 							</button>
 
 							{#if !direct}
@@ -1281,7 +1281,7 @@
 									<LockClosed strokeWidth="2.5" className="size-3.5 shrink-0" />
 
 									<div class="text-xs font-medium shrink-0">
-										{i18n.t('Access')}
+										{$i18n.t('Access')}
 									</div>
 								</button>
 							{/if}
@@ -1295,7 +1295,7 @@
 											<div
 												class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 											>
-												{i18n.t('OpenAPI Spec')}
+												{$i18n.t('OpenAPI Spec')}
 											</div>
 										</div>
 									</div>
@@ -1304,14 +1304,14 @@
 										<div class="flex flex-1 items-center">
 											<div class="flex-1 flex items-center">
 												<label for="openapi-path" class="sr-only"
-													>{i18n.t('openapi.json URL or Path')}</label
+													>{$i18n.t('openapi.json URL or Path')}</label
 												>
 												<input
 													class={`w-full text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 													type="text"
 													id="openapi-path"
 													bind:value={path}
-													placeholder={i18n.t('openapi.json URL or Path')}
+													placeholder={$i18n.t('openapi.json URL or Path')}
 													autocomplete="off"
 													required
 												/>
@@ -1322,7 +1322,7 @@
 									<div
 										class={`text-xs mt-1 ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 									>
-										{i18n.t(`WebUI will make requests to "{{url}}"`, {
+										{$i18n.t(`WebUI will make requests to "{{url}}"`, {
 											url: path.includes('://')
 												? path
 												: `${url}${path.startsWith('/') ? '' : '/'}${path}`
@@ -1339,7 +1339,7 @@
 										<div
 											class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 										>
-											{i18n.t('Auth')}
+											{$i18n.t('Auth')}
 										</div>
 									</div>
 								</div>
@@ -1350,11 +1350,11 @@
 											class={`dark:bg-gray-900 w-full text-sm bg-transparent pr-5 ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 											bind:value={auth_type}
 										>
-											<option value="none">{i18n.t('None')}</option>
-											<option value="bearer">{i18n.t('Bearer')}</option>
+											<option value="none">{$i18n.t('None')}</option>
+											<option value="bearer">{$i18n.t('Bearer')}</option>
 											{#if !direct}
-												<option value="session">{i18n.t('Session')}</option>
-												<option value="system_oauth">{i18n.t('OAuth')}</option>
+												<option value="session">{$i18n.t('Session')}</option>
+												<option value="system_oauth">{$i18n.t('OAuth')}</option>
 											{/if}
 										</select>
 									</div>
@@ -1363,26 +1363,26 @@
 										{#if auth_type === 'bearer'}
 											<SensitiveInput
 												bind:value={key}
-												placeholder={i18n.t('API Key')}
+												placeholder={$i18n.t('API Key')}
 												required={false}
 											/>
 										{:else if auth_type === 'none'}
 											<div
 												class={`text-xs self-center translate-y-[1px] ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 											>
-												{i18n.t('No authentication')}
+												{$i18n.t('No authentication')}
 											</div>
 										{:else if auth_type === 'session'}
 											<div
 												class={`text-xs self-center translate-y-[1px] ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 											>
-												{i18n.t('Forwards system user session credentials to authenticate')}
+												{$i18n.t('Forwards system user session credentials to authenticate')}
 											</div>
 										{:else if auth_type === 'system_oauth'}
 											<div
 												class={`text-xs self-center translate-y-[1px] ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 											>
-												{i18n.t('Forwards system user OAuth access token to authenticate')}
+												{$i18n.t('Forwards system user OAuth access token to authenticate')}
 											</div>
 										{/if}
 									</div>
@@ -1400,7 +1400,7 @@
 											showDeleteConfirmDialog = true;
 										}}
 									>
-										{i18n.t('Delete')}
+										{$i18n.t('Delete')}
 									</button>
 								{/if}
 							</div>
@@ -1409,7 +1409,7 @@
 								class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full flex flex-row space-x-1 items-center"
 								type="submit"
 							>
-								{i18n.t('Save')}
+								{$i18n.t('Save')}
 							</button>
 						</div>
 					</div>
@@ -1423,10 +1423,10 @@
 
 <ConfirmDialog
 	bind:show={showDeleteConfirmDialog}
-	message={i18n.t(
+	message={$i18n.t(
 		'Are you sure you want to delete this connection? This action cannot be undone.'
 	)}
-	confirmLabel={i18n.t('Delete')}
+	confirmLabel={$i18n.t('Delete')}
 	on:confirm={() => {
 		onDelete();
 		show = false;

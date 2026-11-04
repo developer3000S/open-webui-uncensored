@@ -398,7 +398,7 @@ function ModelManager({
     return true;
   };
   
-  let visibleModelLibrary = [];
+  let visibleModelLibrary;
   if (activeModelType === "image") {
     visibleModelLibrary = [...MODEL_LIBRARY];
     if (openvinoSupported) {

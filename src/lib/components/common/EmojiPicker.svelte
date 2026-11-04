@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import VirtualList from '@sveltejs/svelte-virtual-list';
 
@@ -18,15 +18,15 @@
 
 	import type { Writable } from 'svelte/store';
 
-	export let onClose = () => {};
-	export let onSubmit = (name: any) => {};
+	export let onClose: any = () => {};
+	export let onSubmit: any = (name: any) => {};
 	export let align: any = 'start';
 	export let selected: any = null;
 
 	const MAX_RECENT = 30;
 
 	let show = false;
-	let emojis = emojiShortCodes;
+	let emojis: any = emojiShortCodes;
 	let search = '';
 	let flattenedEmojis: any[] = [];
 	let emojiRows: any = [];
@@ -86,7 +86,7 @@
 
 		// Add "Recently Used" group first (only when not searching)
 		if (!search && recentEmojiNames.length > 0) {
-			flattenedEmojis.push({ type: 'group', label: i18n.t('Recently Used') });
+			flattenedEmojis.push({ type: 'group', label: $i18n.t('Recently Used') });
 			flattenedEmojis.push(
 				...recentEmojiNames.map((emoji) => ({
 					type: 'emoji',
@@ -171,7 +171,7 @@
 				<input
 					type="text"
 					class="w-full text-sm bg-transparent outline-hidden"
-					placeholder={i18n.t('Search all emojis')}
+					placeholder={$i18n.t('Search all emojis')}
 					bind:value={search}
 				/>
 			</div>
@@ -180,7 +180,7 @@
 			<div class="w-full flex justify-start h-96 overflow-y-auto px-3 pb-3 text-sm">
 				{#if emojiRows.length === 0}
 					<div class="text-center text-xs text-gray-500 dark:text-gray-400">
-						{i18n.t('No results')}
+						{$i18n.t('No results')}
 					</div>
 				{:else}
 					<div class="w-full flex ml-0.5">
@@ -246,7 +246,7 @@
 				<input
 					type="text"
 					class="w-full text-sm bg-transparent outline-hidden"
-					placeholder={i18n.t('Search all emojis')}
+					placeholder={$i18n.t('Search all emojis')}
 					bind:value={search}
 				/>
 			</div>
@@ -255,7 +255,7 @@
 			<div class="w-full flex justify-start h-96 overflow-y-auto px-3 pb-3 text-sm">
 				{#if emojiRows.length === 0}
 					<div class="text-center text-xs text-gray-500 dark:text-gray-400">
-						{i18n.t('No results')}
+						{$i18n.t('No results')}
 					</div>
 				{:else}
 					<div class="w-full flex ml-0.5">

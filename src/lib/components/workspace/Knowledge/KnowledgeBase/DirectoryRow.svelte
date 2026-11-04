@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import dayjs from '$lib/dayjs';
 	import duration from 'dayjs/plugin/duration';
@@ -182,7 +182,7 @@
 							on:click={() => startRename()}
 						>
 							<Pencil className="size-3.5" />
-							{i18n.t('Rename')}
+							{$i18n.t('Rename')}
 						</button>
 						<button
 							type="button"
@@ -190,7 +190,7 @@
 							on:click={() => onDelete(directory.id)}
 						>
 							<GarbageBin className="size-3.5" />
-							{i18n.t('Delete')}
+							{$i18n.t('Delete')}
 						</button>
 					</div>
 				</div>
@@ -323,7 +323,7 @@
 							on:click={() => startRename()}
 						>
 							<Pencil className="size-3.5" />
-							{i18n.t('Rename')}
+							{$i18n.t('Rename')}
 						</button>
 						<button
 							type="button"
@@ -331,7 +331,7 @@
 							on:click={() => onDelete(directory.id)}
 						>
 							<GarbageBin className="size-3.5" />
-							{i18n.t('Delete')}
+							{$i18n.t('Delete')}
 						</button>
 					</div>
 				</div>

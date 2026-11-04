@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import Modal from '$lib/components/common/Modal.svelte';
@@ -18,10 +18,10 @@
 	import type { Writable } from 'svelte/store';
 
 	export let show: any = false;
-	export let onSubmit: Function = (e: any) => {};
+	export let onSubmit: any = (e: any) => {};
 
-	let folderId: any = null;
-	let parentId: any = null;
+	export let folderId: any = null;
+	export let parentId: any = null;
 	export let edit: any = false;
 	let folder: any = null;
 	let name = '';
@@ -39,7 +39,7 @@
 		loading = true;
 
 		if ((data?.files ?? []).some((file) => file.status === 'uploading')) {
-			toast.error(i18n.t('Please wait until all files are uploaded.'));
+			toast.error($i18n.t('Please wait until all files are uploaded.'));
 			loading = false;
 			return;
 		}
@@ -48,7 +48,7 @@
 		const maxFileCount = $config?.features?.folder_max_file_count ?? '';
 		if (maxFileCount && (data?.files ?? []).length > maxFileCount) {
 			toast.error(
-				i18n.t('Maximum number of files per folder is {{max}}.', { max: maxFileCount ?? 0 })
+				$i18n.t('Maximum number of files per folder is {{max}}.', { max: maxFileCount ?? 0 })
 			);
 			loading = false;
 			return;
@@ -66,7 +66,7 @@
 
 	const init = async () => {
 		if (folderId) {
-			folder = await getFolderById(localStorage.token, folderId).catch(async (error)=> {
+			folder = await getFolderById(localStorage.token, folderId).catch(async (error) => {
 				toast.error(`${error}`);
 				return null;
 			});
@@ -114,9 +114,9 @@
 		<div class=" flex justify-between dark:text-gray-300 px-5 pt-4 pb-1">
 			<div class=" text-lg font-medium self-center">
 				{#if edit}
-					{i18n.t('Edit Folder')}
+					{$i18n.t('Edit Folder')}
 				{:else}
-					{i18n.t('Create Folder')}
+					{$i18n.t('Create Folder')}
 				{/if}
 			</div>
 			<button
@@ -138,7 +138,7 @@
 					}}
 				>
 					<div class="flex flex-col w-full mt-1">
-						<div class=" mb-1 text-xs text-gray-500">{i18n.t('Folder Name')}</div>
+						<div class=" mb-1 text-xs text-gray-500">{$i18n.t('Folder Name')}</div>
 
 						<div class="flex-1">
 							<input
@@ -146,7 +146,7 @@
 								class="w-full text-sm bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden"
 								type="text"
 								bind:value={name}
-								placeholder={i18n.t('Enter folder name')}
+								placeholder={$i18n.t('Enter folder name')}
 								autocomplete="off"
 							/>
 						</div>
@@ -184,7 +184,7 @@
 					/>
 
 					<div class="flex justify-between w-full mt-1 items-center">
-						<div class="text-xs text-gray-500">{i18n.t('Folder Background Image')}</div>
+						<div class="text-xs text-gray-500">{$i18n.t('Folder Background Image')}</div>
 
 						<div class="">
 							<button
@@ -204,8 +204,8 @@
 							>
 								<span class="ml-2 self-center" id="background-image-url-state"
 									>{(meta?.background_image_url ?? null) === null
-										? i18n.t('Upload')
-										: i18n.t('Reset')}</span
+										? $i18n.t('Upload')
+										: $i18n.t('Reset')}</span
 								>
 							</button>
 						</div>
@@ -215,11 +215,11 @@
 
 					{#if $user?.role === 'admin' || ($user?.permissions.chat?.system_prompt ?? true)}
 						<div class="my-1">
-							<div class="mb-2 text-xs text-gray-500">{i18n.t('System Prompt')}</div>
+							<div class="mb-2 text-xs text-gray-500">{$i18n.t('System Prompt')}</div>
 							<div>
 								<Textarea
 									className=" text-sm w-full bg-transparent outline-hidden "
-									placeholder={i18n.t(
+									placeholder={$i18n.t(
 										'Write your model system prompt content here\ne.g.) You are Mario from Super Mario Bros, acting as an assistant.'
 									)}
 									maxSize={200}
@@ -234,7 +234,7 @@
 							<div slot="label">
 								<div class="flex w-full justify-between">
 									<div class=" mb-2 text-xs text-gray-500">
-										{i18n.t('Knowledge')}
+										{$i18n.t('Knowledge')}
 									</div>
 								</div>
 							</div>
@@ -249,7 +249,7 @@
 							type="submit"
 							disabled={loading}
 						>
-							{i18n.t('Save')}
+							{$i18n.t('Save')}
 
 							{#if loading}
 								<div class="ml-2 self-center">
@@ -269,9 +269,9 @@
 		<div class=" flex justify-between dark:text-gray-300 px-5 pt-4 pb-1">
 			<div class=" text-lg font-medium self-center">
 				{#if edit}
-					{i18n.t('Edit Folder')}
+					{$i18n.t('Edit Folder')}
 				{:else}
-					{i18n.t('Create Folder')}
+					{$i18n.t('Create Folder')}
 				{/if}
 			</div>
 			<button
@@ -293,7 +293,7 @@
 					}}
 				>
 					<div class="flex flex-col w-full mt-1">
-						<div class=" mb-1 text-xs text-gray-500">{i18n.t('Folder Name')}</div>
+						<div class=" mb-1 text-xs text-gray-500">{$i18n.t('Folder Name')}</div>
 
 						<div class="flex-1">
 							<input
@@ -301,7 +301,7 @@
 								class="w-full text-sm bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden"
 								type="text"
 								bind:value={name}
-								placeholder={i18n.t('Enter folder name')}
+								placeholder={$i18n.t('Enter folder name')}
 								autocomplete="off"
 							/>
 						</div>
@@ -339,7 +339,7 @@
 					/>
 
 					<div class="flex justify-between w-full mt-1 items-center">
-						<div class="text-xs text-gray-500">{i18n.t('Folder Background Image')}</div>
+						<div class="text-xs text-gray-500">{$i18n.t('Folder Background Image')}</div>
 
 						<div class="">
 							<button
@@ -359,8 +359,8 @@
 							>
 								<span class="ml-2 self-center" id="background-image-url-state"
 									>{(meta?.background_image_url ?? null) === null
-										? i18n.t('Upload')
-										: i18n.t('Reset')}</span
+										? $i18n.t('Upload')
+										: $i18n.t('Reset')}</span
 								>
 							</button>
 						</div>
@@ -370,11 +370,11 @@
 
 					{#if $user?.role === 'admin' || ($user?.permissions.chat?.system_prompt ?? true)}
 						<div class="my-1">
-							<div class="mb-2 text-xs text-gray-500">{i18n.t('System Prompt')}</div>
+							<div class="mb-2 text-xs text-gray-500">{$i18n.t('System Prompt')}</div>
 							<div>
 								<Textarea
 									className=" text-sm w-full bg-transparent outline-hidden "
-									placeholder={i18n.t(
+									placeholder={$i18n.t(
 										'Write your model system prompt content here\ne.g.) You are Mario from Super Mario Bros, acting as an assistant.'
 									)}
 									maxSize={200}
@@ -389,7 +389,7 @@
 							<div slot="label">
 								<div class="flex w-full justify-between">
 									<div class=" mb-2 text-xs text-gray-500">
-										{i18n.t('Knowledge')}
+										{$i18n.t('Knowledge')}
 									</div>
 								</div>
 							</div>
@@ -404,7 +404,7 @@
 							type="submit"
 							disabled={loading}
 						>
-							{i18n.t('Save')}
+							{$i18n.t('Save')}
 
 							{#if loading}
 								<div class="ml-2 self-center">

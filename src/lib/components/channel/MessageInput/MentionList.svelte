@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 	import { channels, models, user } from '$lib/stores';
@@ -116,7 +116,7 @@
 			if (modelSuggestions) {
 				_models = [
 					...$models
-						.filter((m) => !m?.direct)
+						.filter((m: any) => !m?.direct)
 						.map((m) => ({ type: 'model', id: m.id, label: m.name, data: m }))
 				];
 			}
@@ -157,11 +157,11 @@
 				{#if i === 0 || item?.type !== filteredItems[i - 1]?.type}
 					<div class="px-2 text-xs text-gray-500 py-1">
 						{#if item?.type === 'user'}
-							{i18n.t('Users')}
+							{$i18n.t('Users')}
 						{:else if item?.type === 'model'}
-							{i18n.t('Models')}
+							{$i18n.t('Models')}
 						{:else if item?.type === 'channel'}
-							{i18n.t('Channels')}
+							{$i18n.t('Channels')}
 						{/if}
 					</div>
 				{/if}
@@ -189,7 +189,7 @@
 							</div>
 						{:else if item.type === 'model'}
 							<img
-								src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${item.id}&lang=${$language}`}
+								src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${item.id}&lang=${$i18n.language}`}
 								alt={item?.data?.name ?? item.id}
 								class="rounded-full size-5 items-center mr-2"
 								on:error={(e) => {
@@ -213,11 +213,11 @@
 
 						<div class="shrink-0 text-xs text-gray-500">
 							{#if item.type === 'user'}
-								{i18n.t('User')}
+								{$i18n.t('User')}
 							{:else if item.type === 'model'}
-								{i18n.t('Model')}
+								{$i18n.t('Model')}
 							{:else if item.type === 'channel'}
-								{i18n.t('Channel')}
+								{$i18n.t('Channel')}
 							{/if}
 						</div>
 					</button>

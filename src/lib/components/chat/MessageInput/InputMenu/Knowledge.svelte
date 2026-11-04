@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { decodeString } from '$lib/utils';
 	import { knowledge } from '$lib/stores';
@@ -18,7 +18,7 @@
 
 	import type { Writable } from 'svelte/store';
 
-	export let onSelect = (e: any) => {};
+	export let onSelect: any = (e: any) => {};
 
 	let loaded = false;
 	let selectedIdx = 0;
@@ -153,6 +153,7 @@
 		return res;
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		await tick();
 		loaded = true;
@@ -163,7 +164,7 @@
 	<div class="flex flex-col gap-0.5">
 		{#if items.length === 0}
 			<div class="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-				{i18n.t('No knowledge bases found.')}
+				{$i18n.t('No knowledge bases found.')}
 			</div>
 		{:else}
 			{#each items as item, idx (item.id)}
@@ -193,7 +194,7 @@
 						data-selected={idx === selectedIdx}
 					>
 						<div class="w-full text-left text-black dark:text-gray-100 flex items-center gap-1">
-							<Tooltip content={i18n.t('Collection')} placement="top">
+							<Tooltip content={$i18n.t('Collection')} placement="top">
 								<Database className="size-4" />
 							</Tooltip>
 
@@ -209,7 +210,7 @@
 						</div>
 					</button>
 
-					<Tooltip content={i18n.t('Show Files')} placement="top">
+					<Tooltip content={$i18n.t('Show Files')} placement="top">
 						<button
 							type="button"
 							class=" ml-2 opacity-50 hover:opacity-100 transition"
@@ -238,7 +239,7 @@
 							</div>
 						{:else if selectedFileItemsTotal === 0}
 							<div class=" text-xs text-gray-500 dark:text-gray-400 italic py-0.5 px-2">
-								{i18n.t('No files in this knowledge base.')}
+								{$i18n.t('No files in this knowledge base.')}
 							</div>
 						{:else}
 							{#each selectedFileItems as file, fileIdx (file.id)}
@@ -255,7 +256,7 @@
 									}}
 								>
 									<div class=" flex items-center gap-1.5">
-										<Tooltip content={i18n.t('Collection')} placement="top">
+										<Tooltip content={$i18n.t('Collection')} placement="top">
 											<DocumentPage className="size-4" />
 										</Tooltip>
 
@@ -280,7 +281,7 @@
 										class="w-full flex justify-center py-4 text-xs animate-pulse items-center gap-2"
 									>
 										<Spinner className=" size-3" />
-										<div class=" ">{i18n.t('Loading...')}</div>
+										<div class=" ">{$i18n.t('Loading...')}</div>
 									</div>
 								</Loader>
 							{/if}
@@ -299,7 +300,7 @@
 				>
 					<div class="w-full flex justify-center py-4 text-xs animate-pulse items-center gap-2">
 						<Spinner className=" size-4" />
-						<div class=" ">{i18n.t('Loading...')}</div>
+						<div class=" ">{$i18n.t('Loading...')}</div>
 					</div>
 				</Loader>
 			{/if}
@@ -315,7 +316,7 @@
 	<div class="flex flex-col gap-0.5">
 		{#if items.length === 0}
 			<div class="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-				{i18n.t('No knowledge bases found.')}
+				{$i18n.t('No knowledge bases found.')}
 			</div>
 		{:else}
 			{#each items as item, idx (item.id)}
@@ -345,7 +346,7 @@
 						data-selected={idx === selectedIdx}
 					>
 						<div class="w-full text-left text-black dark:text-gray-100 flex items-center gap-1">
-							<Tooltip content={i18n.t('Collection')} placement="top">
+							<Tooltip content={$i18n.t('Collection')} placement="top">
 								<Database className="size-4" />
 							</Tooltip>
 
@@ -361,7 +362,7 @@
 						</div>
 					</button>
 
-					<Tooltip content={i18n.t('Show Files')} placement="top">
+					<Tooltip content={$i18n.t('Show Files')} placement="top">
 						<button
 							type="button"
 							class=" ml-2 opacity-50 hover:opacity-100 transition"
@@ -390,7 +391,7 @@
 							</div>
 						{:else if selectedFileItemsTotal === 0}
 							<div class=" text-xs text-gray-500 dark:text-gray-400 italic py-0.5 px-2">
-								{i18n.t('No files in this knowledge base.')}
+								{$i18n.t('No files in this knowledge base.')}
 							</div>
 						{:else}
 							{#each selectedFileItems as file, fileIdx (file.id)}
@@ -407,7 +408,7 @@
 									}}
 								>
 									<div class=" flex items-center gap-1.5">
-										<Tooltip content={i18n.t('Collection')} placement="top">
+										<Tooltip content={$i18n.t('Collection')} placement="top">
 											<DocumentPage className="size-4" />
 										</Tooltip>
 
@@ -432,7 +433,7 @@
 										class="w-full flex justify-center py-4 text-xs animate-pulse items-center gap-2"
 									>
 										<Spinner className=" size-3" />
-										<div class=" ">{i18n.t('Loading...')}</div>
+										<div class=" ">{$i18n.t('Loading...')}</div>
 									</div>
 								</Loader>
 							{/if}
@@ -451,7 +452,7 @@
 				>
 					<div class="w-full flex justify-center py-4 text-xs animate-pulse items-center gap-2">
 						<Spinner className=" size-4" />
-						<div class=" ">{i18n.t('Loading...')}</div>
+						<div class=" ">{$i18n.t('Loading...')}</div>
 					</div>
 				</Loader>
 			{/if}

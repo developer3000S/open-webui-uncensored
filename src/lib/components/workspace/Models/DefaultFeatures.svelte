@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Checkbox from '$lib/components/common/Checkbox.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
@@ -11,16 +11,16 @@
 
 	const featureLabels = {
 		web_search: {
-			label: i18n.t('Web Search'),
-			description: i18n.t('Model can search the web for information')
+			label: $i18n.t('Web Search'),
+			description: $i18n.t('Model can search the web for information')
 		},
 		image_generation: {
-			label: i18n.t('Image Generation'),
-			description: i18n.t('Model can generate images based on text prompts')
+			label: $i18n.t('Image Generation'),
+			description: $i18n.t('Model can generate images based on text prompts')
 		},
 		code_interpreter: {
-			label: i18n.t('Code Interpreter'),
-			description: i18n.t('Model can execute code and perform calculations')
+			label: $i18n.t('Code Interpreter'),
+			description: $i18n.t('Model can execute code and perform calculations')
 		}
 	};
 
@@ -30,7 +30,7 @@
 
 <div>
 	<div class="flex w-full justify-between mb-1">
-		<div class=" self-center text-xs font-medium text-gray-500">{i18n.t('Default Features')}</div>
+		<div class=" self-center text-xs font-medium text-gray-500">{$i18n.t('Default Features')}</div>
 	</div>
 	<div class="flex items-center mt-2 flex-wrap">
 		{#each availableFeatures as feature}
@@ -48,7 +48,7 @@
 
 				<div class=" py-0.5 text-sm capitalize">
 					<Tooltip content={marked.parse(featureLabels[feature].description)}>
-						{i18n.t(featureLabels[feature].label)}
+						{$i18n.t(featureLabels[feature].label)}
 					</Tooltip>
 				</div>
 			</div>
@@ -58,7 +58,7 @@
 
 <div>
 	<div class="flex w-full justify-between mb-1">
-		<div class=" self-center text-xs font-medium text-gray-500">{i18n.t('Default Features')}</div>
+		<div class=" self-center text-xs font-medium text-gray-500">{$i18n.t('Default Features')}</div>
 	</div>
 	<div class="flex items-center mt-2 flex-wrap">
 		{#each availableFeatures as feature}
@@ -76,7 +76,7 @@
 
 				<div class=" py-0.5 text-sm capitalize">
 					<Tooltip content={marked.parse(featureLabels[feature].description)}>
-						{i18n.t(featureLabels[feature].label)}
+						{$i18n.t(featureLabels[feature].label)}
 					</Tooltip>
 				</div>
 			</div>

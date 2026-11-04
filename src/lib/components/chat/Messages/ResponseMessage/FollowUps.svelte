@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 
@@ -13,7 +13,7 @@
 
 <div class="mt-4">
 	<div class="text-sm font-medium">
-		{i18n.t('Follow up')}
+		{$i18n.t('Follow up')}
 	</div>
 
 	<div class="flex flex-col text-left gap-1 mt-1.5">
@@ -22,7 +22,7 @@
 				<button
 					class=" py-1.5 bg-transparent text-left text-sm flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition cursor-pointer w-full"
 					on:click={() => onClick(followUp)}
-					aria-label={i18n.t('Follow up: {{question}}', { question: followUp })}
+					aria-label={$i18n.t('Follow up: {{question}}', { question: followUp })}
 				>
 					<div class="line-clamp-1">
 						{followUp}
@@ -39,7 +39,7 @@
 
 <div class="mt-4">
 	<div class="text-sm font-medium">
-		{i18n.t('Follow up')}
+		{$i18n.t('Follow up')}
 	</div>
 
 	<div class="flex flex-col text-left gap-1 mt-1.5">
@@ -48,7 +48,7 @@
 				<button
 					class=" py-1.5 bg-transparent text-left text-sm flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition cursor-pointer w-full"
 					on:click={() => onClick(followUp)}
-					aria-label={i18n.t('Follow up: {{question}}', { question: followUp })}
+					aria-label={$i18n.t('Follow up: {{question}}', { question: followUp })}
 				>
 					<div class="line-clamp-1">
 						{followUp}

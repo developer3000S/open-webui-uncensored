@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import dayjs from 'dayjs';
 	import relativeTime from 'dayjs/plugin/relativeTime';
@@ -137,12 +137,12 @@
 	const deleteHandler = async (item: KnowledgeListItem | null) => {
 		if (!item) return;
 
-		const res = await deleteKnowledgeById(localStorage.token, item.id).catch(async (e)=> {
+		const res = await deleteKnowledgeById(localStorage.token, item.id).catch(async (e) => {
 			toast.error(`${e}`);
 		});
 
 		if (res) {
-			toast.success(i18n.t('Knowledge deleted successfully.'));
+			toast.success($i18n.t('Knowledge deleted successfully.'));
 			init();
 		}
 	};
@@ -159,13 +159,14 @@
 				a.click();
 				document.body.removeChild(a);
 				URL.revokeObjectURL(url);
-				toast.success(i18n.t('Knowledge exported successfully'));
+				toast.success($i18n.t('Knowledge exported successfully'));
 			}
 		} catch (e) {
 			toast.error(`${e}`);
 		}
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		viewOption = localStorage?.workspaceViewOption || '';
 		sourceOption = localStorage?.workspaceKnowledgeSourceOption || '';
@@ -174,13 +175,13 @@
 </script>
 
 <svelte:head>
-			<title>
-		{i18n.t('Knowledge')} • {$WEBUI_NAME}
+	<title>
+		{$i18n.t('Knowledge')} • {$WEBUI_NAME}
 	</title>
-			<title>
-		{i18n.t('Knowledge')} • {$WEBUI_NAME}
+	<title>
+		{$i18n.t('Knowledge')} • {$WEBUI_NAME}
 	</title>
-		</svelte:head>
+</svelte:head>
 
 {#if loaded}
 	<DeleteConfirmDialog
@@ -194,7 +195,7 @@
 		<div class="flex justify-between items-center">
 			<div class="flex items-center md:self-center text-xl font-medium px-0.5 gap-2 shrink-0">
 				<div>
-					{i18n.t('Knowledge')}
+					{$i18n.t('Knowledge')}
 				</div>
 
 				<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
@@ -209,7 +210,7 @@
 				>
 					<Plus className="size-3" strokeWidth="2.5" />
 
-					<div class=" hidden md:block md:ml-1 text-xs">{i18n.t('New Knowledge')}</div>
+					<div class=" hidden md:block md:ml-1 text-xs">{$i18n.t('New Knowledge')}</div>
 				</a>
 			</div>
 		</div>
@@ -227,14 +228,14 @@
 					class=" w-full text-sm py-1 rounded-r-xl outline-hidden bg-transparent"
 					bind:value={query}
 					on:input={handleSearchInput}
-					aria-label={i18n.t('Search Knowledge')}
-					placeholder={i18n.t('Search Knowledge')}
+					aria-label={$i18n.t('Search Knowledge')}
+					placeholder={$i18n.t('Search Knowledge')}
 				/>
 				{#if query}
 					<div class="self-center pl-1.5 translate-y-[0.5px] rounded-l-xl bg-transparent">
 						<button
 							class="p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 transition"
-							aria-label={i18n.t('Clear search')}
+							aria-label={$i18n.t('Clear search')}
 							on:click={() => {
 								query = '';
 								handleSearchInput();
@@ -277,9 +278,9 @@
 						await tick();
 					}}
 				>
-					<option value="">{i18n.t('All Sources')}</option>
-					<option value="local">{i18n.t('Local')}</option>
-					<option value="external">{i18n.t('Connected')}</option>
+					<option value="">{$i18n.t('All Sources')}</option>
+					<option value="local">{$i18n.t('Local')}</option>
+					<option value="external">{$i18n.t('Connected')}</option>
 				</select>
 			</div>
 		</div>
@@ -294,7 +295,7 @@
 							on:click={() => {
 								if (item?.meta?.document) {
 									toast.error(
-										i18n.t(
+										$i18n.t(
 											'Only collections can be edited, create a new knowledge base to edit/add documents.'
 										)
 									);
@@ -311,21 +312,21 @@
 												<div>
 													<Badge
 														type="muted"
-														content={item?.meta?.external?.provider ?? i18n.t('Connected')}
+														content={item?.meta?.external?.provider ?? $i18n.t('Connected')}
 													/>
 												</div>
 												<div>
-													<Badge type="muted" content={i18n.t('Read Only')} />
+													<Badge type="muted" content={$i18n.t('Read Only')} />
 												</div>
 											{:else}
 												<div>
-													<Badge type="success" content={i18n.t('Collection')} />
+													<Badge type="success" content={$i18n.t('Collection')} />
 												</div>
 											{/if}
 
 											{#if !item?.write_access && item?.meta?.source !== 'external'}
 												<div>
-													<Badge type="muted" content={i18n.t('Read Only')} />
+													<Badge type="muted" content={$i18n.t('Read Only')} />
 												</div>
 											{/if}
 										</div>
@@ -359,20 +360,20 @@
 										<div class="flex items-center gap-2 shrink-0">
 											<Tooltip content={dayjs(item.updated_at * 1000).format('LLLL')}>
 												<div class=" text-xs text-gray-500 line-clamp-1 hidden sm:block">
-													{i18n.t('Updated')}
+													{$i18n.t('Updated')}
 													{dayjs(item.updated_at * 1000).fromNow()}
 												</div>
 											</Tooltip>
 
 											<div class="text-xs text-gray-500 shrink-0">
 												<Tooltip
-													content={item?.user?.email ?? i18n.t('Deleted User')}
+													content={item?.user?.email ?? $i18n.t('Deleted User')}
 													className="flex shrink-0"
 													placement="top-start"
 												>
-													{i18n.t('By {{name}}', {
+													{$i18n.t('By {{name}}', {
 														name: capitalizeFirstLetter(
-															item?.user?.name ?? item?.user?.email ?? i18n.t('Deleted User')
+															item?.user?.name ?? item?.user?.email ?? $i18n.t('Deleted User')
 														)
 													})}
 												</Tooltip>
@@ -395,7 +396,7 @@
 					>
 						<div class="w-full flex justify-center py-4 text-xs animate-pulse items-center gap-2">
 							<Spinner className=" size-4" />
-							<div class=" ">{i18n.t('Loading...')}</div>
+							<div class=" ">{$i18n.t('Loading...')}</div>
 						</div>
 					</Loader>
 				{/if}
@@ -403,9 +404,9 @@
 				<div class=" w-full h-full flex flex-col justify-center items-center my-16 mb-24">
 					<div class="max-w-md text-center">
 						<div class=" text-3xl mb-3">😕</div>
-						<div class=" text-lg font-medium mb-1">{i18n.t('No knowledge found')}</div>
+						<div class=" text-lg font-medium mb-1">{$i18n.t('No knowledge found')}</div>
 						<div class=" text-gray-500 text-center text-xs">
-							{i18n.t('Try adjusting your search or filter to find what you are looking for.')}
+							{$i18n.t('Try adjusting your search or filter to find what you are looking for.')}
 						</div>
 					</div>
 				</div>
@@ -418,7 +419,7 @@
 	</div>
 
 	<div class=" text-gray-500 text-xs m-2">
-		ⓘ {i18n.t("Use '#' in the prompt input to load and include your knowledge.")}
+		ⓘ {$i18n.t("Use '#' in the prompt input to load and include your knowledge.")}
 	</div>
 {:else}
 	<div class="w-full h-full flex justify-center items-center">
@@ -426,8 +427,6 @@
 	</div>
 {/if}
 
-
-
 {#if loaded}
 	<DeleteConfirmDialog
 		bind:show={showDeleteConfirm}
@@ -440,7 +439,7 @@
 		<div class="flex justify-between items-center">
 			<div class="flex items-center md:self-center text-xl font-medium px-0.5 gap-2 shrink-0">
 				<div>
-					{i18n.t('Knowledge')}
+					{$i18n.t('Knowledge')}
 				</div>
 
 				<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
@@ -455,7 +454,7 @@
 				>
 					<Plus className="size-3" strokeWidth="2.5" />
 
-					<div class=" hidden md:block md:ml-1 text-xs">{i18n.t('New Knowledge')}</div>
+					<div class=" hidden md:block md:ml-1 text-xs">{$i18n.t('New Knowledge')}</div>
 				</a>
 			</div>
 		</div>
@@ -473,14 +472,14 @@
 					class=" w-full text-sm py-1 rounded-r-xl outline-hidden bg-transparent"
 					bind:value={query}
 					on:input={handleSearchInput}
-					aria-label={i18n.t('Search Knowledge')}
-					placeholder={i18n.t('Search Knowledge')}
+					aria-label={$i18n.t('Search Knowledge')}
+					placeholder={$i18n.t('Search Knowledge')}
 				/>
 				{#if query}
 					<div class="self-center pl-1.5 translate-y-[0.5px] rounded-l-xl bg-transparent">
 						<button
 							class="p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 transition"
-							aria-label={i18n.t('Clear search')}
+							aria-label={$i18n.t('Clear search')}
 							on:click={() => {
 								query = '';
 								handleSearchInput();
@@ -523,9 +522,9 @@
 						await tick();
 					}}
 				>
-					<option value="">{i18n.t('All Sources')}</option>
-					<option value="local">{i18n.t('Local')}</option>
-					<option value="external">{i18n.t('Connected')}</option>
+					<option value="">{$i18n.t('All Sources')}</option>
+					<option value="local">{$i18n.t('Local')}</option>
+					<option value="external">{$i18n.t('Connected')}</option>
 				</select>
 			</div>
 		</div>
@@ -540,7 +539,7 @@
 							on:click={() => {
 								if (item?.meta?.document) {
 									toast.error(
-										i18n.t(
+										$i18n.t(
 											'Only collections can be edited, create a new knowledge base to edit/add documents.'
 										)
 									);
@@ -557,21 +556,21 @@
 												<div>
 													<Badge
 														type="muted"
-														content={item?.meta?.external?.provider ?? i18n.t('Connected')}
+														content={item?.meta?.external?.provider ?? $i18n.t('Connected')}
 													/>
 												</div>
 												<div>
-													<Badge type="muted" content={i18n.t('Read Only')} />
+													<Badge type="muted" content={$i18n.t('Read Only')} />
 												</div>
 											{:else}
 												<div>
-													<Badge type="success" content={i18n.t('Collection')} />
+													<Badge type="success" content={$i18n.t('Collection')} />
 												</div>
 											{/if}
 
 											{#if !item?.write_access && item?.meta?.source !== 'external'}
 												<div>
-													<Badge type="muted" content={i18n.t('Read Only')} />
+													<Badge type="muted" content={$i18n.t('Read Only')} />
 												</div>
 											{/if}
 										</div>
@@ -605,20 +604,20 @@
 										<div class="flex items-center gap-2 shrink-0">
 											<Tooltip content={dayjs(item.updated_at * 1000).format('LLLL')}>
 												<div class=" text-xs text-gray-500 line-clamp-1 hidden sm:block">
-													{i18n.t('Updated')}
+													{$i18n.t('Updated')}
 													{dayjs(item.updated_at * 1000).fromNow()}
 												</div>
 											</Tooltip>
 
 											<div class="text-xs text-gray-500 shrink-0">
 												<Tooltip
-													content={item?.user?.email ?? i18n.t('Deleted User')}
+													content={item?.user?.email ?? $i18n.t('Deleted User')}
 													className="flex shrink-0"
 													placement="top-start"
 												>
-													{i18n.t('By {{name}}', {
+													{$i18n.t('By {{name}}', {
 														name: capitalizeFirstLetter(
-															item?.user?.name ?? item?.user?.email ?? i18n.t('Deleted User')
+															item?.user?.name ?? item?.user?.email ?? $i18n.t('Deleted User')
 														)
 													})}
 												</Tooltip>
@@ -641,7 +640,7 @@
 					>
 						<div class="w-full flex justify-center py-4 text-xs animate-pulse items-center gap-2">
 							<Spinner className=" size-4" />
-							<div class=" ">{i18n.t('Loading...')}</div>
+							<div class=" ">{$i18n.t('Loading...')}</div>
 						</div>
 					</Loader>
 				{/if}
@@ -649,9 +648,9 @@
 				<div class=" w-full h-full flex flex-col justify-center items-center my-16 mb-24">
 					<div class="max-w-md text-center">
 						<div class=" text-3xl mb-3">😕</div>
-						<div class=" text-lg font-medium mb-1">{i18n.t('No knowledge found')}</div>
+						<div class=" text-lg font-medium mb-1">{$i18n.t('No knowledge found')}</div>
 						<div class=" text-gray-500 text-center text-xs">
-							{i18n.t('Try adjusting your search or filter to find what you are looking for.')}
+							{$i18n.t('Try adjusting your search or filter to find what you are looking for.')}
 						</div>
 					</div>
 				</div>
@@ -664,7 +663,7 @@
 	</div>
 
 	<div class=" text-gray-500 text-xs m-2">
-		ⓘ {i18n.t("Use '#' in the prompt input to load and include your knowledge.")}
+		ⓘ {$i18n.t("Use '#' in the prompt input to load and include your knowledge.")}
 	</div>
 {:else}
 	<div class="w-full h-full flex justify-center items-center">

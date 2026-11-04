@@ -15,7 +15,7 @@
 	export let id: any = '';
 	export let output: OutputItem[] = [];
 	export let done: any = true;
-	let model: any = null;
+	export let model: any = null;
 	export let save: any = false;
 	export let preview: any = false;
 	export let renderMarkdown: any = true;

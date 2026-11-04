@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { CalendarEventModel, CalendarModel } from '$lib/apis/calendar';
 	import CalendarEventChip from './CalendarEventChip.svelte';
@@ -149,7 +149,7 @@
 			<div class="grid grid-cols-7">
 				{#each DAY_NAMES as day}
 					<div class="px-2 py-1.5 text-xs text-gray-400 dark:text-gray-500 text-left truncate">
-						{i18n.t(day)}
+						{$i18n.t(day)}
 					</div>
 				{/each}
 			</div>
@@ -332,7 +332,7 @@
 			<div class="grid grid-cols-7">
 				{#each DAY_NAMES as day}
 					<div class="px-2 py-1.5 text-xs text-gray-400 dark:text-gray-500 text-left truncate">
-						{i18n.t(day)}
+						{$i18n.t(day)}
 					</div>
 				{/each}
 			</div>

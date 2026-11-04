@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 
@@ -121,7 +121,7 @@
 
 	const submitHandler = async () => {
 		if (!title.trim()) {
-			toast.error(i18n.t('Title is required'));
+			toast.error($i18n.t('Title is required'));
 			return;
 		}
 
@@ -143,7 +143,7 @@
 					meta: { alert_minutes: alertMinutes }
 				});
 				if (result) {
-					toast.success(i18n.t('Event updated'));
+					toast.success($i18n.t('Event updated'));
 					dispatch('save', result);
 					show = false;
 				}
@@ -161,7 +161,7 @@
 				};
 				const result = await createCalendarEvent(localStorage.token, form);
 				if (result) {
-					toast.success(i18n.t('Event created'));
+					toast.success($i18n.t('Event created'));
 					dispatch('save', result);
 					show = false;
 				}
@@ -178,7 +178,7 @@
 		loading = true;
 		try {
 			await deleteCalendarEvent(localStorage.token, event.id);
-			toast.success(i18n.t('Event deleted'));
+			toast.success($i18n.t('Event deleted'));
 			dispatch('delete', event);
 			show = false;
 		} catch (err) {
@@ -197,11 +197,11 @@
 				class="w-full text-lg bg-transparent outline-hidden font-primary placeholder:text-gray-300 dark:placeholder:text-gray-700"
 				type="text"
 				bind:value={title}
-				placeholder={i18n.t('Event title')}
+				placeholder={$i18n.t('Event title')}
 			/>
 			<button
 				class="self-center shrink-0 ml-2"
-				aria-label={i18n.t('Close')}
+				aria-label={$i18n.t('Close')}
 				on:click={() => (show = false)}
 			>
 				<XMark className="size-5" />
@@ -212,7 +212,7 @@
 		<div class="px-5 pb-2 flex flex-col gap-3">
 			<!-- Calendar -->
 			<div>
-				<div class="mb-1 text-xs text-gray-500">{i18n.t('Calendar')}</div>
+				<div class="mb-1 text-xs text-gray-500">{$i18n.t('Calendar')}</div>
 				<select
 					class="w-full text-sm bg-transparent outline-hidden cursor-pointer"
 					bind:value={calendarId}
@@ -225,7 +225,7 @@
 
 			<!-- Date / Time -->
 			<div>
-				<div class="mb-1 text-xs text-gray-500">{i18n.t('When')}</div>
+				<div class="mb-1 text-xs text-gray-500">{$i18n.t('When')}</div>
 				<div class="flex items-center gap-2 text-sm flex-wrap">
 					<input type="date" class="bg-transparent outline-hidden" bind:value={startDate} />
 					{#if !allDay}
@@ -235,60 +235,60 @@
 					{/if}
 					<label class="flex items-center gap-1.5 cursor-pointer text-xs text-gray-400 ml-auto">
 						<input type="checkbox" class="accent-blue-500" bind:checked={allDay} />
-						{i18n.t('All day')}
+						{$i18n.t('All day')}
 					</label>
 				</div>
 			</div>
 
 			<!-- Location -->
 			<div>
-				<div class="mb-1 text-xs text-gray-500">{i18n.t('Location')}</div>
+				<div class="mb-1 text-xs text-gray-500">{$i18n.t('Location')}</div>
 				<input
 					class="w-full text-sm bg-transparent outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700"
-					placeholder={i18n.t('Add location')}
+					placeholder={$i18n.t('Add location')}
 					bind:value={location}
 				/>
 			</div>
 
 			<!-- Reminder -->
 			<div>
-				<div class="mb-1 text-xs text-gray-500">{i18n.t('Reminder')}</div>
+				<div class="mb-1 text-xs text-gray-500">{$i18n.t('Reminder')}</div>
 				<select
 					class="w-full text-sm bg-transparent outline-hidden cursor-pointer"
 					bind:value={alertMinutes}
 				>
-					<option value={-1}>{i18n.t('None')}</option>
-					<option value={0}>{i18n.t('At time of event')}</option>
-					<option value={5}>{i18n.t('5 minutes before')}</option>
-					<option value={10}>{i18n.t('10 minutes before')}</option>
-					<option value={15}>{i18n.t('15 minutes before')}</option>
-					<option value={30}>{i18n.t('30 minutes before')}</option>
-					<option value={60}>{i18n.t('1 hour before')}</option>
+					<option value={-1}>{$i18n.t('None')}</option>
+					<option value={0}>{$i18n.t('At time of event')}</option>
+					<option value={5}>{$i18n.t('5 minutes before')}</option>
+					<option value={10}>{$i18n.t('10 minutes before')}</option>
+					<option value={15}>{$i18n.t('15 minutes before')}</option>
+					<option value={30}>{$i18n.t('30 minutes before')}</option>
+					<option value={60}>{$i18n.t('1 hour before')}</option>
 				</select>
 			</div>
 
 			<!-- Repeat -->
 			<div>
-				<div class="mb-1 text-xs text-gray-500">{i18n.t('Repeat')}</div>
+				<div class="mb-1 text-xs text-gray-500">{$i18n.t('Repeat')}</div>
 				<select
 					class="w-full text-sm bg-transparent outline-hidden cursor-pointer"
 					bind:value={repeatFrequency}
 				>
-					<option value="">{i18n.t('No Repeat')}</option>
-					<option value="daily">{i18n.t('Daily')}</option>
-					<option value="weekdays">{i18n.t('Monday – Friday')}</option>
-					<option value="weekly">{i18n.t('Weekly')}</option>
-					<option value="monthly">{i18n.t('Monthly')}</option>
-					<option value="yearly">{i18n.t('Yearly')}</option>
+					<option value="">{$i18n.t('No Repeat')}</option>
+					<option value="daily">{$i18n.t('Daily')}</option>
+					<option value="weekdays">{$i18n.t('Monday – Friday')}</option>
+					<option value="weekly">{$i18n.t('Weekly')}</option>
+					<option value="monthly">{$i18n.t('Monthly')}</option>
+					<option value="yearly">{$i18n.t('Yearly')}</option>
 				</select>
 			</div>
 
 			<!-- Description -->
 			<div>
-				<div class="mb-1 text-xs text-gray-500">{i18n.t('Description')}</div>
+				<div class="mb-1 text-xs text-gray-500">{$i18n.t('Description')}</div>
 				<textarea
 					class="w-full text-sm bg-transparent outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700 resize-none min-h-[4rem]"
-					placeholder={i18n.t('Add description')}
+					placeholder={$i18n.t('Add description')}
 					bind:value={description}
 					rows="3"
 				></textarea>
@@ -305,7 +305,7 @@
 						on:click={() => (showDeleteConfirmDialog = true)}
 						disabled={loading}
 					>
-						{i18n.t('Delete')}
+						{$i18n.t('Delete')}
 					</button>
 				{/if}
 			</div>
@@ -316,7 +316,7 @@
 					type="button"
 					on:click={() => (show = false)}
 				>
-					{i18n.t('Cancel')}
+					{$i18n.t('Cancel')}
 				</button>
 				<button
 					class="px-3.5 py-1.5 text-sm bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full flex items-center gap-2 {loading
@@ -326,7 +326,7 @@
 					type="button"
 					disabled={loading}
 				>
-					{event && !event.meta?.automation_id ? i18n.t('Save') : i18n.t('Create')}
+					{event && !event.meta?.automation_id ? $i18n.t('Save') : $i18n.t('Create')}
 					{#if loading}
 						<span class="shrink-0"><Spinner /></span>
 					{/if}
@@ -338,8 +338,8 @@
 
 <DeleteConfirmDialog
 	bind:show={showDeleteConfirmDialog}
-	title={i18n.t('Delete Event')}
-	message={i18n.t('This action cannot be undone. Do you wish to continue?')}
+	title={$i18n.t('Delete Event')}
+	message={$i18n.t('This action cannot be undone. Do you wish to continue?')}
 	on:confirm={deleteHandler}
 />
 
@@ -351,11 +351,11 @@
 				class="w-full text-lg bg-transparent outline-hidden font-primary placeholder:text-gray-300 dark:placeholder:text-gray-700"
 				type="text"
 				bind:value={title}
-				placeholder={i18n.t('Event title')}
+				placeholder={$i18n.t('Event title')}
 			/>
 			<button
 				class="self-center shrink-0 ml-2"
-				aria-label={i18n.t('Close')}
+				aria-label={$i18n.t('Close')}
 				on:click={() => (show = false)}
 			>
 				<XMark className="size-5" />
@@ -366,7 +366,7 @@
 		<div class="px-5 pb-2 flex flex-col gap-3">
 			<!-- Calendar -->
 			<div>
-				<div class="mb-1 text-xs text-gray-500">{i18n.t('Calendar')}</div>
+				<div class="mb-1 text-xs text-gray-500">{$i18n.t('Calendar')}</div>
 				<select
 					class="w-full text-sm bg-transparent outline-hidden cursor-pointer"
 					bind:value={calendarId}
@@ -379,7 +379,7 @@
 
 			<!-- Date / Time -->
 			<div>
-				<div class="mb-1 text-xs text-gray-500">{i18n.t('When')}</div>
+				<div class="mb-1 text-xs text-gray-500">{$i18n.t('When')}</div>
 				<div class="flex items-center gap-2 text-sm flex-wrap">
 					<input type="date" class="bg-transparent outline-hidden" bind:value={startDate} />
 					{#if !allDay}
@@ -389,60 +389,60 @@
 					{/if}
 					<label class="flex items-center gap-1.5 cursor-pointer text-xs text-gray-400 ml-auto">
 						<input type="checkbox" class="accent-blue-500" bind:checked={allDay} />
-						{i18n.t('All day')}
+						{$i18n.t('All day')}
 					</label>
 				</div>
 			</div>
 
 			<!-- Location -->
 			<div>
-				<div class="mb-1 text-xs text-gray-500">{i18n.t('Location')}</div>
+				<div class="mb-1 text-xs text-gray-500">{$i18n.t('Location')}</div>
 				<input
 					class="w-full text-sm bg-transparent outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700"
-					placeholder={i18n.t('Add location')}
+					placeholder={$i18n.t('Add location')}
 					bind:value={location}
 				/>
 			</div>
 
 			<!-- Reminder -->
 			<div>
-				<div class="mb-1 text-xs text-gray-500">{i18n.t('Reminder')}</div>
+				<div class="mb-1 text-xs text-gray-500">{$i18n.t('Reminder')}</div>
 				<select
 					class="w-full text-sm bg-transparent outline-hidden cursor-pointer"
 					bind:value={alertMinutes}
 				>
-					<option value={-1}>{i18n.t('None')}</option>
-					<option value={0}>{i18n.t('At time of event')}</option>
-					<option value={5}>{i18n.t('5 minutes before')}</option>
-					<option value={10}>{i18n.t('10 minutes before')}</option>
-					<option value={15}>{i18n.t('15 minutes before')}</option>
-					<option value={30}>{i18n.t('30 minutes before')}</option>
-					<option value={60}>{i18n.t('1 hour before')}</option>
+					<option value={-1}>{$i18n.t('None')}</option>
+					<option value={0}>{$i18n.t('At time of event')}</option>
+					<option value={5}>{$i18n.t('5 minutes before')}</option>
+					<option value={10}>{$i18n.t('10 minutes before')}</option>
+					<option value={15}>{$i18n.t('15 minutes before')}</option>
+					<option value={30}>{$i18n.t('30 minutes before')}</option>
+					<option value={60}>{$i18n.t('1 hour before')}</option>
 				</select>
 			</div>
 
 			<!-- Repeat -->
 			<div>
-				<div class="mb-1 text-xs text-gray-500">{i18n.t('Repeat')}</div>
+				<div class="mb-1 text-xs text-gray-500">{$i18n.t('Repeat')}</div>
 				<select
 					class="w-full text-sm bg-transparent outline-hidden cursor-pointer"
 					bind:value={repeatFrequency}
 				>
-					<option value="">{i18n.t('No Repeat')}</option>
-					<option value="daily">{i18n.t('Daily')}</option>
-					<option value="weekdays">{i18n.t('Monday – Friday')}</option>
-					<option value="weekly">{i18n.t('Weekly')}</option>
-					<option value="monthly">{i18n.t('Monthly')}</option>
-					<option value="yearly">{i18n.t('Yearly')}</option>
+					<option value="">{$i18n.t('No Repeat')}</option>
+					<option value="daily">{$i18n.t('Daily')}</option>
+					<option value="weekdays">{$i18n.t('Monday – Friday')}</option>
+					<option value="weekly">{$i18n.t('Weekly')}</option>
+					<option value="monthly">{$i18n.t('Monthly')}</option>
+					<option value="yearly">{$i18n.t('Yearly')}</option>
 				</select>
 			</div>
 
 			<!-- Description -->
 			<div>
-				<div class="mb-1 text-xs text-gray-500">{i18n.t('Description')}</div>
+				<div class="mb-1 text-xs text-gray-500">{$i18n.t('Description')}</div>
 				<textarea
 					class="w-full text-sm bg-transparent outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700 resize-none min-h-[4rem]"
-					placeholder={i18n.t('Add description')}
+					placeholder={$i18n.t('Add description')}
 					bind:value={description}
 					rows="3"
 				></textarea>
@@ -459,7 +459,7 @@
 						on:click={() => (showDeleteConfirmDialog = true)}
 						disabled={loading}
 					>
-						{i18n.t('Delete')}
+						{$i18n.t('Delete')}
 					</button>
 				{/if}
 			</div>
@@ -470,7 +470,7 @@
 					type="button"
 					on:click={() => (show = false)}
 				>
-					{i18n.t('Cancel')}
+					{$i18n.t('Cancel')}
 				</button>
 				<button
 					class="px-3.5 py-1.5 text-sm bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full flex items-center gap-2 {loading
@@ -480,7 +480,7 @@
 					type="button"
 					disabled={loading}
 				>
-					{event && !event.meta?.automation_id ? i18n.t('Save') : i18n.t('Create')}
+					{event && !event.meta?.automation_id ? $i18n.t('Save') : $i18n.t('Create')}
 					{#if loading}
 						<span class="shrink-0"><Spinner /></span>
 					{/if}
@@ -492,7 +492,7 @@
 
 <DeleteConfirmDialog
 	bind:show={showDeleteConfirmDialog}
-	title={i18n.t('Delete Event')}
-	message={i18n.t('This action cannot be undone. Do you wish to continue?')}
+	title={$i18n.t('Delete Event')}
+	message={$i18n.t('This action cannot be undone. Do you wish to continue?')}
 	on:confirm={deleteHandler}
 />

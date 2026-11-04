@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { WEBUI_API_BASE_URL } from '$lib/constants';
 
@@ -26,6 +26,7 @@
 	export let modal: any = false;
 	export let loading: any = false;
 	export let item: any = null;
+	export let file: any = null;
 	export let edit: any = false;
 	export let small: any = false;
 	export let name: string;
@@ -114,14 +115,14 @@
 			{#if !loading}
 				<Tooltip
 					content={type === 'collection'
-						? i18n.t('Collection')
+						? $i18n.t('Collection')
 						: type === 'note'
-							? i18n.t('Note')
+							? $i18n.t('Note')
 							: type === 'chat'
-								? i18n.t('Chat')
+								? $i18n.t('Chat')
 								: type === 'file'
-									? i18n.t('File')
-									: i18n.t('Document')}
+									? $i18n.t('File')
+									: $i18n.t('Document')}
 					placement="top"
 				>
 					{#if type === 'collection'}
@@ -154,13 +155,13 @@
 					: 'text-gray-500'}"
 			>
 				{#if type === 'file'}
-					{i18n.t('File')}
+					{$i18n.t('File')}
 				{:else if type === 'note'}
-					{i18n.t('Note')}
+					{$i18n.t('Note')}
 				{:else if type === 'doc'}
-					{i18n.t('Document')}
+					{$i18n.t('Document')}
 				{:else if type === 'collection'}
-					{i18n.t('Collection')}
+					{$i18n.t('Collection')}
 				{:else}
 					<span class=" capitalize line-clamp-1">{type}</span>
 				{/if}
@@ -187,7 +188,7 @@
 	{#if dismissible}
 		<div class=" absolute -top-1 -right-1">
 			<button
-				aria-label={i18n.t('Remove File')}
+				aria-label={$i18n.t('Remove File')}
 				class=" bg-white text-black border border-gray-50 rounded-full {($settings?.highContrastMode ??
 				false)
 					? ''
@@ -278,14 +279,14 @@
 			{#if !loading}
 				<Tooltip
 					content={type === 'collection'
-						? i18n.t('Collection')
+						? $i18n.t('Collection')
 						: type === 'note'
-							? i18n.t('Note')
+							? $i18n.t('Note')
 							: type === 'chat'
-								? i18n.t('Chat')
+								? $i18n.t('Chat')
 								: type === 'file'
-									? i18n.t('File')
-									: i18n.t('Document')}
+									? $i18n.t('File')
+									: $i18n.t('Document')}
 					placement="top"
 				>
 					{#if type === 'collection'}
@@ -318,13 +319,13 @@
 					: 'text-gray-500'}"
 			>
 				{#if type === 'file'}
-					{i18n.t('File')}
+					{$i18n.t('File')}
 				{:else if type === 'note'}
-					{i18n.t('Note')}
+					{$i18n.t('Note')}
 				{:else if type === 'doc'}
-					{i18n.t('Document')}
+					{$i18n.t('Document')}
 				{:else if type === 'collection'}
-					{i18n.t('Collection')}
+					{$i18n.t('Collection')}
 				{:else}
 					<span class=" capitalize line-clamp-1">{type}</span>
 				{/if}
@@ -351,7 +352,7 @@
 	{#if dismissible}
 		<div class=" absolute -top-1 -right-1">
 			<button
-				aria-label={i18n.t('Remove File')}
+				aria-label={$i18n.t('Remove File')}
 				class=" bg-white text-black border border-gray-50 rounded-full {($settings?.highContrastMode ??
 				false)
 					? ''

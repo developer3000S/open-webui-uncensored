@@ -10,6 +10,7 @@
 	} from 'tippy.js';
 
 	export let elementId: any = '';
+	export let position: any = undefined;
 	export let as: any = 'div';
 	export let className: any = 'flex';
 	export let placement: TippyPlacement = 'top';
@@ -20,7 +21,7 @@
 	export let allowHTML: any = true;
 	export let tippyOptions: Partial<TippyProps> = {};
 	export let interactive: any = false;
-	export let onClick = () => {};
+	export let onClick: any = () => {};
 
 	let tooltipElement: HTMLElement | null = null;
 	let tooltipInstance: TippyInstance | null = null;

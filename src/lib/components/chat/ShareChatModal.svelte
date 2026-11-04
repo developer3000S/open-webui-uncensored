@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { models, config, user } from '$lib/stores';
 
@@ -41,7 +41,7 @@
 		const _chat = chat.chat;
 		console.log('share', _chat);
 
-		toast.success(i18n.t('Redirecting you to Open WebUI Community'));
+		toast.success($i18n.t('Redirecting you to Open WebUI Community'));
 		const url = 'https://openwebui.com';
 		// const url = 'http://localhost:5173';
 
@@ -77,7 +77,7 @@
 	const saveAccessGrants = async () => {
 		try {
 			await updateChatAccessGrants(localStorage.token, chatId, accessGrants);
-			toast.success(i18n.t('Access updated'));
+			toast.success($i18n.t('Access updated'));
 		} catch (e) {
 			toast.error(`${e}`);
 		}
@@ -95,7 +95,7 @@
 	};
 
 	$: if (show) {
-		async (async () => {
+		(async () => {
 			if (chatId) {
 				const _chat = await getChatById(localStorage.token, chatId);
 				if (isDifferentChat(_chat)) {
@@ -113,10 +113,10 @@
 <Modal bind:show size="md">
 	<div>
 		<div class=" flex justify-between dark:text-gray-300 px-5 pt-4 pb-0.5">
-			<div class=" text-lg font-medium self-center">{i18n.t('Share Chat')}</div>
+			<div class=" text-lg font-medium self-center">{$i18n.t('Share Chat')}</div>
 			<button
 				class="self-center"
-				aria-label={i18n.t('Close')}
+				aria-label={$i18n.t('Close')}
 				on:click={() => {
 					show = false;
 				}}
@@ -130,10 +130,10 @@
 				<div class="text-sm dark:text-gray-300">
 					{#if chat.share_id}
 						<a href="/s/{chat.share_id}" target="_blank"
-							>{i18n.t('You have shared this chat')}
-							<span class=" underline">{i18n.t('before')}</span>.</a
+							>{$i18n.t('You have shared this chat')}
+							<span class=" underline">{$i18n.t('before')}</span>.</a
 						>
-						{i18n.t('Click here to')}
+						{$i18n.t('Click here to')}
 						<button
 							class="underline"
 							on:click={async () => {
@@ -143,11 +143,11 @@
 									chat = await getChatById(localStorage.token, chatId);
 								}
 							}}
-							>{i18n.t('delete this link')}
+							>{$i18n.t('delete this link')}
 						</button>
-						{i18n.t('and create a new shared link.')}
+						{$i18n.t('and create a new shared link.')}
 					{:else}
-						{i18n.t(
+						{$i18n.t(
 							"Messages you send after creating your link won't be shared. Users with the URL will be able to view the shared chat."
 						)}
 					{/if}
@@ -175,7 +175,7 @@
 								shareChat();
 							}}
 						>
-							{i18n.t('Share to Open WebUI Community')}
+							{$i18n.t('Share to Open WebUI Community')}
 						</button>
 					{/if}
 
@@ -200,11 +200,11 @@
 											'text/plain': getUrlPromise()
 										})
 									])
-									.then(async ()=> {
+									.then(async () => {
 										console.log('Async: Copying to clipboard was successful!');
 										return true;
 									})
-									.catch(async (error)=> {
+									.catch(async (error) => {
 										console.error('Async: Could not copy text: ', error);
 										return false;
 									});
@@ -212,15 +212,15 @@
 								copyToClipboard(await shareLocalChat());
 							}
 
-							toast.success(i18n.t('Copied shared chat URL to clipboard!'));
+							toast.success($i18n.t('Copied shared chat URL to clipboard!'));
 						}}
 					>
 						<Link />
 
 						{#if chat.share_id}
-							{i18n.t('Update and Copy Link')}
+							{$i18n.t('Update and Copy Link')}
 						{:else}
-							{i18n.t('Copy Link')}
+							{$i18n.t('Copy Link')}
 						{/if}
 					</button>
 				</div>
@@ -232,10 +232,10 @@
 <Modal bind:show size="md">
 	<div>
 		<div class=" flex justify-between dark:text-gray-300 px-5 pt-4 pb-0.5">
-			<div class=" text-lg font-medium self-center">{i18n.t('Share Chat')}</div>
+			<div class=" text-lg font-medium self-center">{$i18n.t('Share Chat')}</div>
 			<button
 				class="self-center"
-				aria-label={i18n.t('Close')}
+				aria-label={$i18n.t('Close')}
 				on:click={() => {
 					show = false;
 				}}
@@ -249,10 +249,10 @@
 				<div class="text-sm dark:text-gray-300">
 					{#if chat.share_id}
 						<a href="/s/{chat.share_id}" target="_blank"
-							>{i18n.t('You have shared this chat')}
-							<span class=" underline">{i18n.t('before')}</span>.</a
+							>{$i18n.t('You have shared this chat')}
+							<span class=" underline">{$i18n.t('before')}</span>.</a
 						>
-						{i18n.t('Click here to')}
+						{$i18n.t('Click here to')}
 						<button
 							class="underline"
 							on:click={async () => {
@@ -262,11 +262,11 @@
 									chat = await getChatById(localStorage.token, chatId);
 								}
 							}}
-							>{i18n.t('delete this link')}
+							>{$i18n.t('delete this link')}
 						</button>
-						{i18n.t('and create a new shared link.')}
+						{$i18n.t('and create a new shared link.')}
 					{:else}
-						{i18n.t(
+						{$i18n.t(
 							"Messages you send after creating your link won't be shared. Users with the URL will be able to view the shared chat."
 						)}
 					{/if}
@@ -294,7 +294,7 @@
 								shareChat();
 							}}
 						>
-							{i18n.t('Share to Open WebUI Community')}
+							{$i18n.t('Share to Open WebUI Community')}
 						</button>
 					{/if}
 
@@ -319,11 +319,11 @@
 											'text/plain': getUrlPromise()
 										})
 									])
-									.then(async ()=> {
+									.then(async () => {
 										console.log('Async: Copying to clipboard was successful!');
 										return true;
 									})
-									.catch(async (error)=> {
+									.catch(async (error) => {
 										console.error('Async: Could not copy text: ', error);
 										return false;
 									});
@@ -331,15 +331,15 @@
 								copyToClipboard(await shareLocalChat());
 							}
 
-							toast.success(i18n.t('Copied shared chat URL to clipboard!'));
+							toast.success($i18n.t('Copied shared chat URL to clipboard!'));
 						}}
 					>
 						<Link />
 
 						{#if chat.share_id}
-							{i18n.t('Update and Copy Link')}
+							{$i18n.t('Update and Copy Link')}
 						{:else}
-							{i18n.t('Copy Link')}
+							{$i18n.t('Copy Link')}
 						{/if}
 					</button>
 				</div>

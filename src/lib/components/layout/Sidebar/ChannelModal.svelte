@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 
@@ -23,8 +23,8 @@
 	import WebhooksModal from '$lib/components/channel/WebhooksModal.svelte';
 
 	export let show: any = false;
-	export let onSubmit: Function = () => {};
-	export let onUpdate: Function = () => {};
+	export let onSubmit: any = () => {};
+	export let onUpdate: any = () => {};
 
 	export let channel: any = null;
 	export let edit: any = false;
@@ -59,7 +59,7 @@
 	const submitHandler = async () => {
 		loading = true;
 		if (name.length > 128) {
-			toast.error(i18n.t('Channel name must be less than 128 characters'));
+			toast.error($i18n.t('Channel name must be less than 128 characters'));
 			loading = false;
 			return;
 		}
@@ -120,7 +120,7 @@
 		});
 
 		if (res) {
-			toast.success(i18n.t('Channel deleted successfully'));
+			toast.success($i18n.t('Channel deleted successfully'));
 			onUpdate();
 
 			if ($page.url.pathname === `/channels/${channelId}`) {
@@ -145,9 +145,9 @@
 		<div class=" flex justify-between dark:text-gray-300 px-5 pt-4 pb-1">
 			<div class=" text-lg font-medium self-center">
 				{#if edit}
-					{i18n.t('Edit Channel')}
+					{$i18n.t('Edit Channel')}
 				{:else}
-					{i18n.t('Create Channel')}
+					{$i18n.t('Create Channel')}
 				{/if}
 			</div>
 			<button
@@ -170,15 +170,15 @@
 				>
 					{#if !edit}
 						<div class="flex flex-col w-full mt-2 mb-1">
-							<div class=" mb-1 text-xs text-gray-500">{i18n.t('Channel Type')}</div>
+							<div class=" mb-1 text-xs text-gray-500">{$i18n.t('Channel Type')}</div>
 
 							<div class="flex-1">
 								<Tooltip
 									content={type === 'dm'
-										? i18n.t('A private conversation between you and selected users')
+										? $i18n.t('A private conversation between you and selected users')
 										: type === 'group'
-											? i18n.t('A collaboration channel where people join as members')
-											: i18n.t(
+											? $i18n.t('A collaboration channel where people join as members')
+											: $i18n.t(
 													'A discussion channel where access is controlled by groups and permissions'
 												)}
 									placement="top-start"
@@ -190,11 +190,11 @@
 										{#each channelTypes as channelType, channelTypeIdx (channelType)}
 											<option value={channelType} selected={channelTypeIdx === 0}>
 												{#if channelType === 'group'}
-													{i18n.t('Group Channel')}
+													{$i18n.t('Group Channel')}
 												{:else if channelType === 'dm'}
-													{i18n.t('Direct Message')}
+													{$i18n.t('Direct Message')}
 												{:else if channelType === ''}
-													{i18n.t('Channel')}
+													{$i18n.t('Channel')}
 												{/if}
 											</option>
 										{/each}
@@ -206,19 +206,19 @@
 
 					<div class=" text-gray-300 dark:text-gray-700 text-xs">
 						{#if type === ''}
-							{i18n.t('Discussion channel where access is based on groups and permissions')}
+							{$i18n.t('Discussion channel where access is based on groups and permissions')}
 						{:else if type === 'group'}
-							{i18n.t('Collaboration channel where people join as members')}
+							{$i18n.t('Collaboration channel where people join as members')}
 						{:else if type === 'dm'}
-							{i18n.t('Private conversation between selected users')}
+							{$i18n.t('Private conversation between selected users')}
 						{/if}
 					</div>
 
 					<div class="flex flex-col w-full mt-2">
 						<div class=" mb-1 text-xs text-gray-500">
-							{i18n.t('Channel Name')}
+							{$i18n.t('Channel Name')}
 							<span class="text-xs text-gray-200 dark:text-gray-800 ml-0.5">
-								{#if type === 'dm'}{i18n.t('Optional')}{/if}
+								{#if type === 'dm'}{$i18n.t('Optional')}{/if}
 							</span>
 						</div>
 
@@ -227,7 +227,7 @@
 								class="w-full text-sm bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden"
 								type="text"
 								bind:value={name}
-								placeholder={`${i18n.t('new-channel')}`}
+								placeholder={`${$i18n.t('new-channel')}`}
 								autocomplete="off"
 								required={type !== 'dm'}
 								max="100"
@@ -263,7 +263,7 @@
 
 					{#if edit}
 						<div class="flex w-full mt-2 items-center justify-between">
-							<div class="text-xs text-gray-500">{i18n.t('Webhooks')}</div>
+							<div class="text-xs text-gray-500">{$i18n.t('Webhooks')}</div>
 
 							<button
 								class="text-xs bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden text-left"
@@ -272,7 +272,7 @@
 									showWebhooksModal = true;
 								}}
 							>
-								{i18n.t('Manage')}
+								{$i18n.t('Manage')}
 							</button>
 						</div>
 					{/if}
@@ -286,7 +286,7 @@
 									showDeleteConfirmDialog = true;
 								}}
 							>
-								{i18n.t('Delete')}
+								{$i18n.t('Delete')}
 							</button>
 						{/if}
 
@@ -298,9 +298,9 @@
 							disabled={loading}
 						>
 							{#if edit}
-								{i18n.t('Update')}
+								{$i18n.t('Update')}
 							{:else}
-								{i18n.t('Create')}
+								{$i18n.t('Create')}
 							{/if}
 
 							{#if loading}
@@ -318,8 +318,8 @@
 
 <DeleteConfirmDialog
 	bind:show={showDeleteConfirmDialog}
-	message={i18n.t('Are you sure you want to delete this channel?')}
-	confirmLabel={i18n.t('Delete')}
+	message={$i18n.t('Are you sure you want to delete this channel?')}
+	confirmLabel={$i18n.t('Delete')}
 	on:confirm={() => {
 		deleteHandler();
 	}}
@@ -332,9 +332,9 @@
 		<div class=" flex justify-between dark:text-gray-300 px-5 pt-4 pb-1">
 			<div class=" text-lg font-medium self-center">
 				{#if edit}
-					{i18n.t('Edit Channel')}
+					{$i18n.t('Edit Channel')}
 				{:else}
-					{i18n.t('Create Channel')}
+					{$i18n.t('Create Channel')}
 				{/if}
 			</div>
 			<button
@@ -357,15 +357,15 @@
 				>
 					{#if !edit}
 						<div class="flex flex-col w-full mt-2 mb-1">
-							<div class=" mb-1 text-xs text-gray-500">{i18n.t('Channel Type')}</div>
+							<div class=" mb-1 text-xs text-gray-500">{$i18n.t('Channel Type')}</div>
 
 							<div class="flex-1">
 								<Tooltip
 									content={type === 'dm'
-										? i18n.t('A private conversation between you and selected users')
+										? $i18n.t('A private conversation between you and selected users')
 										: type === 'group'
-											? i18n.t('A collaboration channel where people join as members')
-											: i18n.t(
+											? $i18n.t('A collaboration channel where people join as members')
+											: $i18n.t(
 													'A discussion channel where access is controlled by groups and permissions'
 												)}
 									placement="top-start"
@@ -377,11 +377,11 @@
 										{#each channelTypes as channelType, channelTypeIdx (channelType)}
 											<option value={channelType} selected={channelTypeIdx === 0}>
 												{#if channelType === 'group'}
-													{i18n.t('Group Channel')}
+													{$i18n.t('Group Channel')}
 												{:else if channelType === 'dm'}
-													{i18n.t('Direct Message')}
+													{$i18n.t('Direct Message')}
 												{:else if channelType === ''}
-													{i18n.t('Channel')}
+													{$i18n.t('Channel')}
 												{/if}
 											</option>
 										{/each}
@@ -393,19 +393,19 @@
 
 					<div class=" text-gray-300 dark:text-gray-700 text-xs">
 						{#if type === ''}
-							{i18n.t('Discussion channel where access is based on groups and permissions')}
+							{$i18n.t('Discussion channel where access is based on groups and permissions')}
 						{:else if type === 'group'}
-							{i18n.t('Collaboration channel where people join as members')}
+							{$i18n.t('Collaboration channel where people join as members')}
 						{:else if type === 'dm'}
-							{i18n.t('Private conversation between selected users')}
+							{$i18n.t('Private conversation between selected users')}
 						{/if}
 					</div>
 
 					<div class="flex flex-col w-full mt-2">
 						<div class=" mb-1 text-xs text-gray-500">
-							{i18n.t('Channel Name')}
+							{$i18n.t('Channel Name')}
 							<span class="text-xs text-gray-200 dark:text-gray-800 ml-0.5">
-								{#if type === 'dm'}{i18n.t('Optional')}{/if}
+								{#if type === 'dm'}{$i18n.t('Optional')}{/if}
 							</span>
 						</div>
 
@@ -414,7 +414,7 @@
 								class="w-full text-sm bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden"
 								type="text"
 								bind:value={name}
-								placeholder={`${i18n.t('new-channel')}`}
+								placeholder={`${$i18n.t('new-channel')}`}
 								autocomplete="off"
 								required={type !== 'dm'}
 								max="100"
@@ -450,7 +450,7 @@
 
 					{#if edit}
 						<div class="flex w-full mt-2 items-center justify-between">
-							<div class="text-xs text-gray-500">{i18n.t('Webhooks')}</div>
+							<div class="text-xs text-gray-500">{$i18n.t('Webhooks')}</div>
 
 							<button
 								class="text-xs bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden text-left"
@@ -459,7 +459,7 @@
 									showWebhooksModal = true;
 								}}
 							>
-								{i18n.t('Manage')}
+								{$i18n.t('Manage')}
 							</button>
 						</div>
 					{/if}
@@ -473,7 +473,7 @@
 									showDeleteConfirmDialog = true;
 								}}
 							>
-								{i18n.t('Delete')}
+								{$i18n.t('Delete')}
 							</button>
 						{/if}
 
@@ -485,9 +485,9 @@
 							disabled={loading}
 						>
 							{#if edit}
-								{i18n.t('Update')}
+								{$i18n.t('Update')}
 							{:else}
-								{i18n.t('Create')}
+								{$i18n.t('Create')}
 							{/if}
 
 							{#if loading}
@@ -505,8 +505,8 @@
 
 <DeleteConfirmDialog
 	bind:show={showDeleteConfirmDialog}
-	message={i18n.t('Are you sure you want to delete this channel?')}
-	confirmLabel={i18n.t('Delete')}
+	message={$i18n.t('Are you sure you want to delete this channel?')}
+	confirmLabel={$i18n.t('Delete')}
 	on:confirm={() => {
 		deleteHandler();
 	}}

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import dayjs from 'dayjs';
@@ -41,8 +41,8 @@
 	let sortBy = 'members';
 
 	const sortItems = [
-		{ value: 'name', label: i18n.t('Name') },
-		{ value: 'members', label: i18n.t('Members') }
+		{ value: 'name', label: $i18n.t('Name') },
+		{ value: 'members', label: $i18n.t('Members') }
 	];
 
 	$: filteredGroups = groups
@@ -74,13 +74,13 @@
 	};
 
 	const addGroupHandler = async (group: any) => {
-		const res = await createNewGroup(localStorage.token, group).catch(async (error)=> {
+		const res = await createNewGroup(localStorage.token, group).catch(async (error) => {
 			toast.error(`${error}`);
 			return null;
 		});
 
 		if (res) {
-			toast.success(i18n.t('Group created successfully'));
+			toast.success($i18n.t('Group created successfully'));
 			groups = await getGroups(localStorage.token);
 		}
 	};
@@ -88,18 +88,20 @@
 	const updateDefaultPermissionsHandler = async (group: any) => {
 		console.debug(group.permissions);
 
-		const res = await updateUserDefaultPermissions(localStorage.token, group.permissions).catch(async (error)=> {
+		const res = await updateUserDefaultPermissions(localStorage.token, group.permissions).catch(
+			async (error) => {
 				toast.error(`${error}`);
 				return null;
 			}
 		);
 
 		if (res) {
-			toast.success(i18n.t('Default permissions updated successfully'));
+			toast.success($i18n.t('Default permissions updated successfully'));
 			defaultPermissions = await getUserDefaultPermissions(localStorage.token);
 		}
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		if ($user?.role !== 'admin') {
 			await goto('/');
@@ -117,7 +119,7 @@
 		bind:show={showAddGroupModal}
 		edit={false}
 		tabs={['general', 'permissions']}
-		permissions={defaultPermissions}
+		permissions={defaultPermissions as any}
 		onSubmit={addGroupHandler}
 	/>
 
@@ -125,7 +127,7 @@
 		<div class="flex justify-between items-center">
 			<div class="flex items-center md:self-center text-xl font-medium px-0.5 gap-2 shrink-0">
 				<div>
-					{i18n.t('Groups')}
+					{$i18n.t('Groups')}
 				</div>
 
 				<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
@@ -142,7 +144,7 @@
 				>
 					<Plus className="size-3" strokeWidth="2.5" />
 
-					<div class="hidden md:block md:ml-1 text-xs">{i18n.t('New Group')}</div>
+					<div class="hidden md:block md:ml-1 text-xs">{$i18n.t('New Group')}</div>
 				</button>
 			</div>
 		</div>
@@ -159,14 +161,14 @@
 				<input
 					class="w-full text-sm py-1 rounded-r-xl outline-hidden bg-transparent"
 					bind:value={query}
-					aria-label={i18n.t('Search Groups')}
-					placeholder={i18n.t('Search Groups')}
+					aria-label={$i18n.t('Search Groups')}
+					placeholder={$i18n.t('Search Groups')}
 				/>
 				{#if query}
 					<div class="self-center pl-1.5 translate-y-[0.5px] rounded-l-xl bg-transparent">
 						<button
 							class="p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 transition"
-							aria-label={i18n.t('Clear search')}
+							aria-label={$i18n.t('Clear search')}
 							on:click={() => {
 								query = '';
 							}}
@@ -180,7 +182,7 @@
 			<Select
 				bind:value={sortBy}
 				items={sortItems}
-				placeholder={i18n.t('Sort by')}
+				placeholder={$i18n.t('Sort by')}
 				triggerClass="relative flex items-center gap-0.5 px-2.5 py-1.5 text-sm bg-gray-50 dark:bg-gray-850 rounded-xl shrink-0"
 				align="end"
 			>
@@ -214,9 +216,9 @@
 			<div class="w-full h-full flex flex-col justify-center items-center my-16 mb-24">
 				<div class="max-w-md text-center">
 					<div class="text-3xl mb-3">👥</div>
-					<div class="text-lg font-medium mb-1">{i18n.t('No groups found')}</div>
+					<div class="text-lg font-medium mb-1">{$i18n.t('No groups found')}</div>
 					<div class="text-gray-500 text-center text-xs">
-						{i18n.t('Use groups to organize your users and assign permissions.')}
+						{$i18n.t('Use groups to organize your users and assign permissions.')}
 					</div>
 				</div>
 			</div>
@@ -227,7 +229,7 @@
 		<EditGroupModal
 			bind:show={showDefaultPermissionsModal}
 			tabs={['permissions']}
-			permissions={defaultPermissions}
+			permissions={defaultPermissions as any}
 			custom={false}
 			onSubmit={updateDefaultPermissionsHandler}
 		/>
@@ -246,10 +248,10 @@
 			</div>
 
 			<div class="text-left">
-				<div class=" text-sm font-medium">{i18n.t('Default permissions')}</div>
+				<div class=" text-sm font-medium">{$i18n.t('Default permissions')}</div>
 
 				<div class="flex text-xs mt-0.5">
-					{i18n.t('applies to all users with the "user" role')}
+					{$i18n.t('applies to all users with the "user" role')}
 				</div>
 			</div>
 		</div>
@@ -265,7 +267,7 @@
 		bind:show={showAddGroupModal}
 		edit={false}
 		tabs={['general', 'permissions']}
-		permissions={defaultPermissions}
+		permissions={defaultPermissions as any}
 		onSubmit={addGroupHandler}
 	/>
 
@@ -273,7 +275,7 @@
 		<div class="flex justify-between items-center">
 			<div class="flex items-center md:self-center text-xl font-medium px-0.5 gap-2 shrink-0">
 				<div>
-					{i18n.t('Groups')}
+					{$i18n.t('Groups')}
 				</div>
 
 				<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
@@ -290,7 +292,7 @@
 				>
 					<Plus className="size-3" strokeWidth="2.5" />
 
-					<div class="hidden md:block md:ml-1 text-xs">{i18n.t('New Group')}</div>
+					<div class="hidden md:block md:ml-1 text-xs">{$i18n.t('New Group')}</div>
 				</button>
 			</div>
 		</div>
@@ -307,14 +309,14 @@
 				<input
 					class="w-full text-sm py-1 rounded-r-xl outline-hidden bg-transparent"
 					bind:value={query}
-					aria-label={i18n.t('Search Groups')}
-					placeholder={i18n.t('Search Groups')}
+					aria-label={$i18n.t('Search Groups')}
+					placeholder={$i18n.t('Search Groups')}
 				/>
 				{#if query}
 					<div class="self-center pl-1.5 translate-y-[0.5px] rounded-l-xl bg-transparent">
 						<button
 							class="p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 transition"
-							aria-label={i18n.t('Clear search')}
+							aria-label={$i18n.t('Clear search')}
 							on:click={() => {
 								query = '';
 							}}
@@ -328,7 +330,7 @@
 			<Select
 				bind:value={sortBy}
 				items={sortItems}
-				placeholder={i18n.t('Sort by')}
+				placeholder={$i18n.t('Sort by')}
 				triggerClass="relative flex items-center gap-0.5 px-2.5 py-1.5 text-sm bg-gray-50 dark:bg-gray-850 rounded-xl shrink-0"
 				align="end"
 			>
@@ -362,9 +364,9 @@
 			<div class="w-full h-full flex flex-col justify-center items-center my-16 mb-24">
 				<div class="max-w-md text-center">
 					<div class="text-3xl mb-3">👥</div>
-					<div class="text-lg font-medium mb-1">{i18n.t('No groups found')}</div>
+					<div class="text-lg font-medium mb-1">{$i18n.t('No groups found')}</div>
 					<div class="text-gray-500 text-center text-xs">
-						{i18n.t('Use groups to organize your users and assign permissions.')}
+						{$i18n.t('Use groups to organize your users and assign permissions.')}
 					</div>
 				</div>
 			</div>
@@ -375,7 +377,7 @@
 		<EditGroupModal
 			bind:show={showDefaultPermissionsModal}
 			tabs={['permissions']}
-			permissions={defaultPermissions}
+			permissions={defaultPermissions as any}
 			custom={false}
 			onSubmit={updateDefaultPermissionsHandler}
 		/>
@@ -394,10 +396,10 @@
 			</div>
 
 			<div class="text-left">
-				<div class=" text-sm font-medium">{i18n.t('Default permissions')}</div>
+				<div class=" text-sm font-medium">{$i18n.t('Default permissions')}</div>
 
 				<div class="flex text-xs mt-0.5">
-					{i18n.t('applies to all users with the "user" role')}
+					{$i18n.t('applies to all users with the "user" role')}
 				</div>
 			</div>
 		</div>

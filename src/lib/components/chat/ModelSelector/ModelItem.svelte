@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { marked } from 'marked';
 
@@ -38,9 +38,9 @@
 		const res = await copyToClipboard(`${baseUrl}/?model=${encodeURIComponent(model.id)}`);
 
 		if (res) {
-			toast.success(i18n.t('Copied link to clipboard'));
+			toast.success($i18n.t('Copied link to clipboard'));
 		} else {
-			toast.error(i18n.t('Failed to copy link'));
+			toast.error($i18n.t('Failed to copy link'));
 		}
 	};
 
@@ -50,7 +50,7 @@
 <button
 	role="option"
 	aria-selected={value === item.value}
-	aria-label={i18n.t('Select {{modelName}} model', { modelName: item.label })}
+	aria-label={$i18n.t('Select {{modelName}} model', { modelName: item.label })}
 	class="flex group/item w-full text-left font-medium line-clamp-1 select-none items-center rounded-button py-2 pl-3 pr-1.5 text-sm text-gray-700 dark:text-gray-100 outline-hidden transition-all duration-75 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl cursor-pointer data-highlighted:bg-muted {index ===
 	selectedModelIdx
 		? 'bg-gray-100 dark:bg-gray-800 group-hover:bg-transparent'
@@ -82,8 +82,8 @@
 			<div class="flex items-center min-w-fit">
 				<Tooltip content={$user?.role === 'admin' ? (item?.value ?? '') : ''} placement="top-start">
 					<img
-						src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${item.model.id}&lang=${$language}`}
-						alt={i18n.t('{{modelName}} profile image', { modelName: item.label })}
+						src={`${WEBUI_API_BASE_URL}/models/model/profile/image?id=${item.model.id}&lang=${$i18n.language}`}
+						alt={$i18n.t('{{modelName}} profile image', { modelName: item.label })}
 						class="rounded-full size-5 flex items-center"
 						loading="lazy"
 						on:error={(e) => {
@@ -127,7 +127,7 @@
 				{#if item.model?.context_length}
 					<div class="flex items-center translate-y-[0.5px]">
 						<Tooltip
-							content={i18n.t('Context window: {{N}} tokens', { N: item.model.context_length })}
+							content={$i18n.t('Context window: {{N}} tokens', { N: item.model.context_length })}
 							className="self-end"
 						>
 							<span class="text-xs font-medium text-gray-600 dark:text-gray-400 line-clamp-1">
@@ -144,10 +144,10 @@
 						<Tooltip
 							content={item.model.ollama?.expires_at &&
 							new Date(item.model.ollama?.expires_at * 1000) > new Date()
-								? `${i18n.t('Unloads {{FROM_NOW}}', {
+								? `${$i18n.t('Unloads {{FROM_NOW}}', {
 										FROM_NOW: dayjs(item.model.ollama?.expires_at * 1000).fromNow()
 									})}`
-								: `${i18n.t('Loaded')}`}
+								: `${$i18n.t('Loaded')}`}
 							className="self-end"
 						>
 							<div class=" flex items-center">
@@ -185,7 +185,7 @@
 				{/if}
 
 				{#if item.model?.direct}
-					<Tooltip content={`${i18n.t('Direct')}`}>
+					<Tooltip content={`${$i18n.t('Direct')}`}>
 						<div class="translate-y-[1px]">
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -202,13 +202,13 @@
 						</div>
 					</Tooltip>
 				{:else if item.model.connection_type === 'studio'}
-					<Tooltip content={`${i18n.t('Studio')}`}>
+					<Tooltip content={`${$i18n.t('Studio')}`}>
 						<div class="translate-y-[1px]">
 							<Sparkles className="size-3" strokeWidth="2" />
 						</div>
 					</Tooltip>
 				{:else if item.model.connection_type === 'external'}
-					<Tooltip content={`${i18n.t('External')}`}>
+					<Tooltip content={`${$i18n.t('External')}`}>
 						<div class="translate-y-[1px]">
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -262,12 +262,12 @@
 	<div class="ml-auto pl-2 pr-1 flex items-center gap-1.5 shrink-0">
 		{#if !selectionOnly && $user?.role === 'admin' && item.model.loaded}
 			<Tooltip
-				content={`${i18n.t('Eject')}`}
+				content={`${$i18n.t('Eject')}`}
 				className="flex-shrink-0 group-hover/item:opacity-100 opacity-0 "
 			>
 				<button
 					class="flex"
-					aria-label={i18n.t('Eject model')}
+					aria-label={$i18n.t('Eject model')}
 					on:click={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
@@ -290,7 +290,7 @@
 				}}
 			>
 				<button
-					aria-label={`${i18n.t('More Options')}`}
+					aria-label={`${$i18n.t('More Options')}`}
 					class="flex"
 					on:click={(e) => {
 						e.preventDefault();

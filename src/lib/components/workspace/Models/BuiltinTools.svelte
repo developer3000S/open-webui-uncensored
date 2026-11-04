@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import Checkbox from '$lib/components/common/Checkbox.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
@@ -11,52 +11,52 @@
 
 	const toolLabels = {
 		time: {
-			label: i18n.t('Time & Calculation'),
-			description: i18n.t('Get current time and perform date/time calculations')
+			label: $i18n.t('Time & Calculation'),
+			description: $i18n.t('Get current time and perform date/time calculations')
 		},
 		memory: {
-			label: i18n.t('Memory'),
-			description: i18n.t('Search and manage user memories')
+			label: $i18n.t('Memory'),
+			description: $i18n.t('Search and manage user memories')
 		},
 		chats: {
-			label: i18n.t('Chat History'),
-			description: i18n.t('Search and view user chat history')
+			label: $i18n.t('Chat History'),
+			description: $i18n.t('Search and view user chat history')
 		},
 		notes: {
-			label: i18n.t('Notes'),
-			description: i18n.t('Search, view, and manage user notes')
+			label: $i18n.t('Notes'),
+			description: $i18n.t('Search, view, and manage user notes')
 		},
 		knowledge: {
-			label: i18n.t('Knowledge Base'),
-			description: i18n.t('Browse and query knowledge bases')
+			label: $i18n.t('Knowledge Base'),
+			description: $i18n.t('Browse and query knowledge bases')
 		},
 		channels: {
-			label: i18n.t('Channels'),
-			description: i18n.t('Search channels and channel messages')
+			label: $i18n.t('Channels'),
+			description: $i18n.t('Search channels and channel messages')
 		},
 		web_search: {
-			label: i18n.t('Web Search'),
-			description: i18n.t('Search the web and fetch URLs')
+			label: $i18n.t('Web Search'),
+			description: $i18n.t('Search the web and fetch URLs')
 		},
 		image_generation: {
-			label: i18n.t('Image Generation'),
-			description: i18n.t('Generate and edit images')
+			label: $i18n.t('Image Generation'),
+			description: $i18n.t('Generate and edit images')
 		},
 		code_interpreter: {
-			label: i18n.t('Code Interpreter'),
-			description: i18n.t('Execute code')
+			label: $i18n.t('Code Interpreter'),
+			description: $i18n.t('Execute code')
 		},
 		tasks: {
-			label: i18n.t('Task Management'),
-			description: i18n.t('Break down complex requests into trackable steps')
+			label: $i18n.t('Task Management'),
+			description: $i18n.t('Break down complex requests into trackable steps')
 		},
 		automations: {
-			label: i18n.t('Automations'),
-			description: i18n.t('Create and manage scheduled automations')
+			label: $i18n.t('Automations'),
+			description: $i18n.t('Create and manage scheduled automations')
 		},
 		calendar: {
-			label: i18n.t('Calendar'),
-			description: i18n.t('List calendars, search, create, update, and delete calendar events')
+			label: $i18n.t('Calendar'),
+			description: $i18n.t('List calendars, search, create, update, and delete calendar events')
 		}
 	};
 
@@ -67,7 +67,7 @@
 
 <div>
 	<div class="flex w-full justify-between mb-1">
-		<div class="self-center text-xs font-medium text-gray-500">{i18n.t('Builtin Tools')}</div>
+		<div class="self-center text-xs font-medium text-gray-500">{$i18n.t('Builtin Tools')}</div>
 	</div>
 	<div class="flex items-center mt-2 flex-wrap">
 		{#each allTools as tool}
@@ -86,7 +86,7 @@
 
 				<div class="py-0.5 text-sm">
 					<Tooltip content={marked.parse(toolLabels[tool].description)}>
-						{i18n.t(toolLabels[tool].label)}
+						{$i18n.t(toolLabels[tool].label)}
 					</Tooltip>
 				</div>
 			</div>
@@ -96,7 +96,7 @@
 
 <div>
 	<div class="flex w-full justify-between mb-1">
-		<div class="self-center text-xs font-medium text-gray-500">{i18n.t('Builtin Tools')}</div>
+		<div class="self-center text-xs font-medium text-gray-500">{$i18n.t('Builtin Tools')}</div>
 	</div>
 	<div class="flex items-center mt-2 flex-wrap">
 		{#each allTools as tool}
@@ -115,7 +115,7 @@
 
 				<div class="py-0.5 text-sm">
 					<Tooltip content={marked.parse(toolLabels[tool].description)}>
-						{i18n.t(toolLabels[tool].label)}
+						{$i18n.t(toolLabels[tool].label)}
 					</Tooltip>
 				</div>
 			</div>

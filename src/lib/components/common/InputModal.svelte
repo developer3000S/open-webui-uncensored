@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { settings } from '$lib/stores';
 
@@ -12,14 +12,14 @@
 
 	export let id: any = 'input-modal';
 	export let show: any = false;
-	let value: any = null;
+	export let value: any = null;
 	export let inputContent: any = null;
 
 	export let autocomplete: any = false;
-	let generateAutoCompletion: any = null;
+	export let generateAutoCompletion: any = null;
 
-	export let onChange = () => {};
-	export let onClose = () => {};
+	export let onChange: any = () => {};
+	export let onClose: any = () => {};
 
 	let inputElement;
 </script>
@@ -30,7 +30,7 @@
 			class=" sticky top-0 z-30 flex justify-between bg-white px-4.5 pt-3 pb-3 dark:bg-gray-900 dark:text-gray-100"
 		>
 			<div class=" font-primary self-center text-lg">
-				{i18n.t('Input')}
+				{$i18n.t('Input')}
 			</div>
 			<button
 				class="self-center"
@@ -86,7 +86,7 @@
 			class=" sticky top-0 z-30 flex justify-between bg-white px-4.5 pt-3 pb-3 dark:bg-gray-900 dark:text-gray-100"
 		>
 			<div class=" font-primary self-center text-lg">
-				{i18n.t('Input')}
+				{$i18n.t('Input')}
 			</div>
 			<button
 				class="self-center"

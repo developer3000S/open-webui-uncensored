@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	export let diff: any = '';
 	export let action: string;
@@ -31,13 +31,13 @@
 		<div
 			class="px-2.5 py-1 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border-b border-gray-200 dark:border-gray-700"
 		>
-			{i18n.t('This file will be deleted')}
+			{$i18n.t('This file will be deleted')}
 		</div>
 	{:else if action === 'create'}
 		<div
 			class="px-2.5 py-1 bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 border-b border-gray-200 dark:border-gray-700"
 		>
-			{i18n.t('New file')}
+			{$i18n.t('New file')}
 		</div>
 	{/if}
 	<div class="overflow-x-auto py-1">
@@ -54,13 +54,13 @@
 		<div
 			class="px-2.5 py-1 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border-b border-gray-200 dark:border-gray-700"
 		>
-			{i18n.t('This file will be deleted')}
+			{$i18n.t('This file will be deleted')}
 		</div>
 	{:else if action === 'create'}
 		<div
 			class="px-2.5 py-1 bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 border-b border-gray-200 dark:border-gray-700"
 		>
-			{i18n.t('New file')}
+			{$i18n.t('New file')}
 		</div>
 	{/if}
 	<div class="overflow-x-auto py-1">

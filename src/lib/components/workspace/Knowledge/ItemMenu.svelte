@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	const dispatch = createEventDispatcher();
 
@@ -14,7 +14,7 @@
 	import type { Writable } from 'svelte/store';
 
 	export let onExport: null | Function = null;
-	export let onClose: Function = () => {};
+	export let onClose: any = () => {};
 
 	let show = false;
 </script>
@@ -28,12 +28,12 @@
 		}
 	}}
 >
-	<Tooltip content={i18n.t('More')}>
+	<Tooltip content={$i18n.t('More')}>
 		<slot
 			><button
 				class="self-center w-fit text-sm p-1.5 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 				type="button"
-				aria-label={i18n.t('More Options')}
+				aria-label={$i18n.t('More Options')}
 				on:click={(e) => {
 					e.stopPropagation();
 					show = true;
@@ -56,7 +56,7 @@
 					}}
 				>
 					<Download />
-					<div class="flex items-center">{i18n.t('Export')}</div>
+					<div class="flex items-center">{$i18n.t('Export')}</div>
 				</button>
 			{/if}
 
@@ -67,7 +67,7 @@
 				}}
 			>
 				<GarbageBin />
-				<div class="flex items-center">{i18n.t('Delete')}</div>
+				<div class="flex items-center">{$i18n.t('Delete')}</div>
 			</button>
 		</div>
 	</div>
@@ -82,12 +82,12 @@
 		}
 	}}
 >
-	<Tooltip content={i18n.t('More')}>
+	<Tooltip content={$i18n.t('More')}>
 		<slot
 			><button
 				class="self-center w-fit text-sm p-1.5 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 				type="button"
-				aria-label={i18n.t('More Options')}
+				aria-label={$i18n.t('More Options')}
 				on:click={(e) => {
 					e.stopPropagation();
 					show = true;
@@ -110,7 +110,7 @@
 					}}
 				>
 					<Download />
-					<div class="flex items-center">{i18n.t('Export')}</div>
+					<div class="flex items-center">{$i18n.t('Export')}</div>
 				</button>
 			{/if}
 
@@ -121,7 +121,7 @@
 				}}
 			>
 				<GarbageBin />
-				<div class="flex items-center">{i18n.t('Delete')}</div>
+				<div class="flex items-center">{$i18n.t('Delete')}</div>
 			</button>
 		</div>
 	</div>

@@ -132,7 +132,7 @@ export const downloadDatabase = async (token: string) => {
 			Authorization: `Bearer ${token}`
 		}
 	})
-		.then((response: any) => {
+		.then(async (response: any) => {
 			if (!response.ok) {
 				throw await response.json();
 			}

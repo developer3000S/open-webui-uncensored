@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
@@ -69,7 +69,7 @@
 
 	const submitHandler = async () => {
 		if (!prompt.trim()) {
-			toast.error(i18n.t('Please enter a prompt'));
+			toast.error($i18n.t('Please enter a prompt'));
 			return;
 		}
 
@@ -111,10 +111,11 @@
 			a.click();
 			URL.revokeObjectURL(blobUrl);
 		} catch (error) {
-			toast.error(i18n.t('Failed to download image'));
+			toast.error($i18n.t('Failed to download image'));
 		}
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		if ($user?.role !== 'admin') {
 			await goto('/');
@@ -169,7 +170,7 @@
 							<div
 								class="h-full flex items-center justify-center text-gray-400 dark:text-gray-600 text-sm"
 							>
-								{i18n.t('Generated images will appear here')}
+								{$i18n.t('Generated images will appear here')}
 							</div>
 						{/if}
 					</div>
@@ -191,7 +192,7 @@
 									</div>
 									<div class=" absolute -top-1 -right-1">
 										<button
-											aria-label={i18n.t('Remove Image')}
+											aria-label={$i18n.t('Remove Image')}
 											class=" bg-white text-black border border-white rounded-full group-hover:visible invisible transition"
 											type="button"
 											on:click={() => removeImage(index)}
@@ -221,8 +222,8 @@
 							bind:value={prompt}
 							class=" w-full h-full bg-transparent resize-none outline-hidden text-sm"
 							placeholder={sourceImages.length > 0
-								? i18n.t('Describe the edit...')
-								: i18n.t('Describe the image...')}
+								? $i18n.t('Describe the edit...')
+								: $i18n.t('Describe the image...')}
 							on:input={resizePromptTextarea}
 							on:focus={resizePromptTextarea}
 							on:keydown={(e) => {
@@ -253,7 +254,7 @@
 								on:dragover|preventDefault
 								on:drop={handleDrop}
 							>
-								{i18n.t('Add Image')}
+								{$i18n.t('Add Image')}
 							</button>
 						</div>
 
@@ -264,7 +265,7 @@
 									class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition border-radius: 0.5rem; disabled:opacity-50 disabled:cursor-not-allowed"
 									on:click={submitHandler}
 								>
-									{i18n.t('Run')}
+									{$i18n.t('Run')}
 								</button>
 							{:else}
 								<button
@@ -272,7 +273,7 @@
 									disabled
 								>
 									<Spinner className="size-4" />
-									{i18n.t('Running...')}
+									{$i18n.t('Running...')}
 								</button>
 							{/if}
 						</div>
@@ -328,7 +329,7 @@
 							<div
 								class="h-full flex items-center justify-center text-gray-400 dark:text-gray-600 text-sm"
 							>
-								{i18n.t('Generated images will appear here')}
+								{$i18n.t('Generated images will appear here')}
 							</div>
 						{/if}
 					</div>
@@ -350,7 +351,7 @@
 									</div>
 									<div class=" absolute -top-1 -right-1">
 										<button
-											aria-label={i18n.t('Remove Image')}
+											aria-label={$i18n.t('Remove Image')}
 											class=" bg-white text-black border border-white rounded-full group-hover:visible invisible transition"
 											type="button"
 											on:click={() => removeImage(index)}
@@ -380,8 +381,8 @@
 							bind:value={prompt}
 							class=" w-full h-full bg-transparent resize-none outline-hidden text-sm"
 							placeholder={sourceImages.length > 0
-								? i18n.t('Describe the edit...')
-								: i18n.t('Describe the image...')}
+								? $i18n.t('Describe the edit...')
+								: $i18n.t('Describe the image...')}
 							on:input={resizePromptTextarea}
 							on:focus={resizePromptTextarea}
 							on:keydown={(e) => {
@@ -412,7 +413,7 @@
 								on:dragover|preventDefault
 								on:drop={handleDrop}
 							>
-								{i18n.t('Add Image')}
+								{$i18n.t('Add Image')}
 							</button>
 						</div>
 
@@ -423,7 +424,7 @@
 									class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition border-radius: 0.5rem; disabled:opacity-50 disabled:cursor-not-allowed"
 									on:click={submitHandler}
 								>
-									{i18n.t('Run')}
+									{$i18n.t('Run')}
 								</button>
 							{:else}
 								<button
@@ -431,7 +432,7 @@
 									disabled
 								>
 									<Spinner className="size-4" />
-									{i18n.t('Running...')}
+									{$i18n.t('Running...')}
 								</button>
 							{/if}
 						</div>

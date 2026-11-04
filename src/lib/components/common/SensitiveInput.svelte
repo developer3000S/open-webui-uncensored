@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 	import { settings } from '$lib/stores';
@@ -23,7 +23,7 @@
 
 <div class={outerClassName}>
 	{#if screenReader}
-		<label class="sr-only" for={id}>{placeholder || i18n.t('Password')}</label>
+		<label class="sr-only" for={id}>{placeholder || $i18n.t('Password')}</label>
 	{/if}
 	<input
 		{id}
@@ -40,7 +40,7 @@
 		class={showButtonClassName}
 		type="button"
 		aria-pressed={show}
-		aria-label={i18n.t('Make password visible in the user interface')}
+		aria-label={$i18n.t('Make password visible in the user interface')}
 		on:click={(e) => {
 			e.preventDefault();
 			show = !show;
@@ -84,7 +84,7 @@
 
 <div class={outerClassName}>
 	{#if screenReader}
-		<label class="sr-only" for={id}>{placeholder || i18n.t('Password')}</label>
+		<label class="sr-only" for={id}>{placeholder || $i18n.t('Password')}</label>
 	{/if}
 	<input
 		{id}
@@ -101,7 +101,7 @@
 		class={showButtonClassName}
 		type="button"
 		aria-pressed={show}
-		aria-label={i18n.t('Make password visible in the user interface')}
+		aria-label={$i18n.t('Make password visible in the user interface')}
 		on:click={(e) => {
 			e.preventDefault();
 			show = !show;

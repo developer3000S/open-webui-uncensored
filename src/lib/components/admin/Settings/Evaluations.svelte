@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { createEventDispatcher, getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import { models, settings, user, config } from '$lib/stores';
@@ -23,13 +23,15 @@
 	let showAddModel = false;
 
 	const submitHandler = async () => {
-		evaluationConfig = await updateConfig(localStorage.token, evaluationConfig).catch(async (err)=> {
-			toast.error(err);
-			return null;
-		});
+		evaluationConfig = await updateConfig(localStorage.token, evaluationConfig).catch(
+			async (err) => {
+				toast.error(err);
+				return null;
+			}
+		);
 
 		if (evaluationConfig) {
-			toast.success(i18n.t('Settings saved successfully!'));
+			toast.success($i18n.t('Settings saved successfully!'));
 			models.set(
 				await getModels(
 					localStorage.token,
@@ -79,6 +81,7 @@
 		);
 	};
 
+	// @ts-ignore
 	onMount(async () => {
 		if ($user?.role === 'admin') {
 			evaluationConfig = await getConfig(localStorage.token).catch((err) => {
@@ -107,14 +110,14 @@
 		{#if evaluationConfig !== null}
 			<div class="">
 				<div class="mb-3">
-					<div class=" mt-0.5 mb-2.5 text-base font-medium">{i18n.t('General')}</div>
+					<div class=" mt-0.5 mb-2.5 text-base font-medium">{$i18n.t('General')}</div>
 
 					<hr class=" border-gray-100/30 dark:border-gray-850/30 my-2" />
 
 					<div class="mb-2.5 flex w-full justify-between">
-						<div class=" text-xs font-medium">{i18n.t('Arena Models')}</div>
+						<div class=" text-xs font-medium">{$i18n.t('Arena Models')}</div>
 
-						<Tooltip content={i18n.t(`Message rating should be enabled to use this feature`)}>
+						<Tooltip content={$i18n.t(`Message rating should be enabled to use this feature`)}>
 							<Switch bind:state={evaluationConfig.ENABLE_EVALUATION_ARENA_MODELS} />
 						</Tooltip>
 					</div>
@@ -124,11 +127,11 @@
 					<div class="mb-3">
 						<div class=" mt-0.5 mb-2.5 text-base font-medium flex justify-between items-center">
 							<div>
-								{i18n.t('Manage')}
+								{$i18n.t('Manage')}
 							</div>
 
 							<div>
-								<Tooltip content={i18n.t('Add Arena Model')}>
+								<Tooltip content={$i18n.t('Add Arena Model')}>
 									<button
 										class="p-1"
 										type="button"
@@ -159,7 +162,7 @@
 								{/each}
 							{:else}
 								<div class=" text-center text-xs text-gray-500">
-									{i18n.t(
+									{$i18n.t(
 										`Using the default arena model with all models. Click the plus button to add custom models.`
 									)}
 								</div>
@@ -182,7 +185,7 @@
 			class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 			type="submit"
 		>
-			{i18n.t('Save')}
+			{$i18n.t('Save')}
 		</button>
 	</div>
 </form>
@@ -205,14 +208,14 @@
 		{#if evaluationConfig !== null}
 			<div class="">
 				<div class="mb-3">
-					<div class=" mt-0.5 mb-2.5 text-base font-medium">{i18n.t('General')}</div>
+					<div class=" mt-0.5 mb-2.5 text-base font-medium">{$i18n.t('General')}</div>
 
 					<hr class=" border-gray-100/30 dark:border-gray-850/30 my-2" />
 
 					<div class="mb-2.5 flex w-full justify-between">
-						<div class=" text-xs font-medium">{i18n.t('Arena Models')}</div>
+						<div class=" text-xs font-medium">{$i18n.t('Arena Models')}</div>
 
-						<Tooltip content={i18n.t(`Message rating should be enabled to use this feature`)}>
+						<Tooltip content={$i18n.t(`Message rating should be enabled to use this feature`)}>
 							<Switch bind:state={evaluationConfig.ENABLE_EVALUATION_ARENA_MODELS} />
 						</Tooltip>
 					</div>
@@ -222,11 +225,11 @@
 					<div class="mb-3">
 						<div class=" mt-0.5 mb-2.5 text-base font-medium flex justify-between items-center">
 							<div>
-								{i18n.t('Manage')}
+								{$i18n.t('Manage')}
 							</div>
 
 							<div>
-								<Tooltip content={i18n.t('Add Arena Model')}>
+								<Tooltip content={$i18n.t('Add Arena Model')}>
 									<button
 										class="p-1"
 										type="button"
@@ -257,7 +260,7 @@
 								{/each}
 							{:else}
 								<div class=" text-center text-xs text-gray-500">
-									{i18n.t(
+									{$i18n.t(
 										`Using the default arena model with all models. Click the plus button to add custom models.`
 									)}
 								</div>
@@ -280,7 +283,7 @@
 			class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 			type="submit"
 		>
-			{i18n.t('Save')}
+			{$i18n.t('Save')}
 		</button>
 	</div>
 </form>

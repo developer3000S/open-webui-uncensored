@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import type { Writable } from 'svelte/store';
 	import { toast } from 'svelte-sonner';
@@ -12,7 +12,7 @@
 	import Spinner from '../common/Spinner.svelte';
 
 	export let show: any = false;
-	export let onUpdate = () => {};
+	export let onUpdate: any = () => {};
 
 	let loading = false;
 	let chatList: any[] | null = null;
@@ -89,17 +89,17 @@
 	};
 
 	const unshareHandler = async (chatId: string) => {
-		const res = await deleteSharedChatById(localStorage.token, chatId).catch(async (error)=> {
+		const res = await deleteSharedChatById(localStorage.token, chatId).catch(async (error) => {
 			toast.error(`${error}`);
 			return null;
 		});
 
 		if (res === true) {
-			toast.success(i18n.t('Chat unshared successfully.'));
+			toast.success($i18n.t('Chat unshared successfully.'));
 			onUpdate();
 			init();
 		} else if (res === false) {
-			toast.error(i18n.t('Failed to unshare chat.'));
+			toast.error($i18n.t('Failed to unshare chat.'));
 		}
 	};
 
@@ -107,7 +107,7 @@
 		loading = true;
 		try {
 			await unshareAllChats(localStorage.token);
-			toast.success(i18n.t('All shared chats have been unshared.'));
+			toast.success($i18n.t('All shared chats have been unshared.'));
 			onUpdate();
 			await init();
 		} catch (error) {
@@ -128,10 +128,10 @@
 
 <UnshareAllConfirmDialog
 	bind:show={showUnshareAllConfirmDialog}
-	message={i18n.t(
+	message={$i18n.t(
 		'Are you sure you want to unshare all shared chats? This will remove all share links.'
 	)}
-	confirmLabel={i18n.t('Unshare All')}
+	confirmLabel={$i18n.t('Unshare All')}
 	on:confirm={() => {
 		unshareAllHandler();
 	}}
@@ -142,8 +142,8 @@
 	bind:query
 	bind:orderBy
 	bind:direction
-	title={i18n.t('Shared Chats')}
-	emptyPlaceholder={i18n.t('You have no shared conversations.')}
+	title={$i18n.t('Shared Chats')}
+	emptyPlaceholder={$i18n.t('You have no shared conversations.')}
 	shareUrl={false}
 	{chatList}
 	{allChatsLoaded}
@@ -167,7 +167,7 @@
 				{#if loading}
 					<Spinner className="size-4" />
 				{:else}
-					{i18n.t('Unshare All Shared Chats')}
+					{$i18n.t('Unshare All Shared Chats')}
 				{/if}
 			</button>
 		</div>
@@ -176,10 +176,10 @@
 
 <UnshareAllConfirmDialog
 	bind:show={showUnshareAllConfirmDialog}
-	message={i18n.t(
+	message={$i18n.t(
 		'Are you sure you want to unshare all shared chats? This will remove all share links.'
 	)}
-	confirmLabel={i18n.t('Unshare All')}
+	confirmLabel={$i18n.t('Unshare All')}
 	on:confirm={() => {
 		unshareAllHandler();
 	}}
@@ -190,8 +190,8 @@
 	bind:query
 	bind:orderBy
 	bind:direction
-	title={i18n.t('Shared Chats')}
-	emptyPlaceholder={i18n.t('You have no shared conversations.')}
+	title={$i18n.t('Shared Chats')}
+	emptyPlaceholder={$i18n.t('You have no shared conversations.')}
 	shareUrl={false}
 	{chatList}
 	{allChatsLoaded}
@@ -215,7 +215,7 @@
 				{#if loading}
 					<Spinner className="size-4" />
 				{:else}
-					{i18n.t('Unshare All Shared Chats')}
+					{$i18n.t('Unshare All Shared Chats')}
 				{/if}
 			</button>
 		</div>

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { theme, models, temporaryChatEnabled } from '$lib/stores';
 	import { getTelemetry } from '$lib/apis/telemetry';
@@ -23,7 +23,7 @@
 
 	// Chat mode shown in the status section: model name when one is picked, or
 	// the mode the chat will run in otherwise (temporary chat / local model server).
-	let workMode = i18n.t('Local Mode');
+	let workMode = $i18n.t('Local Mode');
 	let workModeActive = false;
 
 	$: {
@@ -34,10 +34,10 @@
 			workMode = model.name;
 			workModeActive = true;
 		} else if ($temporaryChatEnabled) {
-			workMode = i18n.t('Temporary Chat');
+			workMode = $i18n.t('Temporary Chat');
 			workModeActive = true;
 		} else {
-			workMode = i18n.t('Local Mode');
+			workMode = $i18n.t('Local Mode');
 			workModeActive = false;
 		}
 	}
@@ -155,7 +155,7 @@
 				class="size-1.5 rounded-full flex-none {workModeActive
 					? 'bg-emerald-500 dark:bg-emerald-400'
 					: 'bg-gray-400 dark:bg-gray-600'}"
-				title={workModeActive ? i18n.t('Active') : i18n.t('Inactive')}
+				title={workModeActive ? $i18n.t('Active') : $i18n.t('Inactive')}
 			></div>
 			<span class="font-medium truncate max-w-[12rem] md:max-w-[22rem]" title={workMode}>
 				{workMode}
@@ -165,11 +165,11 @@
 
 	<!-- Theme controls + telemetry -->
 	<div class="flex items-center gap-0.5">
-		<Tooltip content={isDark ? i18n.t('Switch to light theme') : i18n.t('Switch to dark theme')}>
+		<Tooltip content={isDark ? $i18n.t('Switch to light theme') : $i18n.t('Switch to dark theme')}>
 			<button
 				class="flex cursor-pointer p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-850 transition"
 				on:click={toggleTheme}
-				aria-label={i18n.t('Theme')}
+				aria-label={$i18n.t('Theme')}
 			>
 				{#if isDark}
 					<Sun className="size-4" strokeWidth="1.5" />
@@ -180,13 +180,13 @@
 		</Tooltip>
 
 		<div class="relative" bind:this={accentMenuEl}>
-			<Tooltip content={i18n.t('Accent Color')}>
+			<Tooltip content={$i18n.t('Accent Color')}>
 				<button
 					class="flex cursor-pointer p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-850 transition {showAccentMenu
 						? 'bg-gray-100 dark:bg-gray-850'
 						: ''}"
 					on:click={toggleAccentMenu}
-					aria-label={i18n.t('Accent Color')}
+					aria-label={$i18n.t('Accent Color')}
 					aria-expanded={showAccentMenu}
 				>
 					<Palette className="size-4" strokeWidth="1.5" />
@@ -198,7 +198,7 @@
 					class="absolute right-0 top-full mt-1 z-50 min-w-[13rem] max-h-[16rem] overflow-y-auto rounded-lg bg-white dark:bg-gray-850 shadow-lg dark:shadow-xl border border-gray-100 dark:border-gray-800 p-1"
 				>
 					<div class="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-400">
-						{i18n.t('Accent Color')}
+						{$i18n.t('Accent Color')}
 					</div>
 					<div class="h-px bg-gray-100 dark:bg-gray-800 my-0.5"></div>
 					{#each ACCENT_THEMES as t (t.id)}
@@ -231,24 +231,22 @@
 		<div class="hidden sm:flex items-center flex-none pl-1.5">
 			<div
 				class="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-50 dark:bg-gray-850 text-gray-600 dark:text-gray-400"
-				title={i18n.t('CPU Utilization')}
+				title={$i18n.t('CPU Utilization')}
 			>
 				<Cpu className="size-3" strokeWidth="1.5" />
-				<span class="tabular-nums">{i18n.t('CPU')}: {telemetry.cpu_usage ?? '--'}%</span>
+				<span class="tabular-nums">{$i18n.t('CPU')}: {telemetry.cpu_usage ?? '--'}%</span>
 			</div>
 			<div
 				class="flex items-center gap-1 px-1.5 py-0.5 ml-1 rounded-md bg-gray-50 dark:bg-gray-850 text-gray-600 dark:text-gray-400"
-				title={i18n.t('System Memory Usage')}
+				title={$i18n.t('System Memory Usage')}
 			>
 				<span class="tabular-nums"
-					>{i18n.t('RAM')}: {formatGb(telemetry.ram_used_gb)} / {formatGb(telemetry.ram_total_gb)} GB</span
+					>{$i18n.t('RAM')}: {formatGb(telemetry.ram_used_gb)} / {formatGb(telemetry.ram_total_gb)} GB</span
 				>
 			</div>
 		</div>
 	</div>
 </div>
-
-
 
 <div
 	class="flex items-center justify-between w-full px-1.5 md:px-2 h-9 text-xs text-gray-600 dark:text-gray-400 select-none"
@@ -260,7 +258,7 @@
 				class="size-1.5 rounded-full flex-none {workModeActive
 					? 'bg-emerald-500 dark:bg-emerald-400'
 					: 'bg-gray-400 dark:bg-gray-600'}"
-				title={workModeActive ? i18n.t('Active') : i18n.t('Inactive')}
+				title={workModeActive ? $i18n.t('Active') : $i18n.t('Inactive')}
 			></div>
 			<span class="font-medium truncate max-w-[12rem] md:max-w-[22rem]" title={workMode}>
 				{workMode}
@@ -270,11 +268,11 @@
 
 	<!-- Theme controls + telemetry -->
 	<div class="flex items-center gap-0.5">
-		<Tooltip content={isDark ? i18n.t('Switch to light theme') : i18n.t('Switch to dark theme')}>
+		<Tooltip content={isDark ? $i18n.t('Switch to light theme') : $i18n.t('Switch to dark theme')}>
 			<button
 				class="flex cursor-pointer p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-850 transition"
 				on:click={toggleTheme}
-				aria-label={i18n.t('Theme')}
+				aria-label={$i18n.t('Theme')}
 			>
 				{#if isDark}
 					<Sun className="size-4" strokeWidth="1.5" />
@@ -285,13 +283,13 @@
 		</Tooltip>
 
 		<div class="relative" bind:this={accentMenuEl}>
-			<Tooltip content={i18n.t('Accent Color')}>
+			<Tooltip content={$i18n.t('Accent Color')}>
 				<button
 					class="flex cursor-pointer p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-850 transition {showAccentMenu
 						? 'bg-gray-100 dark:bg-gray-850'
 						: ''}"
 					on:click={toggleAccentMenu}
-					aria-label={i18n.t('Accent Color')}
+					aria-label={$i18n.t('Accent Color')}
 					aria-expanded={showAccentMenu}
 				>
 					<Palette className="size-4" strokeWidth="1.5" />
@@ -303,7 +301,7 @@
 					class="absolute right-0 top-full mt-1 z-50 min-w-[13rem] max-h-[16rem] overflow-y-auto rounded-lg bg-white dark:bg-gray-850 shadow-lg dark:shadow-xl border border-gray-100 dark:border-gray-800 p-1"
 				>
 					<div class="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-400">
-						{i18n.t('Accent Color')}
+						{$i18n.t('Accent Color')}
 					</div>
 					<div class="h-px bg-gray-100 dark:bg-gray-800 my-0.5"></div>
 					{#each ACCENT_THEMES as t (t.id)}
@@ -336,17 +334,17 @@
 		<div class="hidden sm:flex items-center flex-none pl-1.5">
 			<div
 				class="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-50 dark:bg-gray-850 text-gray-600 dark:text-gray-400"
-				title={i18n.t('CPU Utilization')}
+				title={$i18n.t('CPU Utilization')}
 			>
 				<Cpu className="size-3" strokeWidth="1.5" />
-				<span class="tabular-nums">{i18n.t('CPU')}: {telemetry.cpu_usage ?? '--'}%</span>
+				<span class="tabular-nums">{$i18n.t('CPU')}: {telemetry.cpu_usage ?? '--'}%</span>
 			</div>
 			<div
 				class="flex items-center gap-1 px-1.5 py-0.5 ml-1 rounded-md bg-gray-50 dark:bg-gray-850 text-gray-600 dark:text-gray-400"
-				title={i18n.t('System Memory Usage')}
+				title={$i18n.t('System Memory Usage')}
 			>
 				<span class="tabular-nums"
-					>{i18n.t('RAM')}: {formatGb(telemetry.ram_used_gb)} / {formatGb(telemetry.ram_total_gb)} GB</span
+					>{$i18n.t('RAM')}: {formatGb(telemetry.ram_used_gb)} / {formatGb(telemetry.ram_total_gb)} GB</span
 				>
 			</div>
 		</div>

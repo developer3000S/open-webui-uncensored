@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onDestroy, onMount } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { toast } from 'svelte-sonner';
 	import type { Writable } from 'svelte/store';
@@ -126,7 +126,7 @@
 	const deleteHandler = async (fileId: string) => {
 		try {
 			await deleteFileById(localStorage.token, fileId);
-			toast.success(i18n.t('File deleted successfully.'));
+			toast.success($i18n.t('File deleted successfully.'));
 			// Remove from local array instead of re-fetching to allow rapid deletion
 			files = files?.filter((f) => f.id !== fileId) ?? null;
 			if (fileCount !== null) fileCount--;
@@ -204,7 +204,7 @@
 	<div>
 		<div class="flex justify-between dark:text-gray-300 px-5 pt-4 pb-1">
 			<div class="flex items-center gap-2 text-lg font-medium self-center">
-				<div>{i18n.t('Files')}</div>
+				<div>{$i18n.t('Files')}</div>
 				{#if query && files}
 					<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
 						{files.length}
@@ -216,7 +216,7 @@
 				{/if}
 			</div>
 			<button
-				aria-label={i18n.t('Close')}
+				aria-label={$i18n.t('Close')}
 				class="self-center"
 				on:click={() => {
 					show = false;
@@ -258,7 +258,7 @@
 					<input
 						class="w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
 						bind:value={query}
-						placeholder={i18n.t('Search Files')}
+						placeholder={$i18n.t('Search Files')}
 						maxlength="500"
 					/>
 
@@ -284,12 +284,12 @@
 						{#if files.length > 0}
 							<div class="flex text-xs font-medium mb-1.5">
 								<button
-									aria-label={i18n.t('Filename')}
+									aria-label={$i18n.t('Filename')}
 									class="px-1.5 py-1 cursor-pointer select-none basis-3/5"
 									on:click={() => setSortKey('filename')}
 								>
 									<div class="flex gap-1.5 items-center">
-										{i18n.t('Filename')}
+										{$i18n.t('Filename')}
 										{#if orderBy === 'filename'}
 											<span class="font-normal">
 												{#if direction === 'asc'}
@@ -306,12 +306,12 @@
 									</div>
 								</button>
 								<button
-									aria-label={i18n.t('Created at')}
+									aria-label={$i18n.t('Created at')}
 									class="px-1.5 py-1 cursor-pointer select-none hidden sm:flex sm:basis-2/5 justify-end"
 									on:click={() => setSortKey('created_at')}
 								>
 									<div class="flex gap-1.5 items-center">
-										{i18n.t('Created at')}
+										{$i18n.t('Created at')}
 										{#if orderBy === 'created_at'}
 											<span class="font-normal">
 												{#if direction === 'asc'}
@@ -335,7 +335,7 @@
 								<div
 									class="text-xs text-gray-500 dark:text-gray-400 text-center px-5 min-h-20 w-full h-full flex justify-center items-center"
 								>
-									{i18n.t('No files found')}
+									{$i18n.t('No files found')}
 								</div>
 							{/if}
 
@@ -358,7 +358,7 @@
 										</div>
 
 										<div class="flex justify-end pl-2.5 text-gray-600 dark:text-gray-300">
-											<Tooltip content={shiftKey ? i18n.t('Delete File') : i18n.t('Delete File')}>
+											<Tooltip content={shiftKey ? $i18n.t('Delete File') : $i18n.t('Delete File')}>
 												<button
 													class="self-center w-fit px-1 text-sm rounded-xl {shiftKey
 														? 'text-red-500'
@@ -372,7 +372,7 @@
 														}
 													}}
 												>
-													<GarbageBin class="size-4" strokeWidth="1.5" />
+													<GarbageBin className="size-4" strokeWidth="1.5" />
 												</button>
 											</Tooltip>
 										</div>
@@ -392,7 +392,7 @@
 										class="w-full flex justify-center py-1 text-xs animate-pulse items-center gap-2"
 									>
 										<Spinner className="size-4" />
-										<div>{i18n.t('Loading...')}</div>
+										<div>{$i18n.t('Loading...')}</div>
 									</div>
 								</Loader>
 							{/if}
@@ -424,7 +424,7 @@
 	<div>
 		<div class="flex justify-between dark:text-gray-300 px-5 pt-4 pb-1">
 			<div class="flex items-center gap-2 text-lg font-medium self-center">
-				<div>{i18n.t('Files')}</div>
+				<div>{$i18n.t('Files')}</div>
 				{#if query && files}
 					<div class="text-lg font-medium text-gray-500 dark:text-gray-500">
 						{files.length}
@@ -436,7 +436,7 @@
 				{/if}
 			</div>
 			<button
-				aria-label={i18n.t('Close')}
+				aria-label={$i18n.t('Close')}
 				class="self-center"
 				on:click={() => {
 					show = false;
@@ -478,7 +478,7 @@
 					<input
 						class="w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
 						bind:value={query}
-						placeholder={i18n.t('Search Files')}
+						placeholder={$i18n.t('Search Files')}
 						maxlength="500"
 					/>
 
@@ -504,12 +504,12 @@
 						{#if files.length > 0}
 							<div class="flex text-xs font-medium mb-1.5">
 								<button
-									aria-label={i18n.t('Filename')}
+									aria-label={$i18n.t('Filename')}
 									class="px-1.5 py-1 cursor-pointer select-none basis-3/5"
 									on:click={() => setSortKey('filename')}
 								>
 									<div class="flex gap-1.5 items-center">
-										{i18n.t('Filename')}
+										{$i18n.t('Filename')}
 										{#if orderBy === 'filename'}
 											<span class="font-normal">
 												{#if direction === 'asc'}
@@ -526,12 +526,12 @@
 									</div>
 								</button>
 								<button
-									aria-label={i18n.t('Created at')}
+									aria-label={$i18n.t('Created at')}
 									class="px-1.5 py-1 cursor-pointer select-none hidden sm:flex sm:basis-2/5 justify-end"
 									on:click={() => setSortKey('created_at')}
 								>
 									<div class="flex gap-1.5 items-center">
-										{i18n.t('Created at')}
+										{$i18n.t('Created at')}
 										{#if orderBy === 'created_at'}
 											<span class="font-normal">
 												{#if direction === 'asc'}
@@ -555,7 +555,7 @@
 								<div
 									class="text-xs text-gray-500 dark:text-gray-400 text-center px-5 min-h-20 w-full h-full flex justify-center items-center"
 								>
-									{i18n.t('No files found')}
+									{$i18n.t('No files found')}
 								</div>
 							{/if}
 
@@ -578,7 +578,7 @@
 										</div>
 
 										<div class="flex justify-end pl-2.5 text-gray-600 dark:text-gray-300">
-											<Tooltip content={shiftKey ? i18n.t('Delete File') : i18n.t('Delete File')}>
+											<Tooltip content={shiftKey ? $i18n.t('Delete File') : $i18n.t('Delete File')}>
 												<button
 													class="self-center w-fit px-1 text-sm rounded-xl {shiftKey
 														? 'text-red-500'
@@ -592,7 +592,7 @@
 														}
 													}}
 												>
-													<GarbageBin class="size-4" strokeWidth="1.5" />
+													<GarbageBin className="size-4" strokeWidth="1.5" />
 												</button>
 											</Tooltip>
 										</div>
@@ -612,7 +612,7 @@
 										class="w-full flex justify-center py-1 text-xs animate-pulse items-center gap-2"
 									>
 										<Spinner className="size-4" />
-										<div>{i18n.t('Loading...')}</div>
+										<div>{$i18n.t('Loading...')}</div>
 									</div>
 								</Loader>
 							{/if}

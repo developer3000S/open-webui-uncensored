@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type i18nType from 'i18next';
+	import type { i18n as i18nType } from 'i18next';
 	import { getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<i18nType>('i18n');
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { models, config } from '$lib/stores';
 
@@ -16,9 +16,9 @@
 	import type { Writable } from 'svelte/store';
 
 	export let show: any = false;
-	let variables: Record<string, any> = {};
+	export let variables: Record<string, any> = {};
 
-	export let onSave = (e: any) => {};
+	export let onSave: any = (e: any) => {};
 
 	let loading = true;
 	let variableValues: Record<string, any> = {};
@@ -70,7 +70,7 @@
 <Modal bind:show size="md">
 	<div>
 		<div class=" flex justify-between dark:text-gray-300 px-5 pt-4 pb-2">
-			<div class=" text-lg font-medium self-center">{i18n.t('Input Variables')}</div>
+			<div class=" text-lg font-medium self-center">{$i18n.t('Input Variables')}</div>
 			<button
 				class="self-center"
 				on:click={() => {
@@ -101,7 +101,7 @@
 												{variable}
 
 												{#if variables[variable]?.required ?? false}
-													<span class=" text-gray-500">*{i18n.t('required')}</span>
+													<span class=" text-gray-500">*{$i18n.t('required')}</span>
 												{/if}
 											</div>
 										</div>
@@ -144,7 +144,7 @@
 														<input
 															type="text"
 															class="flex-1 py-1 text-sm dark:text-gray-300 bg-transparent outline-hidden"
-															placeholder={i18n.t('Enter value (true/false)')}
+															placeholder={$i18n.t('Enter value (true/false)')}
 															bind:value={variableValues[variable]}
 															autocomplete="off"
 															required={variables[variable]?.required ?? false}
@@ -169,7 +169,7 @@
 														<input
 															type="text"
 															class="flex-1 py-2 text-sm dark:text-gray-300 bg-transparent outline-hidden"
-															placeholder={i18n.t('Enter hex color (e.g. #FF0000)')}
+															placeholder={$i18n.t('Enter hex color (e.g. #FF0000)')}
 															bind:value={variableValues[variable]}
 															autocomplete="off"
 															required={variables[variable]?.required ?? false}
@@ -245,7 +245,7 @@
 														<input
 															type="text"
 															class=" py-1 text-sm dark:text-gray-300 bg-transparent outline-hidden text-right"
-															placeholder={i18n.t('Enter value')}
+															placeholder={$i18n.t('Enter value')}
 															bind:value={variableValues[variable]}
 															autocomplete="off"
 															required={variables[variable]?.required ?? false}
@@ -321,7 +321,7 @@
 														<input
 															type="text"
 															class=" w-full py-1 text-left text-sm dark:text-gray-300 bg-transparent outline-hidden"
-															placeholder={i18n.t('Enter coordinates (e.g. 51.505, -0.09)')}
+															placeholder={$i18n.t('Enter coordinates (e.g. 51.505, -0.09)')}
 															bind:value={variableValues[variable]}
 															autocomplete="off"
 															required={variables[variable]?.required ?? false}
@@ -361,14 +361,14 @@
 								show = false;
 							}}
 						>
-							{i18n.t('Cancel')}
+							{$i18n.t('Cancel')}
 						</button>
 
 						<button
 							class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 							type="submit"
 						>
-							{i18n.t('Save')}
+							{$i18n.t('Save')}
 						</button>
 					</div>
 				</form>
@@ -380,7 +380,7 @@
 <Modal bind:show size="md">
 	<div>
 		<div class=" flex justify-between dark:text-gray-300 px-5 pt-4 pb-2">
-			<div class=" text-lg font-medium self-center">{i18n.t('Input Variables')}</div>
+			<div class=" text-lg font-medium self-center">{$i18n.t('Input Variables')}</div>
 			<button
 				class="self-center"
 				on:click={() => {
@@ -411,7 +411,7 @@
 												{variable}
 
 												{#if variables[variable]?.required ?? false}
-													<span class=" text-gray-500">*{i18n.t('required')}</span>
+													<span class=" text-gray-500">*{$i18n.t('required')}</span>
 												{/if}
 											</div>
 										</div>
@@ -454,7 +454,7 @@
 														<input
 															type="text"
 															class="flex-1 py-1 text-sm dark:text-gray-300 bg-transparent outline-hidden"
-															placeholder={i18n.t('Enter value (true/false)')}
+															placeholder={$i18n.t('Enter value (true/false)')}
 															bind:value={variableValues[variable]}
 															autocomplete="off"
 															required={variables[variable]?.required ?? false}
@@ -479,7 +479,7 @@
 														<input
 															type="text"
 															class="flex-1 py-2 text-sm dark:text-gray-300 bg-transparent outline-hidden"
-															placeholder={i18n.t('Enter hex color (e.g. #FF0000)')}
+															placeholder={$i18n.t('Enter hex color (e.g. #FF0000)')}
 															bind:value={variableValues[variable]}
 															autocomplete="off"
 															required={variables[variable]?.required ?? false}
@@ -555,7 +555,7 @@
 														<input
 															type="text"
 															class=" py-1 text-sm dark:text-gray-300 bg-transparent outline-hidden text-right"
-															placeholder={i18n.t('Enter value')}
+															placeholder={$i18n.t('Enter value')}
 															bind:value={variableValues[variable]}
 															autocomplete="off"
 															required={variables[variable]?.required ?? false}
@@ -631,7 +631,7 @@
 														<input
 															type="text"
 															class=" w-full py-1 text-left text-sm dark:text-gray-300 bg-transparent outline-hidden"
-															placeholder={i18n.t('Enter coordinates (e.g. 51.505, -0.09)')}
+															placeholder={$i18n.t('Enter coordinates (e.g. 51.505, -0.09)')}
 															bind:value={variableValues[variable]}
 															autocomplete="off"
 															required={variables[variable]?.required ?? false}
@@ -671,14 +671,14 @@
 								show = false;
 							}}
 						>
-							{i18n.t('Cancel')}
+							{$i18n.t('Cancel')}
 						</button>
 
 						<button
 							class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 							type="submit"
 						>
-							{i18n.t('Save')}
+							{$i18n.t('Save')}
 						</button>
 					</div>
 				</form>
