@@ -105,7 +105,7 @@
 				toast.success($i18n.t('Automation updated'));
 			}
 		} catch (e: any) {
-			toast.error(e?.detail ?? `${e}` ?? 'Failed to save');
+			toast.error((e?.detail as string | undefined) ?? `${e}`);
 		} finally {
 			saving = false;
 		}

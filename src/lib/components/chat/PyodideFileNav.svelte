@@ -1,8 +1,4 @@
 <script context="module">
-	import type { i18n as i18nType } from 'i18next';
-	import { getContext, onDestroy, onMount, tick } from 'svelte';
-	const i18n = getContext<Writable<i18nType>>('i18n');
-
 	let savedPyodidePath = '/mnt/uploads';
 </script>
 
@@ -19,7 +15,12 @@
 	import Folder from '../icons/Folder.svelte';
 	import Document from '../icons/Document.svelte';
 
+	import type { i18n as i18nType } from 'i18next';
 	import type { Writable } from 'svelte/store';
+	import { getContext, onDestroy, onMount, tick } from 'svelte';
+
+	const i18n = getContext<Writable<i18nType>>('i18n');
+
 	export let overlay: any = false;
 	// ── State ─────────────────────────────────────────────────────────────
 	let currentPath = savedPyodidePath;

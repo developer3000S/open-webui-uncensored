@@ -1,7 +1,5 @@
 <script context="module" lang="ts">
-	import type { i18n as i18nType } from 'i18next';
-	import { createEventDispatcher, getContext, onMount, tick } from 'svelte';
-	const i18n = getContext<Writable<i18nType>>('i18n');
+	import { createEventDispatcher } from 'svelte';
 
 	/** Shared 1×1 transparent drag preview; avoids one Image per sidebar row */
 	const invisibleDragImage = new Image();
@@ -34,10 +32,15 @@
 		currentChatPage,
 		tags,
 		selectedFolder,
-		activeChatIds,
 		settings,
+		activeChatIds,
 		user
 	} from '$lib/stores';
+	import { getContext, onMount, tick } from 'svelte';
+	import type { Writable } from 'svelte/store';
+	import type { i18n as i18nType } from 'i18next';
+
+	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import ChatMenu from './ChatMenu.svelte';
 	import DeleteConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
@@ -55,7 +58,6 @@
 	import { createMessagesList } from '$lib/utils';
 	import { getOutputText } from '$lib/components/chat/Messages/structuredOutput';
 
-	import type { Writable } from 'svelte/store';
 	const dispatch = createEventDispatcher();
 
 	export let className: any = '';

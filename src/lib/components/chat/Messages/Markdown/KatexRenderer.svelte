@@ -1,8 +1,4 @@
 <script lang="ts" context="module">
-	import type { i18n as i18nType } from 'i18next';
-	import { getContext, onMount } from 'svelte';
-	const i18n = getContext<Writable<i18nType>>('i18n');
-
 	import type { renderToString as katexRenderToString } from 'katex';
 
 	// Module-level singleton: load katex once, share across all KatexRenderer instances
@@ -23,13 +19,17 @@
 	import { copyToClipboard } from '$lib/utils';
 	import { toast } from 'svelte-sonner';
 
+	import type { i18n as i18nType } from 'i18next';
+	import { getContext, onMount } from 'svelte';
 	import type { Writable } from 'svelte/store';
+
+	const i18n = getContext<Writable<i18nType>>('i18n');
+
 	export let content: string;
 	export let displayMode: boolean = false;
 
 	let renderToString: typeof katexRenderToString | null = null;
 
-	// @ts-ignore
 	onMount(async () => {
 		renderToString = await getKatexRenderer();
 	});
@@ -45,21 +45,6 @@
 		}
 	}
 </script>
-
-{#if renderToString && renderedHTML}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
-	<svelte:element
-		this={displayMode ? 'div' : 'span'}
-		class="cursor-pointer"
-		on:click={() => {
-			copyToClipboard(content);
-			toast.success($i18n.t('Copied to clipboard'));
-		}}
-	>
-		{@html renderedHTML}
-	</svelte:element>
-{/if}
 
 {#if renderToString && renderedHTML}
 	<!-- svelte-ignore a11y-click-events-have-key-events -->

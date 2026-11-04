@@ -1,12 +1,14 @@
 <script context="module" lang="ts">
-	import type { i18n as i18nType } from 'i18next';
-	import { getContext, onDestroy, onMount, tick } from 'svelte';
-	const i18n = getContext<Writable<i18nType>>('i18n');
-
 	let savedTab: 'controls' | 'files' | 'overview' = 'controls';
 </script>
 
 <script lang="ts">
+	import { getContext, onDestroy, onMount, tick } from 'svelte';
+	import type { Writable } from 'svelte/store';
+	import type { i18n as i18nType } from 'i18next';
+
+	const i18n = getContext<Writable<i18nType>>('i18n');
+
 	import { SvelteFlowProvider } from '@xyflow/svelte';
 	import { slide } from 'svelte/transition';
 	import { Pane, PaneResizer } from 'paneforge';
@@ -38,7 +40,6 @@
 	import PyodideFileNav from './PyodideFileNav.svelte';
 	import Overview from './Overview.svelte';
 
-	import type { Writable } from 'svelte/store';
 	export let history: {
 		messages?: Record<string, any>;
 		currentId?: string | null;

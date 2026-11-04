@@ -30,7 +30,7 @@ export async function createOpenAITextStream(
 	splitLargeDeltas: boolean
 ): Promise<AsyncGenerator<TextStreamUpdate>> {
 	const eventStream = responseBody
-		.pipeThrough(new TextDecoderStream())
+		.pipeThrough(new TextDecoderStream() as unknown as ReadableWritablePair<string, Uint8Array>)
 		.pipeThrough(new EventSourceParserStream())
 		.getReader();
 	let iterator = openAIStreamToIterator(eventStream);

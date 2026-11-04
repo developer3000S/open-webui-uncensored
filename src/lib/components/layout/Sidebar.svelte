@@ -666,8 +666,9 @@
 				}
 			}),
 			settings.subscribe((value) => {
-				if (pinnedModels != value?.pinnedModels ?? []) {
-					pinnedModels = value?.pinnedModels ?? [];
+				const vp = value?.pinnedModels;
+				if (pinnedModels != (vp ?? [])) {
+					pinnedModels = vp ?? [];
 					showPinnedModels = pinnedModels.length > 0;
 				}
 			})
