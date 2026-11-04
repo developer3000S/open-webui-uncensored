@@ -1,4 +1,4 @@
-<script context="module">
+<script context="module" lang="ts">
 	import { marked } from 'marked';
 
 	import markedExtension from '$lib/utils/marked/extension';
