@@ -1,14 +1,13 @@
 import React, { memo, useEffect, useState, useCallback } from "react";
 import {
-  Crop, Sliders, Cpu, Info, MessageSquare, SlidersHorizontal, Zap,
+  Crop, Sliders, MessageSquare, SlidersHorizontal,
   ChevronDown, Image, Type, Settings2, Gauge, Brain, Sparkles,
-  Monitor, HardDrive, MemoryStick, Thermometer, Hash, Layers,
-  ChevronRight, Box, Wand2, Lightbulb, RotateCcw, Check, Palette, Volume2,
+  Monitor,
+  Check, Palette, Volume2,
   DownloadCloud, RefreshCw
 } from "lucide-react";
 import {
   stopServer,
-  formatBytes,
   getLlmBackends,
   getLlmStats,
   getLlmStatus,
@@ -38,7 +37,7 @@ const isSD15OrCustomModel = (modelName) => {
 };
 
 // ─── Collapsible Card Component ───
-function CollapsibleCard({ icon: Icon, title, subtitle, children, defaultExpanded = false, id, badge, badgeColor }) {
+function _CollapsibleCard({ icon: Icon, title, subtitle, children, defaultExpanded = false, id, badge, badgeColor }) {
   const [isExpanded, setIsExpanded] = useState(() => {
     const saved = localStorage.getItem(`settings_card_${id}`);
     return saved !== null ? saved === "true" : defaultExpanded;
@@ -97,7 +96,7 @@ function CollapsibleCard({ icon: Icon, title, subtitle, children, defaultExpande
 }
 
 // ─── Hardware Tier Badge Component ───
-function HardwareTierBadge({ specs }) {
+function _HardwareTierBadge({ specs }) {
   if (!specs?.tier) return null;
 
   const tierConfig = {
@@ -233,13 +232,13 @@ function Settings({
   setTtsSettings,
   showAlert = async ({ message }) => window.alert(message),
   showConfirm = async ({ message }) => window.confirm(message),
-  health,
-  cleanupItems,
-  isReadinessBusy,
-  refreshReadiness,
-  copyDiagnostics,
-  cleanupSafeItems,
-  diagnosticsCopied,
+  _health,
+  _cleanupItems,
+  _isReadinessBusy,
+  _refreshReadiness,
+  _copyDiagnostics,
+  _cleanupSafeItems,
+  _diagnosticsCopied,
   theme,
   setTheme,
   fontSize,
@@ -247,8 +246,8 @@ function Settings({
 }) {
   const [llmStatus, setLlmStatus] = useState({ ready: false, settings: {} });
   const [llmBackends, setLlmBackends] = useState({ available: [], candidates: [] });
-  const [llmStats, setLlmStats] = useState({ benchmarks: [] });
-  const [benchmarkBusy, setBenchmarkBusy] = useState(false);
+  const [_llmStats, setLlmStats] = useState({ benchmarks: [] });
+  const [_benchmarkBusy, setBenchmarkBusy] = useState(false);
   const [backendDownload, setBackendDownload] = useState({
     active: false,
     backendId: "",
@@ -343,7 +342,7 @@ function Settings({
 
   const isSD15OrCustom = activeModel ? isSD15OrCustomModel(activeModel) : false;
   const isOpenVinoNpu = constraints.backendType === "openvino-npu";
-  const supportsThinking = Boolean(llmStatus.ready && llmStatus.settings?.supportsThinking);
+  const _supportsThinking = Boolean(llmStatus.ready && llmStatus.settings?.supportsThinking);
   const availableBackends = backendOptions?.options?.length
     ? backendOptions.options
     : [{ id: "cpu", label: "CPU", available: true }];
@@ -499,7 +498,7 @@ function Settings({
     preferredBackend: settings?.preferredBackend,
   });
 
-  const handleBenchmarkTextBackend = async () => {
+  const _handleBenchmarkTextBackend = async () => {
     const model = llmStatus.settings?.model;
     if (!model) {
       showAlert({ title: "Текстовая модель не загружена", message: "Загрузите GGUF текстовую модель перед запуском бенчмарка.", danger: true });
@@ -530,7 +529,7 @@ function Settings({
     }
   };
 
-  const handleThinkingToggle = async (enabled) => {
+  const _handleThinkingToggle = async (enabled) => {
     const nextSettings = { ...pendingTextSettings, enableThinking: enabled };
 
     let status = null;

@@ -108,7 +108,7 @@ const OPENAI_API_BASE_URLS = config.OPENAI_API_BASE_URLS || {};
 										.then(async (res) => {
 											return res;
 										})
-										.catch((err) => {
+										.catch((_err) => {
 											return {
 												object: 'list',
 												data: [],
@@ -627,7 +627,7 @@ export const executeToolServer = async (
 
 		// Handle requestBody composite
 		if (operation.requestBody && operation.requestBody.content) {
-			const contentType = Object.keys(operation.requestBody.content)[0];
+			const _contentType = Object.keys(operation.requestBody.content)[0];
 			if (params !== undefined) {
 				bodyParams = params;
 			} else {

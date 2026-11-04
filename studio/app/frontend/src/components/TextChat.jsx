@@ -114,7 +114,7 @@ function TextChat({
   setActiveModel, 
   setServerRunning,
   conversations,
-  setConversations,
+  _setConversations,
   activeConversationId,
   setActiveConversationId,
   showHistory,
@@ -135,7 +135,7 @@ function TextChat({
   const [input, setInput] = useState("");
   const [isBusy, setIsBusy] = useState(false);
   const [useWebSearch, setUseWebSearch] = useState(false);
-  const [webTimeFilter, setWebTimeFilter] = useState("any");
+  const [webTimeFilter, _setWebTimeFilter] = useState("any");
   const [loadingModel, setLoadingModel] = useState(null);
   const [tokenUsage, setTokenUsage] = useState({
     prompt_tokens: 0,
@@ -192,7 +192,7 @@ function TextChat({
   const tokenBufferRef = useRef(null);
   const rafRef = useRef(null);
   // Debounced stats: only update stats pill every 250ms
-  const statsDebounceRef = useRef(null);
+  const _statsDebounceRef = useRef(null);
 
   const [attachments, setAttachments] = useState([]);
   const fileInputRef = useRef(null);

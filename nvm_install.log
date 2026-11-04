@@ -1,39 +1,0 @@
-nohup: ignoring input
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100 16563  100 16563    0     0  38896      0 --:--:-- --:--:-- --:--:-- 38880
-=> Downloading nvm from git to '/root/.nvm'
-=> Cloning into '/root/.nvm'...
-* (HEAD detached at FETCH_HEAD)
-  master
-=> Compressing and cleaning up git repository
-
-=> Appending nvm source string to /root/.bashrc
-=> Appending bash_completion source string to /root/.bashrc
-=> You currently have modules installed globally with `npm`. These will no
-=> longer be linked to the active version of Node when you install a new node
-=> with `nvm`; and they may (depending on how you construct your `$PATH`)
-=> override the binaries of modules installed with `nvm`:
-
-/usr/lib
-├── corepack@0.34.6
-=> If you wish to uninstall them at a later point (or re-install them under your
-=> `nvm` node installs), you can remove them from the system Node as follows:
-
-     $ nvm use system
-     $ npm uninstall -g a_module
-
-=> Close and reopen your terminal to start using nvm or run the following to use it now:
-
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-Downloading and installing node v22.23.3...
-Downloading https://nodejs.org/dist/v22.23.3/node-v22.23.3-linux-x64.tar.xz...
-#######################                                                   32.4%######################################################################## 100.0%
-Computing checksum with sha256sum
-Checksums matched!
-Now using node v22.23.3 (npm v10.9.9)
-Creating default alias: [0;32mdefault[0m [0;90m->[0m [0;32m22.23.3[0m ([0;90m->[0m [0;32mv22.23.3[0m)
-v22.23.3
-10.9.9

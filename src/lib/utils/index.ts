@@ -1505,7 +1505,7 @@ export const convertOpenApiToToolPayload = (openApiSpec) => {
 		return toolPayload;
 	}
 
-	for (const [path, methods] of Object.entries(openApiSpec.paths)) {
+	for (const [_path, methods] of Object.entries(openApiSpec.paths)) {
 		if (!methods || typeof methods !== 'object') continue;
 
 		// Path-level parameters apply to all operations under this path
@@ -2002,7 +2002,7 @@ export const renderMermaidDiagram = async (
 	}
 };
 
-export const renderVegaVisualization = async (spec: string, lang: string = '', i18n?: any) => {
+export const renderVegaVisualization = async (spec: string, lang: string = '', _i18n?: any) => {
 	const vega = await import('vega');
 	const parsedSpec = JSON.parse(spec);
 	const hasVegaLiteKeys =

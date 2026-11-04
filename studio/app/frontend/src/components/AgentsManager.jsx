@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useLayoutEffect } from "react";
-import { Cpu, Plus, Trash2, Play, StopCircle, UploadCloud, MessageSquare, Settings, Database, Activity, FileText, Terminal, Loader2, ChevronDown, Bot, Send, Square, Paperclip, Globe2, X } from "lucide-react";
+import { Cpu, Plus, Trash2, Play, StopCircle, UploadCloud, MessageSquare, Settings, Database, Activity, FileText, Terminal, Loader2, ChevronDown, Send, Square, Paperclip, Globe2, X } from "lucide-react";
 import { streamAgentChat, getLlmStatus } from "../services/api";
 import { MarkdownRenderer } from "./TextChat";
 
@@ -128,12 +128,12 @@ export default function AgentsManager({ showAlert, showConfirm, selectedAgentIdF
   const [attachments, setAttachments] = useState([]);
   const [useWebSearch, setUseWebSearch] = useState(false);
   const [deepThinkEnabled, setDeepThinkEnabled] = useState(false);
-  const [webTimeFilter, setWebTimeFilter] = useState("any");
+  const [_webTimeFilter, _setWebTimeFilter] = useState("any");
   const composerFileInputRef = useRef(null);
 
-  const supportsVision = Boolean(status.ready && status.settings?.supportsVision);
+  const _supportsVision = Boolean(status.ready && status.settings?.supportsVision);
   const supportsThinking = Boolean(status.ready && status.settings?.supportsThinking);
-  const visionStatus = status.settings?.visionStatus || "Ввод изображений требует mmproj-файла проектора.";
+  const _visionStatus = status.settings?.visionStatus || "Ввод изображений требует mmproj-файла проектора.";
 
   const isImage = (file) => {
     return /\.(jpe?g|png|webp)$/i.test(file.name) || file.type.startsWith("image/");
@@ -630,9 +630,9 @@ export default function AgentsManager({ showAlert, showConfirm, selectedAgentIdF
     // Insert assistant placeholder for streaming
     setChatMessages(prev => [...prev, { role: "assistant", content: "", reasoning: "", thinkingDuration: 0, webSources: [] }]);
 
-    const requestStartedAt = performance.now();
+    const _requestStartedAt = performance.now();
     let streamedTokens = 0;
-    let firstTokenAt = null;
+    let _firstTokenAt = null;
     let thinkingStartedAt = null;
     let thinkingEndedAt = null;
     let thinkingDuration = 0;
@@ -640,13 +640,13 @@ export default function AgentsManager({ showAlert, showConfirm, selectedAgentIdF
     try {
       await streamAgentChat(selectedAgent.id, requestUserMessageContent, {
         useWeb: useWebSearch,
-        timeFilter: webTimeFilter,
+        timeFilter: _webTimeFilter,
         enableThinking: deepThinkEnabled,
         signal: controller.signal
       }, (token, fullText, reasoningToken, fullReasoning, webSources) => {
         const now = performance.now();
         if (streamedTokens === 0) {
-          firstTokenAt = now;
+          _firstTokenAt = now;
         }
         streamedTokens += 1;
 

@@ -1,7 +1,7 @@
-globalThis.__sveltekit_1l335hr = {
+globalThis.__sveltekit_ksoe64 = {
 	base: location.pathname.split('/').slice(0, -1).join('/'),
 	env: {
 		// empty
 	},
-	version: "5155d691dfbe6a7dfe7d98551a5f29cd995e802a"
+	version: "ebfdd3b497f189f6c0626bed70d0638a30148ccf"
 };

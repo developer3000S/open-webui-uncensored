@@ -31,7 +31,6 @@ const validateCredentials = () => {
 	}
 };
 
-let pickerApiLoaded = false;
 let oauthToken: string | null = null;
 let initialized = false;
 
@@ -41,16 +40,14 @@ export const loadGoogleDriveApi = () => {
 			const script = document.createElement('script');
 			script.src = 'https://apis.google.com/js/api.js';
 			script.onload = () => {
-				gapi.load('picker', () => {
-					pickerApiLoaded = true;
-					resolve(true);
-				});
+			gapi.load('picker', () => {
+				resolve(true);
+			});
 			};
 			script.onerror = reject;
 			document.body.appendChild(script);
 		} else {
 			gapi.load('picker', () => {
-				pickerApiLoaded = true;
 				resolve(true);
 			});
 		}
@@ -138,7 +135,6 @@ export const createPicker = () => {
 								const doc = data[google.picker.Response.DOCUMENTS][0];
 								const fileId = doc[google.picker.Document.ID];
 								const fileName = doc[google.picker.Document.NAME];
-								const fileUrl = doc[google.picker.Document.URL];
 
 								if (!fileId || !fileName) {
 									throw new Error('Required file details missing');

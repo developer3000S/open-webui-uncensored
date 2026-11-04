@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent } from '@testing-library/svelte';
 import SearchInput from './SearchInput.svelte';
-import { getAllTags } from '$lib/apis/chats';
-
 // Mock the getAllTags function
 vi.mock('$lib/apis/chats', () => ({
     getAllTags: vi.fn().mockResolvedValue([

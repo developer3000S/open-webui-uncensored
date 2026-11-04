@@ -96,7 +96,7 @@ export const formatPythonCode = async (token: string, code: string) => {
 };
 
 export const downloadChatAsPDF = async (token: string, title: string, messages: object[]) => {
-	let error: any = null;
+	let _error: any = null;
 
 	const blob = await fetch(`${WEBUI_API_BASE_URL}/utils/pdf`, {
 		method: 'POST',
@@ -115,7 +115,7 @@ export const downloadChatAsPDF = async (token: string, title: string, messages: 
 		})
 		.catch((err) => {
 			console.error(err);
-			error = err;
+			_error = err;
 			return null;
 		});
 
@@ -125,7 +125,7 @@ export const downloadChatAsPDF = async (token: string, title: string, messages: 
 export const downloadDatabase = async (token: string) => {
 	let error: any = null;
 
-	const res = await fetch(`${WEBUI_API_BASE_URL}/utils/db/download`, {
+	await fetch(`${WEBUI_API_BASE_URL}/utils/db/download`, {
 		method: 'GET',
 		headers: {
 			'Content-Type': 'application/json',
@@ -157,3 +157,4 @@ export const downloadDatabase = async (token: string) => {
 		throw error;
 	}
 };
+

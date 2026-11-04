@@ -49,7 +49,7 @@ function Generator({
   setIsGenerating,
   generationProgress,
   setGenerationProgress,
-  setActiveTab,
+  _setActiveTab,
   showAlert = async ({ message }) => window.alert(message),
   showConfirm = async ({ message }) => window.confirm(message),
   specs,
@@ -76,7 +76,7 @@ function Generator({
   const abortControllerRef = useRef(null);
   const hasRealGenerationStepRef = useRef(false);
 
-  const handleEnhancePrompt = async () => {
+  const _handleEnhancePrompt = async () => {
     if (!prompt.trim() || isEnhancing || isGenerating) return;
     setIsEnhancing(true);
     try {

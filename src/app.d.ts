@@ -1,6 +1,8 @@
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const APP_VERSION: string;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const APP_BUILD_HASH: string;
 
 declare global {

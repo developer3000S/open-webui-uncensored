@@ -176,7 +176,7 @@ function katexTokenizer(src: any, tokens: any, displayMode: boolean) {
 	}
 }
 
-function inlineKatex(options: any) {
+function inlineKatex(_options: any) {
 	return {
 		name: 'inlineKatex',
 		level: 'inline',
@@ -192,7 +192,7 @@ function inlineKatex(options: any) {
 	};
 }
 
-function blockKatex(options: any) {
+function blockKatex(_options: any) {
 	return {
 		name: 'blockKatex',
 		level: 'block',

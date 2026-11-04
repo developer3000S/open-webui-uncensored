@@ -133,7 +133,7 @@ function formatTranscriptText(transcription, showTimestamps) {
 
 export default function SpeechTranscriber({
   showAlert,
-  showConfirm,
+  _showConfirm,
   selectedTranscript,
   onTranscriptionsChanged,
   speechSettings,
@@ -169,7 +169,7 @@ export default function SpeechTranscriber({
     status.settings?.model === selectedModel &&
     (status.settings?.backendPreference || "auto") === backendPreference;
 
-  const isEnglishOnly = useMemo(() => {
+  const _isEnglishOnly = useMemo(() => {
     if (!selectedModel) return false;
     const model = models.find((m) => m.filename === selectedModel);
     return model?.language === "English" || selectedModel.toLowerCase().includes(".en");

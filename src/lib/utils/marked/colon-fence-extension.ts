@@ -49,7 +49,7 @@ function colonFenceExtension() {
 	};
 }
 
-export default (options: any = {})  => {
+export default (_options: any = {})  => {
 	return {
 		extensions: [colonFenceExtension()]
 	};
