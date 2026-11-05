@@ -18,7 +18,7 @@
 
 	let tab: StudioTab | null = null;
 	$: {
-		const t = $page.url.searchParams.get('tab');
+		const t = new URLSearchParams(window.location.search).get('tab');
 		tab = (STUDIO_TABS as readonly string[]).includes(t ?? '') ? (t as StudioTab) : null;
 	}
 

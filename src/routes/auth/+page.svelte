@@ -186,13 +186,13 @@
 			}
 		}
 
-		const error = $page.url.searchParams.get('error');
+		const error = new URLSearchParams(window.location.search).get('error');
 		if (error) {
 			toast.error(error);
 		}
 
 		await oauthCallbackHandler();
-		form = $page.url.searchParams.get('form');
+		form = new URLSearchParams(window.location.search).get('form');
 
 		// Auto-redirect to SSO when OAUTH_AUTO_REDIRECT is enabled and the
 		// deployment is unambiguously SSO-only (single provider, no login form,

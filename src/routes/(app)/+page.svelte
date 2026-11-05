@@ -3,11 +3,10 @@
 	import { toast } from 'svelte-sonner';
 
 	import Chat from '$lib/components/chat/Chat.svelte';
-	import { page } from '$app/stores';
-
+	
 	onMount(() => {
-		if ($page.url.searchParams.get('error')) {
-			toast.error($page.url.searchParams.get('error') || 'An unknown error occurred.');
+		if (new URLSearchParams(window.location.search).get('error')) {
+			toast.error(new URLSearchParams(window.location.search).get('error') || 'An unknown error occurred.');
 		}
 	});
 </script>

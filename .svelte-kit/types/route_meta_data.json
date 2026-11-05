@@ -1,158 +1,214 @@
 {
 	"/(app)": [
 		"src/routes/+layout.js",
-		"src/routes/+layout.js"
+		"src/routes/+layout.server.ts",
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/admin": [
 		"src/routes/+layout.js",
-		"src/routes/+layout.js"
+		"src/routes/+layout.server.ts",
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/admin/analytics": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/admin/analytics/[tab]": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/admin/evaluations": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/admin/evaluations/[tab]": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/admin/functions": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/admin/functions/create": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/admin/functions/edit": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/admin/settings": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/admin/settings/[tab]": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/admin/users": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/admin/users/[tab]": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/auth": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/automations": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/automations/[id]": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/calendar": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/channels/[id]": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/coder": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/c/[id]": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/error": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/home": [
 		"src/routes/+layout.js",
-		"src/routes/+layout.js"
+		"src/routes/+layout.server.ts",
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/notes": [
 		"src/routes/+layout.js",
-		"src/routes/+layout.js"
+		"src/routes/+layout.server.ts",
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/notes/new": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/notes/[id]": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/playground": [
 		"src/routes/+layout.js",
-		"src/routes/+layout.js"
+		"src/routes/+layout.server.ts",
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/playground/completions": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/playground/images": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/studio": [
 		"src/routes/(app)/studio/+layout.ts",
 		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts",
 		"src/routes/(app)/studio/+layout.ts",
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/s/[id]": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/watch": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/workspace": [
 		"src/routes/+layout.js",
-		"src/routes/+layout.js"
+		"src/routes/+layout.server.ts",
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/workspace/functions/create": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/workspace/knowledge": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/workspace/knowledge/create": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/workspace/knowledge/[id]": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/workspace/models": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/workspace/models/create": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/workspace/models/edit": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/workspace/prompts": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/workspace/prompts/create": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/workspace/prompts/[id]": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/workspace/skills": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/workspace/skills/create": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/workspace/skills/edit": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/workspace/tools": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/workspace/tools/create": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	],
 	"/(app)/workspace/tools/edit": [
-		"src/routes/+layout.js"
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
 	]
 }

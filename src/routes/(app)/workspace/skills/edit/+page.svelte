@@ -10,14 +10,14 @@
 	import type { Writable } from 'svelte/store';
 
 	import { getSkillById, getSkills, updateSkillById } from '$lib/apis/skills';
-	import { page } from '$app/stores';
+	import { page } from '$app/navigation';
 
 	import SkillEditor from '$lib/components/workspace/Skills/SkillEditor.svelte';
 
 	let skill: any = null;
 	let disabled = false;
 
-	$: skillId = $page.url.searchParams.get('id');
+	$: skillId = new URLSearchParams(window.location.search).get('id');
 
 	const onSubmit = async (_skill: any) => {
 		const updatedSkill = await updateSkillById(localStorage.token, skillId, _skill).catch(

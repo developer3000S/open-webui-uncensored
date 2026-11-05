@@ -9,8 +9,8 @@
 
 	// @ts-ignore
 	onMount(async () => {
-		const title = $page.url.searchParams.get('title') ?? dayjs().format('YYYY-MM-DD');
-		const content = $page.url.searchParams.get('content') ?? '';
+		const title = new URLSearchParams(window.location.search).get('title') ?? dayjs().format('YYYY-MM-DD');
+		const content = new URLSearchParams(window.location.search).get('content') ?? '';
 
 		const res = await createNoteHandler(title, content);
 

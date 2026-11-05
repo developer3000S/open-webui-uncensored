@@ -1,4 +1,13 @@
 {
+  "extends": "$app/tsconfig",
+  "include": [
+    "src",
+    "test",
+    "*"
+  ],
+  "exclude": [
+    "src/service-worker"
+  ],
   "compilerOptions": {
     "paths": {
       "$lib": [
@@ -13,17 +22,5 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true
-  },
-  "include": [
-    "src",
-    "test",
-    "*"
-  ],
-  "exclude": [
-    "src/service-worker",
-    "studio",
-    "build",
-    "node_modules",
-    ".svelte-kit"
-  ]
+  }
 }

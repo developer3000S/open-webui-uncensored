@@ -1,0 +1,94 @@
+<script lang="ts">
+    import { onMount } from 'svelte';
+    import { goto } from '$app/navigation';
+    import { page } from '$app/navigation';
+    import { createNoteHandler } from '$lib/apis/notes';
+    import dayjs from 'dayjs';
+    import { showSidebar } from '$lib/stores';
+    import { mobile } from '$lib/stores';
+    import Tooltip from '$lib/components/common/Tooltip.svelte';
+    import NoteEditor from '$lib/components/notes/NoteEditor.svelte';
+    import { $i18n } from '$lib/i18n';
+
+    let loaded = false;
+
+    // @ts-ignore
+    onMount(async () => {
+        if (
+            new URLSearchParams(window.location.search).get('content') !== null ||
+            new URLSearchParams(window.location.search).get('title') !== null
+        ) {
+            const title = new URLSearchParams(window.location.search).get('title') ?? dayjs().format('YYYY-MM-DD');
+            const content = new URLSearchParams(window.location.search).get('content') ?? '';
+
+            const res = await createNoteHandler(title, content);
+
+            if (res) {
+                goto(`/notes/${res.id}`);
+            }
+            return;
+        }
+
+        loaded = true;
+    });
+</script>
+
+{#if loaded}
+    <div
+        class=" flex flex-col w-full h-screen max-h-[100dvh] transition-width duration-200 ease-in-out {$showSidebar
+            ? 'md:max-w-[calc(100%-var(--sidebar-width))]'
+            : ''} max-w-full"
+    >
+        <nav class="   px-2 pt-1.5 backdrop-blur-xl w-full drag-region">
+            <div class=" flex items-center">
+                {#if $mobile}
+                    <div class="{$showSidebar ? 'md:hidden' : ''} flex flex-none items-center">
+                        <Tooltip
+                            content={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
+                            interactive={true}
+                        >
+                            <button
+                                id="sidebar-toggle-button"
+                                class=" cursor-pointer flex rounded-lg hover:bg-gray-100 dark:hover:bg-gray-850 transition cursor-"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-6 w-6"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    {#if $showSidebar}
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12"
+                                        />
+                                    {:else}
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M4 6h16M4 12h16M4 18h16"
+                                        />
+                                    {/if}
+                                </svg>
+                            </button>
+                        </Tooltip>
+                    </div>
+                {/if}
+
+                <div class="flex-1 flex justify-center">
+                    <h1 class="text-xl font-medium">
+                        {$i18n.t('New Note')}
+                    </h1>
+                </div>
+            </div>
+        </nav>
+
+        <div class="flex-1 overflow-auto">
+            <NoteEditor />
+        </div>
+    </div>
+{/if}

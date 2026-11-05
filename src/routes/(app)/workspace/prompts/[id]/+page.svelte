@@ -17,7 +17,7 @@
 	let disabled = false;
 
 	// Get prompt ID from route params
-	$: promptId = $page.params.id;
+	$: promptId = page.params.id;
 
 	const onSubmit = async (_prompt: any) => {
 		console.log(_prompt);

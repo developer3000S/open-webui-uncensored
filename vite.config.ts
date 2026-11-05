@@ -10,6 +10,8 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 // Known-benign upstream Svelte compiler warnings that do not break the build
 // and come from the open-webui upstream sources.
 const IGNORED_SWELTE_CODES = new Set([
+  'missing-exports-condition', // Ignore svelte field without exports condition
+
   'export_let_unused',
   'element_invalid_self_closing_tag',
   'a11y_consider_explicit_label',
@@ -30,6 +32,10 @@ export default defineConfig({
     alias: {
       $lib: new URL('./src/lib', import.meta.url).pathname
     }
+  },
+  // Отключаем статический анализ, чтобы обойти проблему с parseSync
+  optimizeDeps: {
+    exclude: ['@sveltejs/kit']
   },
   plugins: [
     sveltekit({
@@ -93,5 +99,9 @@ export default defineConfig({
   worker: {
     format: 'es'
   },
-  esbuild: {}
+  esbuild: {
+    supported: {
+      'svelte:preprocess': true
+    }
+  }
 });

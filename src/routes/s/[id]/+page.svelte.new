@@ -1,0 +1,134 @@
+<script lang="ts">
+    import { onMount } from 'svelte';
+    import { page } from '$app/navigation';
+    import { goto, tick } from '$app/navigation';
+    import { createMessagesList } from '$lib/utils';
+    import { chatId, chat, history, messages, loaded, settings, models, user } from '$lib/stores';
+    import { getChatByShareId, getUserInfoById, getUserSettings, getModels } from '$lib/apis';
+    import { $i18n } from '$lib/i18n';
+
+    let selectedModels = [''];
+
+    $: messages = createMessagesList(history, history.currentId);
+
+    $: if (page.params.id) {
+        (async () => {
+            if (await loadSharedChat()) {
+                await tick();
+                loaded = true;
+            } else {
+                await goto('/');
+            }
+        })();
+    }
+
+    const loadSharedChat = async () => {
+        const userSettings = await getUserSettings(localStorage.token).catch((error) => {
+            console.error(error);
+            return null;
+        });
+
+        if (userSettings) {
+            settings.set(userSettings.ui);
+        } else {
+            let localStorageSettings = {} as Parameters<(typeof settings)['set']>[0];
+
+            try {
+                localStorageSettings = JSON.parse(localStorage.getItem('settings') ?? '{}');
+            } catch (e: unknown) {
+                console.error('Failed to parse settings from localStorage', e);
+            }
+
+            settings.set(localStorageSettings);
+        }
+
+        await models.set(
+            await getModels(
+                localStorage.token,
+                $config?.features?.enable_direct_connections ? $settings?.directConnections || {} : null
+            )
+        );
+        await chatId.set(page.params.id);
+        chat = await getChatByShareId(localStorage.token, $chatId).catch(async (error: any) => {
+            await goto('/');
+            return null;
+        });
+
+        if (chat) {
+            user = await getUserInfoById(localStorage.token, chat.user_id!).catch((error) => {
+                console.error(error);
+                return null;
+            });
+
+            const chatContent = chat.chat;
+
+            if (chatContent) {
+                console.log(chatContent);
+
+                selectedModels =
+                    (chatContent?.models ?? undefined) !== undefined
+                        ? chatContent.models
+                        : [chatContent.models ?? ''];
+                history =
+                    (chatContent?.history ?? undefined) !== undefined
+                        ? chatContent.history
+                        : [];
+
+                if (chatContent?.currentId) {
+                    history.currentId = chatContent.currentId;
+                }
+
+                if (chatContent?.title) {
+                    document.title = `${chatContent.title} • ${$i18n.t('Open WebUI')}`;
+                }
+            }
+        }
+    };
+</script>
+
+{#if loaded}
+    <div class="flex flex-col w-full h-screen max-h-[100dvh] transition-width duration-200 ease-in-out {$showSidebar ? 'md:max-w-[calc(100%-var(--sidebar-width))]' : ''} max-w-full">
+        <nav class="px-2.5 pt-1.5 backdrop-blur-xl w-full drag-region">
+            <div class="flex items-center">
+                {#if $mobile}
+                    <div class="{$showSidebar ? 'md:hidden' : ''} flex flex-none items-center self-end">
+                        <Tooltip
+                            content={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
+                            interactive={true}
+                        >
+                            <button
+                                id="sidebar-toggle-button"
+                                class="cursor-pointer flex rounded-lg hover:bg-gray-100 dark:hover:bg-gray-850 transition cursor-pointer"
+                                on:click={() => {
+                                    showSidebar.set(!$showSidebar);
+                                }}
+                            >
+                                <div class="self-center p-1.5">
+                                    <Sidebar />
+                                </div>
+                            </button>
+                        </Tooltip>
+                    </div>
+                {/if}
+
+                <div class="flex-1 flex justify-center">
+                    <h1 class="text-xl font-medium">
+                        {$i18n.t('Shared Chat')}
+                    </h1>
+                </div>
+            </div>
+        </nav>
+
+        <div class="flex-1 overflow-auto">
+            <Chat
+                chatIdProp={$chatId}
+                chatTitle={chat?.title || $i18n.t('Shared Chat')}
+                userInfo={user}
+                selectedModels={selectedModels}
+                onModelSelect={(models) => {
+                    selectedModels = models;
+                }}
+            />
+        </div>
+    </div>
+{/if>

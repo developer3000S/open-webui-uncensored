@@ -57,7 +57,7 @@
 				>
 					<a
 						draggable="false"
-						class="min-w-fit p-1.5 {['/playground', '/playground/'].includes($page.url.pathname)
+						class="min-w-fit p-1.5 {['/playground', '/playground/'].includes(window.location.pathname)
 							? ''
 							: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
 						href="/playground">{$i18n.t('Chat')}</a
@@ -72,7 +72,7 @@
 
 					<a
 						draggable="false"
-						class="min-w-fit p-1.5 {$page.url.pathname.includes('/playground/completions')
+						class="min-w-fit p-1.5 {window.location.pathname.includes('/playground/completions')
 							? ''
 							: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
 						href="/playground/completions">{$i18n.t('Completions')}</a
@@ -80,7 +80,7 @@
 
 					<a
 						draggable="false"
-						class="min-w-fit p-1.5 {$page.url.pathname.includes('/playground/images')
+						class="min-w-fit p-1.5 {window.location.pathname.includes('/playground/images')
 							? ''
 							: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
 						href="/playground/images">{$i18n.t('Images')}</a
@@ -129,7 +129,7 @@
 				>
 					<a
 						draggable="false"
-						class="min-w-fit p-1.5 {['/playground', '/playground/'].includes($page.url.pathname)
+						class="min-w-fit p-1.5 {['/playground', '/playground/'].includes(window.location.pathname)
 							? ''
 							: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
 						href="/playground">{$i18n.t('Chat')}</a
@@ -144,7 +144,7 @@
 
 					<a
 						draggable="false"
-						class="min-w-fit p-1.5 {$page.url.pathname.includes('/playground/completions')
+						class="min-w-fit p-1.5 {window.location.pathname.includes('/playground/completions')
 							? ''
 							: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
 						href="/playground/completions">{$i18n.t('Completions')}</a
@@ -152,7 +152,7 @@
 
 					<a
 						draggable="false"
-						class="min-w-fit p-1.5 {$page.url.pathname.includes('/playground/images')
+						class="min-w-fit p-1.5 {window.location.pathname.includes('/playground/images')
 							? ''
 							: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
 						href="/playground/images">{$i18n.t('Images')}</a
