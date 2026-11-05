@@ -835,7 +835,7 @@
 									? 'size-14'
 									: 'size-12'}  transition-all rounded-full bg-cover bg-center bg-no-repeat"
 						style={`background-image: url('${WEBUI_API_BASE_URL}/models/model/profile/image?id=${model?.id}&lang=${$i18n.language}&voice=true');`}
-					/>
+					></div>
 				{/if}
 				<!-- navbar -->
 			</button>
@@ -911,7 +911,7 @@
 										? 'size-44'
 										: 'size-40'} transition-all rounded-full bg-cover bg-center bg-no-repeat"
 							style={`background-image: url('${WEBUI_API_BASE_URL}/models/model/profile/image?id=${model?.id}&lang=${$i18n.language}&voice=true');`}
-						/>
+						></div>
 					{/if}
 				</button>
 			{:else}
@@ -922,12 +922,13 @@
 						autoplay
 						class="rounded-2xl h-full min-w-full object-cover object-center"
 						playsinline
-					/>
+					></video>
 
-					<canvas id="camera-canvas" style="display:none;" />
+					<canvas id="camera-canvas" style="display:none;"></canvas>
 
 					<div class=" absolute top-4 md:top-8 left-4">
 						<button
+							aria-label="Stop camera"
 							type="button"
 							class="p-1.5 text-white cursor-pointer backdrop-blur-xl bg-black/10 rounded-full"
 							on:click={() => {
@@ -986,6 +987,7 @@
 						}}
 					>
 						<button class="p-3 rounded-full bg-gray-50 dark:bg-gray-900" type="button">
+							aria-label="Switch camera"
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								viewBox="0 0 20 20"
@@ -1003,6 +1005,7 @@
 				{:else}
 					<Tooltip content={$i18n.t('Camera')}>
 						<button
+							aria-label="Start camera"
 							class="p-3 rounded-full bg-gray-50 dark:bg-gray-900"
 							type="button"
 							on:click={async () => {
@@ -1088,6 +1091,7 @@
 				</Tooltip>
 
 				<button
+					aria-label="Close call"
 					class="p-3 rounded-full bg-gray-50 dark:bg-gray-900"
 					on:click={async () => {
 						await stopAudioStream();

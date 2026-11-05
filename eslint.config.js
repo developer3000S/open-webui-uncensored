@@ -24,6 +24,7 @@ const sharedGlobals = {
   // Web/Worker standard types used as type annotations (not values) in sources.
   RequestInit: 'readonly',
   Transferable: 'readonly',
+  ReadableWritablePair: 'readonly',
   // Google platform scripts loaded at runtime in the browser
   // (src/lib/utils/google-drive-picker.ts uses gapi/google pickers).
   gapi: 'readonly',
@@ -135,8 +136,10 @@ const ignoreConfig = {
     '.svelte-kit/**',
     'build/**',
     'dist/**',
-    'studio/app/dist/**',
-    'studio/app/frontend/dist/**',
+    // `studio/` is a vendored subproject with its own package.json, Vite and
+    // Vue configs. It must not be linted/parsed by the root tooling: doing so
+    // made the root config discovery and ESLint runs fail.
+    'studio/**',
     'backend/open_webui/static/**',
     'backend/data/**',
     'static/pyodide/**',
@@ -181,9 +184,11 @@ const svelteGlobalsConfig = {
     globals: sharedGlobals,
   },
   rules: {
-    // `svelte/valid-compile` requires compiler options matching vite config;
-    // keep it off to avoid false positives from legacy syntax in components.
-    'svelte/valid-compile': 'off',
+    // Без этого правила битый Svelte-синтаксис доходит до `vite build`.
+    // ignoreWarnings: true — легаси-предупреждения (a11y, self-closing,
+    // export_let_unused) не должны блокировать lint, но реальные ошибки
+    // компиляции обязаны.
+    'svelte/valid-compile': ['error', { ignoreWarnings: true }],
   },
 };
 

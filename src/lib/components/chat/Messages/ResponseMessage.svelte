@@ -781,7 +781,7 @@
 												document.getElementById('confirm-edit-message-button')?.click();
 											}
 										}}
-									/>
+									></textarea>
 								{/if}
 
 								<div class=" mt-2 mb-1 flex justify-between text-sm font-medium">
@@ -1325,6 +1325,7 @@
 									{#if $user?.role === 'admin' || ($user?.permissions?.chat?.regenerate_response ?? true)}
 										{#if $settings?.regenerateMenu ?? true}
 											<button
+												aria-label="Regenerate response"
 												type="button"
 												class="hidden regenerate-response-button"
 												on:click={() => {
@@ -1343,7 +1344,7 @@
 														});
 													});
 												}}
-											/>
+											></button>
 
 											<RegenerateMenu
 												onRegenerate={(prompt = null) => {

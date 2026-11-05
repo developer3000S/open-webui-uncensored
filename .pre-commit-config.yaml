@@ -6,3 +6,14 @@ repos:
         args: [--fix, backend]
       - id: ruff-format
         args: [backend]
+
+  - repo: local
+    hooks:
+      # svelte-check ловит битый Svelte-синтаксис и ошибки типов, которые
+      # `ruff`/`eslint` не видят. Запускается только при изменениях фронтенда.
+      - id: frontend-check
+        name: svelte-check
+        entry: npm run check
+        language: system
+        files: '^src/.*\.(svelte|ts|js)$'
+        pass_filenames: false

@@ -8,6 +8,8 @@ yarn.lock
 node_modules
 /build
 /.svelte-kit
+# Vendored subproject with its own tooling and dependencies
+/studio
 /package
 .env
 .env.*

@@ -147,7 +147,7 @@
 							{#if $user?.is_active ?? true}
 								<div>
 									<span class="relative flex size-2">
-										<span class="relative inline-flex rounded-full size-2 bg-green-500" />
+										<span class="relative inline-flex rounded-full size-2 bg-green-500"></span>
 									</span>
 								</div>
 
@@ -155,7 +155,7 @@
 							{:else}
 								<div>
 									<span class="relative flex size-2">
-										<span class="relative inline-flex rounded-full size-2 bg-gray-500" />
+										<span class="relative inline-flex rounded-full size-2 bg-gray-500"></span>
 									</span>
 								</div>
 
@@ -676,6 +676,7 @@
 							: ''}
 					>
 						<div
+							role="status"
 							class="flex rounded-xl py-1 px-3 text-xs gap-2.5 items-center"
 							on:mouseenter={() => {
 								if ($config?.features?.enable_public_active_users_count || role === 'admin') {
@@ -685,7 +686,7 @@
 						>
 							<div class=" flex items-center">
 								<span class="relative flex size-2">
-									<span class="relative inline-flex rounded-full size-2 bg-green-500" />
+									<span class="relative inline-flex rounded-full size-2 bg-green-500"></span>
 								</span>
 							</div>
 

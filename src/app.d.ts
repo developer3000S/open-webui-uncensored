@@ -19,6 +19,12 @@ declare global {
 	var gapi: any;
 	var google: any;
 
+	// ВАЖНО: здесь намеренно объявлены только те свойства, которых НЕТ в
+	// lib.dom. Переобъявление существующих членов (например, `style` у
+	// HTMLElement, `querySelectorAll` у Node, `style` у Element) вызывало
+	// конфликты внутри lib.dom.d.ts и дублирующиеся index signature.
+	// Новый код должен использовать точные типы (`HTMLInputElement` и т.п.),
+	// а не полагаться на этот legacy-shim.
 	interface EventTarget {
 		value?: any;
 		src?: any;
@@ -35,19 +41,16 @@ declare global {
 	interface Node {
 		style?: any;
 		classList?: any;
-		querySelectorAll?: any;
 	}
 
 	interface Element {
 		click?: any;
-		style?: any;
 		contentWindow?: any;
 	}
 
 	interface HTMLElement {
 		value?: any;
 		select?: any;
-		style?: any;
 		src?: any;
 		videoWidth?: any;
 		videoHeight?: any;

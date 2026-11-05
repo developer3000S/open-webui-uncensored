@@ -1,6 +1,12 @@
 <script context="module">
-	// Persists across mount/unmount cycles (module-level, not per-instance)
+	// Persists across mount/unmount cycles (module-level, not per-instance).
+	// Access is wrapped in functions so assignments inside reactive blocks are
+	// not mistaken for reactive state updates.
 	let savedPath = '/';
+	const getSavedPath = () => savedPath;
+	const setSavedPath = (value) => {
+		savedPath = value;
+	};
 </script>
 
 <script lang="ts">
@@ -272,7 +278,7 @@
 			if (chatChanged && chatId && !oldChatId) {
 				// Chat just got created (null → real ID): persist the current
 				// browsed path as the new session's cwd — don't re-fetch.
-				setCwd(terminal.url, terminal.key, savedPath, chatId);
+				setCwd(terminal.url, terminal.key, getSavedPath(), chatId);
 			} else if (terminalChanged || chatChanged) {
 				// Terminal switched, new chat started, or switched between
 				// existing chats — re-fetch the session cwd.
@@ -285,8 +291,8 @@
 						terminalEnabled = config?.features?.terminal !== false;
 					}
 
-					savedPath = applyCwd(await getCwd(terminal.url, terminal.key, chatId ?? undefined));
-					loadDir(savedPath);
+					setSavedPath(applyCwd(await getCwd(terminal.url, terminal.key, chatId ?? undefined)));
+					loadDir(getSavedPath());
 				})();
 			}
 		}
@@ -1300,10 +1306,19 @@
 		{/if}
 
 		<!-- Content -->
+		<!-- Клик по пустой области снимает выделение; клавиатурный аналог — Escape. -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 		<div
 			class="flex-1 overflow-y-auto min-h-0 min-w-0"
+			role="region"
+			aria-label={$i18n.t('Files')}
+			tabindex="-1"
 			on:click={(e) => {
 				if (e.target === e.currentTarget && selectedCount > 0) clearSelection();
+			}}
+			on:keydown={(e) => {
+				if (e.key === 'Escape' && selectedCount > 0) clearSelection();
 			}}
 		>
 			{#if previewPort !== null}
@@ -1475,8 +1490,8 @@
 					<div class="relative cursor-row-resize group" on:mousedown={onHandleMouseDown}>
 						<div
 							class="h-px bg-transparent group-hover:bg-black/10 dark:group-hover:bg-white/10 transition"
-						/>
-						<div class="absolute inset-x-0 -top-1.5 -bottom-1.5" />
+						></div>
+						<div class="absolute inset-x-0 -top-1.5 -bottom-1.5"></div>
 					</div>
 				{/if}
 
@@ -1506,7 +1521,7 @@
 								: terminalConnecting
 									? 'bg-yellow-500 animate-pulse'
 									: 'bg-gray-400'}"
-						/>
+						></div>
 					{/if}
 
 					<svg

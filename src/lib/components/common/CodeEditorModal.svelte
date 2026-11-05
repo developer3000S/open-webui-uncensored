@@ -16,8 +16,8 @@
 		onSave = () => {}
 	} = $props();
 
-	const onChangeHandler: any = onChange;
-	const onSaveHandler: any = onSave;
+	const onChangeHandler = (...args: any[]) => onChange(...args);
+	const onSaveHandler = (...args: any[]) => onSave(...args);
 
 	let boilerplate = ``;
 
