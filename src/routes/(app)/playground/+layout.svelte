@@ -57,7 +57,9 @@
 				>
 					<a
 						draggable="false"
-						class="min-w-fit p-1.5 {['/playground', '/playground/'].includes(window.location.pathname)
+						class="min-w-fit p-1.5 {['/playground', '/playground/'].includes(
+							window.location.pathname
+						)
 							? ''
 							: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
 						href="/playground">{$i18n.t('Chat')}</a
@@ -129,7 +131,9 @@
 				>
 					<a
 						draggable="false"
-						class="min-w-fit p-1.5 {['/playground', '/playground/'].includes(window.location.pathname)
+						class="min-w-fit p-1.5 {['/playground', '/playground/'].includes(
+							window.location.pathname
+						)
 							? ''
 							: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
 						href="/playground">{$i18n.t('Chat')}</a
