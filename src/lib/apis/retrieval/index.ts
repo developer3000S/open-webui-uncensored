@@ -1,4 +1,5 @@
-import { RETRIEVAL_API_BASE_URL } from '$lib/constants';
+// Локальная константа для тестов и разработки
+const RETRIEVAL_API_BASE_URL = '/api/v1/retrieval';
 
 export const getRAGConfig = async (token: string) => {
 	let error: any = null;

@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { uploadFile, serverProgressToFileProgress, type FileProgress } from './index';
 
+// Mock imports
+vi.mock('$lib/constants', () => ({
+  WEBUI_API_BASE_URL: 'http://localhost:8080',
+}));
+
 describe('serverProgressToFileProgress', () => {
 	it('returns null for missing progress', () => {
 		expect(serverProgressToFileProgress(null)).toBeNull();

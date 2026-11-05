@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { updateRAGConfig } from './index';
-import { RETRIEVAL_API_BASE_URL } from '$lib/constants';
+
+// Локальные значения констант для тестов
+const RETRIEVAL_API_BASE_URL = '/api/v1/retrieval';
 
 // Mock fetch
 global.fetch = vi.fn();

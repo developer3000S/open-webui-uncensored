@@ -1,12 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, fireEvent } from '@testing-library/svelte';
+import { render, fireEvent, screen } from '@testing-library/svelte';
 import SearchInput from './SearchInput.svelte';
-// Mock the getAllTags function
+
+// Mock all imports from $lib
 vi.mock('$lib/apis/chats', () => ({
-    getAllTags: vi.fn().mockResolvedValue([
-        { id: 'tag1', name: 'Tag 1' },
-        { id: 'tag2', name: 'Tag 2' }
-    ])
+  getAllTags: vi.fn().mockResolvedValue([
+    { id: 'tag1', name: 'Tag 1' },
+    { id: 'tag2', name: 'Tag 2' }
+  ]),
+}));
+
+vi.mock('$lib/stores', () => ({
+  tags: { subscribe: () => () => {} },
+  folders: { subscribe: () => () => {} },
 }));
 
 describe('SearchInput', () => {

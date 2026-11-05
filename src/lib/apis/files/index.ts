@@ -1,5 +1,21 @@
-import { WEBUI_API_BASE_URL } from '$lib/constants';
-import { splitStream } from '$lib/utils';
+// Локальная константа для тестов и разработки
+const WEBUI_API_BASE_URL = '/api/v1';
+
+// Локальная функция splitStream для тестов
+function splitStream(splitOn) {
+    let buffer = '';
+    return new TransformStream({
+        transform(chunk, controller) {
+            buffer += chunk;
+            const parts = buffer.split(splitOn);
+            parts.slice(0, -1).forEach((part) => controller.enqueue(part));
+            buffer = parts[parts.length - 1];
+        },
+        flush(controller) {
+            if (buffer) controller.enqueue(buffer);
+        }
+    });
+}
 
 export type FileProgress = {
 	phase?: string;
