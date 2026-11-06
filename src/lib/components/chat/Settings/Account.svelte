@@ -7,6 +7,7 @@
 
 	import { user, config, settings } from '$lib/stores';
 	import { updateUserProfile, createAPIKey, getAPIKey, getSessionUser } from '$lib/apis/auths';
+import { getMfaStatus, mfaSetup, mfaVerify, mfaDisable } from '$lib/apis/mfa';
 	import { WEBUI_BASE_URL } from '$lib/constants';
 
 	import UpdatePassword from './Account/UpdatePassword.svelte';
@@ -39,6 +40,13 @@
 	let showAPIKeys = false;
 
 	let JWTTokenCopied = false;
+
+let mfaEnabled = false;
+let mfaSetupMode = false;
+let mfaSecret = '';
+let mfaQrCode = '';
+let mfaBackupCodes: string[] = [];
+let mfaCode = '';
 
 	let APIKey = '';
 	let APIKeyCopied = false;
@@ -92,6 +100,61 @@
 		}
 	};
 
+	const setupMfaHandler = async () => {
+		mfaSetupMode = true;
+		try {
+			const res = await mfaSetup(localStorage.token);
+			if (res) {
+				mfaSecret = res.secret;
+				mfaQrCode = res.qr_code;
+				mfaBackupCodes = res.backup_codes ?? [];
+			}
+		} catch (error) {
+			toast.error('MFA setup failed: ' + error);
+		}
+	};
+
+	const verifyMfaHandler = async () => {
+		if (!mfaCode.trim()) return;
+		try {
+			const res = await mfaVerify(localStorage.token, mfaCode.trim());
+			if (res?.success) {
+				mfaSetupMode = false;
+				mfaEnabled = true;
+				mfaCode = '';
+				toast.success('MFA enabled.');
+			}
+		} catch (error) {
+			toast.error('MFA verification failed: ' + error);
+		}
+	};
+
+	const disableMfaHandler = async () => {
+		if (!mfaCode.trim()) return;
+		try {
+			const res = await mfaDisable(localStorage.token, mfaCode.trim());
+			if (res?.success) {
+				mfaEnabled = false;
+				mfaCode = '';
+				toast.success('MFA disabled.');
+			}
+		} catch (error) {
+			toast.error('MFA disable failed: ' + error);
+		}
+	};
+
+	// Check MFA status on mount
+	const checkMfaStatus = async () => {
+		try {
+			const res = await getMfaStatus(localStorage.token);
+			if (res) {
+				mfaEnabled = res.enabled ?? false;
+			}
+		} catch (error) {
+			console.error('Failed to check MFA status', error);
+		}
+	};
+
 	// @ts-ignore
 	onMount(async () => {
 		const user = await getSessionUser(localStorage.token).catch((error) => {
@@ -109,6 +172,8 @@
 
 			dateOfBirth = user?.date_of_birth ?? '';
 		}
+
+		await checkMfaStatus();
 
 		webhookUrl = $settings?.notifications?.webhook_url ?? '';
 
@@ -255,6 +320,79 @@
 		{#if $config?.features.enable_login_form && $config?.features.enable_password_change_form}
 			<div class="mt-2">
 				<UpdatePassword />
+			</div>
+		{/if}
+
+		<div class="mt-2">
+			<div class="flex justify-between items-center text-sm">
+				<div class="font-medium">{$i18n.t('Two-Factor Authentication')}</div>
+				{#if mfaEnabled}
+					<button
+						class="text-xs font-medium text-red-600 dark:text-red-400"
+						type="button"
+						on:click={disableMfaHandler}
+					>{$i18n.t('Disable')}</button
+					>
+				{:else}
+					<button
+						class="text-xs font-medium text-blue-600 dark:text-blue-400"
+						type="button"
+						on:click={setupMfaHandler}
+					>{$i18n.t('Set up')}</button
+					>
+				{/if}
+			</div>
+			{#if mfaEnabled}
+				<div class="mt-2 text-xs text-gray-500">
+					{$i18n.t('MFA is enabled. Use your authenticator app to sign in.')}
+				</div>
+			{:else}
+				<div class="mt-2 text-xs text-gray-500">
+					{$i18n.t('Add an extra layer of security to your account.')}
+				</div>
+			{/if}
+		</div>
+
+		{#if mfaSetupMode}
+			<div class="mt-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-800">
+				<div class="mb-2 text-xs font-medium text-gray-500">{$i18n.t('Scan this QR code with your authenticator app')}</div>
+				<div class="flex justify-center mb-2">
+					{@html mfaQrCode}
+				</div>
+				<div class="mb-2 text-xs text-gray-500">
+					{$i18n.t('Secret key:')} {mfaSecret}
+				</div>
+				<div class="mt-2">
+					<input
+						class="w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800/50"
+						type="text"
+						bind:value={mfaCode}
+						placeholder="6-digit code"
+					/>
+				</div>
+				<div class="flex justify-end gap-2 mt-2">
+					<button
+						class="px-3 py-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+						on:click={() => { mfaSetupMode = false; }}
+					>{$i18n.t('Cancel')}</button
+					>
+					<button
+						class="px-3 py-1 text-xs font-medium text-white bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 rounded-lg"
+						on:click={verifyMfaHandler}
+					>{$i18n.t('Enable MFA')}</button
+					>
+				</div>
+				{#if mfaBackupCodes.length > 0}
+					<div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-500/30">
+						<div class="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">{$i18n.t('Save these backup codes:')}</div>
+						<div class="text-xs text-gray-500 flex flex-wrap gap-2">
+							{#each mfaBackupCodes as code}
+								<span class="bg-white dark:bg-gray-800 px-2 py-1 rounded">{code}</span>
+							{/each}
+						</div>
+						<div class="text-xs text-gray-500 mt-1">{$i18n.t('Use these codes if you lose access to your authenticator app.')}</div>
+					</div>
+				{/if}
 			</div>
 		{/if}
 

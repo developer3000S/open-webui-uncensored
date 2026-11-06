@@ -72,6 +72,11 @@ class User(Base):  # identity & profile
     oauth = Column(JSON, nullable=True)
     scim = Column(JSON, nullable=True)
 
+    # MFA (TOTP)
+    mfa_secret = Column(Text, nullable=True)  # encrypted TOTP secret
+    mfa_enabled = Column(BigInteger, default=0)  # 0 = disabled, 1 = enabled
+    mfa_backup_codes = Column(JSON, nullable=True)  # list of hashed backup codes
+
     # Timestamps (epoch seconds)
     last_active_at = Column(BigInteger)
     updated_at = Column(BigInteger)
@@ -108,6 +113,10 @@ class UserModel(BaseModel):
 
     oauth: dict | None = None
     scim: dict | None = None
+
+    # MFA (TOTP)
+    mfa_secret: str | None = None
+    mfa_enabled: bool = False
 
     last_active_at: int  # timestamp in epoch
     updated_at: int  # timestamp in epoch
