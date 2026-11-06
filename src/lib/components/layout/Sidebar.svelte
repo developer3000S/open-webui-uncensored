@@ -172,6 +172,8 @@
 				return $config?.features?.enable_coder ?? false;
 			case 'playground':
 				return $user?.role === 'admin';
+			case 'studio':
+				return $config?.features?.enable_studio ?? false;
 			default:
 				return false;
 		}
@@ -191,7 +193,14 @@
 				openInNewWindow: true,
 				windowFeatures: 'width=1400,height=900,resizable=yes,scrollbars=yes'
 			},
-			playground: { label: 'Playground', href: '/playground', iconType: 'playground' }
+			playground: { label: 'Playground', href: '/playground', iconType: 'playground' },
+			studio: {
+				label: 'Studio',
+				href: '/studio?tab=generator',
+				iconType: 'studio',
+				// Studio opens as an embedded application
+				openInNewWindow: false,
+			}
 		};
 		return items[id];
 	};
@@ -1020,6 +1029,10 @@
 											</svg>
 										{:else if itemId === 'playground'}
 											<Code className="size-4.5" />
+											{:else if itemId === 'coder'}
+												<Code className="size-4.5" />
+											{:else if itemId === 'studio'}
+											<Photo className="size-4.5" />
 										{/if}
 									</div>
 								</a>
@@ -1270,6 +1283,10 @@
 												</svg>
 											{:else if itemId === 'playground'}
 												<Code className="size-4.5" strokeWidth="2" />
+											{:else if itemId === 'coder'}
+												<Code className="size-4.5" strokeWidth="2" />
+											{:else if itemId === 'studio'}
+												<Photo className="size-4.5" strokeWidth="2" />
 											{/if}
 										</div>
 
