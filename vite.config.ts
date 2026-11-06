@@ -105,7 +105,34 @@ export default defineConfig({
     // to silence those warnings; the build result is unaffected.
     cssMinify: 'esbuild',
     rolldownOptions: {
-      external: ['canvas']
+      external: [
+        'canvas',
+        'fs',
+        'path',
+        'url',
+        'crypto',
+        'child_process',
+        'os',
+        'events',
+        'stream',
+        'stream/promises',
+        'util',
+        'module',
+        'vm',
+        'fs/promises',
+        'node:fs',
+        'node:path',
+        'node:url',
+        'node:crypto',
+        'node:child_process',
+        'node:os',
+        'node:events',
+        'node:stream',
+        'node:util',
+        'node:module',
+        'node:vm',
+        'node:fs/promises'
+      ]
     }
   },
   worker: {
