@@ -39,6 +39,7 @@
 	import FileNav from './FileNav.svelte';
 	import PyodideFileNav from './PyodideFileNav.svelte';
 	import Overview from './Overview.svelte';
+	import CommentThread from './CommentThread.svelte';
 
 	export let history: {
 		messages?: Record<string, any>;
@@ -545,6 +546,12 @@
 	</Pane>
 {/if}
 
+{#if $config?.comments?.enable && chatId}
+	<div class="mt-4 border-t border-gray-200 dark:border-gray-800 pt-4">
+		<CommentThread objectType="chat" objectId={chatId} parentId={undefined} messageId={undefined} />
+	</div>
+{/if}
+
 {#if !largeScreen}
 	{#if $showControls}
 		<Drawer
@@ -810,4 +817,10 @@
 			</div>
 		{/if}
 	</Pane>
+{/if}
+
+{#if $config?.comments?.enable && chatId}
+	<div class="mt-4 border-t border-gray-200 dark:border-gray-800 pt-4">
+		<CommentThread objectType="chat" objectId={chatId} parentId={undefined} messageId={undefined} />
+	</div>
 {/if}
