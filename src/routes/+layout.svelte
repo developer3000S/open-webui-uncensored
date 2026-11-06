@@ -969,7 +969,7 @@
 		// Set up timezone
 		const timezone = getUserTimezone();
 		if (timezone) {
-			await updateUserTimezone(timezone);
+			await updateUserTimezone(localStorage.token, timezone);
 		}
 
 		// Set up token expiry check

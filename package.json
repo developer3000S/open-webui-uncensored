@@ -189,6 +189,7 @@
     "socket.io-client": "^4.8.3",
     "sortablejs": "^1.15.6",
     "sql.js": "^1.14.1",
+    "svelte-confetti": "^2.3.2",
     "svelte-sonner": "^0.3.19",
     "tippy.js": "^6.3.7",
     "tmp": "^0.2.7",

@@ -404,11 +404,11 @@
 	{/if}
 
 	<Pane
-		bind:pane
+		bind:this={pane}
 		defaultSize={0}
 		onResize={(size) => {
-			if ($showControls && pane.isExpanded()) {
-				if (size < minSize) pane.resize(minSize);
+			if ($showControls && pane?.isExpanded()) {
+				if (size < minSize) pane?.resize(minSize);
 				if (size < minSize) {
 					localStorage.chatControlsSize = 0;
 				} else {
@@ -671,11 +671,11 @@
 	{/if}
 
 	<Pane
-		bind:pane
+		bind:this={pane}
 		defaultSize={0}
 		onResize={(size) => {
-			if ($showControls && pane.isExpanded()) {
-				if (size < minSize) pane.resize(minSize);
+			if ($showControls && pane?.isExpanded()) {
+				if (size < minSize) pane?.resize(minSize);
 				if (size < minSize) {
 					localStorage.chatControlsSize = 0;
 				} else {

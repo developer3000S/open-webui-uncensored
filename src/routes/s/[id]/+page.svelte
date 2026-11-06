@@ -2,29 +2,32 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { get, type Writable } from 'svelte/store';
 	import { tick } from 'svelte';
 	import { createMessagesList } from '$lib/utils';
-	import { chatId, settings, models, user, showSidebar, mobile } from '$lib/stores';
-
-	let loaded = false;
-	import { chats } from '$lib/stores';
-
-	let history = chats;
+	import { chatId, settings, models, user, showSidebar, mobile, chats, config } from '$lib/stores';
 	import { getChatByShareId } from '$lib/apis/chats';
 	import { getUserInfoById } from '$lib/apis/users';
 	import { getUserSettings } from '$lib/apis/users';
 	import { getModels } from '$lib/apis';
 	import i18n from '$lib/i18n';
+	import Tooltip from '$lib/components/common/Tooltip.svelte';
+	import Sidebar from '$lib/components/icons/Sidebar.svelte';
+	import Chat from '$lib/components/chat/Chat.svelte';
 
-	let selectedModels = [''];
+	let loaded = false;
+
+	let selectedModels: string[] = [];
+
+	let history = $chats;
 
 	$: messagesList = createMessagesList(history, history.currentId);
 
-	$: if (page.params.id) {
+	$: if ($page.params.id) {
 		(async () => {
 			if (await loadSharedChat()) {
 				await tick();
-				loaded.set(true);
+				loaded = true;
 			} else {
 				await goto('/');
 			}
@@ -40,20 +43,20 @@
 		await models.set(
 			await getModels(
 				localStorage.token,
-				config?.features?.enable_direct_connections ? $settings?.directConnections || {} : null
+				$config?.features?.enable_direct_connections ? $settings?.directConnections || {} : null
 			)
 		);
-		await chatId.set(page.params.id);
-		chat.set(
+		await chatId.set($page.params.id);
+		chats.set(
 			await getChatByShareId(localStorage.token, $chatId).catch(async (error: any) => {
 				await goto('/');
 				return null;
 			})
 		);
 
-		if (chat) {
+		if ($chats) {
 			user.set(
-				await getUserInfoById(localStorage.token, chat.user_id!).catch((error) => {
+				await getUserInfoById(localStorage.token, $chats.user_id!).catch((error) => {
 					console.error(error);
 					return null;
 				})
@@ -68,16 +71,16 @@
 
 {#if loaded}
 	<div
-		class="flex flex-col w-full h-screen max-h-[100dvh] transition-width duration-200 ease-in-out {showSidebar
+		class="flex flex-col w-full h-screen max-h-[100dvh] transition-width duration-200 ease-in-out {$showSidebar
 			? 'md:max-w-[calc(100%-var(--sidebar-width))]'
 			: ''} max-w-full"
 	>
 		<nav class="px-2.5 pt-1.5 backdrop-blur-xl w-full drag-region">
 			<div class="flex items-center">
-				{#if mobile}
-					<div class="{showSidebar ? 'md:hidden' : ''} flex flex-none items-center self-end">
+				{#if $mobile}
+					<div class="{$showSidebar ? 'md:hidden' : ''} flex flex-none items-center self-end">
 						<Tooltip
-							content={showSidebar ? i18n.t('Close Sidebar') : i18n.t('Open Sidebar')}
+							content={$showSidebar ? $i18n.t('Close Sidebar') : $i18n.t('Open Sidebar')}
 							interactive={true}
 						>
 							<button
@@ -104,15 +107,7 @@
 		</nav>
 
 		<div class="flex-1 overflow-auto">
-			<Chat
-				chatIdProp={$chatId}
-				chatTitle={chat?.title || $i18n.t('Shared Chat')}
-				userInfo={user}
-				{selectedModels}
-				onModelSelect={(models) => {
-					selectedModels = models;
-				}}
-			/>
+			<Chat chatIdProp={$chatId} />
 		</div>
 	</div>
 {/if}

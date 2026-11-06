@@ -41,6 +41,7 @@
 	import ChatCheck from '../icons/ChatCheck.svelte';
 	import Knobs from '../icons/Knobs.svelte';
 	import { WEBUI_API_BASE_URL } from '$lib/constants';
+	import { createNewChat } from '$lib/apis/chats';
 
 	const i18n = getContext<Writable<i18nType>>('i18n');
 
@@ -68,6 +69,33 @@
 			return JSON.parse(localStorage.getItem('dismissedBannerIds') ?? '[]');
 		} catch {
 			return [];
+		}
+	};
+
+	const createSideChat = async () => {
+		try {
+			const chat = await createNewChat(
+				localStorage.token,
+				{
+					id: '',
+					title: $i18n.t('Side Chat'),
+					models: selectedModels,
+					system: $settings?.system ?? undefined,
+					params: {},
+					history: { currentId: '', messages: {} },
+					messages: [],
+					tags: [],
+					timestamp: Date.now()
+				},
+				null
+			);
+
+			if (chat && chat.id) {
+				await goto(`/side/${chat.id}?side=true`);
+			}
+		} catch (e) {
+			console.error('Failed to create side chat:', e);
+			toast.error($i18n.t('Failed to create side chat'));
 		}
 	};
 
@@ -199,6 +227,20 @@
 									initNewChat();
 								}}
 								aria-label="New Chat"
+							>
+								<div class=" m-auto self-center">
+									<ChatPlus className=" size-4.5" strokeWidth="1.5" />
+								</div>
+							</button>
+						</Tooltip>
+					{/if}
+
+					{#if chat && chat.id}
+						<Tooltip content={$i18n.t('New Side Chat')}>
+							<button
+								class="flex cursor-pointer px-2 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition"
+								on:click={createSideChat}
+								aria-label="New Side Chat"
 							>
 								<div class=" m-auto self-center">
 									<ChatPlus className=" size-4.5" strokeWidth="1.5" />
