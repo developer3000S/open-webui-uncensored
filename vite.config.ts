@@ -82,6 +82,12 @@ export default defineConfig({
         if (warning.code && IGNORED_SWELTE_CODES.has(warning.code)) {
           return;
         }
+        // Suppress Rolldown "Module externalized for browser compatibility" warnings
+        // for Node.js builtins imported by pyodide, kokoro-js, sharp, jspdf, etc.
+        // These are expected — they are server-side modules that stay external.
+        if (warning.message && warning.message.includes('externalized for browser compatibility')) {
+          return;
+        }
         defaultHandler(warning);
       }
     }),
