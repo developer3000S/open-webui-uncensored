@@ -40,6 +40,7 @@
 	import ChatPlus from '../icons/ChatPlus.svelte';
 	import ChatCheck from '../icons/ChatCheck.svelte';
 	import Knobs from '../icons/Knobs.svelte';
+	import ArrowsPointingOut from '../icons/ArrowsPointingOut.svelte';
 	import { WEBUI_API_BASE_URL } from '$lib/constants';
 	import { createNewChat } from '$lib/apis/chats';
 
@@ -230,6 +231,22 @@
 							>
 								<div class=" m-auto self-center">
 									<ChatPlus className=" size-4.5" strokeWidth="1.5" />
+								</div>
+							</button>
+						</Tooltip>
+					{/if}
+
+					{#if chat && chat.id}
+						<Tooltip content={$i18n.t('Open in Workspace')}>
+							<button
+								class="flex cursor-pointer px-2 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition"
+								on:click={() => {
+									goto(`/workspace/${chat.id}`);
+								}}
+								aria-label="Open in Workspace"
+							>
+								<div class=" m-auto self-center">
+									<ArrowsPointingOut className=" size-4.5" strokeWidth="1.5" />
 								</div>
 							</button>
 						</Tooltip>
