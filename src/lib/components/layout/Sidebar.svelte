@@ -92,6 +92,7 @@
 	import Sidebar from '../icons/Sidebar.svelte';
 	import PinnedModelList from './Sidebar/PinnedModelList.svelte';
 	import PinnedNoteList from './Sidebar/PinnedNoteList.svelte';
+	import NotificationInbox from './Sidebar/NotificationInbox.svelte';
 	import Note from '../icons/Note.svelte';
 	import Code from '../icons/Code.svelte';
 	import { slide } from 'svelte/transition';
@@ -1203,6 +1204,7 @@
 					</div>
 
 					<div id="pinned-menu-items-list">
+						<NotificationInbox />
 						{#each pinnedItems as itemId (itemId)}
 							{@const meta = getMenuItemMeta(itemId)}
 							{#if meta && isMenuItemVisible(itemId)}
