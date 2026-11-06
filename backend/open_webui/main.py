@@ -154,6 +154,7 @@ from open_webui.routers import (
     chats,
     classify,
     coder,
+    comments,
     configs,
     evaluations,
     files,
@@ -955,6 +956,7 @@ app.include_router(terminals.router, prefix='/api/v1/terminals', tags=['terminal
 app.include_router(automations.router, prefix='/api/v1/automations', tags=['automations'])
 app.include_router(notifications.router, prefix='/api/v1', tags=['notifications'])
 app.include_router(calendar.router, prefix='/api/v1/calendars', tags=['calendars'])
+app.include_router(comments.router, prefix='/api/v1', tags=['comments'])
 app.include_router(coder.router, prefix='/api/v1/coder', tags=['coder'])
 
 # Uncensored Local Studio bridge (llama.cpp / stable-diffusion.cpp / whisper.cpp / Kokoro TTS)
