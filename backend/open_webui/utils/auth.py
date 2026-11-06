@@ -18,6 +18,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from fastapi import BackgroundTasks, Depends, HTTPException, Request, Response, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pytz import UTC
+from redis.exceptions import RedisError
 
 from open_webui.constants import ERROR_MESSAGES
 from open_webui.env import (
@@ -273,7 +274,7 @@ async def is_valid_token(decoded, redis=None) -> bool:
     2. Per-user (revoked_at) — used by OIDC back-channel logout when
        individual jti values are unknown; rejects tokens with iat <= revoked_at.
     """
-    if redis:
+    try:
         # Per-token revocation
         jti = decoded.get('jti')
         if jti:
@@ -281,7 +282,7 @@ async def is_valid_token(decoded, redis=None) -> bool:
             if revoked:
                 return False
 
-        # Per-user revocation (OIDC back-channel logout)
+        # Per-user revocation (password change, OIDC back-channel logout)
         user_id = decoded.get('id')
         if user_id:
             revoked_at = await redis.get(f'{REDIS_KEY_PREFIX}:auth:user:{user_id}:revoked_at')
@@ -294,6 +295,8 @@ async def is_valid_token(decoded, redis=None) -> bool:
                         return False
                 except (ValueError, TypeError):
                     pass
+    except RedisError as e:
+        revocation_log.warning('Revocation check failed; accepting token: %s', e)
 
     return True
 
@@ -314,12 +317,34 @@ async def invalidate_token(request, token):
             ttl = exp - int(datetime.now(UTC).timestamp())  # Calculate time-to-live for the token
 
             if ttl > 0:
+                # Revoked tokens must not be able to disconnect newer sessions.
+                if not await is_valid_token(decoded, request.app.state.redis):
+                    return
+
                 # Store the revoked token in Redis with an expiration time
                 await request.app.state.redis.set(
                     f'{REDIS_KEY_PREFIX}:auth:token:{jti}:revoked',
                     '1',
                     ex=ttl,
                 )
+
+                user_id = decoded.get('id')
+                if user_id:
+                    from open_webui.socket.main import disconnect_user_sessions
+
+                    await disconnect_user_sessions(user_id)
+
+
+async def revoke_user_tokens(request, user_id: str):
+    """Persist account-wide revocation, whether or not Redis is configured."""
+    from open_webui.socket.main import disconnect_user_sessions
+
+    if request.app.state.redis:
+        await request.app.state.redis.set(
+            f'{REDIS_KEY_PREFIX}:auth:user:{user_id}:revoked_at',
+            str(int(datetime.now(UTC).timestamp())),
+        )
+    await disconnect_user_sessions(user_id)
 
 
 def extract_token_from_auth_header(auth_header: str):
