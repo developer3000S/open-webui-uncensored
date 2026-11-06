@@ -46,6 +46,15 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['@sveltejs/kit']
   },
+  // Suppress Rolldown "Module externalized for browser compatibility" warnings
+  // for Node.js builtins imported by pyodide, kokoro-js, sharp, jspdf, etc.
+  // These are expected — they are server-side modules that stay external.
+  onwarn: (warning, defaultHandler) => {
+    if (warning.message && warning.message.includes('externalized for browser compatibility')) {
+      return;
+    }
+    defaultHandler(warning);
+  },
   plugins: [
     sveltekit({
       // Consult https://kit.svelte.dev/docs/integrations#preprocessors
@@ -82,12 +91,6 @@ export default defineConfig({
         if (warning.code && IGNORED_SWELTE_CODES.has(warning.code)) {
           return;
         }
-        // Suppress Rolldown "Module externalized for browser compatibility" warnings
-        // for Node.js builtins imported by pyodide, kokoro-js, sharp, jspdf, etc.
-        // These are expected — they are server-side modules that stay external.
-        if (warning.message && warning.message.includes('externalized for browser compatibility')) {
-          return;
-        }
         defaultHandler(warning);
       }
     }),
@@ -110,7 +113,7 @@ export default defineConfig({
     // Tailwind-style directives in .svelte <style> blocks. Switch to esbuild
     // to silence those warnings; the build result is unaffected.
     cssMinify: 'esbuild',
-    rolldownOptions: {
+    rollupOptions: {
       external: [
         'canvas',
         'fs',
@@ -138,7 +141,13 @@ export default defineConfig({
         'node:module',
         'node:vm',
         'node:fs/promises'
-      ]
+      ],
+      onwarn: (warning, defaultHandler) => {
+        if (warning.message && warning.message.includes('externalized for browser compatibility')) {
+          return;
+        }
+        defaultHandler(warning);
+      }
     }
   },
   worker: {
