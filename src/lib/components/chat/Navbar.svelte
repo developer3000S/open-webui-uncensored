@@ -249,6 +249,32 @@
 						</Tooltip>
 					{/if}
 
+					{#if $config?.comments?.enable}
+						<Tooltip content={$i18n.t('Comments')}>
+							<button
+								class="flex cursor-pointer px-2 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition"
+								aria-label="Comments"
+							>
+								<div class=" m-auto self-center">
+									<ChatBubbleDotted className=" size-4.5" strokeWidth="1.5" />
+								</div>
+							</button>
+						</Tooltip>
+					{/if}
+
+					{#if $config?.notifications?.enable}
+						<Tooltip content={$i18n.t('Notifications')}>
+							<button
+								class="flex cursor-pointer px-2 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition"
+								aria-label="Notifications"
+							>
+								<div class=" m-auto self-center">
+									<ChatBubbleDotted className=" size-4.5" strokeWidth="1.5" />
+								</div>
+							</button>
+						</Tooltip>
+					{/if}
+
 					{#if shareEnabled && chat && (chat.id || $temporaryChatEnabled)}
 						<Menu
 							{chat}
