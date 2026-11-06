@@ -4,11 +4,12 @@ import asyncio
 import base64
 import hashlib
 import hmac
-import json
 import logging
 import os
 import uuid
 from datetime import datetime, timedelta
+from threading import Lock
+from time import monotonic
 
 import bcrypt
 import jwt
@@ -37,6 +38,7 @@ from open_webui.models.auths import Auths
 from open_webui.models.config import Config
 from open_webui.models.users import Users
 from open_webui.utils.access_control import has_permission
+from open_webui.utils.json_codec import JSONCodec
 
 log = logging.getLogger(__name__)
 
@@ -44,9 +46,30 @@ SESSION_SECRET = WEBUI_SECRET_KEY
 ALGORITHM = 'HS256'
 PASSWORD_BCRYPT_MAX_BYTES = 72
 
-##############
+
 # Auth Utils
-##############
+
+
+class RateLimitFilter(logging.Filter):
+    """Limit a logger to one record per interval per process."""
+
+    def __init__(self, interval=60):
+        super().__init__()
+        self.interval = interval
+        self.next_allowed = float('-inf')
+        self.lock = Lock()
+
+    def filter(self, record):
+        with self.lock:
+            now = monotonic()
+            if now < self.next_allowed:
+                return False
+            self.next_allowed = now + self.interval
+        return True
+
+
+revocation_log = logging.getLogger(f'{__name__}.revocation')
+revocation_log.addFilter(RateLimitFilter())
 
 
 def verify_signature(payload: str, signature: str) -> bool:
@@ -82,21 +105,31 @@ def get_license_data(app, key):
     def data_handler(data):
         for k, v in data.items():
             if k == 'resources':
+                # LICENSE covers these Open WebUI branding assets.
+                # Do not alter, remove, obscure, or replace them except as LICENSE permits:
+                # https://docs.openwebui.com/license.
                 for p, c in v.items():
                     globals().get('override_static', lambda a, b: None)(p, c)
             elif k == 'count':
                 setattr(app.state, 'USER_COUNT', v)
             elif k == 'name':
+                # LICENSE covers this Open WebUI product name.
+                # Do not alter, remove, obscure, or replace it except as LICENSE permits:
+                # https://docs.openwebui.com/license.
                 setattr(app.state, 'WEBUI_NAME', v)
             elif k == 'metadata':
                 setattr(app.state, 'LICENSE_METADATA', v)
 
     def handler(u):
-        res = requests.post(
-            f'{u}/api/v1/license/',
-            json={'key': key, 'version': '1'},
-            timeout=5,
-        )
+        try:
+            res = requests.post(
+                f'{u}/api/v1/license/',
+                json={'key': key, 'version': '1'},
+                timeout=5,
+            )
+        except Exception as ex:
+            log.error(f'License: retrieval issue from {u}: {ex}')
+            return False
 
         if getattr(res, 'ok', False):
             payload = getattr(res, 'json', lambda: {})()
@@ -129,13 +162,13 @@ def get_license_data(app, key):
             ln, lt = nt(lb)
 
             aesgcm = AESGCM(kb)
-            p = json.loads(aesgcm.decrypt(ln, lt, None))
+            p = JSONCodec.loads(aesgcm.decrypt(ln, lt, None))
             pk.verify(base64.b64decode(p['s']), p['p'].encode())
 
             pb = base64.b64decode(p['p'])
             pn, pt = nt(pb)
 
-            data = json.loads(aesgcm.decrypt(pn, pt, None).decode())
+            data = JSONCodec.loads(aesgcm.decrypt(pn, pt, None).decode())
 
             exp = data.get('exp')
             if exp:
