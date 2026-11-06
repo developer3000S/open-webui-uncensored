@@ -29,6 +29,7 @@
 	import PDFViewer from './PDFViewer.svelte';
 	import PanzoomContainer from './PanzoomContainer.svelte';
 	import Reset from '../icons/Reset.svelte';
+	import Model3DViewer from '$lib/components/chat/Model3DViewer.svelte';
 
 	export let item: any;
 	export let show: any = false;
@@ -136,6 +137,28 @@
 		item?.meta?.content_type ===
 			'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
 		(item?.name && item.name.toLowerCase().endsWith('.pptx'));
+
+	$: is3dModel =
+		item?.meta?.content_type === 'model/gltf+binary' ||
+		item?.meta?.content_type === 'model/gltf+json' ||
+		item?.meta?.content_type === 'model/stl' ||
+		item?.meta?.content_type === 'model/obj' ||
+		item?.meta?.content_type === 'model/ply' ||
+		(item?.name &&
+			(item.name.toLowerCase().endsWith('.glb') ||
+				item.name.toLowerCase().endsWith('.gltf') ||
+				item.name.toLowerCase().endsWith('.stl') ||
+				item.name.toLowerCase().endsWith('.obj') ||
+				item.name.toLowerCase().endsWith('.ply')));
+
+	const getModelType = () => {
+		const name = item?.name?.toLowerCase() ?? '';
+		const contentType = item?.meta?.content_type ?? '';
+		if (contentType === 'model/stl' || name.endsWith('.stl')) return 'stl';
+		if (contentType === 'model/obj' || name.endsWith('.obj')) return 'obj';
+		if (contentType === 'model/ply' || name.endsWith('.ply')) return 'ply';
+		return 'gltf';
+	};
 
 	const loadExcelContent = async () => {
 		try {
@@ -392,7 +415,7 @@
 					</div>
 				{/if}
 
-				{#if isAudio || isPDF || isExcel || isCode || isMarkdown || isDocx || isPptx}
+				{#if isAudio || isPDF || isExcel || isCode || isMarkdown || isDocx || isPptx || is3dModel}
 					<div
 						class="flex mb-2.5 scrollbar-none overflow-x-auto w-full border-b border-gray-50 dark:border-gray-850/30 text-center text-sm font-medium bg-transparent dark:text-gray-200"
 					>
@@ -639,8 +662,15 @@
 								{/if}
 							</div>
 						{:else}
-							<div class="text-gray-500 text-sm p-4">No content available</div>
+							<div class="text-red-500 text-sm p-4">No content available</div>
 						{/if}
+					{:else if is3dModel}
+						<div class="max-h-[60vh] w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
+							<Model3DViewer
+								src={`${WEBUI_API_BASE_URL}/files/${item.id}/content`}
+								modelType={getModelType()}
+							/>
+						</div>
 					{:else}
 						<div class="max-h-96 overflow-scroll scrollbar-hidden text-xs whitespace-pre-wrap">
 							{(item?.file?.data?.content ?? '').trim() || 'No content'}
@@ -791,7 +821,7 @@
 					</div>
 				{/if}
 
-				{#if isAudio || isPDF || isExcel || isCode || isMarkdown || isDocx || isPptx}
+				{#if isAudio || isPDF || isExcel || isCode || isMarkdown || isDocx || isPptx || is3dModel}
 					<div
 						class="flex mb-2.5 scrollbar-none overflow-x-auto w-full border-b border-gray-50 dark:border-gray-850/30 text-center text-sm font-medium bg-transparent dark:text-gray-200"
 					>
@@ -1038,8 +1068,15 @@
 								{/if}
 							</div>
 						{:else}
-							<div class="text-gray-500 text-sm p-4">No content available</div>
+							<div class="text-red-500 text-sm p-4">No content available</div>
 						{/if}
+					{:else if is3dModel}
+						<div class="max-h-[60vh] w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
+							<Model3DViewer
+								src={`${WEBUI_API_BASE_URL}/files/${item.id}/content`}
+								modelType={getModelType()}
+							/>
+						</div>
 					{:else}
 						<div class="max-h-96 overflow-scroll scrollbar-hidden text-xs whitespace-pre-wrap">
 							{(item?.file?.data?.content ?? '').trim() || 'No content'}
