@@ -26,6 +26,9 @@ from open_webui.env import (
     AIOHTTP_CLIENT_SESSION_SSL,
     ENABLE_INITIAL_ADMIN_SIGNUP,
     ENABLE_OAUTH_TOKEN_EXCHANGE,
+    OAUTH_TOKEN_EXCHANGE_RATE_LIMIT,
+    OAUTH_TOKEN_EXCHANGE_RATE_LIMIT_WINDOW,
+    OAUTH_TOKEN_EXCHANGE_TRUSTED_CLIENT_IDS,
     WEBUI_AUTH,
     WEBUI_AUTH_COOKIE_SAME_SITE,
     WEBUI_AUTH_COOKIE_SECURE,
@@ -1299,6 +1302,11 @@ class OAuthConfigForm(BaseModel):
     # Token
     OAUTH_REFRESH_TOKEN_INCLUDE_SCOPE: bool | None = None
 
+    # OAuth token exchange rate limiting
+    OAUTH_TOKEN_EXCHANGE_RATE_LIMIT: int | str | None = None
+    OAUTH_TOKEN_EXCHANGE_RATE_LIMIT_WINDOW: int | str | None = None
+    OAUTH_TOKEN_EXCHANGE_TRUSTED_CLIENT_IDS: str | None = None
+
 
 OAUTH_COMMA_LIST_FIELDS = {
     'OAUTH_ALLOWED_DOMAINS',
@@ -1341,6 +1349,9 @@ OAUTH_CONFIG_KEYS = {
     'OAUTH_UPDATE_NAME_ON_LOGIN': 'oauth.update_name_on_login',
     'OAUTH_UPDATE_PICTURE_ON_LOGIN': 'oauth.update_picture_on_login',
     'OAUTH_REFRESH_TOKEN_INCLUDE_SCOPE': 'oauth.refresh_token.include_scope',
+    'OAUTH_TOKEN_EXCHANGE_RATE_LIMIT': 'oauth.token_exchange.rate_limit',
+    'OAUTH_TOKEN_EXCHANGE_RATE_LIMIT_WINDOW': 'oauth.token_exchange.rate_limit_window',
+    'OAUTH_TOKEN_EXCHANGE_TRUSTED_CLIENT_IDS': 'oauth.token_exchange.trusted_client_ids',
 }
 
 
@@ -1479,6 +1490,21 @@ async def token_exchange(
             status_code=status.HTTP_403_FORBIDDEN,
             detail='Token exchange is disabled',
         )
+
+    # OAuth token exchange rate limiting (protects against token spraying)
+    if OAUTH_TOKEN_EXCHANGE_RATE_LIMIT and OAUTH_TOKEN_EXCHANGE_RATE_LIMIT > 0:
+        trusted = [cid.strip() for cid in OAUTH_TOKEN_EXCHANGE_TRUSTED_CLIENT_IDS.split(',') if cid.strip()]
+        client_id = form_data.token[:32]  # Use token prefix as caller identity (best-effort)
+        if client_id not in trusted:
+            exchange_rate_limiter = RateLimiter(
+                limit=OAUTH_TOKEN_EXCHANGE_RATE_LIMIT,
+                window=OAUTH_TOKEN_EXCHANGE_RATE_LIMIT_WINDOW,
+            )
+            if await exchange_rate_limiter.is_limited(client_id):
+                raise HTTPException(
+                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    detail=ERROR_MESSAGES.RATE_LIMIT_EXCEEDED,
+                )
 
     provider = provider.lower()
 

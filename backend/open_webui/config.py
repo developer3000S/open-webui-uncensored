@@ -377,6 +377,11 @@ TOOL_SERVER_CONNECTIONS = tool_server_connections
 
 OAUTH_CLIENT_TIMEOUT = os.getenv('OAUTH_CLIENT_TIMEOUT', '')
 
+# OAuth token exchange rate limiting (protects against token spraying)
+OAUTH_TOKEN_EXCHANGE_RATE_LIMIT = int(os.getenv('OAUTH_TOKEN_EXCHANGE_RATE_LIMIT', '0'))  # 0 = disabled
+OAUTH_TOKEN_EXCHANGE_RATE_LIMIT_WINDOW = int(os.getenv('OAUTH_TOKEN_EXCHANGE_RATE_LIMIT_WINDOW', '300'))
+OAUTH_TOKEN_EXCHANGE_TRUSTED_CLIENT_IDS = os.getenv('OAUTH_TOKEN_EXCHANGE_TRUSTED_CLIENT_IDS', '')
+
 ####################################
 # TERMINAL_SERVER
 ####################################
