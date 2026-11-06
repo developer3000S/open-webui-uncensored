@@ -216,6 +216,7 @@ if CUSTOM_NAME:
 ####################################
 
 ENABLE_DIRECT_CONNECTIONS = os.getenv('ENABLE_DIRECT_CONNECTIONS', 'False').lower() == 'true'
+ENABLE_DIRECT_INTEGRATIONS = os.getenv('ENABLE_DIRECT_INTEGRATIONS', 'False').lower() == 'true'
 
 ####################################
 # OLLAMA_BASE_URL
@@ -1042,6 +1043,8 @@ RAG_EMBEDDING_CONCURRENT_REQUESTS = int(os.getenv('RAG_EMBEDDING_CONCURRENT_REQU
 RAG_EMBEDDING_CONCURRENT_REQUESTS_FALLBACK = int(os.getenv('RAG_EMBEDDING_CONCURRENT_REQUESTS_FALLBACK', '4'))
 
 RAG_AUTO_OCR_ON_EMPTY_PDF = os.getenv('RAG_AUTO_OCR_ON_EMPTY_PDF', 'True').lower() == 'true'
+
+ENABLE_KNOWLEDGE_FILE_RETENTION = os.getenv('ENABLE_KNOWLEDGE_FILE_RETENTION', 'False').lower() == 'true'
 
 # Dead line for a single embedding HTTP call. AIOHTTP_CLIENT_TIMEOUT defaults to None
 # (wait forever), so a request the embedding server never answers leaves the file in
