@@ -48,6 +48,7 @@
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import WebSearchResults from './ResponseMessage/WebSearchResults.svelte';
 	import Sparkles from '$lib/components/icons/Sparkles.svelte';
+	import CommentThread from '$lib/components/chat/CommentThread.svelte';
 
 	import DeleteConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 
@@ -173,6 +174,7 @@
 	let contentContainerElement: HTMLDivElement;
 	let buttonsContainerElement: HTMLDivElement;
 	let showDeleteConfirm = false;
+	let showComments = false;
 
 	let model = null;
 	$: model = $models.find((m) => m.id === message.model);
@@ -1519,6 +1521,33 @@
 						/>
 					{/if}
 
+					{#if $config?.comments?.enable}
+						<div class="flex justify-end mb-2">
+							<button
+								aria-label={$i18n.t('Comments')}
+								class="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition"
+								on:click={() => {
+									showComments = !showComments;
+								}}
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke-width="1.5"
+									stroke="currentColor"
+									class="w-4 h-4"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										d="M8.127 15.627a3 3 0 01-4.242-4.242 3 3 0 014.242 4.242zm0 0a3 3 0 004.242 4.242 3 3 0 00-4.242-4.242zm0 0a3 3 0 014.242 4.242 3 3 0 00-4.242-4.242zm0 0a3 3 0 004.242 4.242 3 3 0 00-4.242-4.242zm0 0a3 3 0 014.242 4.242 3 3 0 00-4.242-4.242zm0 0a3 3 0 014.242 4.242 3 3 0 00-4.242-4.242zm0 0a3 3 0 004.242 4.242 3 3 0 00-4.242-4.242zm0 0a3 3 0 014.242 4.242 3 3 0 00-4.242-4.242zM21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.227a3 3 0 01-4.242 4.242 3 3 0 004.242-4.242zm0 0a3 3 0 00-4.242-4.242 3 3 0 014.242 4.242zM3 12a3 3 0 013-3h6a3 3 0 013 3v6a3 3 0 01-3 3H6a3 3 0 01-3-3V9z"
+									/>
+								</svg>
+							</button>
+						</div>
+					{/if}
+
 					{#if (isLastMessage || ($settings?.keepFollowUpPrompts ?? false)) && message.done && !readOnly && (message?.followUps ?? []).length > 0}
 						<div class="mt-2.5" in:fade={{ duration: 100 }}>
 							<FollowUps
@@ -1539,6 +1568,12 @@
 			</div>
 		</div>
 	</div>
+
+	{#if $config?.comments?.enable && showComments}
+		<div class="mt-2 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-800">
+			<CommentThread objectType="chat_message" objectId={chatId} messageId={messageId} />
+		</div>
+	{/if}
 {/key}
 
 <style>

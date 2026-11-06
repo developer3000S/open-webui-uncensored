@@ -12,10 +12,10 @@
 
 	const i18n: Writable<i18nType> = getContext<Writable<i18nType>>('i18n');
 
-	export let objectType;
-	export let objectId;
-	export let parentId;
-	export let messageId;
+	export let objectType: any;
+	export let objectId: any;
+	export let parentId: any = undefined;
+	export let messageId: any = undefined;
 
 	let comments: any[] = [];
 	let loading = false;
