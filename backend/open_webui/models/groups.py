@@ -2,8 +2,6 @@ import logging
 import time
 import uuid
 
-from open_webui.env import DEFAULT_GROUP_SHARE_PERMISSION
-from open_webui.internal.db import Base, get_async_db_context
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import (
     JSON,
@@ -19,6 +17,9 @@ from sqlalchemy import (
     update,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from open_webui.env import DEFAULT_GROUP_SHARE_PERMISSION
+from open_webui.internal.db import Base, get_async_db_context
 
 log = logging.getLogger(__name__)
 

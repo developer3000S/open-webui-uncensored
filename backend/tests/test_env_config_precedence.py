@@ -23,12 +23,13 @@ from pathlib import Path
 from unittest import mock
 
 try:
+    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+    from sqlalchemy.pool import NullPool
+
     from open_webui.internal.db import Base
     from open_webui.models import config as config_module
     from open_webui.models.config import Config
     from open_webui.utils import env_config
-    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-    from sqlalchemy.pool import NullPool
 except (ModuleNotFoundError, SystemExit) as exc:  # pragma: no cover - host without deps
     # SystemExit: env.py exits hard when WEBUI_SECRET_KEY is unset (bare hosts).
     # unittest.skip at module level keeps `unittest discover` green on bare hosts

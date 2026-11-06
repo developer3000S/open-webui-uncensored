@@ -334,7 +334,7 @@ def import_zip_bytes(archive: bytes) -> dict:
     for name in zf.namelist():
         if not name.startswith(prefix) or name.endswith('/'):
             continue
-        rel = name[len(prefix):]
+        rel = name[len(prefix) :]
         try:
             rel = _validate_rel_path(rel)
         except SandboxError:

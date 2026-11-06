@@ -14,6 +14,9 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse, Response
 from ldap3 import NONE, Connection, Server, Tls
 from ldap3.utils.conv import escape_filter_chars
+from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from open_webui.config import (
     ENABLE_PASSWORD_AUTH,
     OAUTH_PROVIDERS,
@@ -73,8 +76,6 @@ from open_webui.utils.groups import apply_default_group_assignment
 from open_webui.utils.misc import parse_duration, validate_email_format
 from open_webui.utils.rate_limit import RateLimiter
 from open_webui.utils.redis import get_redis_client
-from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter()
 

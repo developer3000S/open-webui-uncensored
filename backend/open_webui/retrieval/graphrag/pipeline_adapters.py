@@ -189,11 +189,15 @@ async def run_native(task, ctx, policy, runtime) -> CandidateResponse:
     # its hits keep priority in context packing.
     from open_webui.retrieval.graphrag.query_rewrite import rewrite_variants
 
-    queries = rewrite_variants(
-        ctx.normalized_query,
-        intent=(ctx.metadata or {}).get('intent') if getattr(ctx, 'metadata', None) else None,
-        history=runtime.get('history'),
-    ) if ctx.normalized_query else []
+    queries = (
+        rewrite_variants(
+            ctx.normalized_query,
+            intent=(ctx.metadata or {}).get('intent') if getattr(ctx, 'metadata', None) else None,
+            history=runtime.get('history'),
+        )
+        if ctx.normalized_query
+        else []
+    )
     emb_fn = runtime.get('embedding_function')
     k = int(task.parameters.get('k') or 8)
     if not items or not queries or emb_fn is None:
@@ -255,11 +259,15 @@ async def run_hybrid(task, ctx, policy, runtime) -> CandidateResponse:
     items = ctx.items or []
     from open_webui.retrieval.graphrag.query_rewrite import rewrite_variants
 
-    queries = rewrite_variants(
-        ctx.normalized_query,
-        intent=(ctx.metadata or {}).get('intent') if getattr(ctx, 'metadata', None) else None,
-        history=runtime.get('history'),
-    ) if ctx.normalized_query else []
+    queries = (
+        rewrite_variants(
+            ctx.normalized_query,
+            intent=(ctx.metadata or {}).get('intent') if getattr(ctx, 'metadata', None) else None,
+            history=runtime.get('history'),
+        )
+        if ctx.normalized_query
+        else []
+    )
     emb_fn = runtime.get('embedding_function')
     rerank_fn = runtime.get('reranking_function')
     k = int(task.parameters.get('k') or 8)
@@ -316,7 +324,11 @@ async def run_hybrid(task, ctx, policy, runtime) -> CandidateResponse:
     # collections or across rewrite variants — this global stage re-scores the
     # union with the configured reranking model (CPU inference via the app's
     # RERANKING_FUNCTION, executed off-loop) and keeps the best k.
-    if os.getenv('ORCH_CROSS_ENCODER', '').strip().lower() in ('1', 'true', 'yes', 'on') and rerank_fn is not None and len(all_docs) > k:
+    if (
+        os.getenv('ORCH_CROSS_ENCODER', '').strip().lower() in ('1', 'true', 'yes', 'on')
+        and rerank_fn is not None
+        and len(all_docs) > k
+    ):
         try:
             from types import SimpleNamespace
 
@@ -330,7 +342,11 @@ async def run_hybrid(task, ctx, policy, runtime) -> CandidateResponse:
             notes_extra = [f'cross_encoder_failed: {e}']
     else:
         notes_extra = []
-    notes = [f'bm25_weight={cfg.get("hybrid_bm25_weight", 0.5)}', f'variants={min(len(queries), 2)}'] + notes_extra + [f'errors: {e}' for e in errors[:3]]
+    notes = (
+        [f'bm25_weight={cfg.get("hybrid_bm25_weight", 0.5)}', f'variants={min(len(queries), 2)}']
+        + notes_extra
+        + [f'errors: {e}' for e in errors[:3]]
+    )
     return _digest(task, all_docs, all_metas, started, notes)
 
 
@@ -392,7 +408,7 @@ async def run_graph(task, ctx, policy, runtime) -> CandidateResponse:
         cand.error_code = 'graph_no_hits'
         return cand
 
-    graph_version = ','.join(f"{v.get('version', '?')}" for v in kb_meta.values()) or None
+    graph_version = ','.join(f'{v.get("version", "?")}' for v in kb_meta.values()) or None
     docs = [context]
     metas = [{'source': 'knowledge-graph', 'name': 'knowledge-graph', 'file_id': kb_meta and next(iter(kb_meta), None)}]
     cand = _digest(task, docs, metas, started, [f'gids={len(gids)}', 'provenance: графовые связи (cross-file)'])
@@ -479,7 +495,9 @@ async def run_agentic(task, ctx, policy, runtime) -> CandidateResponse:
         if nums:
             ok, out = _exec_tool('calculator', {'expression': nums[0]}, runtime, policy)
             tool_calls += 1
-            steps.append({'step': len(steps) + 1, 'action': 'calculator', 'args': {'expression': nums[0][:80]}, 'ok': ok})
+            steps.append(
+                {'step': len(steps) + 1, 'action': 'calculator', 'args': {'expression': nums[0][:80]}, 'ok': ok}
+            )
             if ok:
                 observations.append(f'Расчёт: {nums[0]} = {out}')
 
@@ -502,7 +520,10 @@ async def run_agentic(task, ctx, policy, runtime) -> CandidateResponse:
         pipeline='agentic_rag',
         task_id=task.task_id,
         answer_text=answer,
-        claims=[Claim(text=a[:200], type='calculation' if a.startswith('Расчёт') else 'fact', source_refs=['agent']) for a in observations],
+        claims=[
+            Claim(text=a[:200], type='calculation' if a.startswith('Расчёт') else 'fact', source_refs=['agent'])
+            for a in observations
+        ],
         sources=[],
         metadata=CandidateMetadata(
             latency_ms=int((time.time() - started) * 1000),

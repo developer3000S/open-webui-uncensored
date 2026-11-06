@@ -2,6 +2,7 @@ import logging
 from urllib.parse import urlencode
 
 import requests
+
 from open_webui.retrieval.web.main import SearchResult, get_filtered_results
 
 log = logging.getLogger(__name__)

@@ -76,16 +76,20 @@ def test_settings_have_new_flags():
 
 def test_explain_trace_projection(tmp_path=None):
     from open_webui.retrieval.graphrag import trace_store
-    from open_webui.retrieval.graphrag.orch_api import explain_trace
 
     payload = {
-        'trace_id': 'tr-exp-1', 'request_id': 'req-1', 'tenant_id': 't', 'user_id': 'u',
+        'trace_id': 'tr-exp-1',
+        'request_id': 'req-1',
+        'tenant_id': 't',
+        'user_id': 'u',
         'query_analysis': {'intent': 'definition'},
         'execution_plan': {'mode': 'single', 'rationale': 'fast path'},
         'pipeline_runs': [{'pipeline': 'native_rag', 'status': 'success', 'latency_ms': 120}],
         'evaluation_report': {'confidence': 0.7},
         'final_response': {'status': 'answered', 'confidence': 0.7, 'citations': []},
-        'total_latency_ms': 130, 'total_cost_units': 0.05, 'warnings': [],
+        'total_latency_ms': 130,
+        'total_cost_units': 0.05,
+        'warnings': [],
     }
     trace_store.store_trace(payload)
     ex = asyncio.run(_explain('tr-exp-1'))

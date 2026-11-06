@@ -3,12 +3,23 @@ import secrets
 import time
 from uuid import uuid4
 
-from open_webui.env import DATABASE_URL
-from sqlalchemy import create_engine, text as sa_text
-from open_webui.internal.db import Base, get_async_db_context
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import JSON, BigInteger, Boolean, Column, Index, String, Text, UniqueConstraint, delete, select
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    Boolean,
+    Column,
+    Index,
+    Text,
+    UniqueConstraint,
+    create_engine,
+    delete,
+    select,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from open_webui.env import DATABASE_URL
+from open_webui.internal.db import Base
 
 log = logging.getLogger(__name__)
 
@@ -639,14 +650,13 @@ class CoderAudit:
 
     async def list_all(self, db: AsyncSession, limit: int = 100) -> list[CoderAuditEvent]:
         """Admin overview: audit events across all users (§14.1)."""
-        result = await db.execute(
-            select(CoderAuditEvent).order_by(CoderAuditEvent.created_at.desc()).limit(limit)
-        )
+        result = await db.execute(select(CoderAuditEvent).order_by(CoderAuditEvent.created_at.desc()).limit(limit))
         return result.scalars().all()
 
     async def cleanup_old_events(self, retention_days: int, db: AsyncSession) -> int:
         """Delete audit events older than specified retention period (in days)."""
-        from sqlalchemy import delete, select
+        from sqlalchemy import delete
+
         cutoff_time = time.time() - (retention_days * 24 * 60 * 60)
         stmt = delete(CoderAuditEvent).where(CoderAuditEvent.created_at < cutoff_time)
         result = await db.execute(stmt)
@@ -659,9 +669,7 @@ class CoderSandboxSessions:
         result = await db.execute(select(CoderSandboxSession).where(CoderSandboxSession.id == session_id))
         return result.scalars().first()
 
-    async def get_by_chat(
-        self, user_id: str, chat_id: str, db: AsyncSession
-    ) -> CoderSandboxSession | None:
+    async def get_by_chat(self, user_id: str, chat_id: str, db: AsyncSession) -> CoderSandboxSession | None:
         """§C4: последняя живая sandbox-сессия задачи (для корректного fork)."""
         if not chat_id:
             return None
@@ -690,8 +698,12 @@ class CoderSandboxSessions:
         return result.scalars().all()
 
     async def create(
-        self, user_id: str, mode: str | None = None, meta: dict | None = None,
-        chat_id: str | None = None, db: AsyncSession = None
+        self,
+        user_id: str,
+        mode: str | None = None,
+        meta: dict | None = None,
+        chat_id: str | None = None,
+        db: AsyncSession = None,
     ) -> CoderSandboxSession:
         now = int(time.time())
         session = CoderSandboxSession(
@@ -770,9 +782,7 @@ class CoderTaskMetas:
             rows = [r for r in rows if tag in (r.tags or [])]
         return rows
 
-    async def upsert(
-        self, user_id: str, chat_id: str, form: 'CoderTaskMetaForm', db: AsyncSession
-    ) -> CoderTaskMeta:
+    async def upsert(self, user_id: str, chat_id: str, form: 'CoderTaskMetaForm', db: AsyncSession) -> CoderTaskMeta:
         now = int(time.time())
         row = await self.get_by_chat(user_id, chat_id, db)
         if row:
@@ -839,7 +849,8 @@ class CoderTaskMetas:
             return None
         result = await db.execute(
             select(CoderTaskMeta).where(
-                CoderTaskMeta.share_token == token, CoderTaskMeta.share_enabled == True  # noqa: E712
+                CoderTaskMeta.share_token == token,
+                CoderTaskMeta.share_enabled == True,  # noqa: E712
             )
         )
         return result.scalars().first()

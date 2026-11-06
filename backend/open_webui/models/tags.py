@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import logging
 
-# local imports
-from open_webui.internal.db import Base, get_async_db_context
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import JSON, Column, Index, PrimaryKeyConstraint, String, delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+# local imports
+from open_webui.internal.db import Base, get_async_db_context
 
 log = logging.getLogger(__name__)
 

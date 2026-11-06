@@ -3,14 +3,15 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, Query
+from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from open_webui.internal.db import get_async_session
 from open_webui.models.chat_messages import ChatMessageModel, ChatMessages
 from open_webui.models.chats import Chats
 from open_webui.models.feedbacks import Feedbacks
 from open_webui.models.users import Users
 from open_webui.utils.auth import get_admin_user
-from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
 
 log = logging.getLogger(__name__)
 

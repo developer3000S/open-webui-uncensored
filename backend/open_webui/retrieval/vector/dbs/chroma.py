@@ -3,6 +3,7 @@ import logging
 import chromadb
 from chromadb import Settings
 from chromadb.utils.batch_utils import create_batches
+
 from open_webui.config import (
     CHROMA_CLIENT_AUTH_CREDENTIALS,
     CHROMA_CLIENT_AUTH_PROVIDER,

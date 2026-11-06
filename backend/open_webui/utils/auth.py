@@ -16,6 +16,8 @@ import requests
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from fastapi import BackgroundTasks, Depends, HTTPException, Request, Response, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from pytz import UTC
+
 from open_webui.constants import ERROR_MESSAGES
 from open_webui.env import (
     ENABLE_OTEL,
@@ -35,7 +37,6 @@ from open_webui.models.auths import Auths
 from open_webui.models.config import Config
 from open_webui.models.users import Users
 from open_webui.utils.access_control import has_permission
-from pytz import UTC
 
 log = logging.getLogger(__name__)
 
@@ -321,16 +322,16 @@ async def get_current_user(
     # This ensures connections are released immediately after auth queries,
     # not held for the entire request duration (e.g., during 30+ second LLM calls).
 ):
-    log.info(f"get_current_user called for request from {request.client.host}")
+    log.info(f'get_current_user called for request from {request.client.host}')
     token = None
 
     if auth_token is not None:
         token = auth_token.credentials
-        log.info(f"Token from Authorization header: {token[:10]}...")
+        log.info(f'Token from Authorization header: {token[:10]}...')
 
     if token is None and 'token' in request.cookies:
         token = request.cookies.get('token')
-        log.info(f"Token from cookies: {token[:10]}...")
+        log.info(f'Token from cookies: {token[:10]}...')
 
     # Fallback to request.state.token (set by middleware, e.g. for x-api-key)
     if token is None and hasattr(request.state, 'token') and request.state.token:

@@ -9,6 +9,7 @@ import re
 import time
 from collections.abc import Awaitable
 from concurrent.futures import ThreadPoolExecutor
+from functools import wraps
 
 import aiohttp
 import requests
@@ -19,23 +20,22 @@ from langchain_classic.retrievers import (
 )
 from langchain_community.retrievers import BM25Retriever
 from langchain_core.documents import Document
+
 from open_webui.config import (
     EMBEDDING_MAX_CONNECTIONS,
     EMBEDDING_MAX_RETRIES,
     EMBEDDING_RETRY_BASE_DELAY,
+    RAG_CONTEXTUAL_HISTORY_LENGTH,
+    RAG_CONTEXTUAL_RERANK,
+    RAG_CONTEXTUAL_RERANK_WEIGHT,
     RAG_EMBEDDING_CONCURRENT_REQUESTS_FALLBACK,
     RAG_EMBEDDING_CONTENT_PREFIX,
     RAG_EMBEDDING_KEEP_ALIVE,
     RAG_EMBEDDING_PREFIX_FIELD_NAME,
     RAG_EMBEDDING_QUERY_PREFIX,
     RAG_EMBEDDING_REQUEST_TIMEOUT,
-    RAG_CONTEXTUAL_RERANK,
-    RAG_CONTEXTUAL_HISTORY_LENGTH,
-    RAG_CONTEXTUAL_RERANK_WEIGHT,
 )
 
-import time
-from functools import wraps
 
 def retry_with_backoff(max_retries=EMBEDDING_MAX_RETRIES, base_delay=EMBEDDING_RETRY_BASE_DELAY):
     def decorator(func):
@@ -44,20 +44,23 @@ def retry_with_backoff(max_retries=EMBEDDING_MAX_RETRIES, base_delay=EMBEDDING_R
             last_exception = None
             for attempt in range(max_retries):
                 try:
-                    log.debug(f"Attempt {attempt + 1} of {max_retries} for {func.__name__}")
+                    log.debug(f'Attempt {attempt + 1} of {max_retries} for {func.__name__}')
                     return func(*args, **kwargs)
                 except Exception as e:
                     last_exception = e
-                    log.warning(f"Attempt {attempt + 1} failed for {func.__name__}: {str(e)}")
+                    log.warning(f'Attempt {attempt + 1} failed for {func.__name__}: {str(e)}')
                     if attempt == max_retries - 1:
-                        log.error(f"All {max_retries} attempts failed for {func.__name__}")
-                        raise EmbeddingRetryError(f"Failed after {max_retries} attempts: {str(e)}") from e
-                    delay = base_delay * (2 ** attempt)
-                    log.debug(f"Retrying in {delay} seconds...")
+                        log.error(f'All {max_retries} attempts failed for {func.__name__}')
+                        raise EmbeddingRetryError(f'Failed after {max_retries} attempts: {str(e)}') from e
+                    delay = base_delay * (2**attempt)
+                    log.debug(f'Retrying in {delay} seconds...')
                     time.sleep(delay)
             raise last_exception
+
         return wrapper
+
     return decorator
+
 
 from open_webui.env import (
     AIOHTTP_CLIENT_ALLOW_REDIRECTS,
@@ -88,7 +91,7 @@ from open_webui.utils.misc import get_message_list
 log = logging.getLogger(__name__)
 
 
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 from langchain_core.callbacks import CallbackManagerForRetrieverRun
 from langchain_core.retrievers import BaseRetriever
@@ -109,6 +112,7 @@ class EmbeddingRetryError(Exception):
 
     This indicates a persistent issue that requires manual intervention.
     """
+
     pass
 
 
@@ -346,11 +350,12 @@ class VectorSearchRetriever(BaseRetriever):
 
 class GraphSearchRetriever(BaseRetriever):
     """Graph-based retriever using GraphRAG."""
+
     collection_name: str  # Knowledge ID
     embedding_function: Any
 
     def _get_relevant_documents(self, query: str, *, run_manager: CallbackManagerForRetrieverRun) -> list[Document]:
-        raise NotImplementedError("GraphSearchRetriever only supports async retrieval")
+        raise NotImplementedError('GraphSearchRetriever only supports async retrieval')
 
     async def _aget_relevant_documents(
         self,
@@ -359,8 +364,8 @@ class GraphSearchRetriever(BaseRetriever):
         run_manager: CallbackManagerForRetrieverRun,
     ) -> list[Document]:
         # Import inside the function to avoid circular dependencies
-        from open_webui.retrieval.graphrag.retrieval import graph_retrieve_embedding
         from open_webui.models.knowledge import Knowledges
+        from open_webui.retrieval.graphrag.retrieval import graph_retrieve_embedding
 
         # Check if graph is enabled for this knowledge
         kb = await Knowledges.get_knowledge_by_id(self.collection_name)
@@ -398,7 +403,7 @@ class GraphSearchRetriever(BaseRetriever):
                     'source': f'{kb.name or kb.id}: граф знаний',
                     'file_id': kb.id,
                     'name': 'knowledge-graph',
-                }
+                },
             )
         ]
 
@@ -700,7 +705,7 @@ async def query_doc_with_multistrategy_search(
     vector_weight: float,
     graph_weight: float,
     enable_enriched_texts: bool = False,
-    conversation_history: Optional[List[str]] = None,
+    conversation_history: Optional[list[str]] = None,
 ) -> dict:
     try:
         if collection_result is None:
@@ -738,7 +743,7 @@ async def query_doc_with_multistrategy_search(
         # Normalize weights: ensure they sum to 1
         total_weight = bm25_weight + vector_weight + graph_weight
         if total_weight <= 0:
-            raise ValueError("Weights must sum to a positive value")
+            raise ValueError('Weights must sum to a positive value')
 
         bm25_weight = bm25_weight / total_weight
         vector_weight = vector_weight / total_weight
@@ -758,7 +763,7 @@ async def query_doc_with_multistrategy_search(
             weights.append(graph_weight)
 
         if not retrievers:
-            raise ValueError("No retrievers selected")
+            raise ValueError('No retrievers selected')
 
         ensemble_retriever = EnsembleRetriever(
             retrievers=retrievers,
@@ -1141,7 +1146,7 @@ async def query_collection_with_multistrategy_search(
     vector_weight: float,
     graph_weight: float,
     enable_enriched_texts: bool = False,
-    conversation_history: Optional[List[str]] = None,
+    conversation_history: Optional[list[str]] = None,
 ) -> dict:
     results = []
     error = False
@@ -1264,15 +1269,10 @@ async def _embed_openai_with_retry(
             ) as r:
                 if r.status in (429, 500, 502, 503, 504):
                     # Safe to retry: nothing was written to the server state.
-                    raise aiohttp.ClientResponseError(
-                        r.request_info, r.history, status=r.status
-                    )
+                    raise aiohttp.ClientResponseError(r.request_info, r.history, status=r.status)
                 r.raise_for_status()
                 return await r.json()
-        except (
-            aiohttp.ClientError,
-            asyncio.TimeoutError,
-        ) as e:
+        except (TimeoutError, aiohttp.ClientError) as e:
             last_error = e
             if attempt < EMBEDDING_MAX_RETRIES - 1:
                 delay = EMBEDDING_RETRY_BASE_DELAY * (2**attempt)
@@ -1374,15 +1374,10 @@ async def _embed_mistral_with_retry(
                 ssl=AIOHTTP_CLIENT_SESSION_SSL,
             ) as r:
                 if r.status in (429, 500, 502, 503, 504):
-                    raise aiohttp.ClientResponseError(
-                        r.request_info, r.history, status=r.status
-                    )
+                    raise aiohttp.ClientResponseError(r.request_info, r.history, status=r.status)
                 r.raise_for_status()
                 return await r.json()
-        except (
-            aiohttp.ClientError,
-            asyncio.TimeoutError,
-        ) as e:
+        except (TimeoutError, aiohttp.ClientError) as e:
             last_error = e
             if attempt < EMBEDDING_MAX_RETRIES - 1:
                 delay = EMBEDDING_RETRY_BASE_DELAY * (2**attempt)
@@ -1483,15 +1478,10 @@ async def _embed_azure_with_retry(
                 ssl=AIOHTTP_CLIENT_SESSION_SSL,
             ) as r:
                 if r.status in (429, 500, 502, 503, 504):
-                    raise aiohttp.ClientResponseError(
-                        r.request_info, r.history, status=r.status
-                    )
+                    raise aiohttp.ClientResponseError(r.request_info, r.history, status=r.status)
                 r.raise_for_status()
                 return await r.json()
-        except (
-            aiohttp.ClientError,
-            asyncio.TimeoutError,
-        ) as e:
+        except (TimeoutError, aiohttp.ClientError) as e:
             last_error = e
             if attempt < EMBEDDING_MAX_RETRIES - 1:
                 delay = EMBEDDING_RETRY_BASE_DELAY * (2**attempt)
@@ -2423,7 +2413,8 @@ class RerankCompressor(BaseDocumentCompressor):
 
 class ContextualRerankCompressor(RerankCompressor):
     """Rerank documents using query relevance and conversation history context."""
-    conversation_history: Optional[List[str]] = None
+
+    conversation_history: Optional[list[str]] = None
     context_weight: float = RAG_CONTEXTUAL_RERANK_WEIGHT
 
     async def acompress_documents(
@@ -2442,6 +2433,7 @@ class ContextualRerankCompressor(RerankCompressor):
                 scores = list(scores)
         else:
             from sentence_transformers import util as st_util
+
             query_embedding = await self.embedding_function(query, RAG_EMBEDDING_QUERY_PREFIX)
             doc_embeddings = await self.embedding_function(doc_texts, RAG_EMBEDDING_CONTENT_PREFIX)
             scores = st_util.cos_sim(query_embedding, doc_embeddings)[0].tolist()
@@ -2449,6 +2441,7 @@ class ContextualRerankCompressor(RerankCompressor):
         # Combine with conversation history context if available
         if self.conversation_history and len(self.conversation_history) > 0:
             from sentence_transformers import util as st_util
+
             # Use unique history messages to avoid duplicate embeddings
             unique_history = list(set(self.conversation_history))
             history_embeddings = await self.embedding_function(unique_history, RAG_EMBEDDING_QUERY_PREFIX)
@@ -2475,7 +2468,7 @@ class ContextualRerankCompressor(RerankCompressor):
                 filtered = docs_with_scores
             sorted_docs = sorted(filtered, key=lambda x: x[1], reverse=True)
             final_results = []
-            for doc, doc_score in sorted_docs[:self.top_n]:
+            for doc, doc_score in sorted_docs[: self.top_n]:
                 metadata = doc.metadata
                 metadata['score'] = doc_score
                 doc = Document(page_content=doc.page_content, metadata=metadata)

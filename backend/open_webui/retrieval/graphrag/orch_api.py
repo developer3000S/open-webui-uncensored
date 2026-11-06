@@ -9,7 +9,7 @@ observability failure must never surface as a chat-path failure (§5.2).
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from open_webui.retrieval.graphrag import trace_store
 from open_webui.retrieval.graphrag.circuit_breaker import registry as cb_registry
@@ -80,7 +80,7 @@ async def submit_feedback(payload: dict) -> dict:
         kind=payload.get('kind', 'explicit'),
         signal=payload.get('signal'),
         comment=payload.get('comment'),
-        created_at=datetime.now(timezone.utc).isoformat(),
+        created_at=datetime.now(UTC).isoformat(),
     )
     trace_store.store_feedback(fb.model_dump())
 

@@ -6,6 +6,9 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import FileResponse, Response, StreamingResponse
+from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from open_webui.constants import ERROR_MESSAGES
 from open_webui.env import ENABLE_PROFILE_IMAGE_URL_FORWARDING, PROFILE_IMAGE_ALLOWED_MIME_TYPES, STATIC_DIR
 from open_webui.events import EVENTS, publish_event
@@ -37,8 +40,6 @@ from open_webui.utils.auth import (
     get_verified_user,
     validate_password,
 )
-from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy.ext.asyncio import AsyncSession
 
 log = logging.getLogger(__name__)
 

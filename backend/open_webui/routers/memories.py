@@ -5,6 +5,9 @@ import logging
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from open_webui.config import RAG_EMBEDDING_QUERY_PREFIX
 from open_webui.constants import ERROR_MESSAGES
 from open_webui.events import EVENTS, publish_event
@@ -23,8 +26,6 @@ from open_webui.utils.memory import (
     search_memory_rows,
     validate_memory_operations,
 )
-from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
 
 log = logging.getLogger(__name__)
 

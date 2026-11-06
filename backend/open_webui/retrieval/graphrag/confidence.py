@@ -41,7 +41,11 @@ _COST_UNITS = {
 
 _HISTORY_PATH = os.getenv(
     'ORCH_CALIBRATION_PATH',
-    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'internal', 'orch_calibration.json'),
+    os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        'internal',
+        'orch_calibration.json',
+    ),
 )
 
 _history_lock = threading.Lock()
@@ -139,7 +143,11 @@ def estimate_confidence(
     routing_confidence = round(max(0.0, min(1.0, base)), 3)
 
     # Mode selection follows the §4.2.4 threshold table (configurable).
-    unsafe = analysis.intent == 'unsafe' or 'critical' == getattr(policy, 'safety_level', 'low') and analysis.safety_risk_score >= 0.8
+    unsafe = (
+        analysis.intent == 'unsafe'
+        or 'critical' == getattr(policy, 'safety_level', 'low')
+        and analysis.safety_risk_score >= 0.8
+    )
     if unsafe and analysis.safety_risk_score >= 0.9:
         mode = 'refusal_recommended'
         reasons.append('safety_risk_high')

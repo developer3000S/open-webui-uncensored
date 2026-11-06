@@ -31,7 +31,6 @@ warnings.filterwarnings(
 )
 
 
-
 def _collect_env_names(source: str) -> None:
     """Record every env var name this module reads, for .env typo detection.
 
@@ -727,10 +726,10 @@ RAG_REDIS_PASSWORD = os.getenv('RAG_REDIS_PASSWORD', None)
 RAG_REDIS_MAX_CONNECTIONS = int(os.getenv('RAG_REDIS_MAX_CONNECTIONS', '50'))
 
 # Репрайзинг запросов через LLM
-RAG_QUERY_REPHRASER='true'
-RAG_QUERY_REPHRASER_MODEL='mistral'
-RAG_QUERY_REPHRASER_EMBEDDING_ENGINE='openai'
-RAG_QUERY_REPHRASER_API_BASE_URL='https://api.openai.com/v1'
+RAG_QUERY_REPHRASER = 'true'
+RAG_QUERY_REPHRASER_MODEL = 'mistral'
+RAG_QUERY_REPHRASER_EMBEDDING_ENGINE = 'openai'
+RAG_QUERY_REPHRASER_API_BASE_URL = 'https://api.openai.com/v1'
 
 
 if RAG_EMBEDDING_TIMEOUT == '':

@@ -16,7 +16,13 @@ from urllib.parse import quote
 
 import httpx
 
-from open_webui.config import CODER_GITHUB_API_BASE_URL, CODER_GITHUB_RETRY_DELAY, CODER_GITHUB_RETRY_MAX, CODER_GITHUB_RETRY_POLICY, CODER_GITHUB_TIMEOUT
+from open_webui.config import (
+    CODER_GITHUB_API_BASE_URL,
+    CODER_GITHUB_RETRY_DELAY,
+    CODER_GITHUB_RETRY_MAX,
+    CODER_GITHUB_RETRY_POLICY,
+    CODER_GITHUB_TIMEOUT,
+)
 from open_webui.utils.coder.metrics import observe_github_request
 
 log = logging.getLogger(__name__)
@@ -130,12 +136,14 @@ def _raise_for_status(response: httpx.Response) -> None:
         message = body.get('message', '')
         errors = body.get('errors') or []
         if errors and isinstance(errors, list):
-            message = f"{message}: {errors[0].get('message', '')}" if message else errors[0].get('message', message)
+            message = f'{message}: {errors[0].get("message", "")}' if message else errors[0].get('message', message)
     except Exception:
         message = response.text[:200]
 
     if status == 401:
-        raise GitHubAPIError('CODER_GITHUB_UNAUTHORIZED', 'GitHub token is invalid or expired. Reconnect your account.', status)
+        raise GitHubAPIError(
+            'CODER_GITHUB_UNAUTHORIZED', 'GitHub token is invalid or expired. Reconnect your account.', status
+        )
     if status == 403:
         lowered = (message or '').lower()
         if 'rate limit' in lowered:
@@ -234,7 +242,7 @@ async def get_installation_token(installation_id: str, host: str | None = None) 
     jwt_token = _app_jwt(host)
     response = await _request(
         'POST',
-        f"{api_base}/app/installations/{installation_id}/access_tokens",
+        f'{api_base}/app/installations/{installation_id}/access_tokens',
         token=jwt_token,
     )
     _raise_for_status(response)
@@ -246,7 +254,9 @@ async def get_installation_token(installation_id: str, host: str | None = None) 
     try:
         exp_str = (data.get('expires_at') or '')[:19]
         if exp_str:
-            expires_in = max(60.0, min(3600.0, __import__('datetime').datetime.fromisoformat(exp_str).timestamp() - time.time()))
+            expires_in = max(
+                60.0, min(3600.0, __import__('datetime').datetime.fromisoformat(exp_str).timestamp() - time.time())
+            )
     except Exception:
         pass
     _APP_TOKEN_CACHE[installation_id] = (token, time.time() + expires_in)
@@ -343,7 +353,9 @@ class GitHubClient:
         data = response.json()
         access_token = data.get('access_token')
         if not access_token:
-            raise GitHubAPIError('CODER_OAUTH_FAILED', data.get('error_description', 'GitHub OAuth token exchange failed'))
+            raise GitHubAPIError(
+                'CODER_OAUTH_FAILED', data.get('error_description', 'GitHub OAuth token exchange failed')
+            )
         scopes = [s.strip() for s in (data.get('scope') or '').split(',') if s.strip()]
         return {'access_token': access_token, 'scope': scopes}
 
@@ -400,7 +412,9 @@ class GitHubClient:
                 'full_name': repo['full_name'],
                 'default_branch': repo.get('default_branch'),
                 'private': repo.get('private', False),
-                'push_allowed': bool(repo.get('permissions', {}).get('push')) if repo.get('permissions') else repo.get('pushed_at') is not None,
+                'push_allowed': bool(repo.get('permissions', {}).get('push'))
+                if repo.get('permissions')
+                else repo.get('pushed_at') is not None,
             }
             for repo in repos
         ]
@@ -489,7 +503,9 @@ class GitHubClient:
         _raise_for_status(response)
 
     @staticmethod
-    async def update_ref(token: str, owner: str, repo: str, branch: str, sha: str, force: bool = False, host: str | None = None) -> None:
+    async def update_ref(
+        token: str, owner: str, repo: str, branch: str, sha: str, force: bool = False, host: str | None = None
+    ) -> None:
         api_base = _api_base(host)
         response = await _request(
             'PATCH',
@@ -512,7 +528,9 @@ class GitHubClient:
         return response.json()['sha']
 
     @staticmethod
-    async def create_tree(token: str, owner: str, repo: str, base_sha: str, entries: list[dict], host: str | None = None) -> str:
+    async def create_tree(
+        token: str, owner: str, repo: str, base_sha: str, entries: list[dict], host: str | None = None
+    ) -> str:
         api_base = _api_base(host)
         response = await _request(
             'POST',
@@ -524,7 +542,9 @@ class GitHubClient:
         return response.json()['sha']
 
     @staticmethod
-    async def create_commit(token: str, owner: str, repo: str, tree_sha: str, parent_sha: str, message: str, host: str | None = None) -> str:
+    async def create_commit(
+        token: str, owner: str, repo: str, tree_sha: str, parent_sha: str, message: str, host: str | None = None
+    ) -> str:
         api_base = _api_base(host)
         response = await _request(
             'POST',
@@ -537,7 +557,14 @@ class GitHubClient:
 
     @staticmethod
     async def create_pull_request(
-        token: str, owner: str, repo: str, title: str, head: str, base: str, body: str | None = None, host: str | None = None
+        token: str,
+        owner: str,
+        repo: str,
+        title: str,
+        head: str,
+        base: str,
+        body: str | None = None,
+        host: str | None = None,
     ) -> dict:
         api_base = _api_base(host)
         response = await _request(
@@ -556,7 +583,9 @@ class GitHubClient:
         return {'html_url': data.get('html_url'), 'number': str(data.get('number'))}
 
     @staticmethod
-    async def find_open_pull_request(token: str, owner: str, repo: str, head: str, base: str, host: str | None = None) -> dict | None:
+    async def find_open_pull_request(
+        token: str, owner: str, repo: str, head: str, base: str, host: str | None = None
+    ) -> dict | None:
         api_base = _api_base(host)
         """Return {html_url, number} of an open PR for head->base, or None."""
         response = await _request(
@@ -576,7 +605,9 @@ class GitHubClient:
     # ---- Review comments (§22.2) ----
 
     @staticmethod
-    async def get_pull_request_head_sha(token: str, owner: str, repo: str, pr_number: str, host: str | None = None) -> str | None:
+    async def get_pull_request_head_sha(
+        token: str, owner: str, repo: str, pr_number: str, host: str | None = None
+    ) -> str | None:
         api_base = _api_base(host)
         response = await _request(
             'GET', f'{api_base}/repos/{quote(owner)}/{quote(repo)}/pulls/{quote(str(pr_number))}', token=token
@@ -587,8 +618,16 @@ class GitHubClient:
 
     @staticmethod
     async def create_pull_request_review_comment(
-        token: str, owner: str, repo: str, pr_number: str, commit_sha: str,
-        path: str, line: int, body: str, side: str = 'RIGHT', host: str | None = None
+        token: str,
+        owner: str,
+        repo: str,
+        pr_number: str,
+        commit_sha: str,
+        path: str,
+        line: int,
+        body: str,
+        side: str = 'RIGHT',
+        host: str | None = None,
     ) -> dict:
         api_base = _api_base(host)
         """Inline review comment on a PR diff line (REVIEW_COMMENTS event)."""
@@ -603,7 +642,9 @@ class GitHubClient:
         return {'id': data.get('id'), 'html_url': data.get('html_url')}
 
     @staticmethod
-    async def list_pull_request_review_comments(token: str, owner: str, repo: str, pr_number: str, host: str | None = None) -> list[dict]:
+    async def list_pull_request_review_comments(
+        token: str, owner: str, repo: str, pr_number: str, host: str | None = None
+    ) -> list[dict]:
         api_base = _api_base(host)
         response = await _request(
             'GET',
@@ -668,7 +709,14 @@ class GitHubClient:
     # ---- Gist export (§22.2) ----
 
     @staticmethod
-    async def create_gist(token: str, description: str, files: dict[str, str], public: bool = False, retry_settings: dict | None = None, host: str | None = None) -> dict:
+    async def create_gist(
+        token: str,
+        description: str,
+        files: dict[str, str],
+        public: bool = False,
+        retry_settings: dict | None = None,
+        host: str | None = None,
+    ) -> dict:
         api_base = _api_base(host)
         response = await _request(
             'POST',
@@ -688,7 +736,16 @@ class GitHubClient:
     # ---- Auto-generated tests (§22.2) ----
 
     @staticmethod
-    async def create_issue(token: str, owner: str, repo: str, title: str, body: str, labels: list[str] | None = None, retry_settings: dict | None = None, host: str | None = None) -> dict:
+    async def create_issue(
+        token: str,
+        owner: str,
+        repo: str,
+        title: str,
+        body: str,
+        labels: list[str] | None = None,
+        retry_settings: dict | None = None,
+        host: str | None = None,
+    ) -> dict:
         api_base = _api_base(host)
         """Open an issue (used for auto-generated test backlog items)."""
         response = await _request(

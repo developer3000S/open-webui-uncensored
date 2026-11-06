@@ -11,6 +11,7 @@ correlation_id, ip_address, user_agent.
 from collections.abc import Sequence
 
 import sqlalchemy as sa
+
 from alembic import op
 
 revision: str = 'c0d3r4ud1t01'

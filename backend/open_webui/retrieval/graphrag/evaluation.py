@@ -73,6 +73,7 @@ def _sentences(text: str) -> list[str]:
 
 # ── §4.5.3 Relevance ───────────────────────────────────────────────────
 
+
 def score_relevance(candidate, ctx) -> RelevanceResult:
     query_terms = _tokens(ctx.normalized_query)
     answer_terms = _tokens(candidate.answer_text)
@@ -101,6 +102,7 @@ def score_relevance(candidate, ctx) -> RelevanceResult:
 
 # ── §4.5.4 Groundedness ────────────────────────────────────────────────
 
+
 def classify_claim(claim_text: str, sources: list[str], pipeline: str) -> str:
     """Entailment-lite: token containment of the claim in its evidence."""
     ct = _tokens(claim_text)
@@ -128,8 +130,14 @@ def check_groundedness(candidate) -> tuple[float, list[Claim]]:
     """Annotate claims with support status; return (groundedness, claims)."""
     source_texts = list(candidate.context_documents) + [s.snippet for s in candidate.sources]
     claims = candidate.claims or [Claim(text=s) for s in _sentences(candidate.answer_text)[:8]]
-    supported_w = {'supported': 1.0, 'external_unverified': 0.6, 'partially_supported': 0.5,
-                   'inferred': 0.3, 'contradicted': 0.0, 'unsupported': 0.0}
+    supported_w = {
+        'supported': 1.0,
+        'external_unverified': 0.6,
+        'partially_supported': 0.5,
+        'inferred': 0.3,
+        'contradicted': 0.0,
+        'unsupported': 0.0,
+    }
     scores = []
     for c in claims:
         c.status = classify_claim(c.text, source_texts, candidate.pipeline)
@@ -150,11 +158,11 @@ async def refine_groundedness_with_judge(cand, settings) -> None:
     try:
         import httpx
 
-        from open_webui.config import RERANKING_API_URL, RERANKING_API_KEY
+        from open_webui.config import RERANKING_API_KEY, RERANKING_API_URL
 
         if not RERANKING_API_URL:
             return
-        evidence = "\n---\n".join((cand.context_documents or [])[:4])[:6000]
+        evidence = '\n---\n'.join((cand.context_documents or [])[:4])[:6000]
         needs = [c for c in cand.claims if c.status != 'supported'][:6]
         if not needs:
             return
@@ -186,6 +194,7 @@ async def refine_groundedness_with_judge(cand, settings) -> None:
 
 # ── §4.5.5 Contradictions ──────────────────────────────────────────────
 
+
 def _numbers(text: str) -> list[float]:
     out = []
     for m in _NUM_RE.findall(text or ''):
@@ -211,12 +220,14 @@ def detect_contradictions(candidates) -> ContradictionResult:
             if na and nb:
                 sa, sb = set(na), set(nb)
                 if sa and sb and not (sa & sb) and abs(min(sa) - min(sb)) / max(abs(min(sa)), abs(min(sb)), 1e-9) > 0.5:
-                    pairs.append(ContradictionPair(
-                        claim_a=f'{a.pipeline}: {a.answer_text[:80]}',
-                        claim_b=f'{b.pipeline}: {b.answer_text[:80]}',
-                        type='numeric',
-                        explanation='числовые значения в кандидатах расходятся более чем на 50%',
-                    ))
+                    pairs.append(
+                        ContradictionPair(
+                            claim_a=f'{a.pipeline}: {a.answer_text[:80]}',
+                            claim_b=f'{b.pipeline}: {b.answer_text[:80]}',
+                            type='numeric',
+                            explanation='числовые значения в кандидатах расходятся более чем на 50%',
+                        )
+                    )
                     severity = 'high'
             # Polarity clash on similar subject sentences.
             for sa_ in _sentences(a.answer_text)[:4]:
@@ -224,10 +235,14 @@ def detect_contradictions(candidates) -> ContradictionResult:
                     tsa, tsb = _tokens(sa_), _tokens(sb_)
                     jac = len(tsa & tsb) / max(len(tsa | tsb), 1)
                     if jac > 0.5 and bool(_NEG_RE.search(sa_)) != bool(_NEG_RE.search(sb_)):
-                        pairs.append(ContradictionPair(
-                            claim_a=sa_[:120], claim_b=sb_[:120], type='factual',
-                            explanation='утверждения противоположны по полярности при одинаковом субъекте',
-                        ))
+                        pairs.append(
+                            ContradictionPair(
+                                claim_a=sa_[:120],
+                                claim_b=sb_[:120],
+                                type='factual',
+                                explanation='утверждения противоположны по полярности при одинаковом субъекте',
+                            )
+                        )
                         severity = 'critical' if severity == 'critical' else 'medium'
     return ContradictionResult(
         contradiction_found=bool(pairs),
@@ -238,9 +253,12 @@ def detect_contradictions(candidates) -> ContradictionResult:
 
 # ── §4.5.6 Citation verification ───────────────────────────────────────
 
+
 def verify_citations(candidate) -> float:
     """Drop refs that don't resolve to a real retrieved fragment; score rest."""
-    doc_hashes = {hashlib.sha256(d.encode()).hexdigest()[:16] for d in candidate.context_documents if isinstance(d, str)}
+    doc_hashes = {
+        hashlib.sha256(d.encode()).hexdigest()[:16] for d in candidate.context_documents if isinstance(d, str)
+    }
     kept = []
     for src in candidate.sources:
         if not src.source_id or src.source_id == 'unknown' and not src.document_id:
@@ -250,7 +268,12 @@ def verify_citations(candidate) -> float:
         recomputed = hashlib.sha256(src.snippet.encode()).hexdigest()[:16]
         # snippet came straight from a document, so either its own hash or the
         # containing doc's hash must be known; graph refs carry their own tag.
-        if src.hash != recomputed and src.hash not in doc_hashes and recomputed not in doc_hashes and src.source_id != 'knowledge-graph':
+        if (
+            src.hash != recomputed
+            and src.hash not in doc_hashes
+            and recomputed not in doc_hashes
+            and src.source_id != 'knowledge-graph'
+        ):
             continue  # fabricated/stale ref (§4.5.6 п.5)
         kept.append(src)
     n_before, n_after = len(candidate.sources), len(kept)
@@ -268,6 +291,7 @@ def _freshness(candidate) -> float:
 
 
 # ── §4.5.7 Safety filter ───────────────────────────────────────────────
+
 
 def safety_screen(candidate, ctx, policy) -> tuple[float, list[str]]:
     violations: list[str] = []
@@ -289,6 +313,7 @@ def safety_screen(candidate, ctx, policy) -> tuple[float, list[str]]:
 
 
 # ── Orchestration of the layer (§4.5.8) ────────────────────────────────
+
 
 def _evaluate_sync(candidates, ctx, analysis, policy, settings: OrchestratorSettings) -> EvaluationReport:
     report = EvaluationReport()
@@ -313,11 +338,7 @@ def _evaluate_sync(candidates, ctx, analysis, policy, settings: OrchestratorSett
 
         consistency = 1.0  # adjusted after cross-candidate pass below
         overall = round(
-            0.30 * rel.relevance_score
-            + 0.30 * grounded
-            + 0.15 * citation_q
-            + 0.15 * safety_s
-            + 0.10 * consistency,
+            0.30 * rel.relevance_score + 0.30 * grounded + 0.15 * citation_q + 0.15 * safety_s + 0.10 * consistency,
             3,
         )
         flags = list(rel.reason_codes)
@@ -327,17 +348,19 @@ def _evaluate_sync(candidates, ctx, analysis, policy, settings: OrchestratorSett
             flags.append('unsupported_claims')
         if cand.status == 'partial':
             flags.append('partial')
-        report.candidate_scores.append(CandidateScore(
-            candidate_id=cand.candidate_id,
-            relevance=rel.relevance_score,
-            groundedness=grounded,
-            citation_quality=citation_q,
-            safety=safety_s,
-            consistency=consistency,
-            freshness=_freshness(cand),
-            overall_score=overall,
-            flags=flags,
-        ))
+        report.candidate_scores.append(
+            CandidateScore(
+                candidate_id=cand.candidate_id,
+                relevance=rel.relevance_score,
+                groundedness=grounded,
+                citation_quality=citation_q,
+                safety=safety_s,
+                consistency=consistency,
+                freshness=_freshness(cand),
+                overall_score=overall,
+                flags=flags,
+            )
+        )
 
     contra = detect_contradictions(candidates) if settings.evaluation_enabled else ContradictionResult()
     report.contradictions = contra.pairs
@@ -362,7 +385,10 @@ def _evaluate_sync(candidates, ctx, analysis, policy, settings: OrchestratorSett
         report.recommended_action = 'escalate'
     elif contra.severity in ('high', 'critical'):
         report.recommended_action = 'merge'  # balanced answer with warnings (§10.4)
-    elif len(live) > 1 and best.overall_score - sorted((c.overall_score for c in report.candidate_scores), reverse=True)[1] < 0.05:
+    elif (
+        len(live) > 1
+        and best.overall_score - sorted((c.overall_score for c in report.candidate_scores), reverse=True)[1] < 0.05
+    ):
         report.recommended_action = 'merge'
     elif analysis.ambiguity_score >= 0.6:
         report.recommended_action = 'clarify'
@@ -394,8 +420,13 @@ async def evaluate_candidates(candidates, ctx, analysis, policy, settings: Orche
                     if cs.candidate_id == best.candidate_id:
                         cs.groundedness = grounded
                         cs.overall_score = round(
-                            0.30 * cs.relevance + 0.30 * grounded + 0.15 * cs.citation_quality
-                            + 0.15 * cs.safety + 0.10 * cs.consistency, 3)
+                            0.30 * cs.relevance
+                            + 0.30 * grounded
+                            + 0.15 * cs.citation_quality
+                            + 0.15 * cs.safety
+                            + 0.10 * cs.consistency,
+                            3,
+                        )
                         if grounded < settings.min_groundedness and 'low_groundedness' not in cs.flags:
                             cs.flags.append('low_groundedness')
                         elif grounded >= settings.min_groundedness and 'low_groundedness' in cs.flags:
@@ -404,6 +435,7 @@ async def evaluate_candidates(candidates, ctx, analysis, policy, settings: Orche
         except Exception as e:  # noqa: BLE001 — evaluation stays best-effort
             log.debug('judge refinement skipped: %s', e)
     return report
+
 
 def unsupported_ratio(candidate) -> float:
     facts = [c for c in candidate.claims if c.type == 'fact']
@@ -423,7 +455,11 @@ def _clarification_hint(ctx, analysis) -> str:
     lang = getattr(ctx, 'language', 'en')
     tmpl = _CLARIFY_TEMPLATES.get(lang, _CLARIFY_TEMPLATES['en'])
     if analysis.entities:
-        hint = f'какая сущность имеется в виду: {", ".join(analysis.entities[:3])}' if lang == 'ru' else f'which entity: {", ".join(analysis.entities[:3])}'
+        hint = (
+            f'какая сущность имеется в виду: {", ".join(analysis.entities[:3])}'
+            if lang == 'ru'
+            else f'which entity: {", ".join(analysis.entities[:3])}'
+        )
     elif analysis.temporal_expressions:
         hint = 'какой период времени' if lang == 'ru' else 'which time period'
     else:

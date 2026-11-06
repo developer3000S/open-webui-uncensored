@@ -31,11 +31,11 @@ def _env_int(name: str, default: int) -> int:
 
 @dataclass
 class _Breaker:
-    threshold: int          # consecutive failures before opening
-    reset_s: float          # cool-off window before half-open probe
+    threshold: int  # consecutive failures before opening
+    reset_s: float  # cool-off window before half-open probe
     opened_at: float = 0.0
     failures: int = 0
-    probing: bool = False   # one in-flight half-open probe at a time
+    probing: bool = False  # one in-flight half-open probe at a time
     lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
     def allow(self) -> bool:

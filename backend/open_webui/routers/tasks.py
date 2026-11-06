@@ -2,6 +2,8 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+
 from open_webui.config import (
     DEFAULT_AUTOCOMPLETE_GENERATION_PROMPT_TEMPLATE,
     DEFAULT_EMOJI_GENERATION_PROMPT_TEMPLATE,
@@ -28,7 +30,6 @@ from open_webui.utils.task import (
     tags_generation_template,
     title_generation_template,
 )
-from pydantic import BaseModel
 
 log = logging.getLogger(__name__)
 

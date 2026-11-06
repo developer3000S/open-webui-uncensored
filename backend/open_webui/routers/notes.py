@@ -2,6 +2,9 @@ import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from open_webui.config import (
     BYPASS_ADMIN_ACCESS_CONTROL,
 )
@@ -26,8 +29,6 @@ from open_webui.utils.access_control import (
     has_public_write_access_grant,
 )
 from open_webui.utils.auth import get_verified_user
-from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
 
 log = logging.getLogger(__name__)
 

@@ -22,6 +22,9 @@ from fastapi import (
     status,
 )
 from fastapi.responses import FileResponse, StreamingResponse
+from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from open_webui.config import (
     BYPASS_ADMIN_ACCESS_CONTROL,
     EMBEDDING_MAX_RETRIES,
@@ -45,15 +48,13 @@ from open_webui.models.files import (
 )
 from open_webui.models.knowledge import Knowledges
 from open_webui.models.users import Users
+from open_webui.retrieval.secret_scanning import get_secret_scanner
 from open_webui.retrieval.vector.async_client import ASYNC_VECTOR_DB_CLIENT
 from open_webui.routers.audio import transcribe
 from open_webui.routers.retrieval import ProcessFileForm, cleanup_cancelled_embedding, embedding_cancelled, process_file
 from open_webui.storage.provider import Storage
-from open_webui.retrieval.secret_scanning import get_secret_scanner
 from open_webui.utils.auth import get_admin_user, get_verified_user
 from open_webui.utils.misc import strict_match_mime_type
-from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
 
 log = logging.getLogger(__name__)
 
@@ -257,9 +258,7 @@ async def process_uploaded_file(
                 return
 
             except Exception as e:
-                log.warning(
-                    f'process_uploaded_file attempt {attempt}/{max_retries} failed for {file_item.id}: {e}'
-                )
+                log.warning(f'process_uploaded_file attempt {attempt}/{max_retries} failed for {file_item.id}: {e}')
                 if attempt < max_retries:
                     continue
                 # All retries exhausted — mark failed
@@ -283,7 +282,7 @@ async def process_uploaded_file(
             await asyncio.to_thread(Storage.delete_file, file_path)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"File contains sensitive data. {scanner.format_findings(findings)}",
+                detail=f'File contains sensitive data. {scanner.format_findings(findings)}',
             )
         elif findings:
             # Log warnings

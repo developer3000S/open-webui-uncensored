@@ -4,6 +4,7 @@ NOTE: This vector database integration is community-supported and maintained on 
 
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk, scan
+
 from open_webui.config import (
     ELASTICSEARCH_API_KEY,
     ELASTICSEARCH_CA_CERTS,

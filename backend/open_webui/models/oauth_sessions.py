@@ -6,11 +6,12 @@ import time
 import uuid
 
 from cryptography.fernet import Fernet
-from open_webui.env import OAUTH_SESSION_TOKEN_ENCRYPTION_KEY
-from open_webui.internal.db import Base, get_async_db_context
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import BigInteger, Column, Index, Text, delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from open_webui.env import OAUTH_SESSION_TOKEN_ENCRYPTION_KEY
+from open_webui.internal.db import Base, get_async_db_context
 
 log = logging.getLogger(__name__)
 

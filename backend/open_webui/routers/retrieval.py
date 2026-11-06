@@ -25,6 +25,9 @@ from langchain_text_splitters import (
     RecursiveCharacterTextSplitter,
     TokenTextSplitter,
 )
+from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from open_webui.config import (
     DEFAULT_LOCALE,
     ENV,
@@ -34,11 +37,11 @@ from open_webui.config import (
     RAG_EMBEDDING_MODEL_AUTO_UPDATE,
     RAG_EMBEDDING_MODEL_TRUST_REMOTE_CODE,
     RAG_EMBEDDING_QUERY_PREFIX,
+    RAG_QUERY_REPHRASER,
     RAG_RERANKING_MODEL_AUTO_UPDATE,
     RAG_RERANKING_MODEL_TRUST_REMOTE_CODE,
     UPLOAD_DIR,
 )
-from open_webui.config import RAG_QUERY_REPHRASER
 from open_webui.constants import ERROR_MESSAGES
 from open_webui.env import (
     DEVICE_TYPE,
@@ -56,9 +59,11 @@ from open_webui.models.config import Config
 from open_webui.models.files import File as FileModel
 from open_webui.models.files import FileModel, Files, FileUpdateForm
 from open_webui.models.knowledge import Knowledges
+from open_webui.retrieval.cache import get_cache_service
 
 # Document loaders
 from open_webui.retrieval.dedup import reused_embedding_items
+from open_webui.retrieval.query_rephrasing import get_query_rephrasing_service
 from open_webui.retrieval.utils import (
     build_loader_from_config,
     filter_accessible_collections,
@@ -122,8 +127,6 @@ from open_webui.utils.misc import (
     calculate_sha256_string,
     sanitize_text_for_db,
 )
-from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
 
 log = logging.getLogger(__name__)
 
@@ -1230,7 +1233,11 @@ async def update_rag_config(request: Request, form_data: ConfigForm, user=Depend
 
     # File upload settings
     # Empty string means "clear to None" (unlimited/no compression),
-    config.RAG_AUTO_OCR_ON_EMPTY_PDF = form_data.RAG_AUTO_OCR_ON_EMPTY_PDF if form_data.RAG_AUTO_OCR_ON_EMPTY_PDF is not None else config.RAG_AUTO_OCR_ON_EMPTY_PDF
+    config.RAG_AUTO_OCR_ON_EMPTY_PDF = (
+        form_data.RAG_AUTO_OCR_ON_EMPTY_PDF
+        if form_data.RAG_AUTO_OCR_ON_EMPTY_PDF is not None
+        else config.RAG_AUTO_OCR_ON_EMPTY_PDF
+    )
 
     # None means "don't change", int means "set to this value"
     if form_data.FILE_MAX_SIZE is not None:
@@ -1977,9 +1984,7 @@ def save_docs_to_vector_db(
                         raise ValueError('Embedding dimension is 0')
                     expected_dim = len(vec)
                 elif len(vec) != expected_dim:
-                    raise ValueError(
-                        f'Embedding dimension mismatch: expected {expected_dim}, got {len(vec)}'
-                    )
+                    raise ValueError(f'Embedding dimension mismatch: expected {expected_dim}, got {len(vec)}')
                 if any(not isinstance(x, (int, float)) or (x != x) for x in vec):
                     raise ValueError('Invalid embedding values: NaN/Inf or non-numeric')
                 queue = by_text.get(text)
@@ -2217,6 +2222,7 @@ async def check_duplicate_pre_embedding(
     file_id: str,
     content_hash: str,
     target_collection: str | None,
+    db: AsyncSession,
 ) -> dict | None:
     """Check if a file with the same content hash already exists.
 
@@ -2239,10 +2245,9 @@ async def check_duplicate_pre_embedding(
         if file:
             # Check by path
             if file.path:
-                duplicate_by_path = await db.query(FileModel).filter(
-                    FileModel.path == file.path,
-                    FileModel.id != file_id
-                ).first()
+                duplicate_by_path = (
+                    await db.query(FileModel).filter(FileModel.path == file.path, FileModel.id != file_id).first()
+                )
                 if duplicate_by_path:
                     existing_file_ids.add(duplicate_by_path.id)
 
@@ -2255,7 +2260,7 @@ async def check_duplicate_pre_embedding(
                     query = db.query(FileModel).filter(
                         FileModel.id != file_id,
                         FileModel.filename == file.filename,
-                        FileModel.meta['size'] == meta_size
+                        FileModel.meta['size'] == meta_size,
                     )
                     # Only add content_type filter if present
                     if meta_content_type:
@@ -2290,9 +2295,7 @@ async def check_duplicate_pre_embedding(
                                 if fid and fid != file_id:
                                     existing_file_ids.add(fid)
             except Exception:
-                log.debug(
-                    'pre-check duplicate probe failed for collection %s', coll, exc_info=True
-                )
+                log.debug('pre-check duplicate probe failed for collection %s', coll, exc_info=True)
 
     if not existing_file_ids:
         return None
@@ -2441,14 +2444,13 @@ async def process_file(
                     try:
                         docs = await asyncio.wait_for(
                             loader.aload(file.filename, file.meta.get('content_type'), file_path),
-                            timeout=file_processing_timeout
+                            timeout=file_processing_timeout,
                         )
-                    except asyncio.TimeoutError:
-                        log.error(f"File processing timed out for {file.filename}")
+                    except TimeoutError:
+                        log.error(f'File processing timed out for {file.filename}')
                         await Files.update_file_data_by_id(file.id, {'status': 'failed', 'progress': None}, db=db)
                         raise HTTPException(
-                            status_code=status.HTTP_408_REQUEST_TIMEOUT,
-                            detail="File processing timed out"
+                            status_code=status.HTTP_408_REQUEST_TIMEOUT, detail='File processing timed out'
                         )
 
                     docs = [
@@ -2564,6 +2566,7 @@ async def process_file(
                     file.id,
                     hash,
                     collection_name,
+                    db,
                 )
                 if duplicate_info:
                     log.info(
@@ -2855,10 +2858,7 @@ async def process_file(
             # (knowledge router / files upload) can offer the user a choice
             # instead of silently dropping the file. The file row itself stays
             # intact; nothing is marked failed and the hash is not cleared.
-            if (
-                isinstance(e, ValueError)
-                and str(e) == ERROR_MESSAGES.DUPLICATE_CONTENT
-            ):
+            if isinstance(e, ValueError) and str(e) == ERROR_MESSAGES.DUPLICATE_CONTENT:
                 log.info(f'Blocked duplicate content for file {file.id}: {str(e)}')
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
@@ -3568,7 +3568,7 @@ async def query_doc_handler(
                 service = get_query_rephrasing_service()
                 rephrased_query, rephrase_metadata = await service.rephrase(original_query)
             except Exception as e:
-                log.error(f"Query rephrasing failed: {e}")
+                log.error(f'Query rephrasing failed: {e}')
                 # Use original query if rephrasing fails
 
         if config.ENABLE_RAG_HYBRID_SEARCH and (form_data.hybrid is None or form_data.hybrid):
@@ -3606,10 +3606,10 @@ async def query_doc_handler(
             )
 
         return {
-            "original_query": original_query,
-            "rephrased_query": rephrased_query,
-            "rephrase_metadata": rephrase_metadata,
-            "results": results,
+            'original_query': original_query,
+            'rephrased_query': rephrased_query,
+            'rephrase_metadata': rephrase_metadata,
+            'results': results,
         }
     except HTTPException:
         raise
@@ -3652,7 +3652,7 @@ async def query_collection_handler(
                 service = get_query_rephrasing_service()
                 rephrased_query, rephrase_metadata = await service.rephrase(original_query)
             except Exception as e:
-                log.error(f"Query rephrasing failed: {e}")
+                log.error(f'Query rephrasing failed: {e}')
                 # Use original query if rephrasing fails
 
         if config.ENABLE_RAG_HYBRID_SEARCH and (form_data.hybrid is None or form_data.hybrid):
@@ -3694,10 +3694,10 @@ async def query_collection_handler(
             )
 
         return {
-            "original_query": original_query,
-            "rephrased_query": rephrased_query,
-            "rephrase_metadata": rephrase_metadata,
-            "results": results,
+            'original_query': original_query,
+            'rephrased_query': rephrased_query,
+            'rephrase_metadata': rephrase_metadata,
+            'results': results,
         }
     except HTTPException:
         raise
@@ -3974,11 +3974,6 @@ async def process_files_batch(
     )
     return response
 
-@router.get('/cache/stats')
-async def get_cache_stats(request: Request, user=Depends(get_verified_user)):
-    """Информация о работе кэширования поиска RAG."""
-    stats = get_cache_service().get_stats()
-    return stats
 
 @router.get('/cache/stats')
 async def get_cache_stats(request: Request, user=Depends(get_verified_user)):

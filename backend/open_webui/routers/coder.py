@@ -18,30 +18,34 @@ Endpoints (per technical specification Coder.md):
 - GET  /audit                         - audit events for the user
 """
 
-import logging
 import html
+import logging
 import re
-from urllib.parse import quote
 import secrets
 import time
 from typing import Any
+from urllib.parse import quote
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from fastapi.responses import PlainTextResponse, RedirectResponse, Response
-from open_webui.config import CODER_ENABLED, CODER_GITHUB_CLIENT_ID, CODER_AUDIT_RETENTION_DAYS, WEBUI_URL
+from pydantic import BaseModel
+from sqlalchemy import select as sa_select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from open_webui.config import CODER_AUDIT_RETENTION_DAYS, CODER_ENABLED, CODER_GITHUB_CLIENT_ID, WEBUI_URL
 from open_webui.constants import ERROR_MESSAGES
 from open_webui.internal.db import get_async_session
 from open_webui.models.coder import (
     CoderAudit,
     CoderExportForm,
+    CoderExportJobs,
     CoderGitHubAppConnectionForm,
     CoderGitHubAppInstallationForm,
     CoderGitHubAppInstallations,
     CoderGithubConnections,
     CoderProjectForm,
     CoderProjects,
-    CoderExportJobs,
     CoderSandboxCreateForm,
     CoderSandboxSession,
     CoderSandboxSessionModel,
@@ -53,30 +57,35 @@ from open_webui.models.coder import (
     CoderTaskShareForm,
 )
 from open_webui.models.config import Config
-from open_webui.utils.auth import get_verified_user, get_admin_user
+from open_webui.utils.auth import get_admin_user, get_verified_user
 from open_webui.utils.coder import export_worker
-from open_webui.utils.coder.changeset import ChangeSetValidationError, generate_unified_diff, validate_changeset, validate_path
+from open_webui.utils.coder import modes as coder_modes
+from open_webui.utils.coder import sandbox as coder_sandbox
+from open_webui.utils.coder.changeset import (
+    ChangeSetValidationError,
+    generate_unified_diff,
+    validate_changeset,
+    validate_path,
+)
 from open_webui.utils.coder.crypto import decrypt_secret, encrypt_secret
 from open_webui.utils.coder.github_client import (
     GitHubAPIError,
     GitHubClient,
+)
+from open_webui.utils.coder.github_client import (
     _api_base as _api_base_for,
+)
+from open_webui.utils.coder.github_client import (
     _request as github_request,
 )
 from open_webui.utils.coder.metrics import (
     CODER_ACTIVE_CONNECTIONS,
-    CODER_REQUESTS_TOTAL,
     observe_audit_event,
     observe_stream,
     render_metrics,
 )
-from open_webui.utils.coder import modes as coder_modes
-from open_webui.utils.coder import sandbox as coder_sandbox
-from open_webui.utils.coder.sandbox import SandboxError
 from open_webui.utils.coder.policy import get_coder_policies, host_is_allowed, owner_is_allowed, repo_is_allowed
-from pydantic import BaseModel
-from sqlalchemy import select as sa_select
-from sqlalchemy.ext.asyncio import AsyncSession
+from open_webui.utils.coder.sandbox import SandboxError
 
 log = logging.getLogger(__name__)
 
@@ -183,12 +192,22 @@ def _retry_settings_from_policies(policies: dict) -> dict:
 
 
 async def _check_repo_access(
-    request: Request, policies: dict, owner: str, repo: str, user_id: str, db: AsyncSession, connection_host: str | None = None
+    request: Request,
+    policies: dict,
+    owner: str,
+    repo: str,
+    user_id: str,
+    db: AsyncSession,
+    connection_host: str | None = None,
 ) -> None:
     """§15.1 admin policies: hosts/orgs/repos allow-list enforcement (§14.1 permission_denied)."""
     target_host = connection_host or 'github.com'
     host_ok = host_is_allowed(target_host, policies['allowed_github_hosts'])
-    if not (host_ok and owner_is_allowed(owner, policies['allowed_orgs']) and repo_is_allowed(f'{owner}/{repo}', policies['allowed_repos'])):
+    if not (
+        host_ok
+        and owner_is_allowed(owner, policies['allowed_orgs'])
+        and repo_is_allowed(f'{owner}/{repo}', policies['allowed_repos'])
+    ):
         await _audit(
             request,
             user_id=user_id,
@@ -199,7 +218,10 @@ async def _check_repo_access(
         )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail={'code': 'CODER_DISALLOWED_REPO', 'message': f'Repository "{owner}/{repo}" is not allowed by server policy'},
+            detail={
+                'code': 'CODER_DISALLOWED_REPO',
+                'message': f'Repository "{owner}/{repo}" is not allowed by server policy',
+            },
         )
 
 
@@ -216,12 +238,12 @@ async def _get_connection(user_id: str, db: AsyncSession, connection_id: str | N
     When connection_id is given it must belong to the user; otherwise the
     user's default connection is used (back-compatible with single-account UI).
     """
-    log.info(f"_get_connection called for user_id: {user_id}, connection_id: {connection_id}")
-    
+    log.info(f'_get_connection called for user_id: {user_id}, connection_id: {connection_id}')
+
     if connection_id:
         connection = await CoderGithubConnections.get_by_id(connection_id, user_id, db)
         if not connection:
-            log.error(f"Connection not found for user_id: {user_id}, connection_id: {connection_id}")
+            log.error(f'Connection not found for user_id: {user_id}, connection_id: {connection_id}')
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={'code': 'CODER_CONNECTION_NOT_FOUND', 'message': 'GitHub connection not found'},
@@ -233,41 +255,44 @@ async def _get_connection(user_id: str, db: AsyncSession, connection_id: str | N
         candidates = [c for c in await CoderGithubConnections.list_by_user_id(user_id, db) if _connection_is_usable(c)]
         connection = candidates[0] if candidates else None
         if not connection:
-            log.error(f"No usable connection found for user_id: {user_id}")
+            log.error(f'No usable connection found for user_id: {user_id}')
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail={'code': 'CODER_NOT_CONNECTED', 'message': 'GitHub account is not connected. Please reconnect your GitHub account.'},
+                detail={
+                    'code': 'CODER_NOT_CONNECTED',
+                    'message': 'GitHub account is not connected. Please reconnect your GitHub account.',
+                },
             )
-    
-    log.info(f"Connection found for user_id: {user_id}, connection_id: {connection.id if connection else 'None'}")
+
+    log.info(f'Connection found for user_id: {user_id}, connection_id: {connection.id if connection else "None"}')
     return connection
 
 
 async def _get_connection_token(user_id: str, db: AsyncSession, connection_id: str | None = None) -> str:
-    log.info(f"_get_connection_token called for user_id: {user_id}")
+    log.info(f'_get_connection_token called for user_id: {user_id}')
     connection = await _get_connection(user_id, db, connection_id)
-    log.info(f"Connection found for user_id: {user_id}, token_type: {connection.token_type}")
-    
+    log.info(f'Connection found for user_id: {user_id}, token_type: {connection.token_type}')
+
     # Priority D: GitHub App installation — mint/refresh short-lived token on demand.
     if connection.token_type == 'app_installation' and connection.installation_id:
         from open_webui.utils.coder.github_client import get_installation_token
 
         try:
             token = await get_installation_token(connection.installation_id, connection.github_host)
-            log.info(f"Successfully got installation token for user_id: {user_id}")
+            log.info(f'Successfully got installation token for user_id: {user_id}')
             return token
         except GitHubAPIError as exc:
-            log.error(f"Failed to get installation token for user_id: {user_id}, error: {exc.code} {exc.message}")
+            log.error(f'Failed to get installation token for user_id: {user_id}, error: {exc.code} {exc.message}')
             raise HTTPException(
                 status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY,
                 detail={'code': exc.code, 'message': exc.message},
             )
-    
+
     try:
         token = decrypt_secret(connection.access_token_encrypted)
-        log.info(f"Successfully decrypted token for user_id: {user_id}")
+        log.info(f'Successfully decrypted token for user_id: {user_id}')
     except Exception as e:
-        log.error(f"Failed to decrypt token for user_id: {user_id}, error: {e}")
+        log.error(f'Failed to decrypt token for user_id: {user_id}, error: {e}')
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={'code': 'CODER_DECRYPTION_FAILED', 'message': 'Failed to decrypt stored GitHub token'},
@@ -305,7 +330,9 @@ def _prune_oauth_states():
 
 
 @router.get('/config')
-async def get_coder_config(request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+async def get_coder_config(
+    request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)
+):
     policies = await get_coder_policies()
     await _audit(request, user.id, action='section_accessed', target='config', db=db)
     return {
@@ -335,12 +362,15 @@ async def coder_admin_policies(user=Depends(get_admin_user)):
 @router.get('/metrics')
 async def coder_metrics(user=Depends(get_admin_user)):
     """§14.2: prometheus-метрики coder_* (только admin)."""
-    return PlainTextResponse(content=render_metrics().decode('utf-8'), media_type='text/plain; version=0.0.4; charset=utf-8')
+    return PlainTextResponse(
+        content=render_metrics().decode('utf-8'), media_type='text/plain; version=0.0.4; charset=utf-8'
+    )
 
 
 ############################
 # GitHub OAuth
 ############################
+
 
 @router.get('/github/auth/start')
 async def github_auth_start(request: Request, host: str | None = None, user=Depends(get_verified_user)):
@@ -354,10 +384,15 @@ async def github_auth_start(request: Request, host: str | None = None, user=Depe
     gh_host = (host or 'github.com').strip().lower().removeprefix('https://').removeprefix('http://').rstrip('/')
     policies = await get_coder_policies()
     if not host_is_allowed(gh_host, policies['allowed_github_hosts']):
-        await _audit(request, user.id, action='permission_denied', target=gh_host, payload={'reason': 'host_not_allowed'})
+        await _audit(
+            request, user.id, action='permission_denied', target=gh_host, payload={'reason': 'host_not_allowed'}
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail={'code': 'CODER_DISALLOWED_HOST', 'message': f'GitHub host "{gh_host}" is not allowed by server policy'},
+            detail={
+                'code': 'CODER_DISALLOWED_HOST',
+                'message': f'GitHub host "{gh_host}" is not allowed by server policy',
+            },
         )
     _prune_oauth_states()
     state = secrets.token_urlsafe(32)
@@ -470,19 +505,22 @@ async def github_auth_callback(
         github_host=gh_host,
         db=db,
     )
-    await _audit(request, user_id, action='github_connect', target=f"{gh_host}:{gh_user['login']}", db=db)
+    await _audit(request, user_id, action='github_connect', target=f'{gh_host}:{gh_user["login"]}', db=db)
     await db.commit()
     return RedirectResponse(url=_coder_redirect_url(request, 'github_connected=1'), status_code=302)
 
 
 @router.get('/github/connection')
-async def github_connection(request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+async def github_connection(
+    request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)
+):
     await check_coder_permission(request, user)
     connection = await CoderGithubConnections.get_by_user_id(user.id, db)
     if not connection:
         try:
-            from open_webui.internal.db import AsyncSessionLocal
             from sqlalchemy import func, select
+
+            from open_webui.internal.db import AsyncSessionLocal
             from open_webui.models.coder import CoderGithubConnection
 
             async with AsyncSessionLocal() as cnt_db:
@@ -500,7 +538,9 @@ async def github_connection(request: Request, user=Depends(get_verified_user), d
 
 
 @router.delete('/github/connection')
-async def github_disconnect(request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+async def github_disconnect(
+    request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)
+):
     await check_coder_permission(request, user)
     await CoderGithubConnections.delete_by_user_id(user.id, db)
     await _audit(request, user.id, action='github_disconnect', db=db)
@@ -508,7 +548,9 @@ async def github_disconnect(request: Request, user=Depends(get_verified_user), d
 
 
 @router.get('/github/connections')
-async def github_connections_list(request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+async def github_connections_list(
+    request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)
+):
     """§22.2 multi-GitHub: все подключения пользователя (без токенов)."""
     await check_coder_permission(request, user)
     connections = await CoderGithubConnections.list_by_user_id(user.id, db)
@@ -584,9 +626,7 @@ async def github_app_status(
                 token = decrypt_secret(oauth_conn.access_token_encrypted)
                 live = await list_user_installations(token, oauth_conn.github_host)
                 for item in live:
-                    await CoderGitHubAppInstallations.upsert(
-                        user.id, CoderGitHubAppInstallationForm(**item), db
-                    )
+                    await CoderGitHubAppInstallations.upsert(user.id, CoderGitHubAppInstallationForm(**item), db)
                 await db.commit()
                 installations = await CoderGitHubAppInstallations.list_by_user_id(user.id, db)
         except Exception as exc:  # non-fatal: cached rows remain usable
@@ -629,7 +669,10 @@ async def github_app_connect(
     if not row:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={'code': 'CODER_INSTALLATION_NOT_FOUND', 'message': 'Unknown installation; refresh /github-app/status first'},
+            detail={
+                'code': 'CODER_INSTALLATION_NOT_FOUND',
+                'message': 'Unknown installation; refresh /github-app/status first',
+            },
         )
     # verify the installation actually works before switching the connection over
     try:
@@ -653,7 +696,9 @@ async def github_app_connect(
         db=db,
     )
     await db.commit()
-    await _audit(request, user.id, action='github_app_connected', target=f'{row.account_login}:{form.installation_id}', db=db)
+    await _audit(
+        request, user.id, action='github_app_connected', target=f'{row.account_login}:{form.installation_id}', db=db
+    )
     return {
         'connected': True,
         'connection_id': connection.id,
@@ -677,7 +722,9 @@ async def github_organizations(
     try:
         response = await github_request('GET', f'{api_base}/user/orgs', token=token, params={'per_page': 100})
         if response.status_code >= 400:
-            raise GitHubAPIError('CODER_GITHUB_ERROR', f'orgs lookup failed ({response.status_code})', response.status_code)
+            raise GitHubAPIError(
+                'CODER_GITHUB_ERROR', f'orgs lookup failed ({response.status_code})', response.status_code
+            )
         orgs = [{'login': o.get('login'), 'avatar_url': o.get('avatar_url')} for o in response.json()]
     except GitHubAPIError as exc:
         raise HTTPException(status_code=exc.status_code or 502, detail={'code': exc.code, 'message': exc.message})
@@ -704,7 +751,8 @@ async def github_connection_status(
                 'host': c.github_host or 'github.com',
                 'token_type': c.token_type,
                 'is_default': bool(c.is_default),
-                'scopes_ok': bool(c.scopes) and any(s in ('repo', 'public_repo', 'contents:read', 'contents:write') for s in c.scopes)
+                'scopes_ok': bool(c.scopes)
+                and any(s in ('repo', 'public_repo', 'contents:read', 'contents:write') for s in c.scopes)
                 if c.token_type == 'oauth'
                 else True,
             }
@@ -741,7 +789,9 @@ async def github_validate(
         if not scopes:
             warning = 'Token scopes are unknown — some operations may fail. Reconnect to refresh scopes.'
         elif not has_repo:
-            warning = 'Token lacks the "repo" scope — private repositories will not be listed. Reconnect with updated scopes.'
+            warning = (
+                'Token lacks the "repo" scope — private repositories will not be listed. Reconnect with updated scopes.'
+            )
     return {
         'valid': True,
         'login': me.get('login'),
@@ -774,21 +824,34 @@ async def coder_repos(
     # org name cannot be used to enumerate private repos of other tenants.
     if org:
         try:
-            orgs_resp = await github_request('GET', f'{_api_base_for(host)}/user/orgs', token=token, params={'per_page': 100})
+            orgs_resp = await github_request(
+                'GET', f'{_api_base_for(host)}/user/orgs', token=token, params={'per_page': 100}
+            )
             allowed_orgs = [o.get('login', '') for o in orgs_resp.json()] if orgs_resp.status_code < 400 else []
             if org not in allowed_orgs:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    detail={'code': 'CODER_ORG_NOT_ALLOWED', 'message': f'You are not a member of organization "{org}"'},
+                    detail={
+                        'code': 'CODER_ORG_NOT_ALLOWED',
+                        'message': f'You are not a member of organization "{org}"',
+                    },
                 )
         except GitHubAPIError as exc:
             raise HTTPException(status_code=exc.status_code or 502, detail={'code': exc.code, 'message': exc.message})
     try:
         repos = await GitHubClient.list_repositories(token, query=query, page=page, host=host, org=org)
     except GitHubAPIError as exc:
-        raise HTTPException(status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY, detail={'code': exc.code, 'message': exc.message})
+        raise HTTPException(
+            status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY,
+            detail={'code': exc.code, 'message': exc.message},
+        )
     # §15.1: показываем только разрешённые политики orgs/repos
-    repos = [r for r in repos if owner_is_allowed(r.get('owner') or r.get('namespace', {}).get('login', ''), policies['allowed_orgs']) and repo_is_allowed(r.get('full_name', ''), policies['allowed_repos'])]
+    repos = [
+        r
+        for r in repos
+        if owner_is_allowed(r.get('owner') or r.get('namespace', {}).get('login', ''), policies['allowed_orgs'])
+        and repo_is_allowed(r.get('full_name', ''), policies['allowed_repos'])
+    ]
     return {'repos': repos}
 
 
@@ -809,7 +872,10 @@ async def coder_branches(
     try:
         branches = await GitHubClient.list_branches(token, owner, repo, host=host)
     except GitHubAPIError as exc:
-        raise HTTPException(status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY, detail={'code': exc.code, 'message': exc.message})
+        raise HTTPException(
+            status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY,
+            detail={'code': exc.code, 'message': exc.message},
+        )
     return {'branches': branches}
 
 
@@ -835,9 +901,14 @@ async def coder_tree(
         if not project:
             from open_webui.models.coder import CoderProjectForm
 
-            project = await CoderProjects.upsert(user.id, CoderProjectForm(owner=owner, repo=repo, default_branch=branch), db)
+            project = await CoderProjects.upsert(
+                user.id, CoderProjectForm(owner=owner, repo=repo, default_branch=branch), db
+            )
     except GitHubAPIError as exc:
-        raise HTTPException(status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY, detail={'code': exc.code, 'message': exc.message})
+        raise HTTPException(
+            status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY,
+            detail={'code': exc.code, 'message': exc.message},
+        )
     return {'tree': tree, 'project_id': project.id if project else None}
 
 
@@ -867,8 +938,13 @@ async def coder_file(
     except GitHubAPIError as exc:
         if exc.code == 'CODER_GITHUB_RATE_LIMIT':
             await _audit(request, user.id, action='rate_limited', target=f'{owner}/{repo}:{safe_path}', db=db)
-        raise HTTPException(status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY, detail={'code': exc.code, 'message': exc.message})
-    await _audit(request, user.id, action='file_viewed', target=f'{owner}/{repo}:{safe_path}', payload={'branch': branch}, db=db)
+        raise HTTPException(
+            status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY,
+            detail={'code': exc.code, 'message': exc.message},
+        )
+    await _audit(
+        request, user.id, action='file_viewed', target=f'{owner}/{repo}:{safe_path}', payload={'branch': branch}, db=db
+    )
     return file
 
 
@@ -886,7 +962,10 @@ async def coder_files_batch(
     branch = form.get('branch', '')
     paths = form.get('paths', [])[:30]
     if not (owner and repo and branch):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={'code': 'invalid_request', 'message': 'owner, repo and branch are required'})
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={'code': 'invalid_request', 'message': 'owner, repo and branch are required'},
+        )
     policies = await get_coder_policies()
     connection_id = form.get('connection_id')
     host = await _get_connection_host(user.id, db, connection_id)
@@ -929,7 +1008,10 @@ async def coder_search(
     """
     await check_coder_permission(request, user)
     if not (owner and repo and branch):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={'code': 'invalid_request', 'message': 'owner, repo and branch are required'})
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={'code': 'invalid_request', 'message': 'owner, repo and branch are required'},
+        )
     try:
         pattern = re.compile(q if len(q) <= 200 else q[:200], re.IGNORECASE)
     except re.error:
@@ -941,12 +1023,21 @@ async def coder_search(
     await _check_repo_access(request, policies, owner, repo, user.id, db, host)
     token = await _get_connection_token(user.id, db, connection_id)
 
-    CODE_EXT = re.compile(r'\.(ts|tsx|js|jsx|mjs|cjs|py|go|rs|java|kt|scala|c|h|cpp|hpp|cs|rb|php|swift|lua|vue|svelte|sql|sh|bash|zsh|yaml|yml|json|toml|ini|cfg|md|txt|html|css|scss|less|xml|gradle|make|dockerfile)$', re.IGNORECASE)
-    SKIP_DIR = re.compile(r'(^|/)(node_modules|\.git|dist|build|out|vendor|venv|__pycache__|\.next|coverage|target)/', re.IGNORECASE)
+    CODE_EXT = re.compile(
+        r'\.(ts|tsx|js|jsx|mjs|cjs|py|go|rs|java|kt|scala|c|h|cpp|hpp|cs|rb|php|swift|lua|vue|svelte|sql|sh|bash|zsh|yaml|yml|json|toml|ini|cfg|md|txt|html|css|scss|less|xml|gradle|make|dockerfile)$',
+        re.IGNORECASE,
+    )
+    SKIP_DIR = re.compile(
+        r'(^|/)(node_modules|\.git|dist|build|out|vendor|venv|__pycache__|\.next|coverage|target)/', re.IGNORECASE
+    )
 
     try:
         tree_entries = await GitHubClient.get_tree(token, owner, repo, branch, host=host)
-        candidates = [e['path'] for e in tree_entries if e.get('type') == 'blob' and not SKIP_DIR.search(e['path']) and CODE_EXT.search(e['path'])]
+        candidates = [
+            e['path']
+            for e in tree_entries
+            if e.get('type') == 'blob' and not SKIP_DIR.search(e['path']) and CODE_EXT.search(e['path'])
+        ]
         if wanted:
             wset = set(wanted)
             scoped = [p for p in candidates if p in wset]
@@ -956,7 +1047,10 @@ async def coder_search(
             candidates = scoped
         candidates = candidates[:600]
     except GitHubAPIError as exc:
-        raise HTTPException(status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY, detail={'code': exc.code, 'message': exc.message})
+        raise HTTPException(
+            status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY,
+            detail={'code': exc.code, 'message': exc.message},
+        )
 
     matches = []
     errors = []
@@ -976,7 +1070,7 @@ async def coder_search(
                 if pattern.search(line):
                     start = max(0, i - 2)
                     end = min(len(lines), i + 3)
-                    snippet = '\n'.join(f'{j+1}: {lines[j]}' for j in range(start, end))
+                    snippet = '\n'.join(f'{j + 1}: {lines[j]}' for j in range(start, end))
                     hit_lines.append({'line': i + 1, 'snippet': snippet[:1200]})
                     if len(hit_lines) >= 3:
                         break
@@ -988,7 +1082,13 @@ async def coder_search(
             errors.append({'path': path, 'message': exc.message})
         except Exception as exc:  # noqa: BLE001
             errors.append({'path': path, 'message': str(exc)})
-    return {'query': q, 'scanned_files': fetched, 'considered_files': len(candidates), 'matches': matches, 'errors': errors}
+    return {
+        'query': q,
+        'scanned_files': fetched,
+        'considered_files': len(candidates),
+        'matches': matches,
+        'errors': errors,
+    }
 
 
 @router.get('/search/semantic')
@@ -1012,7 +1112,10 @@ async def coder_semantic_search(
 
     await check_coder_permission(request, user)
     if not (owner and repo and branch and q):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={'code': 'invalid_request', 'message': 'owner, repo, branch and q are required'})
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={'code': 'invalid_request', 'message': 'owner, repo, branch and q are required'},
+        )
     policies = await get_coder_policies()
     host = await _get_connection_host(user.id, db, connection_id)
     await _check_repo_access(request, policies, owner, repo, user.id, db, host)
@@ -1021,10 +1124,13 @@ async def coder_semantic_search(
     try:
         tree_entries = await GitHubClient.get_tree(token, owner, repo, branch, host=host)
     except GitHubAPIError as exc:
-        raise HTTPException(status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY, detail={'code': exc.code, 'message': exc.message})
+        raise HTTPException(
+            status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY,
+            detail={'code': exc.code, 'message': exc.message},
+        )
 
     candidates = [e['path'] for e in tree_entries if e.get('type') == 'blob' and semantic.is_code_path(e['path'])]
-    candidates = candidates[:semantic.MAX_CANDIDATES]
+    candidates = candidates[: semantic.MAX_CANDIDATES]
 
     files: dict[str, str] = {}
     errors = []
@@ -1041,7 +1147,14 @@ async def coder_semantic_search(
 
     cache_key = f'{owner}/{repo}@{branch}'
     results = await semantic.rank_files(request, user, q, files, cache_key, top_k=max(1, min(max_results, 50)))
-    await _audit(request, user.id, action='semantic_search', target=f'{owner}/{repo}', payload={'query': q[:200], 'results': len(results)}, db=db)
+    await _audit(
+        request,
+        user.id,
+        action='semantic_search',
+        target=f'{owner}/{repo}',
+        payload={'query': q[:200], 'results': len(results)},
+        db=db,
+    )
     return {'query': q, 'mode': results[0]['mode'] if results else 'lexical', 'results': results, 'errors': errors}
 
 
@@ -1070,8 +1183,18 @@ async def coder_list_pr_comments(
     try:
         comments = await GitHubClient.list_pull_request_review_comments(token, owner, repo, pr_number, host=host)
     except GitHubAPIError as exc:
-        raise HTTPException(status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY, detail={'code': exc.code, 'message': exc.message})
-    await _audit(request, user.id, action='review_comments_listed', target=f'{owner}/{repo}#{pr_number}', payload={'count': len(comments)}, db=db)
+        raise HTTPException(
+            status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY,
+            detail={'code': exc.code, 'message': exc.message},
+        )
+    await _audit(
+        request,
+        user.id,
+        action='review_comments_listed',
+        target=f'{owner}/{repo}#{pr_number}',
+        payload={'count': len(comments)},
+        db=db,
+    )
     return {'comments': comments}
 
 
@@ -1089,7 +1212,10 @@ async def coder_create_pr_comment(
     """Создать inline review-комментарий к строке diff в PR."""
     await check_coder_permission(request, user)
     if form.owner != owner or form.repo != repo or str(form.pr_number) != str(pr_number):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={'code': 'invalid_request', 'message': 'form fields do not match path'})
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={'code': 'invalid_request', 'message': 'form fields do not match path'},
+        )
     policies = await get_coder_policies()
     host = await _get_connection_host(user.id, db, connection_id)
     await _check_repo_access(request, policies, owner, repo, user.id, db, host)
@@ -1102,14 +1228,34 @@ async def coder_create_pr_comment(
     try:
         head_sha = await GitHubClient.get_pull_request_head_sha(token, owner, repo, pr_number, host=host)
         if not head_sha:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={'code': 'CODER_PR_NOT_FOUND', 'message': 'Pull request not found'})
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={'code': 'CODER_PR_NOT_FOUND', 'message': 'Pull request not found'},
+            )
         comment = await GitHubClient.create_pull_request_review_comment(
             token, owner, repo, pr_number, head_sha, safe_path, form.line, form.body[:65536], form.side
         )
     except GitHubAPIError as exc:
-        await _audit(request, user.id, action='permission_denied', target=f'{owner}/{repo}#{pr_number}', payload={'reason': 'github_api', 'code': exc.code}, db=db)
-        raise HTTPException(status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY, detail={'code': exc.code, 'message': exc.message})
-    await _audit(request, user.id, action='review_comment_created', target=f'{owner}/{repo}#{pr_number}', payload={'path': safe_path, 'line': form.line}, db=db)
+        await _audit(
+            request,
+            user.id,
+            action='permission_denied',
+            target=f'{owner}/{repo}#{pr_number}',
+            payload={'reason': 'github_api', 'code': exc.code},
+            db=db,
+        )
+        raise HTTPException(
+            status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY,
+            detail={'code': exc.code, 'message': exc.message},
+        )
+    await _audit(
+        request,
+        user.id,
+        action='review_comment_created',
+        target=f'{owner}/{repo}#{pr_number}',
+        payload={'path': safe_path, 'line': form.line},
+        db=db,
+    )
     return {'comment': comment}
 
 
@@ -1138,9 +1284,19 @@ async def coder_ci_status(
         sha = await GitHubClient.get_ref_commit_sha(token, owner, repo, branch, host=host)
         status_payload = await GitHubClient.get_commit_check_status(token, owner, repo, sha, host=host)
     except GitHubAPIError as exc:
-        raise HTTPException(status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY, detail={'code': exc.code, 'message': exc.message})
+        raise HTTPException(
+            status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY,
+            detail={'code': exc.code, 'message': exc.message},
+        )
     status_payload.update({'sha': sha, 'branch': branch})
-    await _audit(request, user.id, action='ci_status_viewed', target=f'{owner}/{repo}@{branch}', payload={'state': status_payload.get('state')}, db=db)
+    await _audit(
+        request,
+        user.id,
+        action='ci_status_viewed',
+        target=f'{owner}/{repo}@{branch}',
+        payload={'state': status_payload.get('state')},
+        db=db,
+    )
     return status_payload
 
 
@@ -1159,24 +1315,43 @@ async def coder_export_gist(
     """Экспорт файлов change set в GitHub Gist вместо коммита в репозиторий."""
     await check_coder_permission(request, user)
     if not form.files:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={'code': 'invalid_request', 'message': 'files are required'})
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail={'code': 'invalid_request', 'message': 'files are required'}
+        )
     if len(form.files) > 50:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={'code': 'CODER_TOO_MANY_FILES', 'message': 'A gist export supports at most 50 files'})
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={'code': 'CODER_TOO_MANY_FILES', 'message': 'A gist export supports at most 50 files'},
+        )
     policies = await get_coder_policies()
     sanitized: dict[str, str] = {}
     for raw_path, content in form.files.items():
         try:
             safe_path = validate_path(raw_path, policies['blocked_paths'])
         except ChangeSetValidationError as exc:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={'code': exc.code, 'message': exc.message})
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail={'code': exc.code, 'message': exc.message}
+            )
         sanitized[safe_path] = content
     token = await _get_connection_token(user.id, db)
     retry = _retry_settings_from_policies(policies)
     try:
-        gist = await GitHubClient.create_gist(token, form.description or 'Coder export', sanitized, public=form.public, retry_settings=retry)
+        gist = await GitHubClient.create_gist(
+            token, form.description or 'Coder export', sanitized, public=form.public, retry_settings=retry
+        )
     except GitHubAPIError as exc:
-        raise HTTPException(status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY, detail={'code': exc.code, 'message': exc.message})
-    await _audit(request, user.id, action='gist_exported', target=gist.get('html_url') or '', payload={'files': len(sanitized), 'public': form.public}, db=db)
+        raise HTTPException(
+            status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY,
+            detail={'code': exc.code, 'message': exc.message},
+        )
+    await _audit(
+        request,
+        user.id,
+        action='gist_exported',
+        target=gist.get('html_url') or '',
+        payload={'files': len(sanitized), 'public': form.public},
+        db=db,
+    )
     return {'gist': gist}
 
 
@@ -1204,13 +1379,13 @@ async def coder_tests_suggest(
     prompt = (
         'Ты — инженер по тестированию. Сгенерируй пример автоматизированного теста '
         '(pytest или эквивалент для языка проекта) для следующей задачи:\n\n'
-        f"Название: {form.title}\n{form.body or ''}\n\n"
+        f'Название: {form.title}\n{form.body or ""}\n\n'
         'Ответь только блоком кода и коротким пояснением.'
     )
     generated = None
     try:
-        from open_webui.models.models import Models
         from open_webui.apps.webui.internal.db import Session  # noqa: F401  (ensure DB ready)
+
         from open_webui.utils.models import get_default_model_id  # type: ignore
 
         default_model = get_default_model_id()
@@ -1248,14 +1423,26 @@ async def coder_tests_suggest(
     token = await _get_connection_token(user.id, db)
     retry = _retry_settings_from_policies(policies)
     body = (
-        f"Сгенерировано секцией Coder пользователем @{user.id[:8]}…\n\n{form.body or ''}\n\n"
+        f'Сгенерировано секцией Coder пользователем @{user.id[:8]}…\n\n{form.body or ""}\n\n'
         f'### Предлагаемый тест\n\n```python\n{template[:60000]}\n```\n'
     )
     try:
-        issue = await GitHubClient.create_issue(token, form.owner, form.repo, f'[tests] {form.title}'[:250], body, form.labels[:10], retry_settings=retry)
+        issue = await GitHubClient.create_issue(
+            token, form.owner, form.repo, f'[tests] {form.title}'[:250], body, form.labels[:10], retry_settings=retry
+        )
     except GitHubAPIError as exc:
-        raise HTTPException(status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY, detail={'code': exc.code, 'message': exc.message})
-    await _audit(request, user.id, action='test_issue_created', target=f'{form.owner}/{form.repo}', payload={'issue': issue.get('number'), 'llm_generated': bool(generated)}, db=db)
+        raise HTTPException(
+            status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY,
+            detail={'code': exc.code, 'message': exc.message},
+        )
+    await _audit(
+        request,
+        user.id,
+        action='test_issue_created',
+        target=f'{form.owner}/{form.repo}',
+        payload={'issue': issue.get('number'), 'llm_generated': bool(generated)},
+        db=db,
+    )
     return {'issue': issue, 'test_template': template, 'generated_by_model': bool(generated)}
 
 
@@ -1295,9 +1482,16 @@ async def coder_export_preview(
     host = await _get_connection_host(user.id, db, form.connection_id)
     await _check_repo_access(request, policies, form.owner, form.repo, user.id, db, host)
     try:
-        normalized = validate_changeset(form.changeset.files, repo=f"{form.owner}/{form.repo}", policies=policies)
+        normalized = validate_changeset(form.changeset.files, repo=f'{form.owner}/{form.repo}', policies=policies)
     except ChangeSetValidationError as exc:
-        await _audit(request, user.id, action='permission_denied', target=f'{form.owner}/{form.repo}', payload={'reason': exc.code, 'where': 'export/preview'}, db=db)
+        await _audit(
+            request,
+            user.id,
+            action='permission_denied',
+            target=f'{form.owner}/{form.repo}',
+            payload={'reason': exc.code, 'where': 'export/preview'},
+            db=db,
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={'code': exc.code, 'message': exc.message, 'path': exc.path},
@@ -1309,7 +1503,9 @@ async def coder_export_preview(
     for entry in normalized['files']:
         old_content = None
         try:
-            existing = await GitHubClient.get_file(token, form.owner, form.repo, entry['path'], form.base_branch, host=host)
+            existing = await GitHubClient.get_file(
+                token, form.owner, form.repo, entry['path'], form.base_branch, host=host
+            )
             old_content = existing.get('content')
             exists = not existing.get('binary')
         except GitHubAPIError as exc:
@@ -1320,18 +1516,26 @@ async def coder_export_preview(
                 continue
 
         if entry['action'] in ('update', 'delete') and not exists:
-            errors.append({'path': entry['path'], 'code': 'CODER_FILE_NOT_FOUND', 'message': 'File does not exist in base branch'})
+            errors.append(
+                {'path': entry['path'], 'code': 'CODER_FILE_NOT_FOUND', 'message': 'File does not exist in base branch'}
+            )
             continue
         if entry['action'] == 'create' and exists:
-            errors.append({'path': entry['path'], 'code': 'CODER_FILE_EXISTS', 'message': 'File already exists in base branch'})
+            errors.append(
+                {'path': entry['path'], 'code': 'CODER_FILE_EXISTS', 'message': 'File already exists in base branch'}
+            )
             continue
 
         diff = generate_unified_diff(old_content, entry['content'], entry['path'])
         diffs.append({'path': entry['path'], 'action': entry['action'], 'diff': diff})
 
     await _audit(
-        request, user.id, action='diff_generated', target=f'{form.owner}/{form.repo}',
-        payload={'files': len(diffs), 'errors': len(errors), 'branch': form.base_branch}, db=db,
+        request,
+        user.id,
+        action='diff_generated',
+        target=f'{form.owner}/{form.repo}',
+        payload={'files': len(diffs), 'errors': len(errors), 'branch': form.base_branch},
+        db=db,
     )
     return {'valid': len(errors) == 0, 'diffs': diffs, 'errors': errors}
 
@@ -1357,7 +1561,7 @@ async def coder_export_start(
         return {'job_id': existing.id, 'status': existing.status, 'replayed': True}
 
     try:
-        normalized = validate_changeset(form.changeset.files, repo=f"{form.owner}/{form.repo}")
+        normalized = validate_changeset(form.changeset.files, repo=f'{form.owner}/{form.repo}')
     except ChangeSetValidationError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -1418,7 +1622,7 @@ async def coder_export_start(
         detail = http_exc.detail if isinstance(http_exc.detail, dict) else {}
         await CoderExportJobs.update(
             job.id,
-            {'status': 'failed', 'error': f"{detail.get('code', 'CODER_EXPORT_FAILED')}: {detail.get('message', '')}"},
+            {'status': 'failed', 'error': f'{detail.get("code", "CODER_EXPORT_FAILED")}: {detail.get("message", "")}'},
             db,
         )
         await _audit(
@@ -1440,7 +1644,10 @@ async def coder_export_start(
             payload={'job_id': job.id, 'code': exc.code},
             db=db,
         )
-        raise HTTPException(status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY, detail={'code': exc.code, 'message': exc.message})
+        raise HTTPException(
+            status_code=exc.status_code or status.HTTP_502_BAD_GATEWAY,
+            detail={'code': exc.code, 'message': exc.message},
+        )
     except Exception as exc:
         log.exception('Coder export job failed unexpectedly')
         await CoderExportJobs.update(job.id, {'status': 'failed', 'error': str(exc)}, db)
@@ -1565,7 +1772,15 @@ async def _execute_export_job(job_id: str, token: str, form_dict: dict) -> tuple
     return commit_sha, pr['html_url'], pr['number']
 
 
-async def _run_export_job(job_id: str, token: str, form: CoderExportForm, normalized: dict, user_id: str, db: AsyncSession, host: str | None = None):
+async def _run_export_job(
+    job_id: str,
+    token: str,
+    form: CoderExportForm,
+    normalized: dict,
+    user_id: str,
+    db: AsyncSession,
+    host: str | None = None,
+):
     await CoderExportJobs.update(job_id, {'status': 'running'}, db)
 
     form_dict = {
@@ -1587,7 +1802,9 @@ async def _run_export_job(job_id: str, token: str, form: CoderExportForm, normal
 
 
 @router.get('/export/jobs')
-async def coder_export_jobs(request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+async def coder_export_jobs(
+    request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)
+):
     await check_coder_permission(request, user)
     jobs = await CoderExportJobs.list_by_user_id(user.id, db)
     return {
@@ -1611,7 +1828,9 @@ async def coder_export_jobs(request: Request, user=Depends(get_verified_user), d
 
 
 @router.get('/export/jobs/{job_id}')
-async def coder_export_job(job_id: str, request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+async def coder_export_job(
+    job_id: str, request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)
+):
     await check_coder_permission(request, user)
     job = await CoderExportJobs.get_by_id(job_id, db)
     if not job or job.user_id != user.id:
@@ -1673,7 +1892,9 @@ async def coder_admin_audit(
 
 
 @router.post('/audit/cleanup')
-async def coder_audit_cleanup(request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+async def coder_audit_cleanup(
+    request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)
+):
     """Admin endpoint to cleanup old audit events."""
     # Only admins can cleanup audit logs
     if user.get('role') != 'admin':
@@ -1716,7 +1937,9 @@ def _project_payload(project) -> dict:
 
 
 @router.get('/projects')
-async def coder_list_projects(request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+async def coder_list_projects(
+    request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)
+):
     """Coder -> Projects tab: list saved projects for the current user."""
     await check_coder_permission(request, user)
     projects = await CoderProjects.list_by_user_id(user.id, db)
@@ -1754,12 +1977,16 @@ async def coder_create_project(
         project.meta = meta
         project.updated_at = int(time.time())
         await db.flush()
-    await _audit(request, user.id, action='project_created', target=f'{owner}/{repo}', payload={'project_id': project.id}, db=db)
+    await _audit(
+        request, user.id, action='project_created', target=f'{owner}/{repo}', payload={'project_id': project.id}, db=db
+    )
     return _project_payload(project)
 
 
 @router.get('/projects/{project_id}')
-async def coder_get_project(request: Request, project_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+async def coder_get_project(
+    request: Request, project_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)
+):
     await check_coder_permission(request, user)
     project = await CoderProjects.get_by_id(project_id, db)
     if not project or project.user_id != user.id:
@@ -1771,7 +1998,9 @@ async def coder_get_project(request: Request, project_id: str, user=Depends(get_
 
 
 @router.delete('/projects/{project_id}')
-async def coder_delete_project(request: Request, project_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+async def coder_delete_project(
+    request: Request, project_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)
+):
     await check_coder_permission(request, user)
     project = await CoderProjects.get_by_id(project_id, db)
     if not project or project.user_id != user.id:
@@ -1780,7 +2009,14 @@ async def coder_delete_project(request: Request, project_id: str, user=Depends(g
             detail={'code': 'CODER_PROJECT_NOT_FOUND', 'message': 'Project not found'},
         )
     await CoderProjects.delete(project_id, db)
-    await _audit(request, user.id, action='project_deleted', target=f'{project.owner}/{project.repo}', payload={'project_id': project_id}, db=db)
+    await _audit(
+        request,
+        user.id,
+        action='project_deleted',
+        target=f'{project.owner}/{project.repo}',
+        payload={'project_id': project_id},
+        db=db,
+    )
     return {'status': True}
 
 
@@ -1829,7 +2065,9 @@ async def _optional_user(request: Request):
 
 
 @router.get('/modes')
-async def coder_modes_list(request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+async def coder_modes_list(
+    request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)
+):
     """§B1: список режимов генерации; §B2: галерея шаблонов."""
     await check_coder_permission(request, user)
     return {'modes': coder_modes.list_modes(), 'templates': coder_modes.list_templates()}
@@ -1857,21 +2095,29 @@ async def coder_sandbox_create(
         await CoderSandboxSessions.update(session.id, {'status': 'destroyed'}, db)
         raise _sandbox_error(exc)
     await _audit(
-        request, user.id, action='sandbox_created', target=session.id,
-        payload={'mode': form.mode, 'template_id': form.template_id}, db=db,
+        request,
+        user.id,
+        action='sandbox_created',
+        target=session.id,
+        payload={'mode': form.mode, 'template_id': form.template_id},
+        db=db,
     )
     return CoderSandboxSessionModel.model_validate(session).model_dump()
 
 
 @router.get('/sandbox/sessions')
-async def coder_sandbox_list(request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+async def coder_sandbox_list(
+    request: Request, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)
+):
     await check_coder_permission(request, user)
     sessions = await CoderSandboxSessions.list_by_user_id(user.id, db, statuses=['active', 'paused'])
     return [CoderSandboxSessionModel.model_validate(s).model_dump() for s in sessions]
 
 
 @router.get('/sandbox/session/{session_id}')
-async def coder_sandbox_get(request: Request, session_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+async def coder_sandbox_get(
+    request: Request, session_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)
+):
     session = await _get_sandbox_session(request, user, session_id, db)
     try:
         files = coder_sandbox.list_files(session_id)
@@ -1883,7 +2129,9 @@ async def coder_sandbox_get(request: Request, session_id: str, user=Depends(get_
 
 
 @router.post('/sandbox/session/{session_id}/pause')
-async def coder_sandbox_pause(request: Request, session_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+async def coder_sandbox_pause(
+    request: Request, session_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)
+):
     """§A1 жизненный цикл pause/resume."""
     session = await _get_sandbox_session(request, user, session_id, db)
     session = await CoderSandboxSessions.update(session_id, {'status': 'paused'}, db)
@@ -1891,7 +2139,9 @@ async def coder_sandbox_pause(request: Request, session_id: str, user=Depends(ge
 
 
 @router.post('/sandbox/session/{session_id}/resume')
-async def coder_sandbox_resume(request: Request, session_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+async def coder_sandbox_resume(
+    request: Request, session_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)
+):
     session = await _get_sandbox_session(request, user, session_id, db)
     session = await CoderSandboxSessions.update(session_id, {'status': 'active'}, db)
     await CoderSandboxSessions.touch(session_id, db)
@@ -1899,7 +2149,9 @@ async def coder_sandbox_resume(request: Request, session_id: str, user=Depends(g
 
 
 @router.delete('/sandbox/session/{session_id}')
-async def coder_sandbox_destroy(request: Request, session_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+async def coder_sandbox_destroy(
+    request: Request, session_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)
+):
     """§A1 destroy: удаляет директорию песочницы и помечает сессию."""
     await _get_sandbox_session(request, user, session_id, db)
     removed = False
@@ -1908,14 +2160,19 @@ async def coder_sandbox_destroy(request: Request, session_id: str, user=Depends(
     except SandboxError:
         pass
     await CoderSandboxSessions.update(session_id, {'status': 'destroyed'}, db)
-    await _audit(request, user.id, action='sandbox_destroyed', target=session_id, payload={'removed_dir': removed}, db=db)
+    await _audit(
+        request, user.id, action='sandbox_destroyed', target=session_id, payload={'removed_dir': removed}, db=db
+    )
     return {'status': True}
 
 
 @router.get('/sandbox/session/{session_id}/file')
 async def coder_sandbox_read_file(
-    request: Request, session_id: str, path: str,
-    user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session),
+    request: Request,
+    session_id: str,
+    path: str,
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
 ):
     """§A3: чтение файла из sandbox для браузерного редактора."""
     await _get_sandbox_session(request, user, session_id, db)
@@ -1928,8 +2185,11 @@ async def coder_sandbox_read_file(
 
 @router.put('/sandbox/session/{session_id}/file')
 async def coder_sandbox_write_file(
-    request: Request, session_id: str, form: CoderSandboxWriteForm,
-    user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session),
+    request: Request,
+    session_id: str,
+    form: CoderSandboxWriteForm,
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
 ):
     await _get_sandbox_session(request, user, session_id, db)
     try:
@@ -1942,8 +2202,11 @@ async def coder_sandbox_write_file(
 
 @router.delete('/sandbox/session/{session_id}/file')
 async def coder_sandbox_delete_file(
-    request: Request, session_id: str, path: str,
-    user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session),
+    request: Request,
+    session_id: str,
+    path: str,
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
 ):
     await _get_sandbox_session(request, user, session_id, db)
     try:
@@ -1956,8 +2219,11 @@ async def coder_sandbox_delete_file(
 
 @router.post('/sandbox/session/{session_id}/changeset')
 async def coder_sandbox_apply_changeset(
-    request: Request, session_id: str, form: CoderSandboxChangesetForm,
-    user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session),
+    request: Request,
+    session_id: str,
+    form: CoderSandboxChangesetForm,
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
 ):
     """Применяет change set модели к sandbox (§A5: Stop откатывает только не применённые файлы)."""
     await _get_sandbox_session(request, user, session_id, db)
@@ -1966,14 +2232,19 @@ async def coder_sandbox_apply_changeset(
     except SandboxError as exc:
         raise _sandbox_error(exc)
     await CoderSandboxSessions.touch(session_id, db)
-    await _audit(request, user.id, action='sandbox_changeset_applied', target=session_id, payload={'files': len(applied)}, db=db)
+    await _audit(
+        request, user.id, action='sandbox_changeset_applied', target=session_id, payload={'files': len(applied)}, db=db
+    )
     return {'applied': applied}
 
 
 @router.get('/sandbox/session/{session_id}/preview', response_class=PlainTextResponse)
 async def coder_sandbox_preview(
-    request: Request, session_id: str, v: int | None = None,
-    user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session),
+    request: Request,
+    session_id: str,
+    v: int | None = None,
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
 ):
     """§A2: HTML живой превью-панели (iframe src). v — cache-buster для hot-reload."""
     await _get_sandbox_session(request, user, session_id, db)
@@ -1986,7 +2257,9 @@ async def coder_sandbox_preview(
 
 
 @router.post('/sandbox/session/{session_id}/publish')
-async def coder_sandbox_publish(request: Request, session_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+async def coder_sandbox_publish(
+    request: Request, session_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)
+):
     """§A4: публикация одним кликом — копия проекта в published/<share_id>."""
     session = await _get_sandbox_session(request, user, session_id, db)
     share_id = session.published_share_id or session_id
@@ -2018,7 +2291,9 @@ async def coder_published_page(request: Request, share_id: str):
 
 
 @router.post('/sandbox/sweep')
-async def coder_sandbox_sweep(request: Request, admin_user=Depends(get_admin_user), db: AsyncSession = Depends(get_async_session)):
+async def coder_sandbox_sweep(
+    request: Request, admin_user=Depends(get_admin_user), db: AsyncSession = Depends(get_async_session)
+):
     """§A1 TTL-чистка протухших sandbox-сессий (запускается админом/крон-задачей).
 
     Удаляет строки БД старше TTL и осиротевшие директории внутри sandbox root.
@@ -2044,7 +2319,13 @@ async def coder_sandbox_sweep(request: Request, admin_user=Depends(get_admin_use
         await db.commit()
     except Exception:
         log.debug('coder sandbox dir sweep failed', exc_info=True)
-    await _audit(request, admin_user.id, action='sandbox_sweep', payload={'expired_rows': removed_rows, 'removed_dirs': removed_dirs}, db=db)
+    await _audit(
+        request,
+        admin_user.id,
+        action='sandbox_sweep',
+        payload={'expired_rows': removed_rows, 'removed_dirs': removed_dirs},
+        db=db,
+    )
     return {'expired_rows': removed_rows, 'removed_dirs': removed_dirs}
 
 
@@ -2055,8 +2336,10 @@ async def coder_sandbox_sweep(request: Request, admin_user=Depends(get_admin_use
 
 @router.get('/sandbox/session/{session_id}/export')
 async def coder_sandbox_export_zip(
-    request: Request, session_id: str,
-    user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session),
+    request: Request,
+    session_id: str,
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
 ):
     """§C-im/export: выгрузка песочницы задачи в zip без GitHub."""
     await _get_sandbox_session(request, user, session_id, db)
@@ -2109,7 +2392,9 @@ async def coder_sandbox_import_zip(
         raise _sandbox_error(exc)
 
     target_chat_id = chat_id or str(uuid4())
-    session = await CoderSandboxSessions.create(user.id, mode=parsed['manifest'].get('mode'), chat_id=target_chat_id, db=db)
+    session = await CoderSandboxSessions.create(
+        user.id, mode=parsed['manifest'].get('mode'), chat_id=target_chat_id, db=db
+    )
     written = skipped = 0
     try:
         coder_sandbox.create_sandbox(session.id, {})
@@ -2123,8 +2408,15 @@ async def coder_sandbox_import_zip(
         await CoderSandboxSessions.update(session.id, {'status': 'destroyed'}, db)
         raise _sandbox_error(exc)
     await _audit(
-        request, user.id, action='sandbox_imported', target=session.id,
-        payload={'files_written': written, 'files_skipped': skipped, 'source_session': parsed['manifest'].get('session_id')},
+        request,
+        user.id,
+        action='sandbox_imported',
+        target=session.id,
+        payload={
+            'files_written': written,
+            'files_skipped': skipped,
+            'source_session': parsed['manifest'].get('session_id'),
+        },
         db=db,
     )
     return {
@@ -2138,8 +2430,10 @@ async def coder_sandbox_import_zip(
 
 @router.get('/tasks/shared/{token}/export')
 async def coder_task_shared_export(
-    request: Request, token: str,
-    user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session),
+    request: Request,
+    token: str,
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
 ):
     """§C-im/export: экспорт расшаренной задачи (своей или чужой публичной).
 
@@ -2250,18 +2544,25 @@ async def coder_tasks_list(
 
 @router.post('/tasks/{chat_id}')
 async def coder_tasks_upsert(
-    request: Request, chat_id: str, form: CoderTaskMetaForm,
-    user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session),
+    request: Request,
+    chat_id: str,
+    form: CoderTaskMetaForm,
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
 ):
     """§C1 pin/unpin/archive/restore + ручные title/tags/mode/status."""
     await check_coder_permission(request, user)
     row = await CoderTaskMetas.upsert(user.id, chat_id, form, db)
-    await _audit(request, user.id, action='task_meta_updated', target=chat_id, payload=form.model_dump(exclude_none=True), db=db)
+    await _audit(
+        request, user.id, action='task_meta_updated', target=chat_id, payload=form.model_dump(exclude_none=True), db=db
+    )
     return CoderTaskMetaModel.model_validate(row).model_dump()
 
 
 @router.delete('/tasks/{chat_id}')
-async def coder_tasks_delete(request: Request, chat_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+async def coder_tasks_delete(
+    request: Request, chat_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)
+):
     await check_coder_permission(request, user)
     ok = await CoderTaskMetas.delete_by_chat(user.id, chat_id, db)
     return {'status': ok}
@@ -2269,8 +2570,11 @@ async def coder_tasks_delete(request: Request, chat_id: str, user=Depends(get_ve
 
 @router.post('/tasks/{chat_id}/title')
 async def coder_task_title(
-    request: Request, chat_id: str, prompt: str = '',
-    user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session),
+    request: Request,
+    chat_id: str,
+    prompt: str = '',
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
 ):
     """§B3: автосохранение названия и тегов задачи (быстрая эвристика, аналог /api/task/title|tags)."""
     await check_coder_permission(request, user)
@@ -2280,7 +2584,9 @@ async def coder_task_title(
 
 
 @router.get('/tasks/{chat_id}/followups')
-async def coder_task_followups(request: Request, chat_id: str, mode: str | None = None, user=Depends(get_verified_user)):
+async def coder_task_followups(
+    request: Request, chat_id: str, mode: str | None = None, user=Depends(get_verified_user)
+):
     """§B4: follow-up предложения «что сделать дальше»."""
     await check_coder_permission(request, user)
     return {'suggestions': coder_modes.followup_suggestions(mode)}
@@ -2300,8 +2606,12 @@ async def coder_stream_metrics(
     first_chunk_s = (first_chunk_ms / 1000.0) if first_chunk_ms is not None else None
     observe_stream(first_chunk_seconds=first_chunk_s, chunks=chunks, mode=mode)
     await _audit(
-        request, user.id, action='generation_streamed', target=mode,
-        payload={'first_chunk_ms': first_chunk_ms, 'chunks': chunks}, db=db,
+        request,
+        user.id,
+        action='generation_streamed',
+        target=mode,
+        payload={'first_chunk_ms': first_chunk_ms, 'chunks': chunks},
+        db=db,
     )
     return {'status': True}
 
@@ -2331,8 +2641,12 @@ async def coder_task_share(
     await check_coder_permission(request, user)
     row = await CoderTaskMetas.set_share(user.id, chat_id, form.enabled, db)
     await _audit(
-        request, user.id, action='task_shared' if form.enabled else 'task_unshared',
-        target=chat_id, payload={'enabled': form.enabled}, db=db,
+        request,
+        user.id,
+        action='task_shared' if form.enabled else 'task_unshared',
+        target=chat_id,
+        payload={'enabled': form.enabled},
+        db=db,
     )
     share_url = None
     if form.enabled and row.share_token:
@@ -2431,9 +2745,7 @@ async def coder_task_fork(
     new_session_id: str | None = None
     src_session = await CoderSandboxSessions.get_by_chat(src.user_id, src.chat_id, db)
     if not src_session:
-        author_sessions = await CoderSandboxSessions.list_by_user_id(
-            src.user_id, db, statuses=['active', 'paused']
-        )
+        author_sessions = await CoderSandboxSessions.list_by_user_id(src.user_id, db, statuses=['active', 'paused'])
         src_session = author_sessions[0] if author_sessions else None
     if src_session:
         session = await CoderSandboxSessions.create(user.id, mode=src.mode, chat_id=new_chat_id, db=db)
@@ -2443,15 +2755,17 @@ async def coder_task_fork(
             copied = len(result['copied'])
             skipped = len(result['skipped'])
             new_session_id = session.id
-            await CoderSandboxSessions.update(
-                session.id, {'meta': {'forked_from_session': src_session.id}}, db
-            )
+            await CoderSandboxSessions.update(session.id, {'meta': {'forked_from_session': src_session.id}}, db)
         except SandboxError as exc:
             await CoderSandboxSessions.update(session.id, {'status': 'destroyed'}, db)
             log.debug('coder fork sandbox copy failed: %s', exc.code)
     await _audit(
-        request, user.id, action='task_forked', target=new_chat_id,
-        payload={'source_chat_id': src.chat_id, 'files_copied': copied, 'files_skipped': skipped}, db=db,
+        request,
+        user.id,
+        action='task_forked',
+        target=new_chat_id,
+        payload={'source_chat_id': src.chat_id, 'files_copied': copied, 'files_skipped': skipped},
+        db=db,
     )
     return {
         'chat_id': new_chat_id,

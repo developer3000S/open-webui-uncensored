@@ -2,10 +2,11 @@ import logging
 import time
 from uuid import uuid4
 
-from open_webui.internal.db import Base, get_async_db_context
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import JSON, BigInteger, Boolean, Column, Index, String, Text, cast, delete, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from open_webui.internal.db import Base, get_async_db_context
 
 log = logging.getLogger(__name__)
 

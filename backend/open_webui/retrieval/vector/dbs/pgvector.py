@@ -2,6 +2,30 @@ import json
 import logging
 from typing import Any
 
+from pgvector.sqlalchemy import HALFVEC, Vector
+from sqlalchemy import (
+    Column,
+    Integer,
+    LargeBinary,
+    MetaData,
+    Table,
+    Text,
+    cast,
+    column,
+    create_engine,
+    func,
+    literal,
+    select,
+    text,
+    values,
+)
+from sqlalchemy.dialects.postgresql import JSONB, array
+from sqlalchemy.exc import NoSuchTableError
+from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.orm import declarative_base, scoped_session, sessionmaker
+from sqlalchemy.pool import NullPool, QueuePool
+from sqlalchemy.sql import true
+
 from open_webui.config import (
     PGVECTOR_CREATE_EXTENSION,
     PGVECTOR_DB_URL,
@@ -26,29 +50,6 @@ from open_webui.retrieval.vector.main import (
 )
 from open_webui.retrieval.vector.utils import merge_hybrid_search_results, process_metadata
 from open_webui.utils.misc import sanitize_text_for_db
-from pgvector.sqlalchemy import HALFVEC, Vector
-from sqlalchemy import (
-    Column,
-    Integer,
-    LargeBinary,
-    MetaData,
-    Table,
-    Text,
-    cast,
-    column,
-    create_engine,
-    func,
-    literal,
-    select,
-    text,
-    values,
-)
-from sqlalchemy.dialects.postgresql import JSONB, array
-from sqlalchemy.exc import NoSuchTableError
-from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import declarative_base, scoped_session, sessionmaker
-from sqlalchemy.pool import NullPool, QueuePool
-from sqlalchemy.sql import true
 
 VECTOR_LENGTH = PGVECTOR_INITIALIZE_MAX_VECTOR_LENGTH
 USE_HALFVEC = PGVECTOR_USE_HALFVEC

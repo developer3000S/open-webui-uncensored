@@ -66,11 +66,7 @@ class TestEmbeddingIncompleteWiring(unittest.TestCase):
         """`expected_dim` is assigned inside `_on_batch`, so without `nonlocal`
         the first batch raises UnboundLocalError and progressive indexing never
         runs.  The closure must forward writes to the enclosing scope."""
-        on_batch = next(
-            n
-            for n in ast.walk(self.save)
-            if isinstance(n, ast.AsyncFunctionDef) and n.name == '_on_batch'
-        )
+        on_batch = next(n for n in ast.walk(self.save) if isinstance(n, ast.AsyncFunctionDef) and n.name == '_on_batch')
         nonlocals = [n for n in ast.walk(on_batch) if isinstance(n, ast.Nonlocal)]
         self.assertTrue(nonlocals, '_on_batch must declare nonlocal expected_dim')
         self.assertIn('expected_dim', nonlocals[0].names)
@@ -78,11 +74,7 @@ class TestEmbeddingIncompleteWiring(unittest.TestCase):
     def test_on_batch_persists_each_batch_immediately(self):
         """Each finished batch goes straight to the vector store from the
         callback, not accumulated for a final bulk insert."""
-        on_batch = next(
-            n
-            for n in ast.walk(self.save)
-            if isinstance(n, ast.AsyncFunctionDef) and n.name == '_on_batch'
-        )
+        on_batch = next(n for n in ast.walk(self.save) if isinstance(n, ast.AsyncFunctionDef) and n.name == '_on_batch')
         sources = [source_of(n) for n in ast.walk(on_batch) if isinstance(n, ast.Call)]
         self.assertTrue(
             any('VECTOR_DB_CLIENT.insert' in s for s in sources),

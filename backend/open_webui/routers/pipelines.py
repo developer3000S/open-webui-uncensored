@@ -14,13 +14,14 @@ from fastapi import (
     UploadFile,
     status,
 )
+from pydantic import BaseModel
+
 from open_webui.config import CACHE_DIR
 from open_webui.env import AIOHTTP_CLIENT_SESSION_SSL
 from open_webui.events import EVENTS, publish_event
 from open_webui.models.config import Config
 from open_webui.routers.openai import get_all_models_responses
 from open_webui.utils.auth import get_admin_user
-from pydantic import BaseModel
 
 log = logging.getLogger(__name__)
 

@@ -2,6 +2,7 @@ import logging
 from typing import Literal
 
 import requests
+
 from open_webui.env import VERSION
 from open_webui.retrieval.web.main import SearchResult, get_filtered_results
 

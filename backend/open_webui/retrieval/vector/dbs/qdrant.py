@@ -5,6 +5,10 @@ NOTE: This vector database integration is community-supported and maintained on 
 import logging
 from urllib.parse import urlparse
 
+from qdrant_client import QdrantClient as Qclient
+from qdrant_client.http.models import PointStruct
+from qdrant_client.models import models
+
 from open_webui.config import (
     QDRANT_API_KEY,
     QDRANT_COLLECTION_PREFIX,
@@ -21,9 +25,6 @@ from open_webui.retrieval.vector.main import (
     VectorDBBase,
     VectorItem,
 )
-from qdrant_client import QdrantClient as Qclient
-from qdrant_client.http.models import PointStruct
-from qdrant_client.models import models
 
 NO_LIMIT = 999999999
 

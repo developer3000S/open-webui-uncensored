@@ -7,9 +7,10 @@ Create Date: 2024-10-20 17:02:35.241684
 """
 
 import sqlalchemy as sa
-from alembic import op
 from sqlalchemy import JSON, String, Text, and_
 from sqlalchemy.sql import column, table
+
+from alembic import op
 
 revision = 'c29facfe716b'
 down_revision = 'c69f45358db4'

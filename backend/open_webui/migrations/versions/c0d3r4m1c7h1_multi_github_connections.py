@@ -13,6 +13,7 @@ Create Date: 2026-10-27
 from collections.abc import Sequence
 
 import sqlalchemy as sa
+
 from alembic import op
 
 revision: str = 'c0d3r4m1c7h1'
@@ -52,7 +53,7 @@ def upgrade() -> None:
     if 'is_default' not in existing_columns:
         with op.batch_alter_table('coder_github_connection') as batch_op:
             batch_op.add_column(sa.Column('is_default', sa.Boolean(), nullable=True))
-        op.execute("UPDATE coder_github_connection SET is_default = 1 WHERE is_default IS NULL")
+        op.execute('UPDATE coder_github_connection SET is_default = 1 WHERE is_default IS NULL')
         with op.batch_alter_table('coder_github_connection') as batch_op:
             batch_op.alter_column('is_default', existing_type=sa.Boolean(), nullable=False)
 

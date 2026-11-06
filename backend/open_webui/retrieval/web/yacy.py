@@ -1,8 +1,9 @@
 import logging
 
 import requests
-from open_webui.retrieval.web.main import SearchResult, get_filtered_results
 from requests.auth import HTTPDigestAuth
+
+from open_webui.retrieval.web.main import SearchResult, get_filtered_results
 
 log = logging.getLogger(__name__)
 

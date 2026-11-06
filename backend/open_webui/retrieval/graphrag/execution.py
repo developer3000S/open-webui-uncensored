@@ -49,7 +49,7 @@ class Pool(list):
     construction (lives only inside this dispatch), TTL trivially satisfied
     because it is garbage after synthesis."""
 
-    def dedup(self) -> 'Pool':
+    def dedup(self) -> Pool:
         seen: set[str] = set()
         out = Pool()
         for c in self:
@@ -69,11 +69,18 @@ async def _run_task(task: PlanTask, ctx, policy, runtime, settings) -> tuple[Can
     adapter = ADAPTERS.get(task.pipeline)
     if adapter is None:
         cand = CandidateResponse(
-            pipeline=task.pipeline, task_id=task.task_id, status='failed',
+            pipeline=task.pipeline,
+            task_id=task.task_id,
+            status='failed',
             error_code='unknown_pipeline',
         )
-        return cand, {'task_id': task.task_id, 'pipeline': task.pipeline, 'status': 'failed',
-                      'error_code': 'unknown_pipeline', 'duration_ms': 0}
+        return cand, {
+            'task_id': task.task_id,
+            'pipeline': task.pipeline,
+            'status': 'failed',
+            'error_code': 'unknown_pipeline',
+            'duration_ms': 0,
+        }
 
     attempts = max(1, task.retry_policy.attempts)
     last: CandidateResponse | None = None
@@ -87,14 +94,18 @@ async def _run_task(task: PlanTask, ctx, policy, runtime, settings) -> tuple[Can
             )
         except TimeoutError:
             last = CandidateResponse(
-                pipeline=task.pipeline, task_id=task.task_id, status='failed',
+                pipeline=task.pipeline,
+                task_id=task.task_id,
+                status='failed',
                 error_code='timeout',
             )
             run_notes.append(f'timeout after {task.timeout_ms}ms (attempt {attempt + 1})')
         except Exception as e:
             log.warning('orchestrator: %s task crashed: %s', task.pipeline, e)
             last = CandidateResponse(
-                pipeline=task.pipeline, task_id=task.task_id, status='failed',
+                pipeline=task.pipeline,
+                task_id=task.task_id,
+                status='failed',
                 error_code=f'{type(e).__name__}',
             )
             run_notes.append(f'error: {str(e)[:160]}')
@@ -135,8 +146,15 @@ async def execute_plan(plan: ExecutionPlan, ctx, policy, runtime, settings: Orch
     if plan.mode == 'sequential':
         for task in sorted(plan.tasks, key=lambda t: t.priority):
             if time.time() > deadline:
-                runs.append({'task_id': task.task_id, 'pipeline': task.pipeline, 'status': 'skipped',
-                             'error_code': 'global_deadline', 'duration_ms': 0})
+                runs.append(
+                    {
+                        'task_id': task.task_id,
+                        'pipeline': task.pipeline,
+                        'status': 'skipped',
+                        'error_code': 'global_deadline',
+                        'duration_ms': 0,
+                    }
+                )
                 continue
             cand, run = await _run_task(task, ctx, policy, runtime, settings)
             pool.append(cand)
@@ -145,9 +163,15 @@ async def execute_plan(plan: ExecutionPlan, ctx, policy, runtime, settings: Orch
             if good:
                 for rest in plan.tasks:
                     if rest.task_id not in {r['task_id'] for r in runs}:
-                        runs.append({'task_id': rest.task_id, 'pipeline': rest.pipeline, 'status': 'skipped',
-                                     'error_code': 'deescalated (§10.3 sufficient candidate found)',
-                                     'duration_ms': 0})
+                        runs.append(
+                            {
+                                'task_id': rest.task_id,
+                                'pipeline': rest.pipeline,
+                                'status': 'skipped',
+                                'error_code': 'deescalated (§10.3 sufficient candidate found)',
+                                'duration_ms': 0,
+                            }
+                        )
                 break
     elif plan.mode == 'single':
         task = plan.tasks[0]
@@ -171,10 +195,20 @@ async def execute_plan(plan: ExecutionPlan, ctx, policy, runtime, settings: Orch
         ran_ids = {r['task_id'] for r in runs}
         for t in plan.tasks:
             if t.task_id not in ran_ids:
-                pool.append(CandidateResponse(
-                    pipeline=t.pipeline, task_id=t.task_id, status='failed', error_code='global_deadline'))
-                runs.append({'task_id': t.task_id, 'pipeline': t.pipeline, 'status': 'failed',
-                             'error_code': 'global_deadline', 'duration_ms': 0})
+                pool.append(
+                    CandidateResponse(
+                        pipeline=t.pipeline, task_id=t.task_id, status='failed', error_code='global_deadline'
+                    )
+                )
+                runs.append(
+                    {
+                        'task_id': t.task_id,
+                        'pipeline': t.pipeline,
+                        'status': 'failed',
+                        'error_code': 'global_deadline',
+                        'duration_ms': 0,
+                    }
+                )
 
     # Candidate cap from policy (§4.2.2 п.7): keep best N non-failed.
     ok = [c for c in pool if c.status != 'failed']

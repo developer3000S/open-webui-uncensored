@@ -2,13 +2,6 @@ import secrets
 import time
 import uuid
 
-from open_webui.internal.db import Base, get_async_db_context
-from open_webui.models.access_grants import (
-    AccessGrantModel,
-    AccessGrants,
-)
-from open_webui.models.groups import Groups
-from open_webui.utils.validate import validate_profile_image_url
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import (
     JSON,
@@ -26,6 +19,14 @@ from sqlalchemy import (
     select,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from open_webui.internal.db import Base, get_async_db_context
+from open_webui.models.access_grants import (
+    AccessGrantModel,
+    AccessGrants,
+)
+from open_webui.models.groups import Groups
+from open_webui.utils.validate import validate_profile_image_url
 
 ####################
 # Channel DB Schema

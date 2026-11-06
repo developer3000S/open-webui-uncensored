@@ -9,8 +9,9 @@ Create Date: 2024-10-01 14:02:35.241684
 import json
 
 import sqlalchemy as sa
-from alembic import op
 from sqlalchemy.sql import column, select, table
+
+from alembic import op
 
 revision = '6a39f3d8e55c'
 down_revision = 'c0fbf31ca0db'

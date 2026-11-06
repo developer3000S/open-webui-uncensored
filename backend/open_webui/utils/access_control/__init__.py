@@ -1,6 +1,8 @@
 import json
 from typing import Any
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from open_webui.config import DEFAULT_USER_PERMISSIONS
 from open_webui.models.access_grants import (
     has_public_read_access_grant,
@@ -10,7 +12,6 @@ from open_webui.models.access_grants import (
 )
 from open_webui.models.groups import Groups
 from open_webui.models.users import UserModel
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 def fill_missing_permissions(permissions: dict[str, Any], default_permissions: dict[str, Any]) -> dict[str, Any]:

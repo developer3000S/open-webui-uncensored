@@ -1,5 +1,7 @@
 import logging
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from open_webui.models.access_grants import AccessGrants
 from open_webui.models.channels import Channels
 from open_webui.models.chats import Chats
@@ -8,7 +10,6 @@ from open_webui.models.groups import Groups
 from open_webui.models.knowledge import Knowledges
 from open_webui.models.models import Models
 from open_webui.models.users import UserModel
-from sqlalchemy.ext.asyncio import AsyncSession
 
 log = logging.getLogger(__name__)
 

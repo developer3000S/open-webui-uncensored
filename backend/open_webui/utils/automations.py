@@ -25,6 +25,8 @@ from zoneinfo import ZoneInfo
 from dateutil.rrule import rrulestr
 from fastapi import Request
 from fastapi.security import HTTPAuthorizationCredentials
+from starlette.datastructures import Headers
+
 from open_webui.constants import ERROR_MESSAGES
 from open_webui.events import EVENTS, publish_event
 from open_webui.internal.db import get_async_db
@@ -35,7 +37,6 @@ from open_webui.models.users import Users
 from open_webui.utils.auth import create_token
 from open_webui.utils.misc import parse_duration
 from open_webui.utils.task import prompt_template
-from starlette.datastructures import Headers
 
 log = logging.getLogger(__name__)
 
@@ -311,6 +312,7 @@ async def _set_terminal_cwd(app, server_id: str, user, cwd: str, chat_id: str) -
     handled correctly — same path the frontend uses.
     """
     import aiohttp
+
     from open_webui.env import AIOHTTP_CLIENT_SESSION_SSL
 
     connections = getattr(getattr(app, 'state', None), 'config', None)

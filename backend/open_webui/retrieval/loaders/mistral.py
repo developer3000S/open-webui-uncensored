@@ -10,6 +10,7 @@ from typing import Any
 import aiohttp
 import requests
 from langchain_core.documents import Document
+
 from open_webui.env import AIOHTTP_CLIENT_SESSION_SSL, GLOBAL_LOG_LEVEL
 
 logging.basicConfig(stream=sys.stdout, level=GLOBAL_LOG_LEVEL)

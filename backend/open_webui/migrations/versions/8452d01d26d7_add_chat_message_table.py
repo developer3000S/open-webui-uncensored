@@ -12,6 +12,7 @@ import time
 from collections.abc import Sequence
 
 import sqlalchemy as sa
+
 from alembic import op
 
 log = logging.getLogger(__name__)

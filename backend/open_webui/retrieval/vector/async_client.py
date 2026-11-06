@@ -54,6 +54,7 @@ from __future__ import annotations
 
 import asyncio
 
+from open_webui.retrieval.cache import get_cache_service
 from open_webui.retrieval.vector.factory import VECTOR_DB_CLIENT
 from open_webui.retrieval.vector.main import (
     GetResult,
@@ -61,7 +62,6 @@ from open_webui.retrieval.vector.main import (
     VectorDBBase,
     VectorItem,
 )
-from open_webui.retrieval.cache import get_cache_service
 
 
 class AsyncVectorDBClient:
@@ -127,9 +127,7 @@ class AsyncVectorDBClient:
             return cached_result
 
         # Execute search
-        result = await asyncio.to_thread(
-            self._sync.search, collection_name, vectors, filter, limit
-        )
+        result = await asyncio.to_thread(self._sync.search, collection_name, vectors, filter, limit)
 
         # Store in cache if result is not None
         if result is not None:

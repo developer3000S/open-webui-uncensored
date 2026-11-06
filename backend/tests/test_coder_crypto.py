@@ -1,11 +1,12 @@
 import os
-import pytest
 import sys
 
-# Add parent directory to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+import pytest
 
-from open_webui.utils.coder.crypto import encrypt_secret, decrypt_secret, _get_key
+# Add parent directory to path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+from open_webui.utils.coder.crypto import _get_key, decrypt_secret, encrypt_secret
 
 
 @pytest.fixture(autouse=True)
@@ -46,25 +47,25 @@ class TestGetKey:
         monkeypatch.delenv('WEBUI_SECRET_KEY', raising=False)
         with pytest.raises(RuntimeError) as exc_info:
             _get_key()
-        assert "CODER_ENCRYPTION_KEY / WEBUI_SECRET_KEY is required" in str(exc_info.value)
+        assert 'CODER_ENCRYPTION_KEY / WEBUI_SECRET_KEY is required' in str(exc_info.value)
 
 
 class TestEncryptDecrypt:
     def test_encrypt_decrypt_roundtrip(self):
-        original = "github_oauth_token_value_12345"
+        original = 'github_oauth_token_value_12345'
         encrypted = encrypt_secret(original)
         decrypted = decrypt_secret(encrypted)
         assert decrypted == original
 
     def test_different_plaintexts_produce_different_ciphertexts(self):
-        pt1 = "token1"
-        pt2 = "token2"
+        pt1 = 'token1'
+        pt2 = 'token2'
         enc1 = encrypt_secret(pt1)
         enc2 = encrypt_secret(pt2)
         assert enc1 != enc2
 
     def test_same_plaintext_produces_different_ciphertexts_on_each_encryption(self):
-        pt = "same_token"
+        pt = 'same_token'
         enc1 = encrypt_secret(pt)
         enc2 = encrypt_secret(pt)
         assert enc1 != enc2
@@ -75,7 +76,7 @@ class TestEncryptDecrypt:
         # First, encrypt with a specific key (key A)
         os.environ['CODER_ENCRYPTION_KEY'] = 'test_encryption_key_32_characters_long!!'
         try:
-            original = "my_secret_token"
+            original = 'my_secret_token'
             encrypted = encrypt_secret(original)
             # Now try to decrypt with a different key (key B) - should fail
             os.environ['CODER_ENCRYPTION_KEY'] = 'different_key_value_for_testing_purposes!!'
@@ -90,7 +91,7 @@ class TestEncryptDecrypt:
                 os.environ.pop('CODER_ENCRYPTION_KEY', None)
 
     def test_empty_string(self):
-        original = ""
+        original = ''
         encrypted = encrypt_secret(original)
         decrypted = decrypt_secret(encrypted)
         assert decrypted == original
@@ -102,20 +103,20 @@ class TestEncryptDecrypt:
         assert decrypted == original
 
     def test_long_string(self):
-        original = "a" * 10000
+        original = 'a' * 10000
         encrypted = encrypt_secret(original)
         decrypted = decrypt_secret(encrypted)
         assert decrypted == original
 
     def test_decrypt_invalid_format(self):
         with pytest.raises(Exception):
-            decrypt_secret("invalid_base64")
+            decrypt_secret('invalid_base64')
 
     def test_decrypt_corrupted_ciphertext(self):
         # Create a ciphertext by encrypting something, then corrupt it
-        original = "test_token"
+        original = 'test_token'
         encrypted = encrypt_secret(original)
         # Corrupt the ciphertext
-        corrupted = encrypted[:-5] + "XXXXX"
+        corrupted = encrypted[:-5] + 'XXXXX'
         with pytest.raises(Exception):
             decrypt_secret(corrupted)

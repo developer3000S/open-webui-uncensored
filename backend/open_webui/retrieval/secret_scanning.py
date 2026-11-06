@@ -1,7 +1,7 @@
-import re
 import logging
 import os
-from typing import List, Dict, Any
+import re
+from typing import Any
 
 log = logging.getLogger(__name__)
 
@@ -45,7 +45,11 @@ SECRET_PATTERNS = [
     (r'(?i)["\']api[_-]?key["\']\s*:\s*["\'][^"\']{10,}["\']', 'API Key in JSON', 'Выявлен ключ API в JSON'),
     (r'(?i)["\']secret["\']\s*:\s*["\'][^"\']{10,}["\']', 'Secret in JSON', 'Выявлен секрет в JSON'),
     # Database Connection Strings
-    (r'(?i)\b(postgres|mysql|mongodb|redis):\/\/[^\s]+:[^\s]+@', 'Database Connection String', 'Выявлена строка подключения БД'),
+    (
+        r'(?i)\b(postgres|mysql|mongodb|redis):\/\/[^\s]+:[^\s]+@',
+        'Database Connection String',
+        'Выявлена строка подключения БД',
+    ),
     # OAuth Client Secrets
     (r'(?i)client[_-]?secret\s*=\s*[a-zA-Z0-9_]{20,}', 'OAuth Client Secret', 'Выявлен OAuth клиентский секрет'),
     # Heroku API Key
@@ -69,14 +73,14 @@ class SecretScanner:
         if self.mode not in ('warn', 'block', 'off'):
             self.mode = 'warn'
 
-    def scan_content(self, content: str, filename: str = "file") -> List[Dict[str, Any]]:
+    def scan_content(self, content: str, filename: str = 'file') -> list[dict[str, Any]]:
         """
         Сканирует содержимое файла на наличие секретов.
-        
+
         Args:
             content: Строка контента файла
             filename: Имя файла (для информации)
-            
+
         Returns:
             Список найденных данных с типом, описанием и данными о позиции
         """
@@ -91,8 +95,8 @@ class SecretScanner:
                 found_secret = match.group(0)
                 # Обрезаем если слишком длинный
                 if len(found_secret) > 20:
-                    found_secret = found_secret[:10] + "..." + found_secret[-5:]
-                
+                    found_secret = found_secret[:10] + '...' + found_secret[-5:]
+
                 finding = {
                     'type': secret_type,
                     'description': description,
@@ -100,37 +104,37 @@ class SecretScanner:
                     'position': match.start(),
                     'length': len(match.group(0)),
                     'found_secret': found_secret,
-                    'filename': filename
+                    'filename': filename,
                 }
                 findings.append(finding)
 
         return findings
 
-    def scan_file_path(self, file_path: str) -> List[Dict[str, Any]]:
+    def scan_file_path(self, file_path: str) -> list[dict[str, Any]]:
         """
         Сканирует содержимое файла (по пути) на наличие секретов.
-        
+
         Args:
             file_path: Полный путь к файлу
-            
+
         Returns:
             Список найденных данных
         """
         try:
-            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(file_path, encoding='utf-8', errors='ignore') as f:
                 content = f.read()
             return self.scan_content(content, os.path.basename(file_path))
         except Exception as e:
-            log.error(f"Ошибка при чтении файла {file_path}: {e}")
+            log.error(f'Ошибка при чтении файла {file_path}: {e}')
             return []
 
-    def should_block(self, findings: List[Dict[str, Any]]) -> bool:
+    def should_block(self, findings: list[dict[str, Any]]) -> bool:
         """
         Определяет, следует ли блокировать операцию на основе найденных данных.
-        
+
         Args:
             findings: Список найденных данных
-            
+
         Returns:
             True если найденные данные требуют блокировки
         """
@@ -140,32 +144,33 @@ class SecretScanner:
             return True
         return False
 
-    def format_findings(self, findings: List[Dict[str, Any]]) -> str:
+    def format_findings(self, findings: list[dict[str, Any]]) -> str:
         """
         Форматирует список найденных данных в читаемое сообщение.
-        
+
         Args:
             findings: Список найденных данных
-            
+
         Returns:
             Текст сообщения
         """
         if not findings:
-            return "Секретов не обнаружено."
+            return 'Секретов не обнаружено.'
 
-        lines = [f"Обнаружено {len(findings)} потенциальных уязвимостей:", ""]
+        lines = [f'Обнаружено {len(findings)} потенциальных уязвимостей:', '']
         for i, finding in enumerate(findings, 1):
-            lines.append(f"{i}. {finding['type']}: {finding['description']}")
+            lines.append(f'{i}. {finding["type"]}: {finding["description"]}')
             if len(findings) <= 20:  # Limit detailed output
-                lines.append(f"   Найдено: {finding['found_secret']}")
-                lines.append(f"   Позиция: {finding['position']}-{finding['position']+len(finding['found_secret'])}")
-            lines.append("")
-        
-        return "\n".join(lines)
+                lines.append(f'   Найдено: {finding["found_secret"]}')
+                lines.append(f'   Позиция: {finding["position"]}-{finding["position"] + len(finding["found_secret"])}')
+            lines.append('')
+
+        return '\n'.join(lines)
 
 
 # Глобальный экземпляр
 _scanner = None
+
 
 def get_secret_scanner() -> SecretScanner:
     """Получить глобальный экземпляр сканера."""
@@ -175,11 +180,11 @@ def get_secret_scanner() -> SecretScanner:
     return _scanner
 
 
-def scan_file_content(content: str, filename: str = "file") -> List[Dict[str, Any]]:
+def scan_file_content(content: str, filename: str = 'file') -> list[dict[str, Any]]:
     """Функция удобного вызова сканирования."""
     return get_secret_scanner().scan_content(content, filename)
 
 
-def scan_file_path_by_path(file_path: str) -> List[Dict[str, Any]]:
+def scan_file_path_by_path(file_path: str) -> list[dict[str, Any]]:
     """Функция удобного вызова сканирования по пути."""
     return get_secret_scanner().scan_file_path(file_path)

@@ -9,7 +9,6 @@ import re
 import sys
 import time
 from contextlib import asynccontextmanager
-from pathlib import Path
 from uuid import uuid4
 
 import aiohttp
@@ -133,9 +132,6 @@ from open_webui.events import (
 from open_webui.internal.db import engine, get_async_session
 from open_webui.internal.schema_fix import check_and_fix_db_schema
 from open_webui.retrieval.query_rephrasing import init_query_rephrasing_service
-from sqlalchemy import inspect, MetaData, Table, Column, text
-from sqlalchemy.exc import NoSuchTableError, OperationalError
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -314,7 +310,9 @@ https://github.com/developer30000s/open-webui-uncensored
         print(banner)
     except UnicodeEncodeError:
         # Stdout can't encode the box-drawing banner (Windows cp1252, redirected/headless stdout); fall back to ASCII.
-        print(f'Open WebUI v{VERSION} - building the best AI user interface.\nhttps://github.com/developer30000s/open-webui-uncensored')
+        print(
+            f'Open WebUI v{VERSION} - building the best AI user interface.\nhttps://github.com/developer30000s/open-webui-uncensored'
+        )
 
 
 @asynccontextmanager
@@ -428,13 +426,13 @@ async def lifespan(app: FastAPI):
 
     # Mark application as ready to accept traffic from a startup perspective.
     # First, check and fix database schema if needed
-    log.info("Checking and fixing database schema...")
+    log.info('Checking and fixing database schema...')
     schema_fixed = await check_and_fix_db_schema()
     if schema_fixed:
-        log.info("Database schema was fixed during startup.")
+        log.info('Database schema was fixed during startup.')
     else:
-        log.info("Database schema is up-to-date.")
-    
+        log.info('Database schema is up-to-date.')
+
     app.state.startup_complete = True
     await publish_event(app, EVENTS.SYSTEM_STARTUP_COMPLETED, source='system')
 
@@ -797,9 +795,7 @@ async def studio_api_proxy(path: str, request: Request):
     """Reverse-proxy /studio/api/* -> studio management API (serve.cjs)."""
     if studio_http_client is None:
         raise HTTPException(status_code=503, detail='Studio upstream is not configured')
-    return await _studio_proxy_request(
-        studio_http_client, f'/api/{path}', request, rewrite_media_urls=True
-    )
+    return await _studio_proxy_request(studio_http_client, f'/api/{path}', request, rewrite_media_urls=True)
 
 
 @app.api_route(

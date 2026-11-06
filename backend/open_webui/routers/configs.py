@@ -5,6 +5,8 @@ import logging
 import aiohttp
 from fastapi import APIRouter, Depends, HTTPException, Request
 from mcp.shared.auth import OAuthMetadata
+from pydantic import BaseModel, ConfigDict
+
 from open_webui.config import BannerModel
 from open_webui.env import AIOHTTP_CLIENT_SESSION_SSL, AIOHTTP_CLIENT_TIMEOUT
 from open_webui.events import EVENTS, publish_event
@@ -29,7 +31,6 @@ from open_webui.utils.tools import (
     set_terminal_servers,
     set_tool_servers,
 )
-from pydantic import BaseModel, ConfigDict
 
 router = APIRouter()
 

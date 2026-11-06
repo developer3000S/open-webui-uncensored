@@ -5,6 +5,10 @@ NOTE: This vector database integration is community-supported and maintained on 
 import json
 import logging
 
+from pymilvus import Collection, DataType, connections
+from pymilvus import MilvusClient as Client
+from pymilvus.exceptions import MilvusException
+
 from open_webui.config import (
     MILVUS_DB,
     MILVUS_DISKANN_MAX_DEGREE,
@@ -24,9 +28,6 @@ from open_webui.retrieval.vector.main import (
     VectorItem,
 )
 from open_webui.retrieval.vector.utils import process_metadata
-from pymilvus import Collection, DataType, connections
-from pymilvus import MilvusClient as Client
-from pymilvus.exceptions import MilvusException
 
 log = logging.getLogger(__name__)
 

@@ -4,6 +4,7 @@ import sys
 from typing import Any
 
 from fastapi import Request
+
 from open_webui.env import GLOBAL_LOG_LEVEL
 from open_webui.models.functions import Functions
 from open_webui.models.users import UserModel

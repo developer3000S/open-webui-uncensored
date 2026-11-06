@@ -54,8 +54,9 @@ logging.getLogger('uvicorn.access').addFilter(EndpointFilter())
 def run_migrations():
     log.info('Running migrations')
     try:
-        from alembic import command
         from alembic.config import Config as AlembicConfig
+
+        from alembic import command
 
         alembic_cfg = AlembicConfig(OPEN_WEBUI_DIR / 'alembic.ini')
 
@@ -2156,9 +2157,7 @@ CODER_MAX_DIFF_LINES = int(os.getenv('CODER_MAX_DIFF_LINES', '4000'))
 
 # Запрещенные пути в Change Set
 CODER_BLOCKED_PATH_PATTERNS = [
-    p.strip()
-    for p in os.getenv('CODER_BLOCKED_PATHS', '.env,*.pem,secrets/*,.git/*').split(',')
-    if p.strip()
+    p.strip() for p in os.getenv('CODER_BLOCKED_PATHS', '.env,*.pem,secrets/*,.git/*').split(',') if p.strip()
 ]
 
 # Разрешенные пути GitHub-хостов (для GHE; по умолчанию только github.com)
@@ -2169,20 +2168,16 @@ CODER_ALLOWED_GITHUB_HOSTS = [
 ]
 
 # Разрешенные организации (пусто = все); поддерживаются glob-шаблоны, например "my-org", "team-*"
-CODER_ALLOWED_ORGS = [
-    o.strip()
-    for o in os.getenv('CODER_ALLOWED_ORGS', '').split(',')
-    if o.strip()
-]
+CODER_ALLOWED_ORGS = [o.strip() for o in os.getenv('CODER_ALLOWED_ORGS', '').split(',') if o.strip()]
 
 # Разрешенные репозитории (владельца/репозиторий, например: my-org/repo, или wildcard: my-org/*)
 CODER_ALLOWED_REPOS = [
     # strip quotes too: some deployers write KEY="'a/*,b/*'" and the shell (unlike
     # python-dotenv) keeps the single quotes inside the value, which silently
     # breaks fnmatch and filters every repo out of GET /coder/repos.
-    r.strip().strip("'\"")
+    r.strip().strip('\'"')
     for r in os.getenv('CODER_ALLOWED_REPOS', '').split(',')
-    if r.strip().strip("'\"")
+    if r.strip().strip('\'"')
 ]
 
 # Обязательное создание PR при экспорте (§13 — политика «только через pull request»)

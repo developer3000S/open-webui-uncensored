@@ -2,10 +2,6 @@ import logging
 import time
 from uuid import uuid4
 
-from open_webui.internal.db import Base, get_async_db_context
-from open_webui.models.access_grants import AccessGrantModel, AccessGrants
-from open_webui.models.groups import Groups
-from open_webui.models.users import User, UserModel, UserResponse
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import (
     JSON,
@@ -22,6 +18,11 @@ from sqlalchemy import (
     update,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from open_webui.internal.db import Base, get_async_db_context
+from open_webui.models.access_grants import AccessGrantModel, AccessGrants
+from open_webui.models.groups import Groups
+from open_webui.models.users import User, UserModel, UserResponse
 
 log = logging.getLogger(__name__)
 

@@ -1,8 +1,6 @@
 import time
 from typing import Any
 
-from open_webui.internal.db import Base, get_async_db_context
-from open_webui.utils.response import merge_usage, normalize_usage
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import (
     JSON,
@@ -20,6 +18,9 @@ from sqlalchemy import (
     select,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from open_webui.internal.db import Base, get_async_db_context
+from open_webui.utils.response import merge_usage, normalize_usage
 
 ####################
 # Helpers

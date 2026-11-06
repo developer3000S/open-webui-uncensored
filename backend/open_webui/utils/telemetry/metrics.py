@@ -24,15 +24,6 @@ from base64 import b64encode
 from collections.abc import Iterable
 
 from fastapi import FastAPI, Request
-from open_webui.env import (
-    OTEL_METRICS_BASIC_AUTH_PASSWORD,
-    OTEL_METRICS_BASIC_AUTH_USERNAME,
-    OTEL_METRICS_EXPORT_INTERVAL_MILLIS,
-    OTEL_METRICS_EXPORTER_OTLP_ENDPOINT,
-    OTEL_METRICS_EXPORTER_OTLP_INSECURE,
-    OTEL_METRICS_OTLP_SPAN_EXPORTER,
-)
-from open_webui.models.users import User
 from opentelemetry import metrics
 from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import (
     OTLPMetricExporter,
@@ -48,6 +39,16 @@ from opentelemetry.sdk.metrics.view import View
 from opentelemetry.sdk.resources import Resource
 from sqlalchemy import Engine, func, select
 from sqlalchemy.orm import Session
+
+from open_webui.env import (
+    OTEL_METRICS_BASIC_AUTH_PASSWORD,
+    OTEL_METRICS_BASIC_AUTH_USERNAME,
+    OTEL_METRICS_EXPORT_INTERVAL_MILLIS,
+    OTEL_METRICS_EXPORTER_OTLP_ENDPOINT,
+    OTEL_METRICS_EXPORTER_OTLP_INSECURE,
+    OTEL_METRICS_OTLP_SPAN_EXPORTER,
+)
+from open_webui.models.users import User
 
 logger = logging.getLogger(__name__)
 

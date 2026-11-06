@@ -70,10 +70,7 @@ async def retry_with_backoff(
             # Exponential backoff with full jitter (AWS architecture blog).
             delay = min(max_delay, base_delay * (2 ** (attempt - 1)))
             delay = random.uniform(0, delay)
-            log.warning(
-                f'Retry {operation}: attempt {attempt}/{attempts} failed ({exc!r}); '
-                f'retrying in {delay:.2f}s'
-            )
+            log.warning(f'Retry {operation}: attempt {attempt}/{attempts} failed ({exc!r}); retrying in {delay:.2f}s')
             await asyncio.sleep(delay)
 
     assert last_exc is not None

@@ -7,6 +7,7 @@ import uuid
 from typing import Any
 
 import weaviate
+
 from open_webui.config import (
     WEAVIATE_API_KEY,
     WEAVIATE_GRPC_HOST,
