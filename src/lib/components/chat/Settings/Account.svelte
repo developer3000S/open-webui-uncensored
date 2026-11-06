@@ -7,7 +7,7 @@
 
 	import { user, config, settings } from '$lib/stores';
 	import { updateUserProfile, createAPIKey, getAPIKey, getSessionUser } from '$lib/apis/auths';
-import { getMfaStatus, mfaSetup, mfaVerify, mfaDisable } from '$lib/apis/mfa';
+	import { getMfaStatus, mfaSetup, mfaVerify, mfaDisable } from '$lib/apis/mfa';
 	import { WEBUI_BASE_URL } from '$lib/constants';
 
 	import UpdatePassword from './Account/UpdatePassword.svelte';
@@ -41,12 +41,12 @@ import { getMfaStatus, mfaSetup, mfaVerify, mfaDisable } from '$lib/apis/mfa';
 
 	let JWTTokenCopied = false;
 
-let mfaEnabled = false;
-let mfaSetupMode = false;
-let mfaSecret = '';
-let mfaQrCode = '';
-let mfaBackupCodes: string[] = [];
-let mfaCode = '';
+	let mfaEnabled = false;
+	let mfaSetupMode = false;
+	let mfaSecret = '';
+	let mfaQrCode = '';
+	let mfaBackupCodes: string[] = [];
+	let mfaCode = '';
 
 	let APIKey = '';
 	let APIKeyCopied = false;
@@ -330,15 +330,13 @@ let mfaCode = '';
 					<button
 						class="text-xs font-medium text-red-600 dark:text-red-400"
 						type="button"
-						on:click={disableMfaHandler}
-					>{$i18n.t('Disable')}</button
+						on:click={disableMfaHandler}>{$i18n.t('Disable')}</button
 					>
 				{:else}
 					<button
 						class="text-xs font-medium text-blue-600 dark:text-blue-400"
 						type="button"
-						on:click={setupMfaHandler}
-					>{$i18n.t('Set up')}</button
+						on:click={setupMfaHandler}>{$i18n.t('Set up')}</button
 					>
 				{/if}
 			</div>
@@ -354,13 +352,18 @@ let mfaCode = '';
 		</div>
 
 		{#if mfaSetupMode}
-			<div class="mt-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-800">
-				<div class="mb-2 text-xs font-medium text-gray-500">{$i18n.t('Scan this QR code with your authenticator app')}</div>
+			<div
+				class="mt-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-800"
+			>
+				<div class="mb-2 text-xs font-medium text-gray-500">
+					{$i18n.t('Scan this QR code with your authenticator app')}
+				</div>
 				<div class="flex justify-center mb-2">
 					{@html mfaQrCode}
 				</div>
 				<div class="mb-2 text-xs text-gray-500">
-					{$i18n.t('Secret key:')} {mfaSecret}
+					{$i18n.t('Secret key:')}
+					{mfaSecret}
 				</div>
 				<div class="mt-2">
 					<input
@@ -373,24 +376,30 @@ let mfaCode = '';
 				<div class="flex justify-end gap-2 mt-2">
 					<button
 						class="px-3 py-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-						on:click={() => { mfaSetupMode = false; }}
-					>{$i18n.t('Cancel')}</button
+						on:click={() => {
+							mfaSetupMode = false;
+						}}>{$i18n.t('Cancel')}</button
 					>
 					<button
 						class="px-3 py-1 text-xs font-medium text-white bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 rounded-lg"
-						on:click={verifyMfaHandler}
-					>{$i18n.t('Enable MFA')}</button
+						on:click={verifyMfaHandler}>{$i18n.t('Enable MFA')}</button
 					>
 				</div>
 				{#if mfaBackupCodes.length > 0}
-					<div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-500/30">
-						<div class="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">{$i18n.t('Save these backup codes:')}</div>
+					<div
+						class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-500/30"
+					>
+						<div class="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">
+							{$i18n.t('Save these backup codes:')}
+						</div>
 						<div class="text-xs text-gray-500 flex flex-wrap gap-2">
 							{#each mfaBackupCodes as code}
 								<span class="bg-white dark:bg-gray-800 px-2 py-1 rounded">{code}</span>
 							{/each}
 						</div>
-						<div class="text-xs text-gray-500 mt-1">{$i18n.t('Use these codes if you lose access to your authenticator app.')}</div>
+						<div class="text-xs text-gray-500 mt-1">
+							{$i18n.t('Use these codes if you lose access to your authenticator app.')}
+						</div>
 					</div>
 				{/if}
 			</div>

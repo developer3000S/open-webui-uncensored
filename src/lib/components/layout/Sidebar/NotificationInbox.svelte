@@ -46,9 +46,7 @@
 		if (!token) return;
 		try {
 			await markNotificationRead(token, id);
-			notifications = notifications.map((n) =>
-				n.id === id ? { ...n, read: true } : n
-			);
+			notifications = notifications.map((n) => (n.id === id ? { ...n, read: true } : n));
 			const countRes = await getUnreadNotificationCount(token);
 			unreadCount = countRes?.count ?? 0;
 		} catch (e) {
@@ -69,9 +67,11 @@
 
 	onMount(() => {
 		if (token) {
-			getUnreadNotificationCount(token).then((c) => {
-				unreadCount = c?.count ?? 0;
-			}).catch(() => {});
+			getUnreadNotificationCount(token)
+				.then((c) => {
+					unreadCount = c?.count ?? 0;
+				})
+				.catch(() => {});
 		}
 	});
 </script>
@@ -81,8 +81,8 @@
 	on:click={toggleInbox}
 	aria-label={$i18n.t('Notifications')}
 >
-		<div class="relative">
-			<InfoCircle className="size-5" strokeWidth="1.5" />
+	<div class="relative">
+		<InfoCircle className="size-5" strokeWidth="1.5" />
 		{#if unreadCount > 0}
 			<span
 				class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold"
@@ -101,7 +101,9 @@
 		aria-modal="true"
 		aria-label={$i18n.t('Notifications')}
 	>
-		<div class="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+		<div
+			class="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between"
+		>
 			<h2 class="text-lg font-semibold">{$i18n.t('Notifications')}</h2>
 			<button
 				class="text-sm hover:text-gray-600 dark:hover:text-gray-300 transition"
@@ -124,15 +126,32 @@
 			{:else}
 				{#each notifications as notification}
 					<div
+						role="button"
+						tabindex="0"
 						class="p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition cursor-pointer border-l-4"
 						class:border-blue-500={!notification.read}
 						class:border-gray-200={notification.read}
 						on:click={() => markRead(notification.id)}
+						on:keydown={(e) => {
+							if (e.key === 'Enter' || e.key === ' ') {
+								e.preventDefault();
+								markRead(notification.id);
+							}
+						}}
+						aria-label={`Notification: ${notification.title}`}
 					>
 						<div class="flex items-start gap-2">
 							<div class="flex-shrink-0 mt-0.5">
 								<span
-									class={notification.type === 'comment' ? 'text-blue-500 dark:text-blue-400' : notification.type === 'mention' ? 'text-purple-500 dark:text-purple-400' : notification.type === 'reply' ? 'text-green-500 dark:text-green-400' : notification.type === 'automation' ? 'text-orange-500 dark:text-orange-400' : 'text-gray-500 dark:text-gray-400'}
+									class={notification.type === 'comment'
+										? 'text-blue-500 dark:text-blue-400'
+										: notification.type === 'mention'
+											? 'text-purple-500 dark:text-purple-400'
+											: notification.type === 'reply'
+												? 'text-green-500 dark:text-green-400'
+												: notification.type === 'automation'
+													? 'text-orange-500 dark:text-orange-400'
+													: 'text-gray-500 dark:text-gray-400'}
 								>
 									{#if notification.type === 'comment'}
 										<ChatBubbleDotted className="size-4" strokeWidth="1.5" />
@@ -160,7 +179,9 @@
 										{notification.type.charAt(0).toUpperCase() + notification.type.slice(1)}
 									</span>
 									{#if !notification.read}
-										<span class="text-[10px] bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded">
+										<span
+											class="text-[10px] bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded"
+										>
 											{$i18n.t('New')}
 										</span>
 									{/if}
@@ -196,7 +217,16 @@
 	</div>
 
 	<div
+		role="button"
+		tabindex="0"
 		class="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
 		on:click={() => (isOpen = false)}
+		on:keydown={(e) => {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				isOpen = false;
+			}
+		}}
+		aria-label="Close notifications"
 	></div>
 {/if}

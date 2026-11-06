@@ -3,12 +3,7 @@
 	import type { Writable } from 'svelte/store';
 	import type { i18n as i18nType } from 'i18next';
 
-	import {
-		getComments,
-		createComment,
-		updateComment,
-		deleteComment
-	} from '$lib/apis/comments';
+	import { getComments, createComment, updateComment, deleteComment } from '$lib/apis/comments';
 
 	const i18n: Writable<i18nType> = getContext<Writable<i18nType>>('i18n');
 
@@ -129,7 +124,9 @@
 								class="size-7 rounded-full object-cover"
 							/>
 						{:else}
-							<div class="size-7 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 font-medium text-xs">
+							<div
+								class="size-7 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 font-medium text-xs"
+							>
 								{comment.user?.name?.charAt(0) ?? '?'}
 							</div>
 						{/if}
@@ -175,7 +172,9 @@
 								</button>
 							</div>
 						{:else}
-							<div class="comment-content text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
+							<div
+								class="comment-content text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words"
+							>
 								{comment.content}
 							</div>
 							<div class="flex items-center gap-3 mt-1.5">
@@ -189,10 +188,8 @@
 								<button
 									class="flex items-center gap-1 text-xs text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition"
 									on:click={() => removeComment(comment.id)}
-									disabled={
-										comment.user_id !== (localStorage.userId ?? '') &&
-										localStorage.userRole !== 'admin'
-									}
+									disabled={comment.user_id !== (localStorage.userId ?? '') &&
+										localStorage.userRole !== 'admin'}
 								>
 									{$i18n.t('Delete')}
 								</button>
@@ -226,7 +223,9 @@
 												class="size-6 rounded-full object-cover"
 											/>
 										{:else}
-											<div class="size-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 font-medium text-xs">
+											<div
+												class="size-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 font-medium text-xs"
+											>
 												{reply.user?.name?.charAt(0) ?? '?'}
 											</div>
 										{/if}
@@ -241,7 +240,9 @@
 												{formatDate(reply.created_at)}
 											</span>
 										</div>
-										<div class="comment-content text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
+										<div
+											class="comment-content text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words"
+										>
 											{reply.content}
 										</div>
 										<div class="flex items-center gap-3 mt-1">
@@ -255,10 +256,8 @@
 											<button
 												class="flex items-center gap-1 text-xs text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition"
 												on:click={() => removeComment(reply.id)}
-												disabled={
-													reply.user_id !== (localStorage.userId ?? '') &&
-													localStorage.userRole !== 'admin'
-												}
+												disabled={reply.user_id !== (localStorage.userId ?? '') &&
+													localStorage.userRole !== 'admin'}
 											>
 												{$i18n.t('Delete')}
 											</button>
@@ -273,9 +272,13 @@
 		{/each}
 	{/if}
 
-	<div class="comment-input flex items-start gap-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+	<div
+		class="comment-input flex items-start gap-3 pt-3 border-t border-gray-100 dark:border-gray-800"
+	>
 		<div class="flex-shrink-0">
-			<div class="size-7 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 font-medium text-xs">
+			<div
+				class="size-7 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 font-medium text-xs"
+			>
 				{localStorage.userName?.charAt(0) ?? 'U'}
 			</div>
 		</div>

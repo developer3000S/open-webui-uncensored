@@ -199,7 +199,7 @@
 				href: '/studio?tab=generator',
 				iconType: 'studio',
 				// Studio opens as an embedded application
-				openInNewWindow: false,
+				openInNewWindow: false
 			}
 		};
 		return items[id];
@@ -1029,9 +1029,9 @@
 											</svg>
 										{:else if itemId === 'playground'}
 											<Code className="size-4.5" />
-											{:else if itemId === 'coder'}
-												<Code className="size-4.5" />
-											{:else if itemId === 'studio'}
+										{:else if itemId === 'coder'}
+											<Code className="size-4.5" />
+										{:else if itemId === 'studio'}
 											<Photo className="size-4.5" />
 										{/if}
 									</div>

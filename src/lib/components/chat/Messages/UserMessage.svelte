@@ -134,8 +134,10 @@
 />
 
 {#if $config?.comments?.enable && showComments}
-	<div class="mt-2 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-800">
-		<CommentThread objectType="chat_message" objectId={chatId} messageId={messageId} />
+	<div
+		class="mt-2 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-800"
+	>
+		<CommentThread objectType="chat_message" objectId={chatId} {messageId} />
 	</div>
 {/if}
 
