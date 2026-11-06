@@ -24,6 +24,7 @@ import time
 from open_webui.retrieval.graphrag import trace_store
 from open_webui.retrieval.graphrag.confidence import estimate_confidence, record_outcome
 from open_webui.retrieval.graphrag.context_manager import pack_context
+from open_webui.retrieval.graphrag.evaluation import evaluate_candidates
 from open_webui.retrieval.graphrag.execution import execute_plan, insufficient
 from open_webui.retrieval.graphrag.models import TraceRecord, Usage, new_id, now_iso
 from open_webui.retrieval.graphrag.planner import build_plan, escalate_plan
@@ -31,7 +32,6 @@ from open_webui.retrieval.graphrag.policy import POLICY_CONFIG_KEY, evaluate_pol
 from open_webui.retrieval.graphrag.preprocessing import preprocess_query
 from open_webui.retrieval.graphrag.query_understanding import analyze_query
 from open_webui.retrieval.graphrag.response_synthesizer import synthesize
-from open_webui.retrieval.graphrag.evaluation import evaluate_candidates
 from open_webui.retrieval.graphrag.settings import OrchestratorSettings, get_settings
 
 log = logging.getLogger(__name__)
@@ -96,9 +96,11 @@ def _sources_from_response(response: dict) -> list[dict]:
         if docs:
             sources.append(
                 {
-                    'source': {'id': row.get('pipeline', 'orchestrated'),
-                               'type': 'collection',
-                               'name': f"оркестратор: {row.get('pipeline', '?')}"},
+                    'source': {
+                        'id': row.get('pipeline', 'orchestrated'),
+                        'type': 'collection',
+                        'name': f'оркестратор: {row.get("pipeline", "?")}',
+                    },
                     'document': docs,
                     'metadata': metas[: len(docs)],
                 }
@@ -142,7 +144,9 @@ async def orchestrate_retrieval(
         return None
 
     t0 = time.perf_counter()
-    trace = TraceRecord(request_id=new_id(), tenant_id=getattr(user, 'tenant_id', None), user_id=getattr(user, 'id', None))
+    trace = TraceRecord(
+        request_id=new_id(), tenant_id=getattr(user, 'tenant_id', None), user_id=getattr(user, 'id', None)
+    )
     # Shadow mode (§13.2 rollout, rec §3.3): a stable percentage of traffic is
     # executed end-to-end for measurement but its answer is discarded — the
     # user still gets the baseline path. Deterministic on request_id so a
@@ -152,8 +156,11 @@ async def orchestrate_retrieval(
     try:
         ctx = preprocess_query(
             query,
-            user={'id': getattr(user, 'id', ''), 'role': getattr(user, 'role', 'user'),
-                  'tenant_id': getattr(user, 'tenant_id', None)},
+            user={
+                'id': getattr(user, 'id', ''),
+                'role': getattr(user, 'role', 'user'),
+                'tenant_id': getattr(user, 'tenant_id', None),
+            },
             history=history,
             session_id=session_id,
             items=items,
@@ -242,7 +249,11 @@ async def orchestrate_retrieval(
                     runtime['pool'] = pool
 
         report = await evaluate_candidates(list(runtime['pool']), ctx, analysis, policy, settings)
-        if report.recommended_action == 'escalate' and policy.escalation_allowed and not insufficient(runtime['pool'], settings):
+        if (
+            report.recommended_action == 'escalate'
+            and policy.escalation_allowed
+            and not insufficient(runtime['pool'], settings)
+        ):
             # evaluator asked to escalate but pool already cleared the bar —
             # trust the numbers, downgrade to select (§10.3 деэскалация).
             report.recommended_action = 'select'
@@ -288,7 +299,9 @@ async def orchestrate_retrieval(
             'policy_version': policy.policy_version,
             'generation_models': [],
             'index_version': None,
-            'graph_version': next((c.metadata.graph_version for c in runtime['pool'] if c.metadata.graph_version), None),
+            'graph_version': next(
+                (c.metadata.graph_version for c in runtime['pool'] if c.metadata.graph_version), None
+            ),
         }
 
         # Calibration feedback loop (§4.2.4 п.5): realized quality per intent.
@@ -310,7 +323,11 @@ async def orchestrate_retrieval(
                 asyncio.get_running_loop().run_in_executor(None, trace_store.store_trace, trace.model_dump())
             log.info(
                 'orchestrator: %s mode=%s pipelines=%s conf=%.2f latency=%dms',
-                response.status, plan.mode, sorted(set(used_pipelines)) or ['-'], report.confidence, usage.latency_ms,
+                response.status,
+                plan.mode,
+                sorted(set(used_pipelines)) or ['-'],
+                report.confidence,
+                usage.latency_ms,
             )
             return src_rows
 

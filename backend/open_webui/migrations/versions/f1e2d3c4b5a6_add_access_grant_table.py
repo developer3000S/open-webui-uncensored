@@ -16,6 +16,7 @@ import uuid
 from collections.abc import Sequence
 
 import sqlalchemy as sa
+
 from alembic import op
 from open_webui.migrations.util import get_existing_tables
 

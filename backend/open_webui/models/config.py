@@ -15,9 +15,10 @@ import time
 from typing import Any, ClassVar
 
 from fastapi.encoders import jsonable_encoder
+from sqlalchemy import JSON, BigInteger, Column, Text, delete, select
+
 from open_webui.internal.db import Base, get_async_db
 from open_webui.utils.env_config import is_declared_in_env
-from sqlalchemy import JSON, BigInteger, Column, Text, delete, select
 
 log = logging.getLogger(__name__)
 

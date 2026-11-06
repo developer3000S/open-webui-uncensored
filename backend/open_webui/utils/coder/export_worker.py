@@ -23,7 +23,9 @@ log = logging.getLogger(__name__)
 _active_tasks: set[asyncio.Task] = set()
 
 
-def schedule_export(job_id: str, user_id: str, token: str, form_dict: dict, correlation_id: str | None = None) -> asyncio.Task:
+def schedule_export(
+    job_id: str, user_id: str, token: str, form_dict: dict, correlation_id: str | None = None
+) -> asyncio.Task:
     """Fire-and-forget an export job on the running event loop."""
     task = asyncio.create_task(_run_export(job_id, user_id, token, form_dict, correlation_id))
     _active_tasks.add(task)
@@ -86,7 +88,9 @@ async def _run_export(job_id: str, user_id: str, token: str, form_dict: dict, co
         try:
             async with get_async_db() as db:
                 await CoderExportJobs.update(job_id, {'status': 'failed', 'error': f'{exc.code}: {exc.message}'}, db)
-                await _record_audit(user_id, 'export_failed', target, {'job_id': job_id, 'code': exc.code}, correlation_id, db)
+                await _record_audit(
+                    user_id, 'export_failed', target, {'job_id': job_id, 'code': exc.code}, correlation_id, db
+                )
                 await db.commit()
         except Exception:
             log.exception('Coder export worker: failed to persist error state')
@@ -97,7 +101,14 @@ async def _run_export(job_id: str, user_id: str, token: str, form_dict: dict, co
         try:
             async with get_async_db() as db:
                 await CoderExportJobs.update(job_id, {'status': 'failed', 'error': str(exc)[:500]}, db)
-                await _record_audit(user_id, 'export_failed', target, {'job_id': job_id, 'code': 'CODER_EXPORT_FAILED'}, correlation_id, db)
+                await _record_audit(
+                    user_id,
+                    'export_failed',
+                    target,
+                    {'job_id': job_id, 'code': 'CODER_EXPORT_FAILED'},
+                    correlation_id,
+                    db,
+                )
                 await db.commit()
         except Exception:
             log.exception('Coder export worker: failed to persist error state')

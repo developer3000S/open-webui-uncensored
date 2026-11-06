@@ -9,14 +9,15 @@ import uuid
 
 log = logging.getLogger(__name__)
 
+from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy import JSON, BigInteger, Boolean, Column, String, Text, cast, func, or_, select, text
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from open_webui.internal.db import Base, get_async_db_context
 from open_webui.models.access_grants import AccessGrantModel, AccessGrants
 from open_webui.models.groups import Groups
 from open_webui.models.prompt_history import PromptHistories
 from open_webui.models.users import User, UserModel, UserResponse, Users
-from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import JSON, BigInteger, Boolean, Column, String, Text, cast, func, or_, select, text
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class Prompt(Base):  # versioned template

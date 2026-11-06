@@ -8,6 +8,7 @@ from pathlib import Path
 from fastapi import (
     UploadFile,
 )
+
 from open_webui.env import (
     AIOHTTP_CLIENT_ALLOW_REDIRECTS,
     AIOHTTP_CLIENT_SESSION_SSL,

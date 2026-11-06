@@ -118,6 +118,7 @@
 	import Image from '../common/Image.svelte';
 
 	export let chatIdProp = '';
+	export let isSideChat = false;
 
 	let loading = true;
 
@@ -3087,6 +3088,7 @@
 
 <svelte:head>
 	<title>
+		{isSideChat ? 'Side Chat • ' : ''}
 		{$settings.showChatTitleInTab !== false && $chatTitle
 			? `${$chatTitle.length > 30 ? `${$chatTitle.slice(0, 30)}...` : $chatTitle} • ${$WEBUI_NAME}`
 			: `${$WEBUI_NAME}`}

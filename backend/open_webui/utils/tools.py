@@ -22,6 +22,8 @@ from fastapi import Request
 from langchain_core.utils.function_calling import (
     convert_to_openai_function as convert_pydantic_model_to_openai_function_spec,
 )
+from pydantic import BaseModel, Field, create_model
+
 from open_webui.config import BYPASS_ADMIN_ACCESS_CONTROL
 from open_webui.env import (
     AIOHTTP_CLIENT_ALLOW_REDIRECTS,
@@ -92,7 +94,6 @@ from open_webui.utils.access_control import has_connection_access, has_permissio
 from open_webui.utils.headers import get_custom_headers, include_user_info_headers
 from open_webui.utils.misc import is_string_allowed
 from open_webui.utils.plugin import get_tool_contents_cache, get_tools_cache, load_tool_module_by_id
-from pydantic import BaseModel, Field, create_model
 
 log = logging.getLogger(__name__)
 

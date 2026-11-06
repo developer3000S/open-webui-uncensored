@@ -18,13 +18,14 @@ from langchain_community.document_loaders import (
     TextLoader,
 )
 from langchain_core.documents import Document
+
+from open_webui.config import RAG_AUTO_OCR_ON_EMPTY_PDF
 from open_webui.env import (
     AIOHTTP_CLIENT_SESSION_SSL,
     GLOBAL_LOG_LEVEL,
     MINERU_MAX_MARKDOWN_BYTES,
     REQUESTS_VERIFY,
 )
-from open_webui.config import RAG_AUTO_OCR_ON_EMPTY_PDF
 from open_webui.retrieval.loaders.datalab_marker import DatalabMarkerLoader
 from open_webui.retrieval.loaders.external_document import ExternalDocumentLoader
 from open_webui.retrieval.loaders.mineru import MinerULoader
@@ -102,12 +103,12 @@ class ExcelLoader:
         import pandas as pd
 
         try:
-            log.info(f"Loading Excel file: {self.file_path}")
+            log.info(f'Loading Excel file: {self.file_path}')
             text_parts = []
             xls = pd.ExcelFile(self.file_path)
-            log.info(f"Excel file has {len(xls.sheet_names)} sheet(s)")
+            log.info(f'Excel file has {len(xls.sheet_names)} sheet(s)')
             for sheet_name in xls.sheet_names:
-                log.debug(f"Reading sheet: {sheet_name}")
+                log.debug(f'Reading sheet: {sheet_name}')
                 df = pd.read_excel(xls, sheet_name=sheet_name)
                 text_parts.append(f'Sheet: {sheet_name}\n{df.to_string(index=False)}')
             return [
@@ -117,7 +118,7 @@ class ExcelLoader:
                 )
             ]
         except Exception as e:
-            log.exception(f"Error loading Excel file {self.file_path}: {e}")
+            log.exception(f'Error loading Excel file {self.file_path}: {e}')
             raise
 
 
@@ -295,9 +296,7 @@ class Loader:
                             ocr_docs = loader.load()
                             log.info(f'Mistral OCR fallback succeeded, extracted {len(ocr_docs)} chunks')
                             return [
-                                Document(
-                                    page_content=ftfy.fix_text(doc.page_content), metadata=doc.metadata
-                                )
+                                Document(page_content=ftfy.fix_text(doc.page_content), metadata=doc.metadata)
                                 for doc in ocr_docs
                             ]
                         except Exception as e:
@@ -314,25 +313,23 @@ class Loader:
                             ocr_docs = loader.load()
                             log.info(f'PaddleOCR VL fallback succeeded, extracted {len(ocr_docs)} chunks')
                             return [
-                                Document(
-                                    page_content=ftfy.fix_text(doc.page_content), metadata=doc.metadata
-                                )
+                                Document(page_content=ftfy.fix_text(doc.page_content), metadata=doc.metadata)
                                 for doc in ocr_docs
                             ]
                         except Exception as e:
                             log.error(f'PaddleOCR VL fallback failed: {e}')
 
                     # Try Tesseract OCR if configured/available
-                    tesseract_path = self.kwargs.get('TESSERACT_OCR_BINARY_PATH') or os.getenv('TESSERACT_PATH', '/usr/bin/tesseract')
+                    tesseract_path = self.kwargs.get('TESSERACT_OCR_BINARY_PATH') or os.getenv(
+                        'TESSERACT_PATH', '/usr/bin/tesseract'
+                    )
                     if os.path.exists(tesseract_path) and pytesseract.get_tesseract_version():
                         try:
                             loader = TesseractLoader(file_path, lang=os.getenv('TESSERACT_LANG', 'rus+eng'))
                             ocr_docs = loader.load()
                             log.info(f'Tesseract OCR fallback succeeded, extracted {len(ocr_docs)} chunks')
                             return [
-                                Document(
-                                    page_content=ftfy.fix_text(doc.page_content), metadata=doc.metadata
-                                )
+                                Document(page_content=ftfy.fix_text(doc.page_content), metadata=doc.metadata)
                                 for doc in ocr_docs
                             ]
                         except Exception as e:
@@ -346,9 +343,7 @@ class Loader:
             # failing the whole upload.
             if 'cannot reshape' not in str(e):
                 raise
-            log.warning(
-                f'PDF image extraction failed ({e}), retrying without image extraction: {file_path}'
-            )
+            log.warning(f'PDF image extraction failed ({e}), retrying without image extraction: {file_path}')
             self.kwargs = {**self.kwargs, 'PDF_EXTRACT_IMAGES': False}
             loader = self._get_loader(filename, file_content_type, file_path)
             docs = loader.load()
@@ -772,7 +767,7 @@ class Loader:
                     )
             elif file_ext == 'rtf':
                 try:
-                    from unstructured.documents.elements import Element
+                    from unstructured.documents.elements import Element  # noqa: F401
                     from unstructured.partition.rtf import partition_rtf
 
                     elements = partition_rtf(filename=self.file_path, file=None)

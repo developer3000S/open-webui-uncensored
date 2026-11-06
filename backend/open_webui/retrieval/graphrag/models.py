@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import time
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -24,7 +24,7 @@ def new_id() -> str:
 
 
 def now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 class ContractModel(BaseModel):
@@ -156,9 +156,7 @@ class PolicyDecision(Budgets):
 
 # ── §4.2.4 ConfidenceEstimate ──────────────────────────────────────────
 
-ProcessingMode = Literal[
-    'fast_path', 'standard', 'deep', 'ensemble', 'clarification_required', 'refusal_recommended'
-]
+ProcessingMode = Literal['fast_path', 'standard', 'deep', 'ensemble', 'clarification_required', 'refusal_recommended']
 
 
 class ConfidenceEstimate(ContractModel):

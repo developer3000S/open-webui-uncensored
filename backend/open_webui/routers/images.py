@@ -14,6 +14,9 @@ from urllib.parse import urlparse
 import aiohttp
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse
+from PIL import Image, ImageOps
+from pydantic import BaseModel
+
 from open_webui.config import (
     CACHE_DIR,
     ENABLE_OPENAI_IMAGE_EDIT_NORMALIZATION,
@@ -39,8 +42,6 @@ from open_webui.utils.images.comfyui import (
     comfyui_upload_image,
 )
 from open_webui.utils.session_pool import get_session
-from PIL import Image, ImageOps
-from pydantic import BaseModel
 
 log = logging.getLogger(__name__)
 

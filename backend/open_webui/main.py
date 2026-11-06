@@ -8,8 +8,8 @@ import os
 import re
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
-from pathlib import Path
 from uuid import uuid4
 
 import aiohttp
@@ -133,9 +133,6 @@ from open_webui.events import (
 from open_webui.internal.db import engine, get_async_session
 from open_webui.internal.schema_fix import check_and_fix_db_schema
 from open_webui.retrieval.query_rephrasing import init_query_rephrasing_service
-from sqlalchemy import inspect, MetaData, Table, Column, text
-from sqlalchemy.exc import NoSuchTableError, OperationalError
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -157,6 +154,7 @@ from open_webui.routers import (
     chats,
     classify,
     coder,
+    comments,
     configs,
     evaluations,
     files,
@@ -167,8 +165,10 @@ from open_webui.routers import (
     images,
     knowledge,
     memories,
+    mfa,
     models,
     notes,
+    notifications,
     ollama,
     openai,
     pipelines,
@@ -214,6 +214,7 @@ from open_webui.utils import logger
 from open_webui.utils.access_control import has_permission
 from open_webui.utils.actions import chat_action as chat_action_handler
 from open_webui.utils.asgi_middleware import (
+    AppHTTPMiddleware,
     AuthTokenMiddleware,
     CommitSessionMiddleware,
     RedirectMiddleware,
@@ -314,7 +315,9 @@ https://github.com/developer30000s/open-webui-uncensored
         print(banner)
     except UnicodeEncodeError:
         # Stdout can't encode the box-drawing banner (Windows cp1252, redirected/headless stdout); fall back to ASCII.
-        print(f'Open WebUI v{VERSION} - building the best AI user interface.\nhttps://github.com/developer30000s/open-webui-uncensored')
+        print(
+            f'Open WebUI v{VERSION} - building the best AI user interface.\nhttps://github.com/developer30000s/open-webui-uncensored'
+        )
 
 
 @asynccontextmanager
@@ -361,15 +364,21 @@ async def lifespan(app: FastAPI):
         app.state.redis_task_command_listener = asyncio.create_task(redis_task_command_listener(app))
 
     if THREAD_POOL_SIZE and THREAD_POOL_SIZE > 0:
-        limiter = anyio.to_thread.current_default_thread_limiter()
-        limiter.total_tokens = THREAD_POOL_SIZE
+        # asyncio offloads bypass AnyIO's limiter, so configure both before the first offload.
+        anyio.to_thread.current_default_thread_limiter().total_tokens = THREAD_POOL_SIZE
+        app.state.main_loop.set_default_executor(
+            ThreadPoolExecutor(
+                max_workers=THREAD_POOL_SIZE,
+                thread_name_prefix='open-webui',
+            )
+        )
 
-    asyncio.create_task(periodic_usage_pool_cleanup())
-    asyncio.create_task(periodic_session_pool_cleanup())
+    app.state.periodic_usage_pool_cleanup = asyncio.create_task(periodic_usage_pool_cleanup())
+    app.state.periodic_session_pool_cleanup = asyncio.create_task(periodic_session_pool_cleanup())
 
     from open_webui.utils.automations import scheduler_worker_loop
 
-    asyncio.create_task(scheduler_worker_loop(app))
+    app.state.scheduler_worker_loop = asyncio.create_task(scheduler_worker_loop(app))
 
     if await Config.get('models.base_models_cache'):
         try:
@@ -428,13 +437,13 @@ async def lifespan(app: FastAPI):
 
     # Mark application as ready to accept traffic from a startup perspective.
     # First, check and fix database schema if needed
-    log.info("Checking and fixing database schema...")
+    log.info('Checking and fixing database schema...')
     schema_fixed = await check_and_fix_db_schema()
     if schema_fixed:
-        log.info("Database schema was fixed during startup.")
+        log.info('Database schema was fixed during startup.')
     else:
-        log.info("Database schema is up-to-date.")
-    
+        log.info('Database schema is up-to-date.')
+
     app.state.startup_complete = True
     await publish_event(app, EVENTS.SYSTEM_STARTUP_COMPLETED, source='system')
 
@@ -446,6 +455,13 @@ async def lifespan(app: FastAPI):
     from open_webui.utils.session_pool import close_session
 
     await close_session()
+
+    if hasattr(app.state, 'periodic_usage_pool_cleanup'):
+        app.state.periodic_usage_pool_cleanup.cancel()
+    if hasattr(app.state, 'periodic_session_pool_cleanup'):
+        app.state.periodic_session_pool_cleanup.cancel()
+    if hasattr(app.state, 'scheduler_worker_loop'):
+        app.state.scheduler_worker_loop.cancel()
 
     if hasattr(app.state, 'redis_task_command_listener'):
         app.state.redis_task_command_listener.cancel()
@@ -746,6 +762,7 @@ if ENABLE_COMPRESSION_MIDDLEWARE:
 # `terminate_force_close` tracebacks under aiosqlite and as random
 # CancelledError storms across the request path. See
 # `open_webui.utils.asgi_middleware` for the rationale.
+app.add_middleware(AppHTTPMiddleware)
 app.add_middleware(RedirectMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(CommitSessionMiddleware)
@@ -797,9 +814,7 @@ async def studio_api_proxy(path: str, request: Request):
     """Reverse-proxy /studio/api/* -> studio management API (serve.cjs)."""
     if studio_http_client is None:
         raise HTTPException(status_code=503, detail='Studio upstream is not configured')
-    return await _studio_proxy_request(
-        studio_http_client, f'/api/{path}', request, rewrite_media_urls=True
-    )
+    return await _studio_proxy_request(studio_http_client, f'/api/{path}', request, rewrite_media_urls=True)
 
 
 @app.api_route(
@@ -940,7 +955,10 @@ app.include_router(utils.router, prefix='/api/v1/utils', tags=['utils'])
 app.include_router(classify.router, prefix='/api/v1/classify', tags=['classify'])
 app.include_router(terminals.router, prefix='/api/v1/terminals', tags=['terminals'])
 app.include_router(automations.router, prefix='/api/v1/automations', tags=['automations'])
+app.include_router(notifications.router, prefix='/api/v1', tags=['notifications'])
 app.include_router(calendar.router, prefix='/api/v1/calendars', tags=['calendars'])
+app.include_router(comments.router, prefix='/api/v1', tags=['comments'])
+app.include_router(mfa.router, prefix='/api/v1', tags=['mfa'])
 app.include_router(coder.router, prefix='/api/v1/coder', tags=['coder'])
 
 # Uncensored Local Studio bridge (llama.cpp / stable-diffusion.cpp / whisper.cpp / Kokoro TTS)

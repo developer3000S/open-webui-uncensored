@@ -5,10 +5,6 @@ from __future__ import annotations
 import datetime
 import time
 
-from open_webui.env import DATABASE_USER_ACTIVE_STATUS_UPDATE_INTERVAL
-from open_webui.internal.db import Base, get_async_db_context
-from open_webui.utils.misc import throttle
-from open_webui.utils.validate import validate_profile_image_url
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 from sqlalchemy import (
     JSON,
@@ -27,6 +23,11 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from open_webui.env import DATABASE_USER_ACTIVE_STATUS_UPDATE_INTERVAL
+from open_webui.internal.db import Base, get_async_db_context
+from open_webui.utils.misc import throttle
+from open_webui.utils.validate import validate_profile_image_url
 
 ####################
 # User DB Schema
@@ -71,6 +72,11 @@ class User(Base):  # identity & profile
     oauth = Column(JSON, nullable=True)
     scim = Column(JSON, nullable=True)
 
+    # MFA (TOTP)
+    mfa_secret = Column(Text, nullable=True)  # encrypted TOTP secret
+    mfa_enabled = Column(BigInteger, default=0)  # 0 = disabled, 1 = enabled
+    mfa_backup_codes = Column(JSON, nullable=True)  # list of hashed backup codes
+
     # Timestamps (epoch seconds)
     last_active_at = Column(BigInteger)
     updated_at = Column(BigInteger)
@@ -107,6 +113,10 @@ class UserModel(BaseModel):
 
     oauth: dict | None = None
     scim: dict | None = None
+
+    # MFA (TOTP)
+    mfa_secret: str | None = None
+    mfa_enabled: bool = False
 
     last_active_at: int  # timestamp in epoch
     updated_at: int  # timestamp in epoch

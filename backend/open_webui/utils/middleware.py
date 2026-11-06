@@ -12,6 +12,8 @@ from uuid import uuid4
 
 from fastapi import HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse
+from starlette.responses import JSONResponse, StreamingResponse
+
 from open_webui.config import (
     CODE_INTERPRETER_BLOCKED_MODULES,
     CODE_INTERPRETER_PYODIDE_PROMPT,
@@ -66,7 +68,7 @@ from open_webui.utils.access_control import has_connection_access, has_permissio
 from open_webui.utils.access_control.files import get_accessible_folder_files
 from open_webui.utils.chat import generate_chat_completion
 from open_webui.utils.code_interpreter import execute_code_jupyter
-from open_webui.utils.context import estimate_request_tokens, get_model_context_length, trim_request_to_context
+from open_webui.utils.context import trim_request_to_context
 from open_webui.utils.context_compaction import compact_messages_for_request
 from open_webui.utils.files import (
     convert_markdown_base64_images,
@@ -115,7 +117,6 @@ from open_webui.utils.tools import (
     get_updated_tool_function,
 )
 from open_webui.utils.webhook import post_webhook
-from starlette.responses import JSONResponse, StreamingResponse
 
 logging.basicConfig(stream=sys.stdout, level=GLOBAL_LOG_LEVEL)
 log = logging.getLogger(__name__)

@@ -37,6 +37,7 @@ from decimal import Decimal
 from typing import Any
 
 import oracledb
+
 from open_webui.config import (
     ORACLE_DB_DSN,
     ORACLE_DB_PASSWORD,

@@ -3,9 +3,10 @@ from __future__ import annotations
 from urllib.parse import urlparse
 
 import validators
+from pydantic import BaseModel
+
 from open_webui.retrieval.web.utils import resolve_hostname
 from open_webui.utils.misc import is_host_allowed
-from pydantic import BaseModel
 
 
 def get_filtered_results(results, filter_list):

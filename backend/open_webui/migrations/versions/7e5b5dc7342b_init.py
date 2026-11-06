@@ -6,8 +6,9 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-import open_webui.internal.db  # noqa: F401
 import sqlalchemy as sa
+
+import open_webui.internal.db  # noqa: F401
 from alembic import op
 from open_webui.internal.db import JSONField
 from open_webui.migrations.util import get_existing_tables

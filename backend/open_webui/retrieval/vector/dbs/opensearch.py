@@ -2,6 +2,9 @@
 NOTE: This vector database integration is community-supported and maintained on a best-effort basis.
 """
 
+from opensearchpy import OpenSearch
+from opensearchpy.helpers import bulk
+
 from open_webui.config import (
     OPENSEARCH_CERT_VERIFY,
     OPENSEARCH_PASSWORD,
@@ -16,8 +19,6 @@ from open_webui.retrieval.vector.main import (
     VectorItem,
 )
 from open_webui.retrieval.vector.utils import process_metadata
-from opensearchpy import OpenSearch
-from opensearchpy.helpers import bulk
 
 
 class OpenSearchClient(VectorDBBase):

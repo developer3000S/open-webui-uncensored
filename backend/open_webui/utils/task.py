@@ -72,6 +72,7 @@ async def prompt_template(template: str, user: Any | None = None) -> str:
             USER_VARIABLES = {
                 'name': str(user.get('name')),
                 'email': str(user.get('email')),
+                'role': str(user.get('role', 'user')),
                 'location': str(user_info.get('location')),
                 'bio': str(user.get('bio')),
                 'gender': str(user.get('gender')),
@@ -101,6 +102,7 @@ async def prompt_template(template: str, user: Any | None = None) -> str:
     template = template.replace('{{USER_AGE}}', str(USER_VARIABLES.get('age', 'Unknown')))
     template = template.replace('{{USER_LOCATION}}', USER_VARIABLES.get('location', 'Unknown'))
     template = template.replace('{{USER_GROUPS}}', USER_VARIABLES.get('groups', ''))
+    template = template.replace('{{USER_ROLE}}', USER_VARIABLES.get('role', 'user'))
 
     return template
 

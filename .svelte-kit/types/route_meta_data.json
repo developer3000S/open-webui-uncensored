@@ -125,6 +125,10 @@
 		"src/routes/+layout.js",
 		"src/routes/+layout.server.ts"
 	],
+	"/(app)/side/[id]": [
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
+	],
 	"/(app)/studio": [
 		"src/routes/(app)/studio/+layout.ts",
 		"src/routes/+layout.js",
@@ -208,6 +212,10 @@
 		"src/routes/+layout.server.ts"
 	],
 	"/(app)/workspace/tools/edit": [
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
+	],
+	"/(app)/workspace/[id]": [
 		"src/routes/+layout.js",
 		"src/routes/+layout.server.ts"
 	]

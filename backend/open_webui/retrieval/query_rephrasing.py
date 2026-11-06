@@ -4,17 +4,22 @@ LLM-based Query Rephrasing Service
 Provides query improvement via LLM: rephrasing, decomposition, and expansion.
 """
 
-import os
 import logging
-from typing import Optional, List, Dict, Tuple
-from open_webui.env import RAG_QUERY_REPHRASER, RAG_QUERY_REPHRASER_MODEL, RAG_QUERY_REPHRASER_EMBEDDING_ENGINE, RAG_QUERY_REPHRASER_API_BASE_URL
-from open_webui.retrieval.utils import get_embedding_function, get_reranking_function
+import os
+from typing import Optional
+
+from open_webui.env import (
+    RAG_QUERY_REPHRASER_API_BASE_URL,
+    RAG_QUERY_REPHRASER_EMBEDDING_ENGINE,
+    RAG_QUERY_REPHRASER_MODEL,
+)
 
 log = logging.getLogger(__name__)
 
 # FastAPI imports for potential HTTP calls
 try:
-    from httpx import AsyncClient
+    from httpx import AsyncClient  # noqa: F401
+
     HTTPX_AVAILABLE = True
 except ImportError:
     HTTPX_AVAILABLE = False
@@ -29,7 +34,7 @@ class QueryRephrasingService:
         self.engine = RAG_QUERY_REPHRASER_EMBEDDING_ENGINE
         self.api_base_url = RAG_QUERY_REPHRASER_API_BASE_URL
 
-    async def rephrase(self, query: str, conversation_history: Optional[List[str]] = None) -> Tuple[str, Dict]:
+    async def rephrase(self, query: str, conversation_history: Optional[list[str]] = None) -> tuple[str, dict]:
         """
         Rephrase a query using an LLM.
 
@@ -41,7 +46,7 @@ class QueryRephrasingService:
             Tuple of (rephrased_query, metadata)
         """
         if not self.enabled:
-            return query, {"rephrased": False, "reason": "disabled"}
+            return query, {'rephrased': False, 'reason': 'disabled'}
 
         try:
             # For now, use a simple heuristic-based approach
@@ -52,26 +57,26 @@ class QueryRephrasingService:
             rephrased = self._simple_rephrase(query, conversation_history)
 
             metadata = {
-                "rephrased": True,
-                "method": "simple",
-                "original_length": len(query),
-                "rephrased_length": len(rephrased),
+                'rephrased': True,
+                'method': 'simple',
+                'original_length': len(query),
+                'rephrased_length': len(rephrased),
             }
 
             return rephrased, metadata
 
         except Exception as e:
-            log.error(f"Query rephrasing error: {e}")
-            return query, {"rephrased": False, "error": str(e)}
+            log.error(f'Query rephrasing error: {e}')
+            return query, {'rephrased': False, 'error': str(e)}
 
-    def _simple_rephrase(self, query: str, history: Optional[List[str]] = None) -> str:
+    def _simple_rephrase(self, query: str, history: Optional[list[str]] = None) -> str:
         """Basic rephrasing using heuristics."""
         # Add context from history if available
         if history and history[-1]:
             # Add pronoun resolution based on last user message
             last_user_msg = history[-1]
-            if "it" in QueryRephrasingService._get_last_n_words(last_user_msg, 3):
-                query = f"Regarding content from previous context: {query}"
+            if 'it' in QueryRephrasingService._get_last_n_words(last_user_msg, 3):
+                query = f'Regarding content from previous context: {query}'
 
         # Handle abbreviations and common issues
         query = query.lower()
@@ -87,11 +92,11 @@ class QueryRephrasingService:
 
         return query
 
-
-    def rephrase_sync(self, query: str, conversation_history: Optional[List[str]] = None) -> Tuple[str, Dict]:
+    def rephrase_sync(self, query: str, conversation_history: Optional[list[str]] = None) -> tuple[str, dict]:
         """Sync version of rephrasing (heuristic-based)."""
-        return self._simple_rephrase(query, conversation_history), {"method": "heuristic"}
-    async def decompose(self, query: str) -> List[str]:
+        return self._simple_rephrase(query, conversation_history), {'method': 'heuristic'}
+
+    async def decompose(self, query: str) -> list[str]:
         """
         Decompose a complex query into simpler sub-queries.
 
@@ -112,10 +117,10 @@ class QueryRephrasingService:
             return sub_queries
 
         except Exception as e:
-            log.error(f"Query decomposition error: {e}")
+            log.error(f'Query decomposition error: {e}')
             return [query]
 
-    def _simple_decompose(self, query: str) -> List[str]:
+    def _simple_decompose(self, query: str) -> list[str]:
         """Decompose query using simple rules."""
         # Split on common conjunctions
         conjunctions = [' and ', ' or ', ' but ', ' however ', ' whereas ', ' while ']
@@ -157,5 +162,5 @@ def init_query_rephrasing_service():
     enabled = os.getenv('RAG_QUERY_REPHRASER', 'False').lower() == 'true'
     service = QueryRephrasingService(enabled=enabled)
     set_query_rephrasing_service(service)
-    log.info(f"Query Rephrasing Service: {'Enabled' if enabled else 'Disabled'}")
+    log.info(f'Query Rephrasing Service: {"Enabled" if enabled else "Disabled"}')
     return service

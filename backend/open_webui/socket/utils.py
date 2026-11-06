@@ -7,6 +7,7 @@ import json
 import uuid
 
 import pycrdt as Y
+
 from open_webui.env import REDIS_KEY_PREFIX
 from open_webui.utils.redis import get_redis_connection
 

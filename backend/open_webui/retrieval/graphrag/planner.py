@@ -35,10 +35,10 @@ ROUTING_MATRIX: dict[str, list[str]] = {
     'analysis': ['agentic_rag', 'hybrid_rag', 'graph_rag'],
     'calculation': ['agentic_rag', 'tool_pipeline'],
     'external_lookup': ['tool_pipeline', 'native_rag'],
-    'ambiguous': [],          # clarification path, no retrieval
-    'unsupported': [],        # uncertainty/refusal path
-    'unsafe': [],             # refusal path
-    'conversational': [],     # answer without retrieval
+    'ambiguous': [],  # clarification path, no retrieval
+    'unsupported': [],  # uncertainty/refusal path
+    'unsafe': [],  # refusal path
+    'conversational': [],  # answer without retrieval
 }
 
 # §10.2 default escalation order.
@@ -102,7 +102,13 @@ def build_plan(
     budget_left_cost = policy.max_cost_units or settings.max_cost_units
     for i, pipeline in enumerate(selected):
         timeout = pipeline_timeout(settings, pipeline)
-        est_cost = {'native_rag': 0.05, 'hybrid_rag': 0.12, 'graph_rag': 0.15, 'agentic_rag': 0.6, 'tool_pipeline': 0.2}[pipeline]
+        est_cost = {
+            'native_rag': 0.05,
+            'hybrid_rag': 0.12,
+            'graph_rag': 0.15,
+            'agentic_rag': 0.6,
+            'tool_pipeline': 0.2,
+        }[pipeline]
         # Budget guard (§15.1): stop adding nodes that cannot fit remaining budget.
         if spent_latency + timeout > budget_left_ms or spent_cost + est_cost > budget_left_cost:
             if tasks:  # never drop the whole plan — keep what fits
@@ -121,7 +127,9 @@ def build_plan(
             reason=f'intent={analysis.intent}, mode={mode}',
         )
         if pipeline == 'agentic_rag':
-            task.parameters = {'max_steps': min(policy.max_agent_steps or settings.max_agent_steps, settings.max_agent_steps)}
+            task.parameters = {
+                'max_steps': min(policy.max_agent_steps or settings.max_agent_steps, settings.max_agent_steps)
+            }
         if pipeline == 'tool_pipeline':
             task.parameters = {'allowed_tools': policy.allowed_tools}
         tasks.append(task)
@@ -136,9 +144,13 @@ def build_plan(
         mode=plan_mode,
         tasks=tasks,
         global_timeout_ms=min(budget_left_ms, settings.max_latency_ms),
-        global_budget={'max_cost_units': budget_left_cost, 'max_candidates': policy.max_candidates or settings.max_candidates},
+        global_budget={
+            'max_cost_units': budget_left_cost,
+            'max_candidates': policy.max_candidates or settings.max_candidates,
+        },
         fallback_plan=[PlanTask(pipeline='native_rag', reason='fallback: degrade to native (§10.2 policy)')]
-        if 'native_rag' in (policy.allowed_pipelines or []) else [],
+        if 'native_rag' in (policy.allowed_pipelines or [])
+        else [],
         rationale=rationale,
     )
 

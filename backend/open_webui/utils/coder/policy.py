@@ -50,7 +50,7 @@ def _as_list(value) -> list[str]:
     else:
         return []
     # strip surrounding quotes so a setting saved as "'org/*, my/repo'" still works
-    return [v.strip().strip("'\"") for v in items if v.strip().strip("'\"")]
+    return [v.strip().strip('\'"') for v in items if v.strip().strip('\'"')]
 
 
 async def get_coder_policies() -> dict:
@@ -76,11 +76,14 @@ async def get_coder_policies() -> dict:
         return default if v is None else v
 
     return {
-        'allowed_github_hosts': [h.lower() for h in _as_list(pick('coder.allowed_github_hosts', CODER_ALLOWED_GITHUB_HOSTS))]
+        'allowed_github_hosts': [
+            h.lower() for h in _as_list(pick('coder.allowed_github_hosts', CODER_ALLOWED_GITHUB_HOSTS))
+        ]
         or [h.lower() for h in CODER_ALLOWED_GITHUB_HOSTS],
         'allowed_orgs': _as_list(pick('coder.allowed_orgs', CODER_ALLOWED_ORGS)),
         'allowed_repos': _as_list(pick('coder.allowed_repos', CODER_ALLOWED_REPOS)),
-        'blocked_paths': _as_list(pick('coder.blocked_paths', CODER_BLOCKED_PATH_PATTERNS)) or list(CODER_BLOCKED_PATH_PATTERNS),
+        'blocked_paths': _as_list(pick('coder.blocked_paths', CODER_BLOCKED_PATH_PATTERNS))
+        or list(CODER_BLOCKED_PATH_PATTERNS),
         'require_pr': bool(pick('coder.require_pr', CODER_REQUIRE_PR)),
         'max_files_per_changeset': int(pick('coder.max_files_per_changeset', CODER_MAX_FILES_PER_CHANGESET)),
         'max_total_diff_size': int(pick('coder.max_total_diff_size', CODER_MAX_TOTAL_DIFF_SIZE)),

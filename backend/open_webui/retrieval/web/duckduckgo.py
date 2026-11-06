@@ -5,6 +5,7 @@ import urllib.request
 
 from ddgs import DDGS
 from ddgs.exceptions import RatelimitException
+
 from open_webui.retrieval.web.main import SearchResult, get_filtered_results
 
 log = logging.getLogger(__name__)

@@ -2,8 +2,9 @@ from __future__ import annotations
 
 """Alembic migration utilities."""
 
-from alembic import op  # noqa: E402 — alembic runtime context
 from sqlalchemy import inspect  # metadata inspection
+
+from alembic import op  # noqa: E402 — alembic runtime context
 
 
 # --- database helper functions ---

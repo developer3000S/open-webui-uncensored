@@ -5,6 +5,7 @@ import traceback
 from typing import TYPE_CHECKING
 
 from loguru import logger
+
 from open_webui.env import (
     _LEVEL_MAP,
     AUDIT_LOG_FILE_ROTATION_SIZE,

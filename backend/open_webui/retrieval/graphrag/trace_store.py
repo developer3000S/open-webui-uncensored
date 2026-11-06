@@ -20,7 +20,7 @@ import os
 import sqlite3
 import threading
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 log = logging.getLogger(__name__)
@@ -104,6 +104,7 @@ def _sweep(conn: sqlite3.Connection) -> None:
 
 
 # ── Persistent response cache (rec 3.1) ────────────────────────────────
+
 
 def cache_get(key: str) -> tuple[float, dict] | None:
     """Return (expires_ts, value) or None; expired rows read as a miss."""
@@ -245,7 +246,7 @@ def store_feedback(record) -> None:
                     data.get('kind', 'explicit'),
                     data.get('signal'),
                     (data.get('comment') or '')[:2000],
-                    data.get('created_at') or datetime.now(timezone.utc).isoformat(),
+                    data.get('created_at') or datetime.now(UTC).isoformat(),
                     time.time(),
                 ),
             )
@@ -301,12 +302,18 @@ def metrics_summary(hours: int = 24) -> dict:
                 def _share(pred) -> float:
                     return round(sum(1 for r in rows if pred(r)) / n, 3)
 
-                out['status_shares'] = {s: _share(lambda r, s=s: r[0] == s) for s in ('answered', 'uncertain', 'refused', 'clarification')}
-                out['action_shares'] = {a: _share(lambda r, a=a: r[1] == a) for a in ('select', 'merge', 'escalate', 'clarify', 'refuse')}
+                out['status_shares'] = {
+                    s: _share(lambda r, s=s: r[0] == s) for s in ('answered', 'uncertain', 'refused', 'clarification')
+                }
+                out['action_shares'] = {
+                    a: _share(lambda r, a=a: r[1] == a) for a in ('select', 'merge', 'escalate', 'clarify', 'refuse')
+                }
                 by_intent: dict[str, list] = {}
                 for r in rows:
                     by_intent.setdefault(r[2] or 'unknown', []).append(r[4])
-                out['by_intent'] = {k: {'count': len(v), 'p50_ms': sorted(v)[len(v) // 2]} for k, v in by_intent.items()}
+                out['by_intent'] = {
+                    k: {'count': len(v), 'p50_ms': sorted(v)[len(v) // 2]} for k, v in by_intent.items()
+                }
             fb = conn.execute(
                 "SELECT rating, COUNT(*) FROM orchestrator_feedback WHERE kind='explicit' AND created_ts > ? GROUP BY rating",
                 (since,),

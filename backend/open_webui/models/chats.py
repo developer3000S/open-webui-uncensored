@@ -6,13 +6,6 @@ import logging
 import time
 import uuid
 
-# local imports
-from open_webui.internal.db import Base, get_async_db_context
-from open_webui.models.automations import AutomationRun
-from open_webui.models.chat_messages import ChatMessage, ChatMessages
-from open_webui.models.folders import Folders
-from open_webui.models.tags import TagModel, Tags
-from open_webui.utils.misc import sanitize_data_for_db, sanitize_text_for_db
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import (
     JSON,
@@ -36,6 +29,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import bindparam
+
+# local imports
+from open_webui.internal.db import Base, get_async_db_context
+from open_webui.models.automations import AutomationRun
+from open_webui.models.chat_messages import ChatMessage, ChatMessages
+from open_webui.models.folders import Folders
+from open_webui.models.tags import TagModel, Tags
+from open_webui.utils.misc import sanitize_data_for_db, sanitize_text_for_db
 
 log = logging.getLogger(__name__)
 

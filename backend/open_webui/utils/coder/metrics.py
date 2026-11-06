@@ -126,7 +126,9 @@ def observe_github_request(method: str, status: int, retried: bool = False, erro
     if error:
         label_status = f'{label_status}_{error.lower()}'[:60]
     try:
-        CODER_GITHUB_REQUESTS_TOTAL.labels(method=method.upper(), status=label_status, retried=str(bool(retried)).lower()).inc()
+        CODER_GITHUB_REQUESTS_TOTAL.labels(
+            method=method.upper(), status=label_status, retried=str(bool(retried)).lower()
+        ).inc()
     except Exception:  # pragma: no cover
         log.debug('coder metrics: github request observe failed', exc_info=True)
 

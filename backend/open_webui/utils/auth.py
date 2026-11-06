@@ -4,11 +4,12 @@ import asyncio
 import base64
 import hashlib
 import hmac
-import json
 import logging
 import os
 import uuid
 from datetime import datetime, timedelta
+from threading import Lock
+from time import monotonic
 
 import bcrypt
 import jwt
@@ -16,6 +17,9 @@ import requests
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from fastapi import BackgroundTasks, Depends, HTTPException, Request, Response, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from pytz import UTC
+from redis.exceptions import RedisError
+
 from open_webui.constants import ERROR_MESSAGES
 from open_webui.env import (
     ENABLE_OTEL,
@@ -35,7 +39,7 @@ from open_webui.models.auths import Auths
 from open_webui.models.config import Config
 from open_webui.models.users import Users
 from open_webui.utils.access_control import has_permission
-from pytz import UTC
+from open_webui.utils.json_codec import JSONCodec
 
 log = logging.getLogger(__name__)
 
@@ -43,9 +47,30 @@ SESSION_SECRET = WEBUI_SECRET_KEY
 ALGORITHM = 'HS256'
 PASSWORD_BCRYPT_MAX_BYTES = 72
 
-##############
+
 # Auth Utils
-##############
+
+
+class RateLimitFilter(logging.Filter):
+    """Limit a logger to one record per interval per process."""
+
+    def __init__(self, interval=60):
+        super().__init__()
+        self.interval = interval
+        self.next_allowed = float('-inf')
+        self.lock = Lock()
+
+    def filter(self, record):
+        with self.lock:
+            now = monotonic()
+            if now < self.next_allowed:
+                return False
+            self.next_allowed = now + self.interval
+        return True
+
+
+revocation_log = logging.getLogger(f'{__name__}.revocation')
+revocation_log.addFilter(RateLimitFilter())
 
 
 def verify_signature(payload: str, signature: str) -> bool:
@@ -81,21 +106,31 @@ def get_license_data(app, key):
     def data_handler(data):
         for k, v in data.items():
             if k == 'resources':
+                # LICENSE covers these Open WebUI branding assets.
+                # Do not alter, remove, obscure, or replace them except as LICENSE permits:
+                # https://docs.openwebui.com/license.
                 for p, c in v.items():
                     globals().get('override_static', lambda a, b: None)(p, c)
             elif k == 'count':
                 setattr(app.state, 'USER_COUNT', v)
             elif k == 'name':
+                # LICENSE covers this Open WebUI product name.
+                # Do not alter, remove, obscure, or replace it except as LICENSE permits:
+                # https://docs.openwebui.com/license.
                 setattr(app.state, 'WEBUI_NAME', v)
             elif k == 'metadata':
                 setattr(app.state, 'LICENSE_METADATA', v)
 
     def handler(u):
-        res = requests.post(
-            f'{u}/api/v1/license/',
-            json={'key': key, 'version': '1'},
-            timeout=5,
-        )
+        try:
+            res = requests.post(
+                f'{u}/api/v1/license/',
+                json={'key': key, 'version': '1'},
+                timeout=5,
+            )
+        except Exception as ex:
+            log.error(f'License: retrieval issue from {u}: {ex}')
+            return False
 
         if getattr(res, 'ok', False):
             payload = getattr(res, 'json', lambda: {})()
@@ -128,13 +163,13 @@ def get_license_data(app, key):
             ln, lt = nt(lb)
 
             aesgcm = AESGCM(kb)
-            p = json.loads(aesgcm.decrypt(ln, lt, None))
+            p = JSONCodec.loads(aesgcm.decrypt(ln, lt, None))
             pk.verify(base64.b64decode(p['s']), p['p'].encode())
 
             pb = base64.b64decode(p['p'])
             pn, pt = nt(pb)
 
-            data = json.loads(aesgcm.decrypt(pn, pt, None).decode())
+            data = JSONCodec.loads(aesgcm.decrypt(pn, pt, None).decode())
 
             exp = data.get('exp')
             if exp:
@@ -239,7 +274,7 @@ async def is_valid_token(decoded, redis=None) -> bool:
     2. Per-user (revoked_at) — used by OIDC back-channel logout when
        individual jti values are unknown; rejects tokens with iat <= revoked_at.
     """
-    if redis:
+    try:
         # Per-token revocation
         jti = decoded.get('jti')
         if jti:
@@ -247,7 +282,7 @@ async def is_valid_token(decoded, redis=None) -> bool:
             if revoked:
                 return False
 
-        # Per-user revocation (OIDC back-channel logout)
+        # Per-user revocation (password change, OIDC back-channel logout)
         user_id = decoded.get('id')
         if user_id:
             revoked_at = await redis.get(f'{REDIS_KEY_PREFIX}:auth:user:{user_id}:revoked_at')
@@ -260,6 +295,8 @@ async def is_valid_token(decoded, redis=None) -> bool:
                         return False
                 except (ValueError, TypeError):
                     pass
+    except RedisError as e:
+        revocation_log.warning('Revocation check failed; accepting token: %s', e)
 
     return True
 
@@ -280,12 +317,34 @@ async def invalidate_token(request, token):
             ttl = exp - int(datetime.now(UTC).timestamp())  # Calculate time-to-live for the token
 
             if ttl > 0:
+                # Revoked tokens must not be able to disconnect newer sessions.
+                if not await is_valid_token(decoded, request.app.state.redis):
+                    return
+
                 # Store the revoked token in Redis with an expiration time
                 await request.app.state.redis.set(
                     f'{REDIS_KEY_PREFIX}:auth:token:{jti}:revoked',
                     '1',
                     ex=ttl,
                 )
+
+                user_id = decoded.get('id')
+                if user_id:
+                    from open_webui.socket.main import disconnect_user_sessions
+
+                    await disconnect_user_sessions(user_id)
+
+
+async def revoke_user_tokens(request, user_id: str):
+    """Persist account-wide revocation, whether or not Redis is configured."""
+    from open_webui.socket.main import disconnect_user_sessions
+
+    if request.app.state.redis:
+        await request.app.state.redis.set(
+            f'{REDIS_KEY_PREFIX}:auth:user:{user_id}:revoked_at',
+            str(int(datetime.now(UTC).timestamp())),
+        )
+    await disconnect_user_sessions(user_id)
 
 
 def extract_token_from_auth_header(auth_header: str):
@@ -321,16 +380,16 @@ async def get_current_user(
     # This ensures connections are released immediately after auth queries,
     # not held for the entire request duration (e.g., during 30+ second LLM calls).
 ):
-    log.info(f"get_current_user called for request from {request.client.host}")
+    log.info(f'get_current_user called for request from {request.client.host}')
     token = None
 
     if auth_token is not None:
         token = auth_token.credentials
-        log.info(f"Token from Authorization header: {token[:10]}...")
+        log.info(f'Token from Authorization header: {token[:10]}...')
 
     if token is None and 'token' in request.cookies:
         token = request.cookies.get('token')
-        log.info(f"Token from cookies: {token[:10]}...")
+        log.info(f'Token from cookies: {token[:10]}...')
 
     # Fallback to request.state.token (set by middleware, e.g. for x-api-key)
     if token is None and hasattr(request.state, 'token') and request.state.token:

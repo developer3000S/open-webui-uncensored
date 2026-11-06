@@ -8,6 +8,7 @@ import time
 
 import pycrdt as Y
 import socketio
+
 from open_webui.config import (
     CORS_ALLOW_ORIGIN,
 )

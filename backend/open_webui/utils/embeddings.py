@@ -2,6 +2,7 @@ import logging
 import sys
 
 from fastapi import Request
+
 from open_webui.env import BYPASS_MODEL_ACCESS_CONTROL, GLOBAL_LOG_LEVEL
 from open_webui.models.users import UserModel
 from open_webui.routers.ollama import (

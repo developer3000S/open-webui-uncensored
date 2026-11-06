@@ -86,7 +86,7 @@
 	</PaneResizer>
 
 	<Pane
-		bind:pane
+		bind:this={pane}
 		defaultSize={Math.max(20, minSize)}
 		{minSize}
 		onCollapse={() => {

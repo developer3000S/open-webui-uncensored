@@ -6,6 +6,7 @@ import logging
 from typing import Any
 
 import boto3
+
 from open_webui.config import S3_VECTOR_BUCKET_NAME, S3_VECTOR_REGION
 from open_webui.retrieval.vector.main import (
     GetResult,

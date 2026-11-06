@@ -16,13 +16,6 @@ from typing import Literal
 
 import aiohttp
 from authlib.integrations.starlette_client import OAuth
-# authlib 1.7 verifies ID tokens via joserfc internally (its
-# AsyncOpenIDMixin.parse_id_token calls joserfc.jwt.decode), so a rotated IdP
-# signing key raises joserfc.errors.BadSignatureError — a class unrelated to
-# authlib's deprecated authlib.jose alias. Only joserfc's is caught here: the
-# authlib alias exists solely for back-compat and importing it also emits an
-# AuthlibDeprecationWarning on every startup.
-from joserfc.errors import BadSignatureError
 from authlib.oauth2.rfc6749.errors import OAuth2Error
 from authlib.oidc.core import UserInfo
 from cryptography.fernet import Fernet
@@ -30,6 +23,14 @@ from fastapi import (
     HTTPException,
     status,
 )
+
+# authlib 1.7 verifies ID tokens via joserfc internally (its
+# AsyncOpenIDMixin.parse_id_token calls joserfc.jwt.decode), so a rotated IdP
+# signing key raises joserfc.errors.BadSignatureError — a class unrelated to
+# authlib's deprecated authlib.jose alias. Only joserfc's is caught here: the
+# authlib alias exists solely for back-compat and importing it also emits an
+# AuthlibDeprecationWarning on every startup.
+from joserfc.errors import BadSignatureError
 from joserfc.jws import JWSRegistry
 from joserfc.registry import HeaderParameter
 from mcp.shared.auth import (
@@ -38,6 +39,8 @@ from mcp.shared.auth import (
 from mcp.shared.auth import (
     OAuthMetadata,
 )
+from starlette.responses import RedirectResponse
+
 from open_webui.config import (
     DEFAULT_USER_ROLE,
     ENABLE_OAUTH_GROUP_CREATION,
@@ -93,7 +96,6 @@ from open_webui.utils.auth import create_token, get_password_hash
 from open_webui.utils.groups import apply_default_group_assignment
 from open_webui.utils.misc import parse_duration
 from open_webui.utils.validate import validate_profile_image_url
-from starlette.responses import RedirectResponse
 
 
 class OAuthClientMetadata(MCPOAuthClientMetadata):

@@ -34,7 +34,9 @@ _REFUSAL_TEMPLATES = {
     'en': 'I cannot answer this request. {reason} If it can be rephrased within safe boundaries, please clarify and I will try to help.',
 }
 _UNCERTAIN_PREFIX_RU = 'Недостаточно данных для однозначного ответа. Возможный частичный ответ ниже; утверждения без подтверждения источниками помечены.'
-_UNCERTAIN_PREFIX_EN = 'Insufficient data for a definitive answer. A partial answer follows; claims lacking source support are marked.'
+_UNCERTAIN_PREFIX_EN = (
+    'Insufficient data for a definitive answer. A partial answer follows; claims lacking source support are marked.'
+)
 
 
 def _citations(candidates: list[CandidateResponse]) -> list[dict]:
@@ -83,7 +85,8 @@ def _warnings(report: EvaluationReport, candidates: list[CandidateResponse]) -> 
         warnings.append(f'противоречие ({p.type}): {p.explanation}')
     if report.unsupported_claims:
         warnings.append(
-            f'{len(report.unsupported_claims)} неподтверждённых утверждений исключены или помечены (§4.5.4)')
+            f'{len(report.unsupported_claims)} неподтверждённых утверждений исключены или помечены (§4.5.4)'
+        )
     external = [c for c in candidates if c.pipeline == 'tool_pipeline' and c.status != 'failed']
     if external:
         warnings.append('использованы внешние данные — точность не гарантирована источником (§4.6.3)')
@@ -128,7 +131,8 @@ def synthesize(
     if action == 'clarify':
         resp.status = 'clarification'
         resp.answer_text = report.clarification_question or (
-            'Уточните запрос.' if lang == 'ru' else 'Please clarify the request.')
+            'Уточните запрос.' if lang == 'ru' else 'Please clarify the request.'
+        )
         resp.ui_hints['clarification'] = True
         return resp
 
@@ -144,10 +148,13 @@ def synthesize(
         resp.status = 'uncertain' if live else 'refused'
         resp.answer_text = (
             (_UNCERTAIN_PREFIX_RU if lang == 'ru' else _UNCERTAIN_PREFIX_EN)
-            + '\n\n' + '\n\n'.join(c.answer_text[:1500] for c in live[:2])
+            + '\n\n'
+            + '\n\n'.join(c.answer_text[:1500] for c in live[:2])
             if live
             else _REFUSAL_TEMPLATES.get(lang, _REFUSAL_TEMPLATES['en']).format(
-                reason='источники не содержали релевантных данных' if lang == 'ru' else 'no relevant data in accessible sources'
+                reason='источники не содержали релевантных данных'
+                if lang == 'ru'
+                else 'no relevant data in accessible sources'
             )
         )
         resp.citations = _citations(live)
@@ -167,9 +174,13 @@ def synthesize(
 
     blocks: list[str] = []
     for c in chosen:
-        header = {'graph_rag': '[граф знаний]', 'hybrid_rag': '[гибридный поиск]',
-                  'agentic_rag': '[пошаговый анализ]', 'tool_pipeline': '[внешние источники]',
-                  'native_rag': '[документы]'}.get(c.pipeline, f'[{c.pipeline}]')
+        header = {
+            'graph_rag': '[граф знаний]',
+            'hybrid_rag': '[гибридный поиск]',
+            'agentic_rag': '[пошаговый анализ]',
+            'tool_pipeline': '[внешние источники]',
+            'native_rag': '[документы]',
+        }.get(c.pipeline, f'[{c.pipeline}]')
         body_lines = []
         for cl in c.claims[:6]:
             text = cl.text.strip()

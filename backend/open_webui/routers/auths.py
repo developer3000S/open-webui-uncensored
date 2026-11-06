@@ -14,6 +14,9 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse, Response
 from ldap3 import NONE, Connection, Server, Tls
 from ldap3.utils.conv import escape_filter_chars
+from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from open_webui.config import (
     ENABLE_PASSWORD_AUTH,
     OAUTH_PROVIDERS,
@@ -23,6 +26,9 @@ from open_webui.env import (
     AIOHTTP_CLIENT_SESSION_SSL,
     ENABLE_INITIAL_ADMIN_SIGNUP,
     ENABLE_OAUTH_TOKEN_EXCHANGE,
+    OAUTH_TOKEN_EXCHANGE_RATE_LIMIT,
+    OAUTH_TOKEN_EXCHANGE_RATE_LIMIT_WINDOW,
+    OAUTH_TOKEN_EXCHANGE_TRUSTED_CLIENT_IDS,
     WEBUI_AUTH,
     WEBUI_AUTH_COOKIE_SAME_SITE,
     WEBUI_AUTH_COOKIE_SECURE,
@@ -73,8 +79,6 @@ from open_webui.utils.groups import apply_default_group_assignment
 from open_webui.utils.misc import parse_duration, validate_email_format
 from open_webui.utils.rate_limit import RateLimiter
 from open_webui.utils.redis import get_redis_client
-from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter()
 
@@ -1298,6 +1302,11 @@ class OAuthConfigForm(BaseModel):
     # Token
     OAUTH_REFRESH_TOKEN_INCLUDE_SCOPE: bool | None = None
 
+    # OAuth token exchange rate limiting
+    OAUTH_TOKEN_EXCHANGE_RATE_LIMIT: int | str | None = None
+    OAUTH_TOKEN_EXCHANGE_RATE_LIMIT_WINDOW: int | str | None = None
+    OAUTH_TOKEN_EXCHANGE_TRUSTED_CLIENT_IDS: str | None = None
+
 
 OAUTH_COMMA_LIST_FIELDS = {
     'OAUTH_ALLOWED_DOMAINS',
@@ -1340,6 +1349,9 @@ OAUTH_CONFIG_KEYS = {
     'OAUTH_UPDATE_NAME_ON_LOGIN': 'oauth.update_name_on_login',
     'OAUTH_UPDATE_PICTURE_ON_LOGIN': 'oauth.update_picture_on_login',
     'OAUTH_REFRESH_TOKEN_INCLUDE_SCOPE': 'oauth.refresh_token.include_scope',
+    'OAUTH_TOKEN_EXCHANGE_RATE_LIMIT': 'oauth.token_exchange.rate_limit',
+    'OAUTH_TOKEN_EXCHANGE_RATE_LIMIT_WINDOW': 'oauth.token_exchange.rate_limit_window',
+    'OAUTH_TOKEN_EXCHANGE_TRUSTED_CLIENT_IDS': 'oauth.token_exchange.trusted_client_ids',
 }
 
 
@@ -1478,6 +1490,21 @@ async def token_exchange(
             status_code=status.HTTP_403_FORBIDDEN,
             detail='Token exchange is disabled',
         )
+
+    # OAuth token exchange rate limiting (protects against token spraying)
+    if OAUTH_TOKEN_EXCHANGE_RATE_LIMIT and OAUTH_TOKEN_EXCHANGE_RATE_LIMIT > 0:
+        trusted = [cid.strip() for cid in OAUTH_TOKEN_EXCHANGE_TRUSTED_CLIENT_IDS.split(',') if cid.strip()]
+        client_id = form_data.token[:32]  # Use token prefix as caller identity (best-effort)
+        if client_id not in trusted:
+            exchange_rate_limiter = RateLimiter(
+                limit=OAUTH_TOKEN_EXCHANGE_RATE_LIMIT,
+                window=OAUTH_TOKEN_EXCHANGE_RATE_LIMIT_WINDOW,
+            )
+            if await exchange_rate_limiter.is_limited(client_id):
+                raise HTTPException(
+                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    detail=ERROR_MESSAGES.RATE_LIMIT_EXCEEDED,
+                )
 
     provider = provider.lower()
 

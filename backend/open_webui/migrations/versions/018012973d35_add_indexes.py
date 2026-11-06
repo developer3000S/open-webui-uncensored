@@ -7,6 +7,7 @@ Create Date: 2025-08-13 03:00:00.000000
 """
 
 import sqlalchemy as sa
+
 from alembic import op
 
 revision = '018012973d35'

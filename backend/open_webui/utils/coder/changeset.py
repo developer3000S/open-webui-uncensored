@@ -14,10 +14,9 @@ import posixpath
 import re
 
 from open_webui.config import (
-    CODER_ALLOWED_GITHUB_HOSTS,
     CODER_ALLOWED_ORGS,
-    CODER_BLOCKED_PATH_PATTERNS,
     CODER_ALLOWED_REPOS,
+    CODER_BLOCKED_PATH_PATTERNS,
     CODER_MAX_FILE_SIZE,
     CODER_MAX_FILES_PER_CHANGESET,
     CODER_MAX_TOTAL_DIFF_SIZE,
@@ -143,7 +142,8 @@ def validate_changeset(files: list[dict], repo: str | None = None, policies: dic
         action = (item.get('action') or '').strip().lower()
         if action not in ALLOWED_ACTIONS:
             raise ChangeSetValidationError(
-                'CODER_INVALID_ACTION', f"Unknown action '{action}', expected create|update|delete|rename",
+                'CODER_INVALID_ACTION',
+                f"Unknown action '{action}', expected create|update|delete|rename",
                 item.get('path'),
             )
 
@@ -157,33 +157,41 @@ def validate_changeset(files: list[dict], repo: str | None = None, policies: dic
             old_path = item.get('old_path')
             if not old_path:
                 raise ChangeSetValidationError(
-                    'CODER_INVALID_ACTION', f"'old_path' is required for action 'rename'", path,
+                    'CODER_INVALID_ACTION',
+                    "'old_path' is required for action 'rename'",
+                    path,
                 )
             old_path = validate_path(old_path, blocked_paths)
             if old_path in seen_paths:
-                raise ChangeSetValidationError('CODER_DUPLICATE_PATH', f'Duplicate path in change set: {old_path}', old_path)
+                raise ChangeSetValidationError(
+                    'CODER_DUPLICATE_PATH', f'Duplicate path in change set: {old_path}', old_path
+                )
             seen_paths.add(old_path)
             # Content must be None for rename
             if content is not None:
                 raise ChangeSetValidationError(
-                    'CODER_INVALID_CONTENT', f"'content' must be None for action 'rename'", path,
+                    'CODER_INVALID_CONTENT',
+                    "'content' must be None for action 'rename'",
+                    path,
                 )
             normalized_files.append({'action': action, 'path': path, 'old_path': old_path, 'content': None})
         elif action in ('create', 'update'):
             if not isinstance(content, str):
                 raise ChangeSetValidationError(
-                    'CODER_INVALID_CONTENT', f"'content' is required for action '{action}'", path,
+                    'CODER_INVALID_CONTENT',
+                    f"'content' is required for action '{action}'",
+                    path,
                 )
             size = len(content.encode())
             if size > CODER_MAX_FILE_SIZE:
                 raise ChangeSetValidationError(
-                    'CODER_FILE_TOO_LARGE', f'File exceeds size limit ({CODER_MAX_FILE_SIZE} bytes)', path,
+                    'CODER_FILE_TOO_LARGE',
+                    f'File exceeds size limit ({CODER_MAX_FILE_SIZE} bytes)',
+                    path,
                 )
             # Check for XSS patterns
             if re.search(r'<script', content, re.IGNORECASE):
-                raise ChangeSetValidationError(
-                    'CODER_INVALID_CONTENT', 'Potential XSS content detected', path
-                )
+                raise ChangeSetValidationError('CODER_INVALID_CONTENT', 'Potential XSS content detected', path)
             total_size += size
             normalized_files.append({'action': action, 'path': path, 'content': content})
         else:  # delete
@@ -204,9 +212,7 @@ def generate_unified_diff(old_content: str | None, new_content: str | None, path
 
     old_lines = (old_content or '').splitlines(keepends=True)
     new_lines = (new_content or '').splitlines(keepends=True)
-    diff_lines = list(
-        difflib.unified_diff(old_lines, new_lines, fromfile=f'a/{path}', tofile=f'b/{path}', n=3)
-    )
+    diff_lines = list(difflib.unified_diff(old_lines, new_lines, fromfile=f'a/{path}', tofile=f'b/{path}', n=3))
     if len(diff_lines) > CODER_MAX_DIFF_LINES:
         diff_lines = diff_lines[:CODER_MAX_DIFF_LINES]
         diff_lines.append(f'\n... diff truncated at {CODER_MAX_DIFF_LINES} lines ...\n')

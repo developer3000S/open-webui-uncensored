@@ -1,7 +1,6 @@
 """Sprint 3–4 tests: persistent cache, circuit breaker, followups, CE rerank."""
 
 import asyncio
-import os
 import tempfile
 import time
 

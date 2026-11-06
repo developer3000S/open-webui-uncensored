@@ -22,6 +22,8 @@ from fastapi.concurrency import run_in_threadpool
 from langchain_community.document_loaders import PlaywrightURLLoader, WebBaseLoader
 from langchain_community.document_loaders.base import BaseLoader
 from langchain_core.documents import Document
+from requests.adapters import HTTPAdapter
+
 from open_webui.config import (
     ENABLE_LOCAL_WEB_FETCH,
     EXTERNAL_WEB_LOADER_API_KEY,
@@ -52,7 +54,6 @@ from open_webui.retrieval.loaders.microsoft_web_iq import MicrosoftWebIQLoader
 from open_webui.retrieval.loaders.tavily import TavilyLoader
 from open_webui.retrieval.web.firecrawl import scrape_firecrawl_url
 from open_webui.utils.misc import is_host_allowed
-from requests.adapters import HTTPAdapter
 
 log = logging.getLogger(__name__)
 

@@ -81,9 +81,7 @@ class TestDetection(unittest.TestCase):
 
     def test_zero_and_garbage_advertisements_are_ignored(self):
         self.assertIsNone(get_model_context_length(studio_model(n_ctx=0, n_ctx_train=0)))
-        self.assertIsNone(
-            get_model_context_length({'ollama': {'details': {'context_length': 'nope'}}})
-        )
+        self.assertIsNone(get_model_context_length({'ollama': {'details': {'context_length': 'nope'}}}))
 
     def test_studio_loaded_ctx_beats_trained_ctx(self):
         # The engine was started with 4096 even though the model trains at 32768;

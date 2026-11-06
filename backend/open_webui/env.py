@@ -7,8 +7,10 @@ import pkgutil
 import re
 import shutil
 import sys
+import threading
 import traceback
 import warnings
+from contextlib import nullcontext
 from io import StringIO
 from pathlib import Path
 from typing import Any
@@ -29,7 +31,6 @@ warnings.filterwarnings(
     category=FutureWarning,
     module='google.auth.transport.grpc',
 )
-
 
 
 def _collect_env_names(source: str) -> None:
@@ -94,6 +95,7 @@ DOCKER = os.getenv('DOCKER', 'False').lower() == 'true'
 
 USE_CUDA = os.getenv('USE_CUDA_DOCKER', 'false')
 DEVICE_TYPE = 'cpu'
+USE_SLIM = os.getenv('USE_SLIM_DOCKER', 'False').lower() == 'true'
 _cuda_error: str | None = None
 
 if USE_CUDA.lower() == 'true':
@@ -108,7 +110,7 @@ if USE_CUDA.lower() == 'true':
         os.environ['USE_CUDA_DOCKER'] = 'false'
         USE_CUDA = 'false'
 
-if sys.platform == 'darwin' and DEVICE_TYPE == 'cpu':
+if not USE_SLIM and sys.platform == 'darwin' and DEVICE_TYPE == 'cpu':
     try:
         import torch  # noqa: E402
 
@@ -116,6 +118,9 @@ if sys.platform == 'darwin' and DEVICE_TYPE == 'cpu':
             DEVICE_TYPE = 'mps'
     except Exception:
         pass
+
+# Torch MPS inference is not thread-safe and a concurrent call kills the whole process.
+MPS_INFERENCE_LOCK = threading.Lock() if DEVICE_TYPE == 'mps' else nullcontext()
 
 ####################################
 # LOGGING
@@ -153,6 +158,7 @@ class JSONFormatter(logging.Formatter):
 
 
 LOG_FORMAT = os.getenv('LOG_FORMAT', '').lower()
+LOGURU_DIAGNOSE = os.getenv('LOGURU_DIAGNOSE', 'False').lower() == 'true'
 
 GLOBAL_LOG_LEVEL = os.getenv('GLOBAL_LOG_LEVEL', '').upper()
 if GLOBAL_LOG_LEVEL in logging.getLevelNamesMapping():
@@ -199,6 +205,11 @@ DEPLOYMENT_ID = os.getenv('DEPLOYMENT_ID', '')
 INSTANCE_ID = os.getenv('INSTANCE_ID', str(uuid4()))
 
 ENABLE_DB_MIGRATIONS = os.getenv('ENABLE_DB_MIGRATIONS', 'True').lower() == 'true'
+
+# Swap the JSON encoder/decoder used across the app (HTTP request bodies, JSONResponse
+# bodies, upstream provider responses, socket.io payloads) from the stdlib `json` module
+# to orjson. Faster, but stricter: see open_webui/utils/json_codec.py for the differences.
+ENABLE_ORJSON = os.getenv('ENABLE_ORJSON', 'True').lower() == 'true'
 
 
 # Function to parse each section
@@ -727,10 +738,10 @@ RAG_REDIS_PASSWORD = os.getenv('RAG_REDIS_PASSWORD', None)
 RAG_REDIS_MAX_CONNECTIONS = int(os.getenv('RAG_REDIS_MAX_CONNECTIONS', '50'))
 
 # Репрайзинг запросов через LLM
-RAG_QUERY_REPHRASER='true'
-RAG_QUERY_REPHRASER_MODEL='mistral'
-RAG_QUERY_REPHRASER_EMBEDDING_ENGINE='openai'
-RAG_QUERY_REPHRASER_API_BASE_URL='https://api.openai.com/v1'
+RAG_QUERY_REPHRASER = 'true'
+RAG_QUERY_REPHRASER_MODEL = 'mistral'
+RAG_QUERY_REPHRASER_EMBEDDING_ENGINE = 'openai'
+RAG_QUERY_REPHRASER_API_BASE_URL = 'https://api.openai.com/v1'
 
 
 if RAG_EMBEDDING_TIMEOUT == '':

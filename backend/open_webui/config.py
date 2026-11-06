@@ -54,8 +54,9 @@ logging.getLogger('uvicorn.access').addFilter(EndpointFilter())
 def run_migrations():
     log.info('Running migrations')
     try:
-        from alembic import command
         from alembic.config import Config as AlembicConfig
+
+        from alembic import command
 
         alembic_cfg = AlembicConfig(OPEN_WEBUI_DIR / 'alembic.ini')
 
@@ -215,6 +216,7 @@ if CUSTOM_NAME:
 ####################################
 
 ENABLE_DIRECT_CONNECTIONS = os.getenv('ENABLE_DIRECT_CONNECTIONS', 'False').lower() == 'true'
+ENABLE_DIRECT_INTEGRATIONS = os.getenv('ENABLE_DIRECT_INTEGRATIONS', 'False').lower() == 'true'
 
 ####################################
 # OLLAMA_BASE_URL
@@ -374,6 +376,11 @@ except Exception as e:
 TOOL_SERVER_CONNECTIONS = tool_server_connections
 
 OAUTH_CLIENT_TIMEOUT = os.getenv('OAUTH_CLIENT_TIMEOUT', '')
+
+# OAuth token exchange rate limiting (protects against token spraying)
+OAUTH_TOKEN_EXCHANGE_RATE_LIMIT = int(os.getenv('OAUTH_TOKEN_EXCHANGE_RATE_LIMIT', '0'))  # 0 = disabled
+OAUTH_TOKEN_EXCHANGE_RATE_LIMIT_WINDOW = int(os.getenv('OAUTH_TOKEN_EXCHANGE_RATE_LIMIT_WINDOW', '300'))
+OAUTH_TOKEN_EXCHANGE_TRUSTED_CLIENT_IDS = os.getenv('OAUTH_TOKEN_EXCHANGE_TRUSTED_CLIENT_IDS', '')
 
 ####################################
 # TERMINAL_SERVER
@@ -1041,6 +1048,22 @@ RAG_EMBEDDING_CONCURRENT_REQUESTS = int(os.getenv('RAG_EMBEDDING_CONCURRENT_REQU
 RAG_EMBEDDING_CONCURRENT_REQUESTS_FALLBACK = int(os.getenv('RAG_EMBEDDING_CONCURRENT_REQUESTS_FALLBACK', '4'))
 
 RAG_AUTO_OCR_ON_EMPTY_PDF = os.getenv('RAG_AUTO_OCR_ON_EMPTY_PDF', 'True').lower() == 'true'
+
+ENABLE_KNOWLEDGE_FILE_RETENTION = os.getenv('ENABLE_KNOWLEDGE_FILE_RETENTION', 'False').lower() == 'true'
+
+# Knowledge base file limits (per KB, admin-set globals always apply)
+KNOWLEDGE_MAX_FILE_COUNT = int(os.getenv('KNOWLEDGE_MAX_FILE_COUNT')) if os.getenv('KNOWLEDGE_MAX_FILE_COUNT') else None
+KNOWLEDGE_MAX_FILE_SIZE = int(os.getenv('KNOWLEDGE_MAX_FILE_SIZE')) if os.getenv('KNOWLEDGE_MAX_FILE_SIZE') else None
+KNOWLEDGE_MAX_UPLOAD_COUNT = (
+    int(os.getenv('KNOWLEDGE_MAX_UPLOAD_COUNT')) if os.getenv('KNOWLEDGE_MAX_UPLOAD_COUNT') else None
+)
+
+if KNOWLEDGE_MAX_UPLOAD_COUNT is not None and KNOWLEDGE_MAX_UPLOAD_COUNT <= 0:
+    raise ValueError('KNOWLEDGE_MAX_UPLOAD_COUNT must be a positive integer or unset')
+if KNOWLEDGE_MAX_FILE_COUNT is not None and KNOWLEDGE_MAX_FILE_COUNT <= 0:
+    raise ValueError('KNOWLEDGE_MAX_FILE_COUNT must be a positive integer or unset')
+if KNOWLEDGE_MAX_FILE_SIZE is not None and KNOWLEDGE_MAX_FILE_SIZE <= 0:
+    raise ValueError('KNOWLEDGE_MAX_FILE_SIZE must be a positive integer or unset')
 
 # Dead line for a single embedding HTTP call. AIOHTTP_CLIENT_TIMEOUT defaults to None
 # (wait forever), so a request the embedding server never answers leaves the file in
@@ -2156,9 +2179,7 @@ CODER_MAX_DIFF_LINES = int(os.getenv('CODER_MAX_DIFF_LINES', '4000'))
 
 # Запрещенные пути в Change Set
 CODER_BLOCKED_PATH_PATTERNS = [
-    p.strip()
-    for p in os.getenv('CODER_BLOCKED_PATHS', '.env,*.pem,secrets/*,.git/*').split(',')
-    if p.strip()
+    p.strip() for p in os.getenv('CODER_BLOCKED_PATHS', '.env,*.pem,secrets/*,.git/*').split(',') if p.strip()
 ]
 
 # Разрешенные пути GitHub-хостов (для GHE; по умолчанию только github.com)
@@ -2169,20 +2190,16 @@ CODER_ALLOWED_GITHUB_HOSTS = [
 ]
 
 # Разрешенные организации (пусто = все); поддерживаются glob-шаблоны, например "my-org", "team-*"
-CODER_ALLOWED_ORGS = [
-    o.strip()
-    for o in os.getenv('CODER_ALLOWED_ORGS', '').split(',')
-    if o.strip()
-]
+CODER_ALLOWED_ORGS = [o.strip() for o in os.getenv('CODER_ALLOWED_ORGS', '').split(',') if o.strip()]
 
 # Разрешенные репозитории (владельца/репозиторий, например: my-org/repo, или wildcard: my-org/*)
 CODER_ALLOWED_REPOS = [
     # strip quotes too: some deployers write KEY="'a/*,b/*'" and the shell (unlike
     # python-dotenv) keeps the single quotes inside the value, which silently
     # breaks fnmatch and filters every repo out of GET /coder/repos.
-    r.strip().strip("'\"")
+    r.strip().strip('\'"')
     for r in os.getenv('CODER_ALLOWED_REPOS', '').split(',')
-    if r.strip().strip("'\"")
+    if r.strip().strip('\'"')
 ]
 
 # Обязательное создание PR при экспорте (§13 — политика «только через pull request»)
@@ -2618,6 +2635,12 @@ if JWT_EXPIRES_IN == '-1':
         "⚠️  SECURITY WARNING: JWT_EXPIRES_IN is set to '-1'\n"
         '    See: https://docs.openwebui.com/reference/env-configuration\n'
     )
+
+# Feature toggles
+ENABLE_ENCRYPTED_CHANNELS = os.getenv('ENABLE_ENCRYPTED_CHANNELS', 'False').lower() == 'true'
+ENABLE_APPS = os.getenv('ENABLE_APPS', 'False').lower() == 'true'
+ENABLE_COMMENTS = os.getenv('ENABLE_COMMENTS', 'False').lower() == 'true'
+ENABLE_NOTIFICATIONS = os.getenv('ENABLE_NOTIFICATIONS', 'True').lower() == 'true'
 
 ####################################
 # OAuth config
@@ -3368,6 +3391,10 @@ DEFAULT_CONFIG = {
     'coder.retry_delay': CODER_GITHUB_RETRY_DELAY,
     'coder.timeout': CODER_GITHUB_TIMEOUT,
     'coder.audit_retention_days': CODER_AUDIT_RETENTION_DAYS,
+    'channels.encryption.enable': ENABLE_ENCRYPTED_CHANNELS,
+    'apps.enable': ENABLE_APPS,
+    'comments.enable': ENABLE_COMMENTS,
+    'notifications.enable': ENABLE_NOTIFICATIONS,
 }
 
 

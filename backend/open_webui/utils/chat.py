@@ -8,6 +8,8 @@ import uuid
 from typing import Any
 
 from fastapi import HTTPException, Request
+from starlette.responses import StreamingResponse
+
 from open_webui.env import BYPASS_MODEL_ACCESS_CONTROL, GLOBAL_LOG_LEVEL
 from open_webui.functions import generate_function_chat_completion
 from open_webui.models.functions import Functions
@@ -42,7 +44,6 @@ from open_webui.utils.telemetry.business_metrics import (
     record_llm_request,
     record_llm_usage,
 )
-from starlette.responses import StreamingResponse
 
 logging.basicConfig(stream=sys.stdout, level=GLOBAL_LOG_LEVEL)
 log = logging.getLogger(__name__)

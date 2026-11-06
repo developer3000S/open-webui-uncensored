@@ -92,6 +92,7 @@
 	import Sidebar from '../icons/Sidebar.svelte';
 	import PinnedModelList from './Sidebar/PinnedModelList.svelte';
 	import PinnedNoteList from './Sidebar/PinnedNoteList.svelte';
+	import NotificationInbox from './Sidebar/NotificationInbox.svelte';
 	import Note from '../icons/Note.svelte';
 	import Code from '../icons/Code.svelte';
 	import { slide } from 'svelte/transition';
@@ -171,6 +172,8 @@
 				return $config?.features?.enable_coder ?? false;
 			case 'playground':
 				return $user?.role === 'admin';
+			case 'studio':
+				return $config?.features?.enable_studio ?? false;
 			default:
 				return false;
 		}
@@ -190,7 +193,14 @@
 				openInNewWindow: true,
 				windowFeatures: 'width=1400,height=900,resizable=yes,scrollbars=yes'
 			},
-			playground: { label: 'Playground', href: '/playground', iconType: 'playground' }
+			playground: { label: 'Playground', href: '/playground', iconType: 'playground' },
+			studio: {
+				label: 'Studio',
+				href: '/studio?tab=generator',
+				iconType: 'studio',
+				// Studio opens as an embedded application
+				openInNewWindow: false
+			}
 		};
 		return items[id];
 	};
@@ -1019,6 +1029,10 @@
 											</svg>
 										{:else if itemId === 'playground'}
 											<Code className="size-4.5" />
+										{:else if itemId === 'coder'}
+											<Code className="size-4.5" />
+										{:else if itemId === 'studio'}
+											<Photo className="size-4.5" />
 										{/if}
 									</div>
 								</a>
@@ -1203,6 +1217,7 @@
 					</div>
 
 					<div id="pinned-menu-items-list">
+						<NotificationInbox />
 						{#each pinnedItems as itemId (itemId)}
 							{@const meta = getMenuItemMeta(itemId)}
 							{#if meta && isMenuItemVisible(itemId)}
@@ -1268,6 +1283,10 @@
 												</svg>
 											{:else if itemId === 'playground'}
 												<Code className="size-4.5" strokeWidth="2" />
+											{:else if itemId === 'coder'}
+												<Code className="size-4.5" strokeWidth="2" />
+											{:else if itemId === 'studio'}
+												<Photo className="size-4.5" strokeWidth="2" />
 											{/if}
 										</div>
 

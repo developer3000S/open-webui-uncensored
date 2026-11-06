@@ -10,6 +10,7 @@ import time
 import uuid
 
 import sqlalchemy as sa
+
 from alembic import op
 
 revision = 'c1d2e3f4a5b6'

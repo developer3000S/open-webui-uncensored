@@ -6,6 +6,16 @@ import logging
 import re
 from typing import Any
 
+from pymilvus import (
+    Collection,
+    CollectionSchema,
+    DataType,
+    FieldSchema,
+    connections,
+    utility,
+)
+from pymilvus.exceptions import MilvusException
+
 from open_webui.config import (
     MILVUS_COLLECTION_PREFIX,
     MILVUS_DB,
@@ -23,15 +33,6 @@ from open_webui.retrieval.vector.main import (
     VectorDBBase,
     VectorItem,
 )
-from pymilvus import (
-    Collection,
-    CollectionSchema,
-    DataType,
-    FieldSchema,
-    connections,
-    utility,
-)
-from pymilvus.exceptions import MilvusException
 
 log = logging.getLogger(__name__)
 

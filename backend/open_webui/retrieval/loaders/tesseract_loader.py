@@ -1,12 +1,11 @@
 import logging
 import os
 import sys
-from typing import Any
 
 import pytesseract
-from PIL import Image
-from pdf2image import convert_from_path
 from langchain_core.documents import Document
+from pdf2image import convert_from_path
+
 from open_webui.env import GLOBAL_LOG_LEVEL
 
 logging.basicConfig(stream=sys.stdout, level=GLOBAL_LOG_LEVEL)
@@ -32,15 +31,17 @@ class TesseractLoader:
                 # OCR
                 text = pytesseract.image_to_string(image, lang=self.lang).strip()
                 if text:
-                    documents.append(Document(
-                        page_content=text,
-                        metadata={
-                            'source': self.file_path,
-                            'page': i,
-                            'is_ocr': True,
-                            'engine': 'tesseract',
-                        }
-                    ))
+                    documents.append(
+                        Document(
+                            page_content=text,
+                            metadata={
+                                'source': self.file_path,
+                                'page': i,
+                                'is_ocr': True,
+                                'engine': 'tesseract',
+                            },
+                        )
+                    )
                 else:
                     # Пустая страница не добавляется
                     log.debug(f'Page {i} empty after OCR')

@@ -17,6 +17,8 @@ from fastapi.responses import (
     PlainTextResponse,
     StreamingResponse,
 )
+from pydantic import BaseModel, ConfigDict
+
 from open_webui.config import (
     CACHE_DIR,
 )
@@ -55,7 +57,6 @@ from open_webui.utils.session_pool import (
     get_session,
     stream_wrapper,
 )
-from pydantic import BaseModel, ConfigDict
 
 log = logging.getLogger(__name__)
 

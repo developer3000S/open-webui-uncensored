@@ -26,6 +26,7 @@ via ``close_session()``.
 import logging
 
 import aiohttp
+
 from open_webui.env import (
     AIOHTTP_CLIENT_TIMEOUT,
     AIOHTTP_POOL_CONNECTIONS,

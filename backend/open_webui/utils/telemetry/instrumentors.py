@@ -8,7 +8,6 @@ from aiohttp import (
     TraceRequestStartParams,
 )
 from fastapi import FastAPI, status
-from open_webui.utils.telemetry.constants import SPAN_REDIS_TYPE, SpanAttributes
 from opentelemetry.instrumentation.aiohttp_client import AioHttpClientInstrumentor
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.instrumentation.httpx import (
@@ -27,6 +26,8 @@ from redis import Redis
 from redis.cluster import RedisCluster
 from requests import PreparedRequest, Response
 from sqlalchemy import Engine
+
+from open_webui.utils.telemetry.constants import SPAN_REDIS_TYPE, SpanAttributes
 
 logger = logging.getLogger(__name__)
 

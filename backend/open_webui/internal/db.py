@@ -9,6 +9,14 @@ from datetime import UTC, datetime, timedelta
 from typing import Any, Self
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
+from sqlalchemy import Dialect, MetaData, create_engine, event, types
+from sqlalchemy.engine.url import make_url
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.pool import NullPool, QueuePool
+from sqlalchemy.sql.type_api import _T
+
 from open_webui.env import (
     DATABASE_ENABLE_IAM_TOKEN_AUTH,
     DATABASE_ENABLE_SESSION_SHARING,
@@ -26,13 +34,6 @@ from open_webui.env import (
     DATABASE_SQLITE_PRAGMA_TEMP_STORE,
     DATABASE_URL,
 )
-from sqlalchemy import Dialect, MetaData, create_engine, event, types
-from sqlalchemy.engine.url import make_url
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import scoped_session, sessionmaker
-from sqlalchemy.pool import NullPool, QueuePool
-from sqlalchemy.sql.type_api import _T
 
 log = logging.getLogger(__name__)
 

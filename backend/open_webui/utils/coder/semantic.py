@@ -29,7 +29,9 @@ _CODE_EXT = re.compile(
     r'\.(ts|tsx|js|jsx|mjs|cjs|py|go|rs|java|kt|scala|c|h|cpp|hpp|cs|rb|php|swift|lua|vue|svelte|sql|sh|bash|zsh|yaml|yml|json|toml|ini|cfg|md|txt|html|css|scss|less|xml)$',
     re.IGNORECASE,
 )
-_SKIP_DIR = re.compile(r'(^|/)(node_modules|\.git|dist|build|out|vendor|venv|__pycache__|\.next|coverage|target)/', re.IGNORECASE)
+_SKIP_DIR = re.compile(
+    r'(^|/)(node_modules|\.git|dist|build|out|vendor|venv|__pycache__|\.next|coverage|target)/', re.IGNORECASE
+)
 
 
 def is_code_path(path: str) -> bool:

@@ -2,6 +2,7 @@ import logging
 from dataclasses import dataclass
 
 import requests
+
 from open_webui.retrieval.web.main import SearchResult
 
 log = logging.getLogger(__name__)

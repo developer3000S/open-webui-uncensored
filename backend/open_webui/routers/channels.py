@@ -5,6 +5,9 @@ from typing import Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from fastapi.responses import FileResponse, Response, StreamingResponse
+from pydantic import BaseModel, field_validator
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from open_webui.constants import ERROR_MESSAGES
 from open_webui.env import STATIC_DIR
 from open_webui.events import EVENTS, publish_event
@@ -48,8 +51,6 @@ from open_webui.utils.models import (
     get_filtered_models,
 )
 from open_webui.utils.webhook import post_webhook
-from pydantic import BaseModel, field_validator
-from sqlalchemy.ext.asyncio import AsyncSession
 
 log = logging.getLogger(__name__)
 

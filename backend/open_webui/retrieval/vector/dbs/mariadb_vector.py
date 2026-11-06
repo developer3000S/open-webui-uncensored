@@ -13,6 +13,9 @@ import sys
 from contextlib import contextmanager
 from typing import Any
 
+from sqlalchemy import create_engine
+from sqlalchemy.pool import NullPool, QueuePool
+
 from open_webui.config import (
     MARIADB_VECTOR_DB_URL,
     MARIADB_VECTOR_DISTANCE_STRATEGY,
@@ -30,8 +33,6 @@ from open_webui.retrieval.vector.main import (
     VectorItem,
 )
 from open_webui.retrieval.vector.utils import process_metadata
-from sqlalchemy import create_engine
-from sqlalchemy.pool import NullPool, QueuePool
 
 log = logging.getLogger(__name__)
 

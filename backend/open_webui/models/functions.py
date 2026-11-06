@@ -5,13 +5,14 @@ from __future__ import annotations
 import logging
 import time
 
+from pydantic import BaseModel, ConfigDict
+from sqlalchemy import BigInteger, Boolean, Column, Index, String, Text, delete, select, update
+from sqlalchemy.ext.asyncio import AsyncSession
+
 # local imports
 from open_webui.internal.db import Base, JSONField, get_async_db_context
 from open_webui.models.users import UserResponse, Users
 from open_webui.utils.valves import decrypt_valves, encrypt_valves
-from pydantic import BaseModel, ConfigDict
-from sqlalchemy import BigInteger, Boolean, Column, Index, String, Text, delete, select, update
-from sqlalchemy.ext.asyncio import AsyncSession
 
 log = logging.getLogger(__name__)
 

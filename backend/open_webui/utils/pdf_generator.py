@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from fpdf import FPDF
+
 from open_webui.env import FONTS_DIR, STATIC_DIR
 from open_webui.models.chats import ChatTitleMessagesForm
 
