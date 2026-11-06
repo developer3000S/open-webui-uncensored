@@ -1051,6 +1051,20 @@ RAG_AUTO_OCR_ON_EMPTY_PDF = os.getenv('RAG_AUTO_OCR_ON_EMPTY_PDF', 'True').lower
 
 ENABLE_KNOWLEDGE_FILE_RETENTION = os.getenv('ENABLE_KNOWLEDGE_FILE_RETENTION', 'False').lower() == 'true'
 
+# Knowledge base file limits (per KB, admin-set globals always apply)
+KNOWLEDGE_MAX_FILE_COUNT = int(os.getenv('KNOWLEDGE_MAX_FILE_COUNT')) if os.getenv('KNOWLEDGE_MAX_FILE_COUNT') else None
+KNOWLEDGE_MAX_FILE_SIZE = int(os.getenv('KNOWLEDGE_MAX_FILE_SIZE')) if os.getenv('KNOWLEDGE_MAX_FILE_SIZE') else None
+KNOWLEDGE_MAX_UPLOAD_COUNT = (
+    int(os.getenv('KNOWLEDGE_MAX_UPLOAD_COUNT')) if os.getenv('KNOWLEDGE_MAX_UPLOAD_COUNT') else None
+)
+
+if KNOWLEDGE_MAX_UPLOAD_COUNT is not None and KNOWLEDGE_MAX_UPLOAD_COUNT <= 0:
+    raise ValueError('KNOWLEDGE_MAX_UPLOAD_COUNT must be a positive integer or unset')
+if KNOWLEDGE_MAX_FILE_COUNT is not None and KNOWLEDGE_MAX_FILE_COUNT <= 0:
+    raise ValueError('KNOWLEDGE_MAX_FILE_COUNT must be a positive integer or unset')
+if KNOWLEDGE_MAX_FILE_SIZE is not None and KNOWLEDGE_MAX_FILE_SIZE <= 0:
+    raise ValueError('KNOWLEDGE_MAX_FILE_SIZE must be a positive integer or unset')
+
 # Dead line for a single embedding HTTP call. AIOHTTP_CLIENT_TIMEOUT defaults to None
 # (wait forever), so a request the embedding server never answers leaves the file in
 # `processing` indefinitely. Sized for CPU-only endpoints, where one batch can legitimately
@@ -2622,6 +2636,12 @@ if JWT_EXPIRES_IN == '-1':
         '    See: https://docs.openwebui.com/reference/env-configuration\n'
     )
 
+# Feature toggles
+ENABLE_ENCRYPTED_CHANNELS = os.getenv('ENABLE_ENCRYPTED_CHANNELS', 'False').lower() == 'true'
+ENABLE_APPS = os.getenv('ENABLE_APPS', 'False').lower() == 'true'
+ENABLE_COMMENTS = os.getenv('ENABLE_COMMENTS', 'False').lower() == 'true'
+ENABLE_NOTIFICATIONS = os.getenv('ENABLE_NOTIFICATIONS', 'True').lower() == 'true'
+
 ####################################
 # OAuth config
 ####################################
@@ -3371,6 +3391,10 @@ DEFAULT_CONFIG = {
     'coder.retry_delay': CODER_GITHUB_RETRY_DELAY,
     'coder.timeout': CODER_GITHUB_TIMEOUT,
     'coder.audit_retention_days': CODER_AUDIT_RETENTION_DAYS,
+    'channels.encryption.enable': ENABLE_ENCRYPTED_CHANNELS,
+    'apps.enable': ENABLE_APPS,
+    'comments.enable': ENABLE_COMMENTS,
+    'notifications.enable': ENABLE_NOTIFICATIONS,
 }
 
 
