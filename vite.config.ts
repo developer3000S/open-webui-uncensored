@@ -31,7 +31,10 @@ export default defineConfig({
   resolve: {
     alias: {
       $lib: new URL('./src/lib', import.meta.url).pathname
-    }
+    },
+    // paneforge only exports for the "svelte" condition. Add it so Rolldown
+    // can resolve it in production builds.
+    conditions: ['svelte', 'browser', 'module', 'node', 'import', 'default']
   },
   // Отключаем статический анализ, чтобы обойти проблему с parseSync
   optimizeDeps: {

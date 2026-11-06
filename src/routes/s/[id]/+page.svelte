@@ -13,7 +13,7 @@
 	import { getChatByShareId } from '$lib/apis/chats';
 	import { getUserInfoById } from '$lib/apis/users';
 	import { getUserSettings } from '$lib/apis/users';
-import { getModels } from '$lib/apis';
+	import { getModels } from '$lib/apis';
 	import i18n from '$lib/i18n';
 
 	let selectedModels = [''];
