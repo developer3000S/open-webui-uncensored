@@ -30,7 +30,13 @@ export default defineConfig({
   // sources (which import from `$lib/...`) keep working without a rewrite.
   resolve: {
     alias: {
-      $lib: new URL('./src/lib', import.meta.url).pathname
+      $lib: new URL('./src/lib', import.meta.url).pathname,
+      // svelte-confetti only exports for the "svelte" condition; point directly
+      // to its dist so Rolldown can resolve it in production builds.
+      'svelte-confetti': new URL(
+        './node_modules/svelte-confetti/dist/index.js',
+        import.meta.url
+      ).pathname
     },
     // paneforge only exports for the "svelte" condition. Add it so Rolldown
     // can resolve it in production builds.
@@ -97,7 +103,10 @@ export default defineConfig({
     // lightningcss emits "Unknown at rule: @apply" / ":global" warnings for
     // Tailwind-style directives in .svelte <style> blocks. Switch to esbuild
     // to silence those warnings; the build result is unaffected.
-    cssMinify: 'esbuild'
+    cssMinify: 'esbuild',
+    rolldownOptions: {
+      external: ['canvas']
+    }
   },
   worker: {
     format: 'es'
