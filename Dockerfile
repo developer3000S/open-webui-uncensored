@@ -59,6 +59,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json ./
+# postinstall runs scripts/patch-exports.js, so the scripts/ directory must be
+# present before npm ci (which runs postinstall) executes.
+COPY scripts/ ./scripts/
 # `npm ci` now works again: package-lock.json contains every needed binding for
 # linux/x64/glibc (and the WASI fallback @rolldown/binding-wasm32-wasi +
 # @tailwindcss/oxide-wasm32-wasi were added to the lock file as well).
