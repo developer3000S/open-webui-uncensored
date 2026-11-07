@@ -4,7 +4,7 @@
 	import Sortable from 'sortablejs';
 
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import {
 		user,
 		chats,
@@ -40,7 +40,7 @@
 
 	// Coder is a standalone application: when the user is on /coder (or opened it
 	// via window.open('/coder?standalone=1')) the main sidebar must stay hidden.
-	$: isCoderRoute = $page.url.pathname.startsWith('/coder');
+	$: isCoderRoute = page.url.pathname.startsWith('/coder');
 
 	// Force-hide the sidebar while the Coder route is active, and prevent it from
 	// being toggled back open there (see swipe handler and template guards below).
@@ -108,7 +108,7 @@
 	import Sparkles from '../icons/Sparkles.svelte';
 
 	const BREAKPOINT = 768;
-	const DEFAULT_PINNED_ITEMS = ['notes', 'coder', 'workspace'];
+	const DEFAULT_PINNED_ITEMS = ['notes', 'coder', 'workspace', 'studio'];
 
 	let scrollTop = 0;
 
@@ -127,6 +127,7 @@
 	let pinnedModels = [];
 
 	let showPinnedModels = false;
+	let showStudioSubmenu = true;
 	let showPinnedNotes = false;
 	let showChannels = false;
 	let showFolders = false;
@@ -1299,6 +1300,50 @@
 						{/each}
 					</div>
 				</div>
+
+				{#if $config?.features?.enable_studio}
+					<Folder
+						id="sidebar-studio"
+						bind:open={showStudioSubmenu}
+						className="px-2 mt-0.5"
+						name={$i18n.t('Studio')}
+						chevron={false}
+					>
+						{#each STUDIO_NAV_ITEMS as item}
+							<a
+								href="/studio?tab={item.tab}"
+								class="grow flex items-center space-x-3 rounded-2xl px-2.5 py-2 hover:bg-gray-100 dark:hover:bg-gray-900 transition"
+								on:click={itemClickHandler}
+								draggable="false"
+								aria-label={$i18n.t(item.label)}
+							>
+								<div class="self-center">
+									{#if item.iconType === 'photo'}
+										<Photo className="size-4.5" strokeWidth="2" />
+									{:else if item.iconType === 'chat'}
+										<ChatBubble className="size-4.5" strokeWidth="2" />
+									{:else if item.iconType === 'agents'}
+										<Users className="size-4.5" strokeWidth="2" />
+									{:else if item.iconType === 'mic'}
+										<Mic className="size-4.5" strokeWidth="2" />
+									{:else if item.iconType === 'tts'}
+										<SoundHigh className="size-4.5" strokeWidth="2" />
+									{:else if item.iconType === 'models'}
+										<Code className="size-4.5" strokeWidth="2" />
+									{:else if item.iconType === 'settings'}
+										<Settings className="size-4.5" strokeWidth="2" />
+									{/if}
+								</div>
+								<div class="flex self-center translate-y-[0.5px]">
+									<div class="self-center text-sm font-primary">{$i18n.t(item.label)}</div>
+								</div>
+							</a>
+							{#if item !== STUDIO_NAV_ITEMS[STUDIO_NAV_ITEMS.length - 1]}
+								<hr class="border-gray-100/40 dark:border-gray-800/10 my-1.5 w-full" />
+							{/if}
+						{/each}
+					</Folder>
+				{/if}
 
 				{#if ($models ?? []).length > 0 && (($settings?.pinnedModels ?? []).length > 0 || $config?.default_pinned_models)}
 					<Folder

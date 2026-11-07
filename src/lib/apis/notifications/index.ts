@@ -1,8 +1,6 @@
 import { WEBUI_API_BASE_URL } from '$lib/constants';
 
 export const getNotifications = async (token: string, unreadOnly = false, limit = 50) => {
-	let error: any = null;
-
 	const params = new URLSearchParams();
 	if (unreadOnly) params.set('unread_only', 'true');
 	params.set('limit', String(limit));
@@ -14,27 +12,21 @@ export const getNotifications = async (token: string, unreadOnly = false, limit 
 			'Content-Type': 'application/json',
 			authorization: `Bearer ${token}`
 		}
-	})
-		.then(async (res) => {
-			if (!res.ok) throw await res.json();
-			return res.json();
-		})
-		.catch((err) => {
-			error = err;
-			console.error(err);
-			return null;
-		});
+	});
 
-	if (error) {
-		throw error;
+	if (!res.ok) {
+		const contentType = res.headers.get('content-type');
+		if (contentType && contentType.includes('application/json')) {
+			throw await res.json();
+		}
+		// Для HTML или других типов контента выбрасываем общую ошибку
+		throw { message: `Server returned ${res.status} ${res.statusText}`, status: res.status };
 	}
 
-	return res;
+	return await res.json();
 };
 
 export const getUnreadNotificationCount = async (token: string) => {
-	let error: any = null;
-
 	const res = await fetch(`${WEBUI_API_BASE_URL}/notifications/unread-count`, {
 		method: 'GET',
 		headers: {
@@ -42,27 +34,20 @@ export const getUnreadNotificationCount = async (token: string) => {
 			'Content-Type': 'application/json',
 			authorization: `Bearer ${token}`
 		}
-	})
-		.then(async (res) => {
-			if (!res.ok) throw await res.json();
-			return res.json();
-		})
-		.catch((err) => {
-			error = err;
-			console.error(err);
-			return null;
-		});
+	});
 
-	if (error) {
-		throw error;
+	if (!res.ok) {
+		const contentType = res.headers.get('content-type');
+		if (contentType && contentType.includes('application/json')) {
+			throw await res.json();
+		}
+		throw { message: `Server returned ${res.status} ${res.statusText}`, status: res.status };
 	}
 
-	return res;
+	return await res.json();
 };
 
 export const markNotificationRead = async (token: string, notificationId: string) => {
-	let error: any = null;
-
 	const res = await fetch(`${WEBUI_API_BASE_URL}/notifications/mark-read`, {
 		method: 'POST',
 		headers: {
@@ -71,27 +56,20 @@ export const markNotificationRead = async (token: string, notificationId: string
 			authorization: `Bearer ${token}`
 		},
 		body: JSON.stringify({ notification_id: notificationId })
-	})
-		.then(async (res) => {
-			if (!res.ok) throw await res.json();
-			return res.json();
-		})
-		.catch((err) => {
-			error = err;
-			console.error(err);
-			return null;
-		});
+	});
 
-	if (error) {
-		throw error;
+	if (!res.ok) {
+		const contentType = res.headers.get('content-type');
+		if (contentType && contentType.includes('application/json')) {
+			throw await res.json();
+		}
+		throw { message: `Server returned ${res.status} ${res.statusText}`, status: res.status };
 	}
 
-	return res;
+	return await res.json();
 };
 
 export const markAllNotificationsRead = async (token: string) => {
-	let error: any = null;
-
 	const res = await fetch(`${WEBUI_API_BASE_URL}/notifications/mark-all-read`, {
 		method: 'POST',
 		headers: {
@@ -99,22 +77,17 @@ export const markAllNotificationsRead = async (token: string) => {
 			'Content-Type': 'application/json',
 			authorization: `Bearer ${token}`
 		}
-	})
-		.then(async (res) => {
-			if (!res.ok) throw await res.json();
-			return res.json();
-		})
-		.catch((err) => {
-			error = err;
-			console.error(err);
-			return null;
-		});
+	});
 
-	if (error) {
-		throw error;
+	if (!res.ok) {
+		const contentType = res.headers.get('content-type');
+		if (contentType && contentType.includes('application/json')) {
+			throw await res.json();
+		}
+		throw { message: `Server returned ${res.status} ${res.statusText}`, status: res.status };
 	}
 
-	return res;
+	return await res.json();
 };
 
 export const createNotification = async (
