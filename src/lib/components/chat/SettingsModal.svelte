@@ -485,6 +485,8 @@
 	let search = '';
 	let searchDebounceTimeout: ReturnType<typeof setTimeout> | undefined;
 
+        $: availableSettings = getAvailableSettings();
+        $: setFilteredSettings();
 	const getAvailableSettings = () => {
 		return allSettings.filter((tab) => {
 			if (tab.id === 'connections') {
@@ -580,16 +582,9 @@
 		}
 	};
 
-	onMount(() => {
-		availableSettings = getAvailableSettings();
-		setFilteredSettings();
-
-		config.subscribe((configData) => {
-			availableSettings = getAvailableSettings();
-			setFilteredSettings();
-		});
-	});
-</script>
+        onMount(() => {
+                addScrollListener();
+        });
 
 <Modal size="2xl" bind:show>
 	<div class="text-gray-700 dark:text-gray-100 mx-1">

@@ -353,19 +353,9 @@
 		// Persist showControls: track open/close state separately from saved size
 		// chatControlsSize always retains the last width for openPane()
 		await showControls.set(!$mobile ? localStorage.showControls === 'true' : false);
-		showControls.subscribe((value) => {
-			localStorage.showControls = value ? 'true' : 'false';
-		});
 
 		// Persist selectedTerminalId across page loads
 		selectedTerminalId.set(localStorage.selectedTerminalId ?? null);
-		selectedTerminalId.subscribe((value) => {
-			if (value === null) {
-				delete localStorage.selectedTerminalId;
-			} else {
-				localStorage.selectedTerminalId = value;
-			}
-		});
 
 		await tick();
 
@@ -380,6 +370,10 @@
 			};
 		});
 	};
+
+                $: localStorage.showControls = $showControls ? 'true' : 'false';
+                $: if ($selectedTerminalId !== undefined) { if ($selectedTerminalId === null) { delete localStorage.selectedTerminalId; } else { localStorage.selectedTerminalId = $selectedTerminalId; } }
+
 </script>
 
 <SettingsModal bind:show={$showSettings} />
