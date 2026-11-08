@@ -156,9 +156,7 @@ async def delete_comment(
         )
 
     # Delete all replies first
-    await db.execute(
-        Comment.__table__.delete().where(Comment.parent_id == comment_id)
-    )
+    await db.execute(Comment.__table__.delete().where(Comment.parent_id == comment_id))
 
     await db.execute(Comment.__table__.delete().where(Comment.id == comment_id))
     await db.commit()

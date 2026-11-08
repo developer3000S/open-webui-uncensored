@@ -17,7 +17,9 @@ class Comment(Base):
 
     id = Column(Text, primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = Column(Text, nullable=False, index=True)
-    object_type = Column(Text, nullable=False, index=True)  # 'chat', 'note', 'model', 'prompt', 'skill', 'tool', 'knowledge'
+    object_type = Column(
+        Text, nullable=False, index=True
+    )  # 'chat', 'note', 'model', 'prompt', 'skill', 'tool', 'knowledge'
     object_id = Column(Text, nullable=False, index=True)
     parent_id = Column(Text, nullable=True, index=True)  # For threaded replies
     message_id = Column(Text, nullable=True, index=True)  # Chat message ID if applicable

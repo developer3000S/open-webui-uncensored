@@ -52,11 +52,7 @@ async def get_unread_count(
     db: AsyncSession = Depends(get_async_session),
 ):
     """Get count of unread notifications."""
-    result = await db.execute(
-        select(Notification).where(
-            Notification.user_id == user.id, Notification.read == 0
-        )
-    )
+    result = await db.execute(select(Notification).where(Notification.user_id == user.id, Notification.read == 0))
     count = len(result.scalars().all())
     return {'count': count}
 
@@ -125,9 +121,7 @@ async def mark_all_notifications_read(
 ):
     """Mark all notifications as read."""
     await db.execute(
-        Notification.__table__.update()
-        .where(Notification.user_id == user.id, Notification.read == 0)
-        .values(read=1)
+        Notification.__table__.update().where(Notification.user_id == user.id, Notification.read == 0).values(read=1)
     )
     await db.commit()
 

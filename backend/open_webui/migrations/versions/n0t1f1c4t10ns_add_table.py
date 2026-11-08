@@ -5,9 +5,8 @@ Revises: d4e5f6a7b8c9
 Create Date: 2026-11-06
 """
 
-import time
-
 import sqlalchemy as sa
+
 from alembic import op
 
 revision: str = 'n0t1f1c4t10ns_add_table'

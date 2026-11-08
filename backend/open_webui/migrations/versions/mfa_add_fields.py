@@ -6,6 +6,7 @@ Create Date: 2026-11-06
 """
 
 import sqlalchemy as sa
+
 from alembic import op
 
 revision: str = 'mfa_add_fields'
