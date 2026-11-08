@@ -143,28 +143,21 @@
 
 	onMount(() => {
 		drawFlow(layoutDirection);
-
-		nodesInitialized.subscribe(async (initialized: any) => {
-			if (initialized) {
-				await tick();
-				const res = await fitView({ nodes: [{ id: history.currentId }] });
-			}
-		});
-
-		width.subscribe((value) => {
-			if (value) {
-				// fitView();
-				fitView({ nodes: [{ id: history.currentId }] });
-			}
-		});
-
-		height.subscribe((value) => {
-			if (value) {
-				// fitView();
-				fitView({ nodes: [{ id: history.currentId }] });
-			}
-		});
 	});
+
+	$: if ($nodesInitialized) {
+		(async () => {
+			await tick();
+			await fitView({ nodes: [{ id: history.currentId }] });
+		})();
+	}
+
+	$: if ($width || $height) {
+		(async () => {
+			await tick();
+			await fitView({ nodes: [{ id: history.currentId }] });
+		})();
+	}
 
 	onDestroy(() => {
 		console.log('Overview destroyed');

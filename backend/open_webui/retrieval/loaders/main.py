@@ -714,30 +714,25 @@ class Loader:
 
                     loader = UnstructuredWordDocumentLoader(file_path)
                 except ImportError:
-                    # Fallback: Use docx2txt which can read .doc files (though with limited formatting)
-                    try:
-                        import docx2txt
-
-                        text = docx2txt.process(file_path)
-                        loader = SimpleTextLoader(text, file_path)
-                    except ImportError:
-                        # Last resort: plain text loading
-                        loader = TextLoader(file_path, encoding=self._detect_text_encoding(file_path))
+                    # Fallback: Use Tika if configured
+                    tika_url = self.kwargs.get('TIKA_SERVER_URL')
+                    if tika_url:
+                        loader = TikaLoader(
+                            url=tika_url,
+                            file_path=file_path,
+                            mime_type='application/msword',
+                        )
+                    else:
+                        raise ImportError(
+                            "Processing .doc files requires the 'unstructured' package or Tika server. "
+                            'Install with: pip install unstructured, or set Tika server URL.'
+                        )
             elif file_content_type in [
                 'application/vnd.ms-excel',
                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             ] or file_ext in ['xls', 'xlsx']:
-                try:
-                    from langchain_community.document_loaders import UnstructuredExcelLoader
-
-                    loader = UnstructuredExcelLoader(file_path)
-                except ImportError:
-                    log.warning(
-                        "The 'unstructured' package is not installed. "
-                        'Falling back to pandas for Excel file loading. '
-                        'Install unstructured for better results: pip install unstructured'
-                    )
-                    loader = ExcelLoader(file_path)
+                # Always use ExcelLoader to ensure ALL sheets are loaded
+                loader = ExcelLoader(file_path)
             elif file_content_type in [
                 'application/vnd.ms-powerpoint',
                 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
