@@ -40,7 +40,7 @@
 
 	// Coder is a standalone application: when the user is on /coder (or opened it
 	// via window.open('/coder?standalone=1')) the main sidebar must stay hidden.
-	$: isCoderRoute = page.url.pathname.startsWith('/coder');
+	$: isCoderRoute = $page.url.pathname.startsWith('/coder');
 
 	// Force-hide the sidebar while the Coder route is active, and prevent it from
 	// being toggled back open there (see swipe handler and template guards below).

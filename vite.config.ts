@@ -1,5 +1,6 @@
 import adapter from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
+import tailwindcss from '@tailwindcss/vite';
 import * as child_process from 'node:child_process';
 import fs from 'node:fs';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
@@ -48,14 +49,8 @@ export default defineConfig({
   },
   // Suppress Rolldown "Module externalized for browser compatibility" warnings
   // for Node.js builtins imported by pyodide, kokoro-js, sharp, jspdf, etc.
-  // These are expected — they are server-side modules that stay external.
-  onwarn: (warning, defaultHandler) => {
-    if (warning.message && warning.message.includes('externalized for browser compatibility')) {
-      return;
-    }
-    defaultHandler(warning);
-  },
   plugins: [
+    tailwindcss(),
     sveltekit({
       // Consult https://kit.svelte.dev/docs/integrations#preprocessors
       // for more information about preprocessors
@@ -109,6 +104,9 @@ export default defineConfig({
   },
   build: {
     sourcemap: true,
+    // Raise the chunk-size warning threshold: large shared chunks are expected
+    // for this app and code-splitting would hurt initial-load performance.
+    chunkSizeWarningLimit: 1000,
     // lightningcss emits "Unknown at rule: @apply" / ":global" warnings for
     // Tailwind-style directives in .svelte <style> blocks. Switch to esbuild
     // to silence those warnings; the build result is unaffected.

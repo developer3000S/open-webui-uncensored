@@ -74,7 +74,7 @@ class User(Base):  # identity & profile
 
     # MFA (TOTP)
     mfa_secret = Column(Text, nullable=True)  # encrypted TOTP secret
-    mfa_enabled = Column(BigInteger, default=0)  # 0 = disabled, 1 = enabled
+    mfa_enabled = Column(BigInteger, default=0, server_default='0')  # 0 = disabled, 1 = enabled
     mfa_backup_codes = Column(JSON, nullable=True)  # list of hashed backup codes
 
     # Timestamps (epoch seconds)

@@ -660,7 +660,7 @@ select {
 	color: #b4b4b4;
 }
 
-:global(.dark) .shimmer {
+.dark .shimmer {
 	background: linear-gradient(
 		110deg,
 		#9a9a9a 0%,

@@ -46,28 +46,3 @@
 		<span class={selected ? '' : 'text-gray-500 dark:text-gray-400'}>{item.label}</span>
 	</svelte:fragment>
 </Select>
-
-<Select
-	bind:this={selectComponent}
-	bind:value
-	bind:open
-	{items}
-	{placeholder}
-	{align}
-	triggerClass={className
-		? className
-		: 'flex shrink-0 items-center gap-2 bg-transparent px-0.5 text-sm placeholder-gray-400 outline-hidden focus:outline-hidden'}
-	itemClass="flex w-full gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl"
-	onChange={(v) => {
-		onChange(v);
-	}}
->
-	<svelte:fragment slot="trigger" let:selectedLabel>
-		{selectedLabel}
-		<ChevronDown className=" size-3" strokeWidth="2.5" />
-	</svelte:fragment>
-
-	<svelte:fragment slot="item" let:item let:selected>
-		<span class={selected ? '' : 'text-gray-500 dark:text-gray-400'}>{item.label}</span>
-	</svelte:fragment>
-</Select>

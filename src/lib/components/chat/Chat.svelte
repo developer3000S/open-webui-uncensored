@@ -7,8 +7,8 @@
 	import { fade } from 'svelte/transition';
 	const i18n: Writable<i18nType> = getContext<Writable<i18nType>>('i18n');
 
-	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { goto, afterNavigate } from '$app/navigation';
+	import { page } from '$app/state';
 
 	import { get, type Unsubscriber, type Writable } from 'svelte/store';
 	import type { i18n as i18nType } from 'i18next';
@@ -951,15 +951,6 @@
 			selectedTerminalId.set(null);
 		}
 
-		const pageSubscribe = page.subscribe(async (p) => {
-			if (p.url.pathname === '/') {
-				await tick();
-				initNewChat();
-			}
-
-			stopAudio();
-		});
-
 		const showControlsSubscribe = showControls.subscribe(async (value) => {
 			await tick();
 			if (controlPane && !$mobile) {
@@ -1040,7 +1031,6 @@
 				if (chatIdProp && !$temporaryChatEnabled) {
 					updateLastReadAt(chatIdProp);
 				}
-				pageSubscribe();
 				showControlsSubscribe();
 				selectedFolderSubscribe();
 				window.removeEventListener('message', onMessageHandler);
@@ -1053,6 +1043,15 @@
 				console.error(e);
 			}
 		};
+	});
+
+	afterNavigate(async (navigation) => {
+		if (navigation.to?.url.pathname === '/') {
+			await tick();
+			initNewChat();
+		}
+
+		stopAudio();
 	});
 
 	// File upload functions
@@ -1378,10 +1377,10 @@
 
 		const defaultModels = $config?.default_models ? $config?.default_models.split(',') : [];
 
-		if ($page.url.searchParams.get('models') || $page.url.searchParams.get('model')) {
+		if (page.url.searchParams.get('models') || page.url.searchParams.get('model')) {
 			const urlModels = (
-				$page.url.searchParams.get('models') ||
-				$page.url.searchParams.get('model') ||
+				page.url.searchParams.get('models') ||
+				page.url.searchParams.get('model') ||
 				''
 			)?.split(',');
 
@@ -1462,7 +1461,7 @@
 		await showCallOverlay.set(false);
 		await showArtifacts.set(false);
 
-		if ($page.url.pathname.includes('/c/')) {
+		if (page.url.pathname.includes('/c/')) {
 			window.history.replaceState(window.history.state, '', `/`);
 		}
 
@@ -1482,34 +1481,34 @@
 		taskIds = null;
 		chatTasks = [];
 
-		if ($page.url.searchParams.get('youtube')) {
-			await uploadWeb(`https://www.youtube.com/watch?v=${$page.url.searchParams.get('youtube')}`);
+		if (page.url.searchParams.get('youtube')) {
+			await uploadWeb(`https://www.youtube.com/watch?v=${page.url.searchParams.get('youtube')}`);
 		}
 
-		if ($page.url.searchParams.get('load-url')) {
-			await uploadWeb($page.url.searchParams.get('load-url'));
+		if (page.url.searchParams.get('load-url')) {
+			await uploadWeb(page.url.searchParams.get('load-url'));
 		}
 
-		if ($page.url.searchParams.get('web-search') === 'true') {
+		if (page.url.searchParams.get('web-search') === 'true') {
 			webSearchEnabled = true;
 		}
 
-		if ($page.url.searchParams.get('image-generation') === 'true') {
+		if (page.url.searchParams.get('image-generation') === 'true') {
 			imageGenerationEnabled = true;
 		}
 
-		if ($page.url.searchParams.get('code-interpreter') === 'true') {
+		if (page.url.searchParams.get('code-interpreter') === 'true') {
 			codeInterpreterEnabled = true;
 		}
 
-		if ($page.url.searchParams.get('tools')) {
-			selectedToolIds = $page.url.searchParams
+		if (page.url.searchParams.get('tools')) {
+			selectedToolIds = page.url.searchParams
 				.get('tools')
 				?.split(',')
 				.map((id) => id.trim())
 				.filter((id) => id);
-		} else if ($page.url.searchParams.get('tool-ids')) {
-			selectedToolIds = $page.url.searchParams
+		} else if (page.url.searchParams.get('tool-ids')) {
+			selectedToolIds = page.url.searchParams
 				.get('tool-ids')
 				?.split(',')
 				.map((id) => id.trim())
@@ -1525,7 +1524,7 @@
 			}
 		}
 
-		if ($page.url.searchParams.get('call') === 'true') {
+		if (page.url.searchParams.get('call') === 'true') {
 			showCallOverlay.set(true);
 			showControls.set(true);
 		}
@@ -1569,12 +1568,12 @@
 					submitHandler(query || '');
 				}
 			}
-		} else if ($page.url.searchParams.get('q')) {
-			const q = $page.url.searchParams.get('q') ?? '';
+		} else if (page.url.searchParams.get('q')) {
+			const q = page.url.searchParams.get('q') ?? '';
 			messageInput?.setText(q);
 
 			if (q) {
-				if (($page.url.searchParams.get('submit') ?? 'true') === 'true') {
+				if ((page.url.searchParams.get('submit') ?? 'true') === 'true') {
 					await tick();
 					submitHandler(q);
 				}

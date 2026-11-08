@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { get, type Writable } from 'svelte/store';
 	import { tick } from 'svelte';
@@ -23,7 +23,7 @@
 
 	$: messagesList = createMessagesList(history, history.currentId);
 
-	$: if ($page.params.id) {
+	$: if (page.params.id) {
 		(async () => {
 			if (await loadSharedChat()) {
 				await tick();
@@ -46,7 +46,7 @@
 				$config?.features?.enable_direct_connections ? $settings?.directConnections || {} : null
 			)
 		);
-		await chatId.set($page.params.id);
+		await chatId.set(page.params.id);
 		chats.set(
 			await getChatByShareId(localStorage.token, $chatId).catch(async (error: any) => {
 				await goto('/');

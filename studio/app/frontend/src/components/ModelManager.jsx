@@ -531,6 +531,9 @@ function ModelManager({
   useEffect(() => {
     let cancelled = false;
     const updateBackendInfo = async () => {
+      // Skip polling if page is not visible to reduce unnecessary network requests
+      if (document.hidden) return;
+
       try {
         const [sdStatus, llmStatus, speechStatus, ttsStatus] = await Promise.all([
           getBackendStatus(),

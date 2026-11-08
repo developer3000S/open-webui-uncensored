@@ -98,19 +98,3 @@
 		/>
 	{/key}
 {/if}
-
-{#if mounted}
-	{#key tool?.content}
-		<ToolkitEditor
-			id={tool?.id ?? ''}
-			name={tool?.name ?? ''}
-			meta={tool?.meta ?? { description: '' }}
-			content={tool?.content ?? ''}
-			accessGrants={tool?.access_grants !== undefined ? tool.access_grants : []}
-			{clone}
-			onSave={(value: any) => {
-				saveHandler(value);
-			}}
-		/>
-	{/key}
-{/if}

@@ -48,28 +48,3 @@
 		</div>
 	</svelte:fragment>
 </Select>
-
-<Select
-	bind:value
-	{items}
-	{placeholder}
-	triggerClass="relative w-full flex items-center gap-0.5 px-2.5 py-1.5 bg-gray-50 dark:bg-gray-850 rounded-xl"
-	labelClass="inline-flex h-input px-0.5 w-full outline-hidden bg-transparent truncate placeholder-gray-400 focus:outline-hidden"
-	onChange={() => onChange(value)}
->
-	<svelte:fragment slot="trigger" let:selectedLabel>
-		<span
-			class="inline-flex h-input px-0.5 w-full outline-hidden bg-transparent truncate placeholder-gray-400 focus:outline-hidden"
-		>
-			{selectedLabel}
-		</span>
-		<ChevronDown className="size-3.5" strokeWidth="2.5" />
-	</svelte:fragment>
-
-	<svelte:fragment slot="item" let:item let:selected>
-		{item.label}
-		<div class="ml-auto {selected ? '' : 'invisible'}">
-			<Check />
-		</div>
-	</svelte:fragment>
-</Select>

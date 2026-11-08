@@ -93,32 +93,3 @@
 		{/each}
 	</div>
 </div>
-
-<div>
-	<div class="flex w-full justify-between mb-1">
-		<div class="self-center text-xs font-medium text-gray-500">{$i18n.t('Builtin Tools')}</div>
-	</div>
-	<div class="flex items-center mt-2 flex-wrap">
-		{#each allTools as tool}
-			<div class="flex items-center gap-2 mr-3">
-				<Checkbox
-					state={builtinTools[tool] !== false ? 'checked' : 'unchecked'}
-					on:change={(e) => {
-						if (e.detail === 'checked') {
-							delete builtinTools[tool];
-						} else {
-							builtinTools[tool] = false;
-						}
-						builtinTools = builtinTools;
-					}}
-				/>
-
-				<div class="py-0.5 text-sm">
-					<Tooltip content={marked.parse(toolLabels[tool].description)}>
-						{$i18n.t(toolLabels[tool].label)}
-					</Tooltip>
-				</div>
-			</div>
-		{/each}
-	</div>
-</div>

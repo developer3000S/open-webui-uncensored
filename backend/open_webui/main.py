@@ -214,7 +214,6 @@ from open_webui.utils import logger
 from open_webui.utils.access_control import has_permission
 from open_webui.utils.actions import chat_action as chat_action_handler
 from open_webui.utils.asgi_middleware import (
-    AppHTTPMiddleware,
     AuthTokenMiddleware,
     CommitSessionMiddleware,
     RedirectMiddleware,
@@ -762,7 +761,6 @@ if ENABLE_COMPRESSION_MIDDLEWARE:
 # `terminate_force_close` tracebacks under aiosqlite and as random
 # CancelledError storms across the request path. See
 # `open_webui.utils.asgi_middleware` for the rationale.
-app.add_middleware(AppHTTPMiddleware)
 app.add_middleware(RedirectMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(CommitSessionMiddleware)

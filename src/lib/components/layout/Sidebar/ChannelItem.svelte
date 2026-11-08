@@ -5,7 +5,7 @@
 
 	import { toast } from 'svelte-sonner';
 	import type { Writable } from 'svelte/store';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { channels, mobile, showSidebar, user } from '$lib/stores';
 	import { getUserActiveStatusById } from '$lib/apis/users';
 	import { updateChannelById, updateChannelMemberActiveStatusById } from '$lib/apis/channels';
@@ -75,7 +75,7 @@
 <div
 	id="sidebar-channel-item"
 	bind:this={itemElement}
-	class=" w-full {className} rounded-xl flex relative group hover:bg-gray-100 dark:hover:bg-gray-900 {$page
+	class=" w-full {className} rounded-xl flex relative group hover:bg-gray-100 dark:hover:bg-gray-900 {page
 		.url.pathname === `/channels/${channel.id}`
 		? 'bg-gray-100 dark:bg-gray-900 selected'
 		: ''} {channel?.type === 'dm' ? 'px-1 py-[3px]' : 'p-1'}  {channel?.unread_count > 0

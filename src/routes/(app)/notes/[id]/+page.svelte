@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { showSidebar } from '$lib/stores';
 
 	import dayjs from '$lib/dayjs';
@@ -23,6 +23,6 @@
 		id="note-container"
 		class="w-full h-full {$showSidebar ? 'md:max-w-[calc(100%-var(--sidebar-width))]' : ''}"
 	>
-		<NoteEditor id={$page.params.id} />
+		<NoteEditor id={page.params.id} />
 	</div>
 {/if}

@@ -99,38 +99,3 @@
 		</button>
 	{/each}
 {/if}
-
-{#if filteredItems.length > 0}
-	<div class="px-2 text-xs text-gray-500 py-1">
-		{$i18n.t('Emojis')}
-	</div>
-
-	{#each filteredItems as emoji, emojiIdx}
-		<button
-			class="px-2.5 py-1.5 rounded-xl w-full text-left {emojiIdx === selectedIdx
-				? 'bg-gray-50 dark:bg-gray-800 selected-command-option-button'
-				: ''}"
-			type="button"
-			on:click={() => {
-				onSelect({ type: 'emoji', data: emoji });
-			}}
-			on:mousemove={() => {
-				selectedIdx = emojiIdx;
-			}}
-			on:focus={() => {}}
-			data-selected={emojiIdx === selectedIdx}
-		>
-			<div class="flex items-center gap-2 text-black dark:text-gray-100">
-				<img
-					src="{WEBUI_BASE_URL}/assets/emojis/{emoji.name.toLowerCase()}.svg"
-					alt={emoji.name}
-					class="size-5 flex-shrink-0"
-					loading="lazy"
-				/>
-				<div class="truncate text-sm">
-					:{emoji.shortCodes[0]}:
-				</div>
-			</div>
-		</button>
-	{/each}
-{/if}

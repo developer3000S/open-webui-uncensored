@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { user } from '$lib/stores';
 	import i18n from '$lib/i18n';
 	import { WEBUI_NAME } from '$lib/stores';

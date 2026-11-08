@@ -23,7 +23,7 @@ def upgrade():
         op.add_column('user', sa.Column('mfa_secret', sa.Text(), nullable=True))
 
     if 'mfa_enabled' not in columns:
-        op.add_column('user', sa.Column('mfa_enabled', sa.BigInteger(), nullable=False, default=0))
+        op.add_column('user', sa.Column('mfa_enabled', sa.BigInteger(), nullable=False, server_default='0'))
 
     if 'mfa_backup_codes' not in columns:
         op.add_column('user', sa.Column('mfa_backup_codes', sa.JSON(), nullable=True))

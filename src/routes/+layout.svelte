@@ -43,7 +43,7 @@
 	} from '$lib/stores';
 	import { getFileContentById } from '$lib/apis/files';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { beforeNavigate } from '$app/navigation';
 	import { updated } from '$app/state';
 
@@ -110,6 +110,21 @@
 	setContext('i18n', i18n);
 
 	const bc = new BroadcastChannel('active-tab-channel');
+
+	// Apply theme globally
+	$: {
+		const themes = ['dark', 'light', 'oled-dark'];
+		let themeToApply = $theme === 'oled-dark' ? 'dark' : $theme === 'her' ? 'light' : $theme;
+		if ($theme === 'system') {
+			themeToApply = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+		}
+		themes
+			.filter((e) => e !== themeToApply)
+			.forEach((e) => {
+				e.split(' ').forEach((cls) => document.documentElement.classList.remove(cls));
+			});
+		themeToApply.split(' ').forEach((cls) => document.documentElement.classList.add(cls));
+	}
 
 	let loaded = false;
 	let tokenTimer = null;
@@ -910,110 +925,131 @@
 	};
 
 	const init = async () => {
-		await initI18n();
+		try {
+			await initI18n();
 
-		// Set up socket connection
-		await setupSocket(true);
-
-		// Set up user
-		const token = localStorage.token;
-		if (token) {
-			const res = await getSessionUser(token);
-			if (res) {
-				user.set(res);
-				await getUserSettings(token).then((settings) => settings && settings.set(settings));
-				await getChannels(token).then((channels) => channels && channels.set(channels));
-				await getChatList(token).then((chats) => chats && chats.set(chats));
-				await getAllTags(token).then((tags) => tags && tags.set(tags));
-				await getModels(
-					token,
-					$config?.features?.enable_direct_connections
-						? ($settings?.directConnections ?? null)
-						: null
-				).then((models) => models && models.set(models));
+			// Load backend config before rendering so feature flags are available
+			if ($config === undefined) {
+				await getBackendConfig()
+					.then((res) => {
+						if (res) config.set(res);
+					})
+					.catch(() => {});
 			}
-		}
 
-		// Auto-show SyncStatsModal when opened with ?sync=true (from community)
-		if (
-			(window.opener ?? false) &&
-			new URLSearchParams(window.location.search).get('sync') === 'true' &&
-			($config?.features?.enable_community_sharing ?? false)
-		) {
-			showSyncStatsModal = true;
-		}
+			// Set up socket connection
+			await setupSocket(true);
 
-		// Set up event listeners
-		window.addEventListener('resize', onResize);
-		window.addEventListener('message', windowMessageEventHandler);
-		document.addEventListener('touchstart', touchstartHandler);
-		document.addEventListener('touchmove', touchmoveHandler);
-		document.addEventListener('touchend', touchendHandler);
-		document.addEventListener('visibilitychange', handleVisibilityChange);
-
-		// Set up text scale
-		setTextScale();
-
-		// Set up mobile detection
-		mobile.set(window.innerWidth < BREAKPOINT);
-
-		// Set up theme
-		const savedTheme = localStorage.getItem('theme');
-		if (savedTheme) {
-			theme.set(savedTheme);
-		} else {
-			const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-			theme.set(prefersDark ? 'dark' : 'light');
-		}
-
-		// Set up timezone
-		const timezone = getUserTimezone();
-		if (timezone) {
-			await updateUserTimezone(localStorage.token, timezone);
-		}
-
-		// Set up token expiry check
-		if (token) {
-			tokenTimer = setInterval(checkTokenExpiry, 60000);
-		}
-
-		// Set up chat event handler
-		$socket?.on('chat:event', chatEventHandler);
-
-		// Set up channel event handler
-		$socket?.on('channel:event', channelEventHandler);
-
-		// Set up desktop event handler
-		window.electronAPI?.addEventListener('message', desktopEventHandler);
-
-		// Set up window focus/blur events
-		window.addEventListener('focus', () => {
-			if ($socket?.connected) {
-				$socket.emit('user-focus');
+			// Set up user
+			const token = localStorage.token;
+			if (token) {
+				try {
+					const res = await getSessionUser(token);
+					if (res) {
+						user.set(res);
+						await getUserSettings(token).then((settingsData) => settingsData && settings.set(settingsData));
+						await getChannels(token).then((channelsData) => channelsData && channels.set(channelsData));
+						await getChatList(token).then((chatsData) => chatsData && chats.set(chatsData));
+						await getAllTags(token).then((tagsData) => tagsData && tags.set(tagsData));
+						await getModels(
+							token,
+							$config?.features?.enable_direct_connections
+								? ($settings?.directConnections ?? null)
+								: null
+						).then((modelsData) => modelsData && models.set(modelsData));
+					}
+				} catch (error) {
+					// Only clear token if we got an unauthorized error (401)
+					if (error?.detail?.includes('Unauthorized') || error?.status === 401) {
+						user.set(undefined);
+						localStorage.removeItem('token');
+					} else {
+						console.error('Failed to load user:', error);
+					}
+				}
 			}
-		});
 
-		window.addEventListener('blur', () => {
-			if ($socket?.connected) {
-				$socket.emit('user-blur');
+			// Auto-show SyncStatsModal when opened with ?sync=true (from community)
+			if (
+				(window.opener ?? false) &&
+				new URLSearchParams(window.location.search).get('sync') === 'true' &&
+				($config?.features?.enable_community_sharing ?? false)
+			) {
+				showSyncStatsModal = true;
 			}
-		});
 
-		// Set up window close event
-		window.addEventListener('beforeunload', async () => {
-			if ($socket?.connected) {
-				await $socket.emit('user-leave');
+			// Set up event listeners
+			window.addEventListener('resize', onResize);
+			window.addEventListener('message', windowMessageEventHandler);
+			document.addEventListener('touchstart', touchstartHandler);
+			document.addEventListener('touchmove', touchmoveHandler);
+			document.addEventListener('touchend', touchendHandler);
+			document.addEventListener('visibilitychange', handleVisibilityChange);
+
+			// Set up text scale
+			setTextScale();
+
+			// Set up mobile detection
+			mobile.set(window.innerWidth < BREAKPOINT);
+
+			// Set up theme
+			const savedTheme = localStorage.getItem('theme');
+			if (savedTheme) {
+				theme.set(savedTheme);
+			} else {
+				const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+				theme.set(prefersDark ? 'dark' : 'light');
 			}
-		});
 
-		// Set up keyboard shortcuts
-		document.addEventListener('keydown', (e) => {
-			if (e.key === 'Escape') {
-				showControls.set(false);
+			// Set up timezone
+			const timezone = getUserTimezone();
+			if (timezone && localStorage.token) {
+				await updateUserTimezone(localStorage.token, timezone).catch(() => {});
 			}
-		});
 
-		loaded = true;
+			// Set up token expiry check
+			if (token) {
+				tokenTimer = setInterval(checkTokenExpiry, 60000);
+			}
+
+			// Set up chat event handler
+			$socket?.on('chat:event', chatEventHandler);
+
+			// Set up channel event handler
+			$socket?.on('channel:event', channelEventHandler);
+
+			// Set up desktop event handler
+			window.electronAPI?.addEventListener('message', desktopEventHandler);
+
+			// Set up window focus/blur events
+			window.addEventListener('focus', () => {
+				if ($socket?.connected) {
+					$socket.emit('user-focus');
+				}
+			});
+
+			window.addEventListener('blur', () => {
+				if ($socket?.connected) {
+					$socket.emit('user-blur');
+				}
+			});
+
+			// Set up window close event
+			window.addEventListener('beforeunload', async () => {
+				if ($socket?.connected) {
+					await $socket.emit('user-leave');
+				}
+			});
+
+			// Set up keyboard shortcuts
+			document.addEventListener('keydown', (e) => {
+				if (e.key === 'Escape') {
+					showControls.set(false);
+				}
+			});
+		} finally {
+			loaded = true;
+		}
 	};
 
 	const onResize = () => {
@@ -1059,7 +1095,15 @@
 	let touchStartX = 0;
 
 	onMount(async () => {
-		await init();
+		await init().catch((e) => console.error(e));
+		await tick();
+
+		const splash = document.getElementById('splash-screen');
+		if (splash) {
+			splash.style.transition = 'opacity 0.3s ease';
+			splash.style.opacity = '0';
+			setTimeout(() => splash.remove(), 300);
+		}
 
 		// Auto-show SyncStatsModal when opened with ?sync=true (from community)
 		if (
@@ -1083,6 +1127,9 @@
 
 	onDestroy(() => {
 		bc.close();
+		if (tokenTimer) clearInterval(tokenTimer);
+		if (heartbeatInterval) clearInterval(heartbeatInterval);
+		if (disconnectToastTimer) clearTimeout(disconnectToastTimer);
 	});
 </script>
 

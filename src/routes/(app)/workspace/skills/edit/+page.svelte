@@ -10,7 +10,7 @@
 	import type { Writable } from 'svelte/store';
 
 	import { getSkillById, getSkills, updateSkillById } from '$lib/apis/skills';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
 	import SkillEditor from '$lib/components/workspace/Skills/SkillEditor.svelte';
 

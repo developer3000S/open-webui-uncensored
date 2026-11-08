@@ -28,7 +28,12 @@
 		scene.background = new THREE.Color(0xf0f0f0);
 		scene.fog = new THREE.Fog(0xf0f0f0, 10, 50);
 
-		camera = new THREE.PerspectiveCamera(45, containerRef.clientWidth / containerRef.clientHeight, 0.1, 100);
+		camera = new THREE.PerspectiveCamera(
+			45,
+			containerRef.clientWidth / containerRef.clientHeight,
+			0.1,
+			100
+		);
 		camera.position.set(5, 5, 5);
 
 		renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -132,7 +137,7 @@
 				const scale = 2 / maxDim;
 
 				model.position.sub(center.multiplyScalar(scale));
-				model.position.y += size.y * scale / 2;
+				model.position.y += (size.y * scale) / 2;
 				model.scale.set(scale, scale, scale);
 
 				model.traverse((child: THREE.Object3D) => {
@@ -234,7 +239,12 @@
 	{#if !src}
 		<div class="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400">
 			<svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="1.5"
+					d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+				/>
 			</svg>
 			<p class="text-sm font-medium">No 3D model loaded</p>
 		</div>
@@ -246,30 +256,54 @@
 				aria-label="Reset camera"
 			>
 				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+					/>
 				</svg>
 			</button>
 			{#if animationClip}
 				<button
 					on:click={toggleAnimation}
 					class={`p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm ${
-						isPlaying ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
+						isPlaying
+							? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+							: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
 					}`}
 					aria-label={isPlaying ? 'Pause animation' : 'Play animation'}
 				>
 					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						{#if isPlaying}
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"
+							/>
 						{:else}
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+							/>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+							/>
 						{/if}
 					</svg>
 				</button>
 			{/if}
 		</div>
 
-		<div class="absolute bottom-4 left-4 z-20 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800/80 backdrop-blur px-2 py-1 rounded border border-gray-200 dark:border-gray-700">
+		<div
+			class="absolute bottom-4 left-4 z-20 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800/80 backdrop-blur px-2 py-1 rounded border border-gray-200 dark:border-gray-700"
+		>
 			{modelType.toUpperCase()} 3D Model
 		</div>
 	{/if}

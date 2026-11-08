@@ -320,6 +320,9 @@ function Settings({
   useEffect(() => {
     let cancelled = false;
     const fetchLlmStatus = async () => {
+      // Skip polling if page is not visible to reduce unnecessary network requests
+      if (document.hidden) return;
+
       try {
         const status = await getLlmStatus();
         if (!cancelled) setLlmStatus(status);

@@ -274,6 +274,10 @@ async def is_valid_token(decoded, redis=None) -> bool:
     2. Per-user (revoked_at) — used by OIDC back-channel logout when
        individual jti values are unknown; rejects tokens with iat <= revoked_at.
     """
+    # No Redis configured: token revocation is unavailable, so accept the token.
+    if redis is None:
+        return True
+
     try:
         # Per-token revocation
         jti = decoded.get('jti')

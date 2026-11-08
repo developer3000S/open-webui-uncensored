@@ -93,29 +93,3 @@
 		{$i18n.t('No models found')}
 	</div>
 {/if}
-
-{#if modelIds.length > 0}
-	<div class="flex flex-col -translate-x-1" bind:this={modelListElement}>
-		{#each modelIds as modelId (modelId)}
-			<div class=" flex gap-2 w-full justify-between items-center" id="model-item-{modelId}">
-				<Tooltip content={modelId} placement="top-start">
-					<div class="flex items-center gap-1">
-						<EllipsisVertical className="size-4 cursor-move model-item-handle" />
-
-						<div class=" text-sm flex-1 py-1 rounded-lg line-clamp-1">
-							{#if $models.find((model) => model.id === modelId)}
-								{$models.find((model) => model.id === modelId).name}
-							{:else}
-								{modelId}
-							{/if}
-						</div>
-					</div>
-				</Tooltip>
-			</div>
-		{/each}
-	</div>
-{:else}
-	<div class="text-gray-500 text-xs text-center py-2">
-		{$i18n.t('No models found')}
-	</div>
-{/if}

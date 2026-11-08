@@ -610,6 +610,9 @@ function App() {
   // Poll system telemetry usage statistics on interval
   useEffect(() => {
     async function updateTelemetry() {
+      // Skip polling if page is not visible to reduce unnecessary network requests
+      if (document.hidden) return;
+
       try {
         const stats = await getTelemetry();
         setTelemetry((prev) => (

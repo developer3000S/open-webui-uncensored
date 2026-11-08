@@ -8,7 +8,7 @@
 
 	import type { Writable } from 'svelte/store';
 
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { config, models, settings } from '$lib/stores';
 
 	import { getModelById, updateModelById } from '$lib/apis/models';

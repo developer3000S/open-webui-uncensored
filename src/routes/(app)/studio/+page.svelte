@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { showSidebar } from '$lib/stores';
 
 	// Studio tabs (App.jsx activeTab values) that can be opened via /studio?tab=<name>
@@ -16,10 +16,14 @@
 
 	type StudioTab = (typeof STUDIO_TABS)[number];
 
-	let tab: StudioTab | null = null;
+	let tab: StudioTab = 'generator'; // default tab if none specified
 	$: {
-		const t = new URLSearchParams(window.location.search).get('tab');
-		tab = (STUDIO_TABS as readonly string[]).includes(t ?? '') ? (t as StudioTab) : null;
+		const t = $page?.url?.searchParams?.get('tab');
+		if (STUDIO_TABS.includes(t ?? '')) {
+			tab = t as StudioTab;
+		} else {
+			tab = 'generator';
+		}
 	}
 
 	let iframeEl: HTMLIFrameElement | null = null;

@@ -4,7 +4,7 @@
 	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { getToolById, getTools, updateToolById } from '$lib/apis/tools';
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import ToolkitEditor from '$lib/components/workspace/Tools/ToolkitEditor.svelte';
@@ -57,7 +57,7 @@
 	// @ts-ignore
 	onMount(async () => {
 		console.log('mounted');
-		const id = $page.url.searchParams.get('id');
+		const id = page.url.searchParams.get('id');
 
 		if (id) {
 			const res = await getToolById(localStorage.token, id).catch((error) => {
@@ -79,26 +79,6 @@
 		}
 	});
 </script>
-
-{#if tool}
-	<ToolkitEditor
-		edit={true}
-		id={tool.id}
-		name={tool.name}
-		meta={tool.meta}
-		content={tool.content}
-		accessGrants={tool.access_grants ?? []}
-		onSave={(value: any) => {
-			saveHandler(value);
-		}}
-	/>
-{:else}
-	<div class="flex items-center justify-center h-full">
-		<div class=" pb-16">
-			<Spinner className="size-5" />
-		</div>
-	</div>
-{/if}
 
 {#if tool}
 	<ToolkitEditor

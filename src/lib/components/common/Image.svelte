@@ -56,33 +56,3 @@
 		</div>
 	{/if}
 </div>
-
-<ImagePreview bind:show={showImagePreview} src={_src} {alt} />
-
-<div class=" relative group w-fit flex items-center">
-	<button
-		class={className}
-		on:click={() => {
-			showImagePreview = true;
-		}}
-		aria-label={$i18n.t('Show image preview')}
-		type="button"
-	>
-		<img src={_src} {alt} class={imageClassName} draggable="false" data-cy="image" />
-	</button>
-
-	{#if dismissible}
-		<div class=" absolute -top-1 -right-1">
-			<button
-				aria-label={$i18n.t('Remove image')}
-				class=" bg-white text-black border border-white rounded-full group-hover:visible invisible transition"
-				type="button"
-				on:click={() => {
-					onDismiss();
-				}}
-			>
-				<XMark className={'size-4'} />
-			</button>
-		</div>
-	{/if}
-</div>

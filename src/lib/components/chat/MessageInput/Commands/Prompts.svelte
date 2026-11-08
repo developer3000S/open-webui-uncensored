@@ -94,38 +94,3 @@
 		{/each}
 	</div>
 {/if}
-
-<div class="px-2 text-xs text-gray-500 py-1">
-	{$i18n.t('Prompts')}
-</div>
-
-{#if filteredItems.length > 0}
-	<div class=" space-y-0.5 scrollbar-hidden">
-		{#each filteredItems as promptItem, promptIdx}
-			<Tooltip content={promptItem.name} placement="top-start">
-				<button
-					class=" px-3 py-1 rounded-xl w-full text-left {promptIdx === selectedPromptIdx
-						? '  bg-gray-50 dark:bg-gray-800 selected-command-option-button'
-						: ''} truncate"
-					type="button"
-					on:click={() => {
-						onSelect({ type: 'prompt', data: promptItem });
-					}}
-					on:mousemove={() => {
-						selectedPromptIdx = promptIdx;
-					}}
-					on:focus={() => {}}
-					data-selected={promptIdx === selectedPromptIdx}
-				>
-					<span class=" font-medium text-black dark:text-gray-100">
-						{promptItem.command}
-					</span>
-
-					<span class=" text-xs text-gray-600 dark:text-gray-100">
-						{promptItem.name}
-					</span>
-				</button>
-			</Tooltip>
-		{/each}
-	</div>
-{/if}

@@ -6,7 +6,7 @@
 	import { toast } from 'svelte-sonner';
 
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { config, functions, models, settings } from '$lib/stores';
 	import { updateFunctionById, getFunctions, getFunctionById } from '$lib/apis/functions';
 
@@ -65,7 +65,7 @@
 	// @ts-ignore
 	onMount(async () => {
 		console.log('mounted');
-		const id = $page.url.searchParams.get('id');
+		const id = page.url.searchParams.get('id');
 
 		if (id) {
 			func = await getFunctionById(localStorage.token, id).catch((error) => {
@@ -78,27 +78,6 @@
 		}
 	});
 </script>
-
-{#if func}
-	<div class="px-[16px] h-full">
-		<FunctionEditor
-			edit={true}
-			id={func.id}
-			name={func.name}
-			meta={func.meta}
-			content={func.content}
-			onSave={(value: any) => {
-				saveHandler(value);
-			}}
-		/>
-	</div>
-{:else}
-	<div class="flex items-center justify-center h-full">
-		<div class=" pb-16">
-			<Spinner className="size-5" />
-		</div>
-	</div>
-{/if}
 
 {#if func}
 	<div class="px-[16px] h-full">

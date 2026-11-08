@@ -3,7 +3,7 @@
 	import type { i18n as i18nType } from 'i18next';
 	import { toast } from 'svelte-sonner';
 	import { onMount, getContext } from 'svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
 	const i18n = getContext<Writable<i18nType>>('i18n');
 
@@ -53,7 +53,7 @@
 	};
 
 	onMount(() => {
-		const groupId = $page.url.searchParams.get('id');
+		const groupId = page.url.searchParams.get('id');
 		if (groupId && groupId === group.id) {
 			showEdit = true;
 		}

@@ -108,27 +108,3 @@
 		{/each}
 	</div>
 </div>
-
-<div>
-	<div class="flex w-full justify-between mb-1">
-		<div class=" self-center text-xs font-medium text-gray-500">{$i18n.t('Capabilities')}</div>
-	</div>
-	<div class="flex items-center mt-2 flex-wrap">
-		{#each visibleCapabilities as capability}
-			<div class=" flex items-center gap-2 mr-3">
-				<Checkbox
-					state={capabilities[capability] ? 'checked' : 'unchecked'}
-					on:change={(e) => {
-						capabilities[capability] = e.detail === 'checked';
-					}}
-				/>
-
-				<div class=" py-0.5 text-sm capitalize">
-					<Tooltip content={marked.parse(capabilityLabels[capability].description)}>
-						{$i18n.t(capabilityLabels[capability].label)}
-					</Tooltip>
-				</div>
-			</div>
-		{/each}
-	</div>
-</div>
