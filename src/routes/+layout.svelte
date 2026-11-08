@@ -947,8 +947,12 @@
 					const res = await getSessionUser(token);
 					if (res) {
 						user.set(res);
-						await getUserSettings(token).then((settingsData) => settingsData && settings.set(settingsData));
-						await getChannels(token).then((channelsData) => channelsData && channels.set(channelsData));
+						await getUserSettings(token).then(
+							(settingsData) => settingsData && settings.set(settingsData)
+						);
+						await getChannels(token).then(
+							(channelsData) => channelsData && channels.set(channelsData)
+						);
 						await getChatList(token).then((chatsData) => chatsData && chats.set(chatsData));
 						await getAllTags(token).then((tagsData) => tagsData && tags.set(tagsData));
 						await getModels(

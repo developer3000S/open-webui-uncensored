@@ -371,9 +371,14 @@
 		});
 	};
 
-                $: localStorage.showControls = $showControls ? 'true' : 'false';
-                $: if ($selectedTerminalId !== undefined) { if ($selectedTerminalId === null) { delete localStorage.selectedTerminalId; } else { localStorage.selectedTerminalId = $selectedTerminalId; } }
-
+	$: localStorage.showControls = $showControls ? 'true' : 'false';
+	$: if ($selectedTerminalId !== undefined) {
+		if ($selectedTerminalId === null) {
+			delete localStorage.selectedTerminalId;
+		} else {
+			localStorage.selectedTerminalId = $selectedTerminalId;
+		}
+	}
 </script>
 
 <SettingsModal bind:show={$showSettings} />
