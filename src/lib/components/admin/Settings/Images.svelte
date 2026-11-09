@@ -707,6 +707,7 @@
 						<div class="mb-2.5">
 							<input
 								id="upload-comfyui-workflow-input"
+								name="upload-comfyui-workflow-input"
 								hidden
 								type="file"
 								accept=".json"
@@ -1140,6 +1141,7 @@
 						<div class="mb-2.5">
 							<input
 								id="upload-comfyui-edit-workflow-input"
+								name="upload-comfyui-edit-workflow-input"
 								hidden
 								type="file"
 								accept=".json"
@@ -1233,6 +1235,8 @@
 												<div class="">
 													<Tooltip content={$i18n.t('Input Key (e.g. text, unet_name, steps)')}>
 														<input
+															id={`workflow-node-key-${node.key}`}
+															name={`workflow-node-key-${node.key}`}
 															class="py-1 w-24 text-xs bg-transparent outline-hidden"
 															placeholder={$i18n.t('Key')}
 															bind:value={node.key}

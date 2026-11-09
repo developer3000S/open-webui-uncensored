@@ -1573,6 +1573,7 @@
 											<div class=" flex-1">
 												<input
 													id="steps-range"
+													name="steps-range"
 													type="range"
 													min="0"
 													max="1"

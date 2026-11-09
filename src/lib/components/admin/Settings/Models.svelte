@@ -401,6 +401,7 @@
 					{#if $user?.role === 'admin'}
 						<input
 							id="models-import-input"
+							name="models-import-input"
 							bind:this={modelsImportInputElement}
 							bind:files={importFiles}
 							type="file"

@@ -485,6 +485,8 @@
 							<div class="text-xs font-medium">{$i18n.t('Use Chat Completions API')}</div>
 							<label class="relative inline-flex items-center cursor-pointer">
 								<input
+									id="stt-mistral-use-chat-completions"
+									name="stt-mistral-use-chat-completions"
 									type="checkbox"
 									bind:checked={STT_MISTRAL_USE_CHAT_COMPLETIONS}
 									class="sr-only peer"

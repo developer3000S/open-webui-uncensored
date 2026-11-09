@@ -412,6 +412,7 @@
 						>
 						<input
 							id="event-webhook-name"
+							name="event-webhook-name"
 							class={`w-full text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 							type="text"
 							placeholder={$i18n.t('Identity audit')}
@@ -431,6 +432,7 @@
 						<div class="flex items-center gap-2">
 							<input
 								id="event-webhook-url"
+								name="event-webhook-url"
 								class={`w-full text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 								type="url"
 								placeholder="https://example.com/events"
@@ -575,6 +577,7 @@
 						<label class="flex items-center gap-1.5 text-xs text-gray-700 dark:text-gray-300">
 							<input
 								id="event-webhook-all-events"
+								name="event-webhook-all-events"
 								type="checkbox"
 								checked={allEvents}
 								on:change={(event) => setAllEvents(event.currentTarget.checked)}
@@ -635,6 +638,8 @@
 										class="flex items-start gap-2 py-0.5 text-xs text-gray-700 dark:text-gray-300"
 									>
 										<input
+											id={`event-${event}`}
+											name={`event-${event}`}
 											class="mt-0.5"
 											type="checkbox"
 											checked={selectedExactEvents.includes(event)}

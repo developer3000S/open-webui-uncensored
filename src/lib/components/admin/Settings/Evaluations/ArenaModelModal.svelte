@@ -161,6 +161,8 @@
 					<div class="px-1">
 						<div class="flex justify-center pb-3">
 							<input
+								id="arena-model-modal-image-input"
+								name="arena-model-modal-image-input"
 								bind:this={imageInputElement}
 								type="file"
 								hidden

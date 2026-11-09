@@ -464,6 +464,8 @@
 									{$i18n.t('Search Filters')}
 								</div>
 								<input
+									id="ldap-search-filters"
+									name="ldap-search-filters"
 									class="w-full bg-transparent outline-hidden py-0.5"
 									placeholder={$i18n.t('Example: (&(objectClass=inetOrgPerson)(uid=%s))')}
 									bind:value={LDAP_SERVER.search_filters}

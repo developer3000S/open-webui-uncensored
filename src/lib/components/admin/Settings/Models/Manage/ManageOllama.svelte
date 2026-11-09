@@ -997,6 +997,7 @@
 									<div class="flex-1 {modelInputFile && modelInputFile.length > 0 ? 'mr-2' : ''}">
 										<input
 											id="model-upload-input"
+											name="model-upload-input"
 											bind:this={modelUploadInputElement}
 											type="file"
 											bind:files={modelInputFile}
