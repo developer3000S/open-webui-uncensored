@@ -330,14 +330,14 @@
 
 								<Tooltip content={$i18n.t('Enter Model ID')} placement="top-start">
 									<input
-										list="model-list"
+										list="model-list-image-gen"
 										class=" text-right text-sm bg-transparent outline-hidden max-w-full w-52"
 										bind:value={config.IMAGE_GENERATION_MODEL}
 										placeholder={$i18n.t('Select a model')}
 										required
 									/>
 
-									<datalist id="model-list">
+									<datalist id="model-list-image-gen">
 										{#each models ?? [] as model}
 											<option value={model.id}>{model.name}</option>
 										{/each}
@@ -915,13 +915,13 @@
 
 								<Tooltip content={$i18n.t('Enter Model ID')} placement="top-start">
 									<input
-										list="model-list"
+										list="model-list-image-edit"
 										class="text-right text-sm bg-transparent outline-hidden max-w-full w-52"
 										bind:value={config.IMAGE_EDIT_MODEL}
 										placeholder={$i18n.t('Select a model')}
 									/>
 
-									<datalist id="model-list">
+									<datalist id="model-list-image-edit">
 										{#each models ?? [] as model}
 											<option value={model.id}>{model.name}</option>
 										{/each}

@@ -127,7 +127,7 @@
 				<div class="flex mt-0.5 space-x-2">
 					<div class=" flex-1">
 						<input
-							id="steps-range"
+							id="range-stream_delta_chunk_size"
 							type="range"
 							min="1"
 							max="128"
@@ -419,7 +419,7 @@
 			<div class="flex mt-0.5 space-x-2">
 				<div class=" flex-1">
 					<input
-						id="steps-range"
+						id="range-temperature"
 						type="range"
 						min="0"
 						max="2"
@@ -563,7 +563,7 @@
 			<div class="flex mt-0.5 space-x-2">
 				<div class=" flex-1">
 					<input
-						id="steps-range"
+						id="range-max_tokens"
 						type="range"
 						min="-2"
 						max="131072"
@@ -617,7 +617,7 @@
 			<div class="flex mt-0.5 space-x-2">
 				<div class=" flex-1">
 					<input
-						id="steps-range"
+						id="range-top_k"
 						type="range"
 						min="0"
 						max="1000"
@@ -673,7 +673,7 @@
 			<div class="flex mt-0.5 space-x-2">
 				<div class=" flex-1">
 					<input
-						id="steps-range"
+						id="range-top_p"
 						type="range"
 						min="0"
 						max="1"
@@ -728,7 +728,7 @@
 			<div class="flex mt-0.5 space-x-2">
 				<div class=" flex-1">
 					<input
-						id="steps-range"
+						id="range-min_p"
 						type="range"
 						min="0"
 						max="1"
@@ -784,7 +784,7 @@
 			<div class="flex mt-0.5 space-x-2">
 				<div class=" flex-1">
 					<input
-						id="steps-range"
+						id="range-frequency_penalty"
 						type="range"
 						min="-2"
 						max="2"
@@ -840,7 +840,7 @@
 			<div class="flex mt-0.5 space-x-2">
 				<div class=" flex-1">
 					<input
-						id="steps-range"
+						id="range-presence_penalty"
 						type="range"
 						min="-2"
 						max="2"
@@ -893,7 +893,7 @@
 			<div class="flex mt-0.5 space-x-2">
 				<div class=" flex-1">
 					<input
-						id="steps-range"
+						id="range-mirostat"
 						type="range"
 						min="0"
 						max="2"
@@ -948,7 +948,7 @@
 			<div class="flex mt-0.5 space-x-2">
 				<div class=" flex-1">
 					<input
-						id="steps-range"
+						id="range-mirostat_eta"
 						type="range"
 						min="0"
 						max="1"
@@ -1004,7 +1004,7 @@
 			<div class="flex mt-0.5 space-x-2">
 				<div class=" flex-1">
 					<input
-						id="steps-range"
+						id="range-mirostat_tau"
 						type="range"
 						min="0"
 						max="10"
@@ -1058,7 +1058,7 @@
 			<div class="flex mt-0.5 space-x-2">
 				<div class=" flex-1">
 					<input
-						id="steps-range"
+						id="range-repeat_last_n"
 						type="range"
 						min="-1"
 						max="128"
@@ -1114,7 +1114,7 @@
 			<div class="flex mt-0.5 space-x-2">
 				<div class=" flex-1">
 					<input
-						id="steps-range"
+						id="range-tfs_z"
 						type="range"
 						min="0"
 						max="2"
@@ -1170,7 +1170,7 @@
 			<div class="flex mt-0.5 space-x-2">
 				<div class=" flex-1">
 					<input
-						id="steps-range"
+						id="range-repeat_penalty"
 						type="range"
 						min="-2"
 						max="2"
@@ -1402,7 +1402,7 @@
 			<div class="flex mt-0.5 space-x-2">
 				<div class=" flex-1">
 					<input
-						id="steps-range"
+						id="range-num_keep"
 						type="range"
 						min="-1"
 						max="10240000"
@@ -1455,7 +1455,7 @@
 			<div class="flex mt-0.5 space-x-2">
 				<div class=" flex-1">
 					<input
-						id="steps-range"
+						id="range-num_ctx"
 						type="range"
 						min="-1"
 						max="10240000"
@@ -1510,7 +1510,7 @@
 			<div class="flex mt-0.5 space-x-2">
 				<div class=" flex-1">
 					<input
-						id="steps-range"
+						id="range-num_batch"
 						type="range"
 						min="256"
 						max="8192"
@@ -1566,7 +1566,7 @@
 				<div class="flex mt-0.5 space-x-2">
 					<div class=" flex-1">
 						<input
-							id="steps-range"
+							id="range-num_thread"
 							type="range"
 							min="1"
 							max="256"
@@ -1622,7 +1622,7 @@
 				<div class="flex mt-0.5 space-x-2">
 					<div class=" flex-1">
 						<input
-							id="steps-range"
+							id="range-num_gpu"
 							type="range"
 							min="0"
 							max="256"

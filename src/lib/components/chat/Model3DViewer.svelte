@@ -2,27 +2,39 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
 
-	import * as THREE from 'three';
-	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+	// Lazy load three.js to reduce initial bundle size
+	let THREE: any = null;
+	let OrbitControls: any = null;
+	let GLTFLoader: any = null;
+
+	async function ensureThree() {
+		if (!THREE) {
+			const { THREE } = await import('three');
+			OrbitControls = (await import('three/examples/jsm/controls/OrbitControls.js')).OrbitControls;
+			GLTFLoader = (await import('three/examples/jsm/loaders/GLTFLoader.js')).GLTFLoader;
+		}
+		return { THREE, OrbitControls, GLTFLoader };
+	}
 
 	export let src: string = '';
 	export let modelType: string = 'gltf';
 
 	let containerRef: HTMLDivElement | null = null;
-	let scene: THREE.Scene | null = null;
-	let camera: THREE.PerspectiveCamera | null = null;
-	let renderer: THREE.WebGLRenderer | null = null;
-	let controls: OrbitControls | null = null;
-	let model: THREE.Object3D | null = null;
-	let raycaster: THREE.Raycaster | null = null;
-	let pointer: THREE.Vector2 | null = null;
-	let animationMixer: THREE.AnimationMixer | null = null;
-	let animationClip: THREE.AnimationClip | null = null;
+	let scene: any = null;
+	let camera: any = null;
+	let renderer: any = null;
+	let controls: any = null;
+	let model: any = null;
+	let raycaster: any = null;
+	let pointer: any = null;
+	let animationMixer: any = null;
+	let animationClip: any = null;
 	let isPlaying = false;
 
 	const init = async () => {
 		if (!browser || !containerRef) return;
+
+		const { THREE, OrbitControls, GLTFLoader } = await ensureThree();
 
 		scene = new THREE.Scene();
 		scene.background = new THREE.Color(0xf0f0f0);
@@ -198,8 +210,8 @@
 		controls?.update();
 	};
 
-	onMount(() => {
-		init();
+	onMount(async () => {
+		await init();
 	});
 
 	onDestroy(() => {

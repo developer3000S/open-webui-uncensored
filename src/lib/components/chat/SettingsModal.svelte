@@ -485,8 +485,8 @@
 	let search = '';
 	let searchDebounceTimeout: ReturnType<typeof setTimeout> | undefined;
 
-        $: availableSettings = getAvailableSettings();
-        $: setFilteredSettings();
+	$: availableSettings = getAvailableSettings();
+	$: setFilteredSettings();
 	const getAvailableSettings = () => {
 		return allSettings.filter((tab) => {
 			if (tab.id === 'connections') {
@@ -582,11 +582,11 @@
 		}
 	};
 
-        onMount(() => {
-                addScrollListener();
-        });
+	onMount(() => {
+		addScrollListener();
+	});
+</script>
 
-        </script>
 <Modal size="2xl" bind:show>
 	<div class="text-gray-700 dark:text-gray-100 mx-1">
 		<div class=" flex justify-between dark:text-gray-300 px-4 md:px-4.5 pt-4.5 pb-0.5 md:pb-2.5">

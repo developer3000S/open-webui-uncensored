@@ -52,30 +52,10 @@
 {#if loaded}
 	<div class="flex flex-row h-screen">
 		<div class="w-64 bg-gray-100 dark:bg-gray-900 p-4">
-			<div class="flex flex-col space-y-2">
-				<a
-					href="/workspace/models"
-					class="min-w-fit p-1.5 rounded-lg flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-800"
-					aria-current={window.location.pathname.includes('/workspace/models') ? 'page' : null}
-				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						class="h-5 w-5"
-						viewBox="0 0 20 20"
-						fill="currentColor"
-					>
-						<path
-							fill-rule="evenodd"
-							d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z"
-							clip-rule="evenodd"
-						/>
-					</svg>
-					<span class="ml-2 text-sm font-medium">Models</span>
-				</a>
-
+			<div class="flex flex-row gap-2 overflow-x-auto pb-2">
 				<a
 					href="/workspace/knowledge"
-					class="min-w-fit p-1.5 rounded-lg flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-800"
+					class="min-w-fit p-1.5 rounded-lg flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-800 whitespace-nowrap"
 					aria-current={window.location.pathname.includes('/workspace/knowledge') ? 'page' : null}
 				>
 					<svg
@@ -94,8 +74,28 @@
 				</a>
 
 				<a
+					href="/workspace/models"
+					class="min-w-fit p-1.5 rounded-lg flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-800 whitespace-nowrap"
+					aria-current={window.location.pathname.includes('/workspace/models') ? 'page' : null}
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						class="h-5 w-5"
+						viewBox="0 0 20 20"
+						fill="currentColor"
+					>
+						<path
+							fill-rule="evenodd"
+							d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z"
+							clip-rule="evenodd"
+						/>
+					</svg>
+					<span class="ml-2 text-sm font-medium">Models</span>
+				</a>
+
+				<a
 					href="/workspace/prompts"
-					class="min-w-fit p-1.5 rounded-lg flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-800"
+					class="min-w-fit p-1.5 rounded-lg flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-800 whitespace-nowrap"
 					aria-current={window.location.pathname.includes('/workspace/prompts') ? 'page' : null}
 				>
 					<svg
@@ -115,7 +115,7 @@
 
 				<a
 					href="/workspace/skills"
-					class="min-w-fit p-1.5 rounded-lg flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-800"
+					class="min-w-fit p-1.5 rounded-lg flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-800 whitespace-nowrap"
 					aria-current={window.location.pathname.includes('/workspace/skills') ? 'page' : null}
 				>
 					<svg
@@ -135,7 +135,7 @@
 
 				<a
 					href="/workspace/tools"
-					class="min-w-fit p-1.5 rounded-lg flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-800"
+					class="min-w-fit p-1.5 rounded-lg flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-800 whitespace-nowrap"
 					aria-current={window.location.pathname.includes('/workspace/tools') ? 'page' : null}
 				>
 					<svg

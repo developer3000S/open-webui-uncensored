@@ -308,13 +308,13 @@
 						<div class="flex w-full">
 							<div class="flex-1">
 								<input
-									list="model-list"
+									list="model-list-stt"
 									class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 									bind:value={STT_MODEL}
 									placeholder={$i18n.t('Select a model')}
 								/>
 
-								<datalist id="model-list">
+								<datalist id="model-list-stt">
 									<option value="whisper-1"></option>
 								</datalist>
 							</div>
@@ -670,13 +670,13 @@
 							<div class="flex w-full">
 								<div class="flex-1">
 									<input
-										list="model-list"
+										list="model-list-tts"
 										class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 										bind:value={TTS_MODEL}
 										placeholder={$i18n.t('CMU ARCTIC speaker embedding name')}
 									/>
 
-									<datalist id="model-list">
+									<datalist id="model-list-tts">
 										<option value="tts-1"></option>
 									</datalist>
 								</div>
@@ -725,13 +725,13 @@
 								<div class="flex w-full">
 									<div class="flex-1">
 										<input
-											list="tts-model-list"
+											list="tts-model-list-openai"
 											class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 											bind:value={TTS_MODEL}
 											placeholder={$i18n.t('Select a model')}
 										/>
 
-										<datalist id="tts-model-list">
+										<datalist id="tts-model-list-openai">
 											{#each models as model}
 												<option value={model.id} class="bg-gray-50 dark:bg-gray-700"></option>
 											{/each}
@@ -776,13 +776,13 @@
 								<div class="flex w-full">
 									<div class="flex-1">
 										<input
-											list="tts-model-list"
+											list="tts-model-list-elevenlabs"
 											class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 											bind:value={TTS_MODEL}
 											placeholder={$i18n.t('Select a model')}
 										/>
 
-										<datalist id="tts-model-list">
+										<datalist id="tts-model-list-elevenlabs">
 											{#each models as model}
 												<option value={model.id} class="bg-gray-50 dark:bg-gray-700"></option>
 											{/each}
@@ -819,7 +819,6 @@
 								<div class="flex w-full">
 									<div class="flex-1">
 										<input
-											list="tts-model-list"
 											class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 											bind:value={TTS_AZURE_SPEECH_OUTPUT_FORMAT}
 											placeholder={$i18n.t('Select an output format')}
@@ -848,13 +847,13 @@
 								<div class="flex w-full">
 									<div class="flex-1">
 										<input
-											list="tts-model-list"
+											list="tts-model-list-mistral"
 											class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 											bind:value={TTS_MODEL}
 											placeholder={$i18n.t('Select a model')}
 										/>
 
-										<datalist id="tts-model-list">
+										<datalist id="tts-model-list-mistral">
 											{#each models as model}
 												<option value={model.id} class="bg-gray-50 dark:bg-gray-700"></option>
 											{/each}

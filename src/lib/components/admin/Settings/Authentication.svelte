@@ -126,6 +126,8 @@
 					<div class=" self-center text-xs font-medium">{$i18n.t('Default User Role')}</div>
 					<div class="flex items-center relative">
 						<select
+							id="default-user-role"
+							name="default_user_role"
 							class="w-fit pr-8 rounded-sm px-2 text-xs bg-transparent outline-hidden text-right"
 							bind:value={adminConfig.DEFAULT_USER_ROLE}
 							placeholder={$i18n.t('Select a role')}
@@ -141,6 +143,8 @@
 					<div class=" self-center text-xs font-medium">{$i18n.t('Default Group')}</div>
 					<div class="flex items-center relative max-w-48">
 						<select
+							id="default-group-id"
+							name="default_group_id"
 							class="w-full pr-8 rounded-sm px-2 text-xs bg-transparent outline-hidden text-right truncate"
 							bind:value={adminConfig.DEFAULT_GROUP_ID}
 							placeholder={$i18n.t('Select a group')}
@@ -181,6 +185,8 @@
 							</div>
 
 							<input
+								id="api-keys-allowed-endpoints"
+								name="api_keys_allowed_endpoints"
 								class="w-full mt-1 text-sm dark:text-gray-300 bg-transparent outline-hidden"
 								type="text"
 								placeholder={`e.g.) /api/v1/messages, /api/v1/channels`}
@@ -675,6 +681,8 @@
 										{$i18n.t('Roles Claim')}
 									</div>
 									<input
+										id="oauth-roles-claim"
+										name="oauth_roles_claim"
 										class="w-full bg-transparent outline-hidden py-0.5"
 										placeholder="roles"
 										bind:value={oauthConfig.OAUTH_ROLES_CLAIM}
@@ -685,6 +693,8 @@
 										{$i18n.t('Admin Roles')}
 									</div>
 									<input
+										id="oauth-admin-roles"
+										name="oauth_admin_roles"
 										class="w-full bg-transparent outline-hidden py-0.5"
 										placeholder="admin"
 										bind:value={oauthConfig.OAUTH_ADMIN_ROLES}
@@ -697,6 +707,8 @@
 									{$i18n.t('Allowed Roles')}
 								</div>
 								<input
+									id="oauth-allowed-roles"
+									name="oauth_allowed_roles"
 									class="w-full bg-transparent outline-hidden py-0.5"
 									placeholder="*"
 									bind:value={oauthConfig.OAUTH_ALLOWED_ROLES}
@@ -725,6 +737,8 @@
 										{$i18n.t('Group Claim')}
 									</div>
 									<input
+										id="oauth-group-claim"
+										name="oauth_group_claim"
 										class="w-full bg-transparent outline-hidden py-0.5"
 										placeholder="groups"
 										bind:value={oauthConfig.OAUTH_GROUP_CLAIM}
@@ -735,6 +749,8 @@
 										{$i18n.t('Blocked Groups')}
 									</div>
 									<input
+										id="oauth-blocked-groups"
+										name="oauth_blocked_groups"
 										class="w-full bg-transparent outline-hidden py-0.5"
 										placeholder={$i18n.t('Comma-separated group names')}
 										bind:value={oauthConfig.OAUTH_BLOCKED_GROUPS}

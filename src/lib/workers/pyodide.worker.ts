@@ -1,14 +1,12 @@
-import { loadPyodide, type PyodideInterface } from 'pyodide';
-
 declare global {
 	interface Window {
 		stdout: string | null;
 		stderr: string | null;
-		 
+
 		result: any;
-		pyodide: PyodideInterface;
+		pyodide: any; // PyodideInterface would be imported lazily
 		packages: string[];
-		 
+
 		[key: string]: any;
 	}
 }
@@ -25,6 +23,9 @@ async function loadPyodideAndPackages(packages: string[] = []) {
 	self.stdout = null;
 	self.stderr = null;
 	self.result = null;
+
+	// Lazy load pyodide via dynamic import to reduce initial bundle size
+	const { loadPyodide } = await import('pyodide');
 
 	self.pyodide = await loadPyodide({
 		indexURL: '/pyodide/',

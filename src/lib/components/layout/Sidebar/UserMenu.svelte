@@ -4,11 +4,9 @@
 	import { createEventDispatcher, getContext, onMount, tick } from 'svelte';
 
 	import { goto } from '$app/navigation';
-	import { fade, slide } from 'svelte/transition';
+import { fade, slide } from 'svelte/transition';
 
-	import Sparkles from '$lib/components/icons/Sparkles.svelte';
-
-	import { getUsage } from '$lib/apis';
+import { getUsage } from '$lib/apis';
 	import { getSessionUser, userSignOut } from '$lib/apis/auths';
 
 	import {
@@ -558,31 +556,6 @@
 						</Tooltip>
 					{/if}
 				</div>
-			{/if}
-
-			{#if $config?.features?.enable_studio}
-				<hr class=" border-gray-50/30 dark:border-gray-800/30 my-1 p-0" />
-
-				<a
-					href="/studio"
-					draggable="false"
-					class="flex rounded-xl py-1.5 px-3 w-full hover:bg-gray-50 dark:hover:bg-gray-800 transition cursor-pointer select-none"
-					on:click={async (e: any) => {
-						if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
-						e.preventDefault();
-						show = false;
-						goto('/studio');
-						if ($mobile) {
-							await tick();
-							showSidebar.set(false);
-						}
-					}}
-				>
-					<div class="self-center mr-3">
-						<Sparkles className="size-5" strokeWidth="1.5" />
-					</div>
-					<div class="self-center truncate">AI Студия</div>
-				</a>
 			{/if}
 
 			{#if help}

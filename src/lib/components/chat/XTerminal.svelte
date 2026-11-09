@@ -1,10 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy, getContext } from 'svelte';
-	import { Terminal } from '@xterm/xterm';
-	import { FitAddon } from '@xterm/addon-fit';
-	import { WebLinksAddon } from '@xterm/addon-web-links';
-	import '@xterm/xterm/css/xterm.css';
-
+	// Lazy load xterm to reduce initial bundle size
 	import { terminalServers, settings, selectedTerminalId, user } from '$lib/stores';
 	import { WEBUI_API_BASE_URL } from '$lib/constants';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
@@ -15,13 +11,23 @@
 	export let chatId: string | null = null;
 
 	let terminalEl: HTMLDivElement;
-	let term: Terminal | null = null;
-	let fitAddon: FitAddon | null = null;
+	let term: any = null;
+	let fitAddon: any = null;
 	let ws: WebSocket | null = null;
 	export let connected: any = false;
 	export let connecting: any = false;
 	let resizeObserver: ResizeObserver | null = null;
 	let pingInterval: ReturnType<typeof setInterval> | null = null;
+
+	// Lazy-load xterm modules when needed
+	async function loadXterm() {
+		const { Terminal } = await import('@xterm/xterm');
+		const { FitAddon } = await import('@xterm/addon-fit');
+		const { WebLinksAddon } = await import('@xterm/addon-web-links');
+		// Import CSS
+		await import('@xterm/xterm/css/xterm.css');
+		return { Terminal, FitAddon, WebLinksAddon };
+	}
 
 	// Resolve the active terminal server's info for the WebSocket URL
 	const getTerminalInfo = (): { serverId: string; baseUrl: string } | null => {
@@ -168,8 +174,11 @@
 		connecting = false;
 	};
 
-	const initTerminal = () => {
+	const initTerminal = async () => {
 		if (!terminalEl || term) return;
+
+		// Load xterm modules lazily
+		const { Terminal, FitAddon, WebLinksAddon } = await loadXterm();
 
 		term = new Terminal({
 			cursorBlink: true,
@@ -268,8 +277,8 @@
 		}
 	}
 
-	onMount(() => {
-		initTerminal();
+	onMount(async () => {
+		await initTerminal();
 	});
 
 	onDestroy(() => {

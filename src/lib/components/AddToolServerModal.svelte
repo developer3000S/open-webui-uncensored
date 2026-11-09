@@ -705,7 +705,7 @@
 								<div class="flex gap-2">
 									<div class="flex-shrink-0 self-start">
 										<select
-											id="select-bearer-or-session"
+											id="select-auth-type"
 											class={`dark:bg-gray-900 w-full text-sm bg-transparent pr-5 ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 											bind:value={auth_type}
 										>
@@ -838,7 +838,7 @@
 										<div class="flex gap-2">
 											<div class="flex-shrink-0 self-start">
 												<select
-													id="select-bearer-or-session"
+													id="select-spec-type"
 													class={`dark:bg-gray-900 w-full text-sm bg-transparent pr-5 ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 													bind:value={spec_type}
 												>

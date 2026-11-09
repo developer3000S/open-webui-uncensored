@@ -7,6 +7,7 @@ import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite';
 
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 // Known-benign upstream Svelte compiler warnings that do not break the build
 // and come from the open-webui upstream sources.
@@ -96,7 +97,8 @@ export default defineConfig({
           dest: 'wasm'
         }
       ]
-    })
+    }),
+    visualizer({ open: true, filename: 'stats.html' })
   ],
   define: {
     APP_VERSION: JSON.stringify(process.env.npm_package_version),
@@ -104,9 +106,8 @@ export default defineConfig({
   },
   build: {
     sourcemap: true,
-    // Raise the chunk-size warning threshold: large shared chunks are expected
-    // for this app and code-splitting would hurt initial-load performance.
-    chunkSizeWarningLimit: 1000,
+    // Lower the chunk-size warning limit for smaller chunks (≤500KB)
+    chunkSizeWarningLimit: 500,
     // lightningcss emits "Unknown at rule: @apply" / ":global" warnings for
     // Tailwind-style directives in .svelte <style> blocks. Switch to esbuild
     // to silence those warnings; the build result is unaffected.
@@ -140,6 +141,20 @@ export default defineConfig({
         'node:vm',
         'node:fs/promises'
       ],
+      output: {
+        manualChunks: (id: any) => {
+          const key = typeof id === 'string' ? id : String(id);
+          if (key.includes('pyodide')) return 'pyodide';
+          if (key.includes('@xterm/xterm') || key.includes('addon-fit') || key.includes('addon-web-links')) return 'xterm';
+          if (key.includes('three')) return 'three';
+          if (key.includes('@huggingface/transformers')) return 'transformers';
+          if (key.includes('jszip')) return 'jszip';
+          if (key.includes('jspdf')) return 'jspdf';
+          if (key.includes('mermaid')) return 'mermaid';
+          if (key.includes('chart.js')) return 'chartjs';
+          return undefined;
+        }
+      },
       onwarn: (warning, defaultHandler) => {
         if (warning.message && warning.message.includes('externalized for browser compatibility')) {
           return;

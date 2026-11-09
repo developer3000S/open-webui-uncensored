@@ -51,6 +51,22 @@
 - [x] **Мульти-стратегия поиск**: векторный + BM25 + графовый поиск (через `orchestrate_retrieval`)
 - [x] **Интерактивная оценка качества RAG**: UI для thumbs up/down и сбора обратной связи
 - [x] **Аудит с настраиваемым сроком хранения**: `CODER_AUDIT_RETENTION_DAYS` + `POST /audit/cleanup`
+- [x] **Оптимизация размеров чанков ≤500KB**: ленивая загрузка тяжелых зависимостей (pyodide, xterm, three) и настройка Vite для уменьшения размеров начального бандла.
+
+### Оптимизация чанков — детали (~2026-11-08)
+**Проблема:** Из-за тяжёлых библиотек (`pyodide` ~3.5MB, `three`, `@xterm/xterm`) чанки превышают 500KB (макс. 1.93MB).
+
+**Решения:**
+1. `src/lib/workers/pyodide.worker.ts` — обернуть `loadPyodide` в динамический `import()`.
+2. `src/lib/components/chat/XTerminal.svelte` — ленивая загрузка `@xterm/xterm`.
+3. `src/lib/components/chat/Model3DViewer.svelte` — ленивая загрузка `three`.
+4. `vite.config.ts`:
+   - Снизить `chunkSizeWarningLimit` до 500
+   - Добавить `manualChunks` для разделения vendor-блоков (`pyodide`, `three`, `xterm`, `jszip`, `jspdf`, `mermaid` и др.)
+5. Рассмотреть загрузку `pyodide`, `transformers`, `three` через CDN (отдельные `<script>` теги).
+
+**Критерии успеха:** Все чанки ≤ 500KB (`npm run build` → `.svelte-kit/output/client/_app/immutable/chunks/*.js`).
+**Верификация:** Запуск `npm run build` → проверка размеров чанков + тестирование функционала (код-блоки, терминал, 3D-модели).
 
 ## Задачи на будущее
 

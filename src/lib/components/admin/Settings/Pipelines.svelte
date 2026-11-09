@@ -172,7 +172,7 @@
 		}
 
 		pipelineFiles = null;
-		const pipelineUploadInputElement = document.getElementById('pipelines-upload-input');
+		const pipelineUploadInputElement = document.getElementById('pipelines-upload-input-file');
 
 		if (pipelineUploadInputElement) {
 			pipelineUploadInputElement.value = null;
@@ -264,7 +264,7 @@
 					<div class="flex w-full">
 						<div class="flex-1 mr-2">
 							<input
-								id="pipelines-upload-input"
+								id="pipelines-upload-input-file"
 								bind:files={pipelineFiles}
 								type="file"
 								accept=".py"
@@ -275,7 +275,7 @@
 								class="w-full text-sm font-medium py-2 bg-transparent hover:bg-gray-100 border border-dashed dark:border-gray-850 dark:hover:bg-gray-850 text-center rounded-xl"
 								type="button"
 								on:click={() => {
-									document.getElementById('pipelines-upload-input')?.click();
+									document.getElementById('pipelines-upload-input-file')?.click();
 								}}
 							>
 								{#if pipelineFiles}
@@ -616,7 +616,7 @@
 					<div class="flex w-full">
 						<div class="flex-1 mr-2">
 							<input
-								id="pipelines-upload-input"
+								id="pipelines-upload-input-url"
 								bind:files={pipelineFiles}
 								type="file"
 								accept=".py"
@@ -627,7 +627,7 @@
 								class="w-full text-sm font-medium py-2 bg-transparent hover:bg-gray-100 border border-dashed dark:border-gray-850 dark:hover:bg-gray-850 text-center rounded-xl"
 								type="button"
 								on:click={() => {
-									document.getElementById('pipelines-upload-input')?.click();
+									document.getElementById('pipelines-upload-input-url')?.click();
 								}}
 							>
 								{#if pipelineFiles}

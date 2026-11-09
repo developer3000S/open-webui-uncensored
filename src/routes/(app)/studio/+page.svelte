@@ -17,12 +17,13 @@
 	type StudioTab = (typeof STUDIO_TABS)[number];
 
 	let tab: StudioTab = 'generator'; // default tab if none specified
+	let prevTab: StudioTab | null = null;
+
 	$: {
-		const t = $page?.url?.searchParams?.get('tab');
-		if (STUDIO_TABS.includes(t ?? '')) {
-			tab = t as StudioTab;
-		} else {
-			tab = 'generator';
+		const t = page?.url?.searchParams?.get('tab') as StudioTab | undefined;
+		const next = STUDIO_TABS.includes(t ?? 'generator') ? (t ?? 'generator') : 'generator';
+		if (next !== tab) {
+			tab = next;
 		}
 	}
 
@@ -32,14 +33,19 @@
 	// studio_spa_proxy route and falls through to the OWUI SPA mount.
 	const studioUrl = '/studio/';
 
-	const requestTabSwitch = () => {
-		if (!iframeEl?.contentWindow || !tab) return;
-		iframeEl.contentWindow.postMessage({ type: 'studio:tab', tab }, location.origin);
+	const requestTabSwitch = (targetTab?: StudioTab) => {
+		const t = targetTab ?? tab;
+		if (!iframeEl?.contentWindow || !t) return;
+		try {
+			iframeEl.contentWindow.postMessage({ type: 'studio:tab', tab: t }, location.origin);
+		} catch (e) {
+			console.error('Failed to post studio tab switch message:', e);
+		}
 	};
 
-	// The iframe loads once and is never reloaded on navigation, so a sidebar
-	// click only changes `tab` — the switch must be pushed to the iframe here.
-	$: if (iframeEl && tab) {
+	// Push tab changes to the iframe React app via postMessage
+	$: if (iframeEl && tab && tab !== prevTab) {
+		prevTab = tab;
 		requestTabSwitch();
 	}
 
