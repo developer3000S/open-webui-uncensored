@@ -40,7 +40,7 @@
 
 	// Coder is a standalone application: when the user is on /coder (or opened it
 	// via window.open('/coder?standalone=1')) the main sidebar must stay hidden.
-	$: isCoderRoute = page.url.pathname.startsWith('/coder');
+	$: isCoderRoute = $page.url.pathname.startsWith('/coder');
 
 	// Force-hide the sidebar while the Coder route is active, and prevent it from
 	// being toggled back open there (see swipe handler and template guards below).
@@ -98,8 +98,17 @@
 	import { slide } from 'svelte/transition';
 	import HotkeyHint from '../common/HotkeyHint.svelte';
 
+	import Photo from '../icons/Photo.svelte';
+	import ChatBubble from '../icons/ChatBubble.svelte';
+	import Users from '../icons/Users.svelte';
+	import Mic from '../icons/Mic.svelte';
+	import SoundHigh from '../icons/SoundHigh.svelte';
+	import FolderOpen from '../icons/FolderOpen.svelte';
+	import Settings from '../icons/Settings.svelte';
+	import Sparkles from '../icons/Sparkles.svelte';
+
 	const BREAKPOINT = 768;
-	const DEFAULT_PINNED_ITEMS = ['notes', 'coder', 'workspace'];
+	const DEFAULT_PINNED_ITEMS = ['notes', 'coder', 'workspace', 'studio'];
 
 	let scrollTop = 0;
 
@@ -118,10 +127,12 @@
 	let pinnedModels = [];
 
 	let showPinnedModels = false;
+	let showStudioSubmenu = true;
 	let showPinnedNotes = false;
 	let showChannels = false;
 	let showFolders = false;
 	let showSharedFolders = false;
+	let showStudio = localStorage.getItem('studioSidebarOpen') !== 'false';
 
 	let folders: any = {};
 	let folderRegistry = {};
@@ -162,6 +173,8 @@
 				return $config?.features?.enable_coder ?? false;
 			case 'playground':
 				return $user?.role === 'admin';
+			case 'studio':
+				return $config?.features?.enable_studio ?? false;
 			default:
 				return false;
 		}
@@ -181,10 +194,33 @@
 				openInNewWindow: true,
 				windowFeatures: 'width=1400,height=900,resizable=yes,scrollbars=yes'
 			},
-			playground: { label: 'Playground', href: '/playground', iconType: 'playground' }
+			playground: { label: 'Playground', href: '/playground', iconType: 'playground' },
+			studio: {
+				label: 'Studio',
+				href: '/studio?tab=generator',
+				iconType: 'studio',
+				// Studio opens as an embedded application
+				openInNewWindow: false
+			}
 		};
 		return items[id];
 	};
+
+	// Uncensored AI Studio — раздел бокового меню, объединяющий вкладки студии
+	// (App.jsx activeTab) с навигацией Open WebUI.
+	const STUDIO_NAV_ITEMS = [
+		{ tab: 'generator', label: 'Генератор изображений', iconType: 'photo' },
+		{ tab: 'chat', label: 'Текстовый чат', iconType: 'chat' },
+		{ tab: 'agents', label: 'Агенты', iconType: 'agents' },
+		{ tab: 'speech', label: 'Распознавание речи', iconType: 'mic' },
+		{ tab: 'tts', label: 'Текст в речь', iconType: 'tts' },
+		{ tab: 'models', label: 'Менеджер моделей', iconType: 'models' },
+		{ tab: 'settings', label: 'Настройки', iconType: 'settings' }
+	];
+
+	const isStudioEnabled = () => $config?.features?.enable_studio;
+
+	const studioItemHref = (tab: string) => `/studio?tab=${tab}`;
 
 	const initPinnedMenuSortable = () => {
 		const el = document.getElementById('pinned-menu-items-list');
@@ -996,6 +1032,8 @@
 											<Code className="size-4.5" />
 										{:else if itemId === 'coder'}
 											<Code className="size-4.5" />
+										{:else if itemId === 'studio'}
+											<Photo className="size-4.5" />
 										{/if}
 									</div>
 								</a>
@@ -1248,6 +1286,8 @@
 												<Code className="size-4.5" strokeWidth="2" />
 											{:else if itemId === 'coder'}
 												<Code className="size-4.5" strokeWidth="2" />
+											{:else if itemId === 'studio'}
+												<Photo className="size-4.5" strokeWidth="2" />
 											{/if}
 										</div>
 
@@ -1260,6 +1300,50 @@
 						{/each}
 					</div>
 				</div>
+
+				{#if $config?.features?.enable_studio}
+					<Folder
+						id="sidebar-studio"
+						bind:open={showStudioSubmenu}
+						className="px-2 mt-0.5"
+						name={$i18n.t('Studio')}
+						chevron={false}
+					>
+						{#each STUDIO_NAV_ITEMS as item}
+							<a
+								href="/studio?tab={item.tab}"
+								class="grow flex items-center space-x-3 rounded-2xl px-2.5 py-2 hover:bg-gray-100 dark:hover:bg-gray-900 transition"
+								on:click={itemClickHandler}
+								draggable="false"
+								aria-label={$i18n.t(item.label)}
+							>
+								<div class="self-center">
+									{#if item.iconType === 'photo'}
+										<Photo className="size-4.5" strokeWidth="2" />
+									{:else if item.iconType === 'chat'}
+										<ChatBubble className="size-4.5" strokeWidth="2" />
+									{:else if item.iconType === 'agents'}
+										<Users className="size-4.5" strokeWidth="2" />
+									{:else if item.iconType === 'mic'}
+										<Mic className="size-4.5" strokeWidth="2" />
+									{:else if item.iconType === 'tts'}
+										<SoundHigh className="size-4.5" strokeWidth="2" />
+									{:else if item.iconType === 'models'}
+										<Code className="size-4.5" strokeWidth="2" />
+									{:else if item.iconType === 'settings'}
+										<Settings className="size-4.5" strokeWidth="2" />
+									{/if}
+								</div>
+								<div class="flex self-center translate-y-[0.5px]">
+									<div class="self-center text-sm font-primary">{$i18n.t(item.label)}</div>
+								</div>
+							</a>
+							{#if item !== STUDIO_NAV_ITEMS[STUDIO_NAV_ITEMS.length - 1]}
+								<hr class="border-gray-100/40 dark:border-gray-800/10 my-1.5 w-full" />
+							{/if}
+						{/each}
+					</Folder>
+				{/if}
 
 				{#if ($models ?? []).length > 0 && (($settings?.pinnedModels ?? []).length > 0 || $config?.default_pinned_models)}
 					<Folder
