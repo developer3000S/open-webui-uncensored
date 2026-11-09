@@ -204,7 +204,9 @@
 						<div class="flex items-center relative">
 							<select
 								class="w-fit pr-8 rounded-sm px-2 p-1 text-xs bg-transparent outline-hidden text-right"
-								id="web_search_engine" name="web_search_engine" bind:value={webConfig.WEB_SEARCH_ENGINE}
+								id="web_search_engine"
+								name="web_search_engine"
+								bind:value={webConfig.WEB_SEARCH_ENGINE}
 								placeholder={$i18n.t('Select a engine')}
 								required
 							>
@@ -253,7 +255,9 @@
 												class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 												type="text"
 												placeholder={$i18n.t('Enter Perplexity Search API URL')}
-												id="perplexity_search_api_url" name="perplexity_search_api_url" bind:value={webConfig.PERPLEXITY_SEARCH_API_URL}
+												id="perplexity_search_api_url"
+												name="perplexity_search_api_url"
+												bind:value={webConfig.PERPLEXITY_SEARCH_API_URL}
 												autocomplete="off"
 											/>
 										</div>
@@ -290,7 +294,9 @@
 												class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 												type="text"
 												placeholder={$i18n.t('Enter Searxng Query URL')}
-												id="searxng_query_url" name="searxng_query_url" bind:value={webConfig.SEARXNG_QUERY_URL}
+												id="searxng_query_url"
+												name="searxng_query_url"
+												bind:value={webConfig.SEARXNG_QUERY_URL}
 												autocomplete="off"
 												required
 											/>
@@ -308,7 +314,9 @@
 												class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 												type="text"
 												placeholder={$i18n.t('Enter Searxng search language')}
-												id="searxng_language" name="searxng_language" bind:value={webConfig.SEARXNG_LANGUAGE}
+												id="searxng_language"
+												name="searxng_language"
+												bind:value={webConfig.SEARXNG_LANGUAGE}
 												autocomplete="off"
 												required
 											/>
@@ -329,7 +337,9 @@
 												class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 												type="text"
 												placeholder={$i18n.t('Enter Yacy URL (e.g. http://yacy.example.com:8090)')}
-												id="yacy_query_url" name="yacy_query_url" bind:value={webConfig.YACY_QUERY_URL}
+												id="yacy_query_url"
+												name="yacy_query_url"
+												bind:value={webConfig.YACY_QUERY_URL}
 												autocomplete="off"
 											/>
 										</div>
@@ -346,7 +356,9 @@
 										<input
 											class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 											placeholder={$i18n.t('Enter Yacy Username')}
-											id="yacy_username" name="yacy_username" bind:value={webConfig.YACY_USERNAME}
+											id="yacy_username"
+											name="yacy_username"
+											bind:value={webConfig.YACY_USERNAME}
 											required
 										/>
 									</div>
@@ -386,7 +398,9 @@
 												class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 												type="text"
 												placeholder={$i18n.t('Enter Google PSE Engine Id')}
-												id="google_pse_engine_id" name="google_pse_engine_id" bind:value={webConfig.GOOGLE_PSE_ENGINE_ID}
+												id="google_pse_engine_id"
+												name="google_pse_engine_id"
+												bind:value={webConfig.GOOGLE_PSE_ENGINE_ID}
 												autocomplete="off"
 											/>
 										</div>
@@ -432,7 +446,9 @@
 												max="32768"
 												step="1024"
 												placeholder={$i18n.t('Max tokens to retrieve (1024-32768, default 8192)')}
-												id="brave_search_context_tokens" name="brave_search_context_tokens" bind:value={webConfig.BRAVE_SEARCH_CONTEXT_TOKENS}
+												id="brave_search_context_tokens"
+												name="brave_search_context_tokens"
+												bind:value={webConfig.BRAVE_SEARCH_CONTEXT_TOKENS}
 												autocomplete="off"
 											/>
 										</div>
@@ -527,7 +543,9 @@
 												class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 												type="text"
 												placeholder="google.com"
-												id="serphouse_domain" name="serphouse_domain" bind:value={webConfig.SERPHOUSE_DOMAIN}
+												id="serphouse_domain"
+												name="serphouse_domain"
+												bind:value={webConfig.SERPHOUSE_DOMAIN}
 												autocomplete="off"
 											/>
 										</div>
@@ -583,7 +601,9 @@
 												class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 												type="text"
 												placeholder={$i18n.t('Enter SearchApi Engine')}
-												id="searchapi_engine" name="searchapi_engine" bind:value={webConfig.SEARCHAPI_ENGINE}
+												id="searchapi_engine"
+												name="searchapi_engine"
+												bind:value={webConfig.SEARCHAPI_ENGINE}
 												autocomplete="off"
 											/>
 										</div>
@@ -613,7 +633,9 @@
 												class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 												type="text"
 												placeholder={$i18n.t('Enter SerpApi Engine')}
-												id="serpapi_engine" name="serpapi_engine" bind:value={webConfig.SERPAPI_ENGINE}
+												id="serpapi_engine"
+												name="serpapi_engine"
+												bind:value={webConfig.SERPAPI_ENGINE}
 												autocomplete="off"
 											/>
 										</div>
@@ -633,7 +655,9 @@
 												class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 												type="text"
 												placeholder={$i18n.t('Enter Jina API Base URL')}
-												id="jina_api_base_url" name="jina_api_base_url" bind:value={webConfig.JINA_API_BASE_URL}
+												id="jina_api_base_url"
+												name="jina_api_base_url"
+												bind:value={webConfig.JINA_API_BASE_URL}
 												autocomplete="off"
 											/>
 										</div>
@@ -664,7 +688,9 @@
 												class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 												type="text"
 												placeholder={$i18n.t('Enter Bing Search V7 Endpoint')}
-												id="bing_search_v7_endpoint" name="bing_search_v7_endpoint" bind:value={webConfig.BING_SEARCH_V7_ENDPOINT}
+												id="bing_search_v7_endpoint"
+												name="bing_search_v7_endpoint"
+												bind:value={webConfig.BING_SEARCH_V7_ENDPOINT}
 												autocomplete="off"
 											/>
 										</div>
@@ -717,7 +743,9 @@
 									<input
 										list="perplexity-model-list"
 										class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
-										id="perplexity_model" name="perplexity_model" bind:value={webConfig.PERPLEXITY_MODEL}
+										id="perplexity_model"
+										name="perplexity_model"
+										bind:value={webConfig.PERPLEXITY_MODEL}
 									/>
 
 									<datalist id="perplexity-model-list">
@@ -737,7 +765,9 @@
 									</div>
 									<select
 										class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
-										id="perplexity_search_context_usage" name="perplexity_search_context_usage" bind:value={webConfig.PERPLEXITY_SEARCH_CONTEXT_USAGE}
+										id="perplexity_search_context_usage"
+										name="perplexity_search_context_usage"
+										bind:value={webConfig.PERPLEXITY_SEARCH_CONTEXT_USAGE}
 									>
 										<option value="low">{$i18n.t('Low')}</option>
 										<option value="medium">{$i18n.t('Medium')}</option>
@@ -758,7 +788,9 @@
 												class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 												type="text"
 												placeholder={$i18n.t('Enter Microsoft Web IQ API Base URL')}
-												id="microsoft_web_iq_api_base_url" name="microsoft_web_iq_api_base_url" bind:value={webConfig.MICROSOFT_WEB_IQ_API_BASE_URL}
+												id="microsoft_web_iq_api_base_url"
+												name="microsoft_web_iq_api_base_url"
+												bind:value={webConfig.MICROSOFT_WEB_IQ_API_BASE_URL}
 												autocomplete="off"
 											/>
 										</div>
@@ -785,7 +817,9 @@
 										class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 										type="text"
 										placeholder={$i18n.t('Enter language')}
-										id="microsoft_web_iq_language" name="microsoft_web_iq_language" bind:value={webConfig.MICROSOFT_WEB_IQ_LANGUAGE}
+										id="microsoft_web_iq_language"
+										name="microsoft_web_iq_language"
+										bind:value={webConfig.MICROSOFT_WEB_IQ_LANGUAGE}
 										autocomplete="off"
 									/>
 								</div>
@@ -828,7 +862,9 @@
 												class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 												type="text"
 												placeholder={$i18n.t('Enter Firecrawl API Base URL')}
-												id="firecrawl_api_base_url" name="firecrawl_api_base_url" bind:value={webConfig.FIRECRAWL_API_BASE_URL}
+												id="firecrawl_api_base_url"
+												name="firecrawl_api_base_url"
+												bind:value={webConfig.FIRECRAWL_API_BASE_URL}
 												autocomplete="off"
 											/>
 										</div>
@@ -857,7 +893,9 @@
 												class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 												type="number"
 												placeholder={$i18n.t('Enter Firecrawl Timeout')}
-												id="firecrawl_timeout" name="firecrawl_timeout" bind:value={webConfig.FIRECRAWL_TIMEOUT}
+												id="firecrawl_timeout"
+												name="firecrawl_timeout"
+												bind:value={webConfig.FIRECRAWL_TIMEOUT}
 												autocomplete="off"
 											/>
 										</div>
@@ -877,7 +915,9 @@
 												class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 												type="text"
 												placeholder={$i18n.t('Enter External Web Search URL')}
-												id="external_web_search_url" name="external_web_search_url" bind:value={webConfig.EXTERNAL_WEB_SEARCH_URL}
+												id="external_web_search_url"
+												name="external_web_search_url"
+												bind:value={webConfig.EXTERNAL_WEB_SEARCH_URL}
 												autocomplete="off"
 											/>
 										</div>
@@ -908,7 +948,9 @@
 												class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 												type="text"
 												placeholder={$i18n.t('Enter Yandex Web Search URL')}
-												id="yandex_web_search_url" name="yandex_web_search_url" bind:value={webConfig.YANDEX_WEB_SEARCH_URL}
+												id="yandex_web_search_url"
+												name="yandex_web_search_url"
+												bind:value={webConfig.YANDEX_WEB_SEARCH_URL}
 												autocomplete="off"
 											/>
 										</div>
@@ -992,7 +1034,9 @@
 										<div class="flex-1">
 											<select
 												class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
-												id="playwright_search_engine" name="playwright_search_engine" bind:value={webConfig.PLAYWRIGHT_SEARCH_ENGINE}
+												id="playwright_search_engine"
+												name="playwright_search_engine"
+												bind:value={webConfig.PLAYWRIGHT_SEARCH_ENGINE}
 											>
 												<option value="duckduckgo">DuckDuckGo</option>
 												<option value="bing">Bing</option>
@@ -1015,7 +1059,9 @@
 												class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 												type="text"
 												placeholder={$i18n.t('Enter Playwright WebSocket URL')}
-												id="playwright_ws_url" name="playwright_ws_url" bind:value={webConfig.PLAYWRIGHT_WS_URL}
+												id="playwright_ws_url"
+												name="playwright_ws_url"
+												bind:value={webConfig.PLAYWRIGHT_WS_URL}
 												autocomplete="off"
 											/>
 										</div>
@@ -1032,7 +1078,9 @@
 											<input
 												class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 												placeholder={$i18n.t('Enter Playwright Timeout')}
-												id="playwright_timeout" name="playwright_timeout" bind:value={webConfig.PLAYWRIGHT_TIMEOUT}
+												id="playwright_timeout"
+												name="playwright_timeout"
+												bind:value={webConfig.PLAYWRIGHT_TIMEOUT}
 												autocomplete="off"
 											/>
 										</div>
@@ -1052,7 +1100,9 @@
 										<div class="flex-1">
 											<select
 												class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
-												id="ddgs_backend" name="ddgs_backend" bind:value={webConfig.DDGS_BACKEND}
+												id="ddgs_backend"
+												name="ddgs_backend"
+												bind:value={webConfig.DDGS_BACKEND}
 											>
 												<option value="auto">{$i18n.t('Auto (Random)')}</option>
 												<option value="bing">{$i18n.t('Bing')}</option>
@@ -1083,7 +1133,9 @@
 									<input
 										class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 										placeholder={$i18n.t('Search Result Count')}
-										id="web_search_result_count" name="web_search_result_count" bind:value={webConfig.WEB_SEARCH_RESULT_COUNT}
+										id="web_search_result_count"
+										name="web_search_result_count"
+										bind:value={webConfig.WEB_SEARCH_RESULT_COUNT}
 										required
 									/>
 								</div>
@@ -1103,7 +1155,9 @@
 									<input
 										class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 										placeholder={$i18n.t('Concurrent Requests')}
-										id="web_search_concurrent_requests" name="web_search_concurrent_requests" bind:value={webConfig.WEB_SEARCH_CONCURRENT_REQUESTS}
+										id="web_search_concurrent_requests"
+										name="web_search_concurrent_requests"
+										bind:value={webConfig.WEB_SEARCH_CONCURRENT_REQUESTS}
 										type="number"
 										min="0"
 									/>
@@ -1126,7 +1180,9 @@
 							<input
 								class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 								placeholder={$i18n.t('No limit')}
-								id="web_fetch_max_content_length" name="web_fetch_max_content_length" bind:value={webConfig.WEB_FETCH_MAX_CONTENT_LENGTH}
+								id="web_fetch_max_content_length"
+								name="web_fetch_max_content_length"
+								bind:value={webConfig.WEB_FETCH_MAX_CONTENT_LENGTH}
 								type="number"
 								min="0"
 							/>
@@ -1142,7 +1198,9 @@
 								placeholder={$i18n.t(
 									'Enter domains separated by commas (e.g., example.com,site.org,!excludedsite.com)'
 								)}
-								id="web_search_domain_filter_list" name="web_search_domain_filter_list" bind:value={webConfig.WEB_SEARCH_DOMAIN_FILTER_LIST}
+								id="web_search_domain_filter_list"
+								name="web_search_domain_filter_list"
+								bind:value={webConfig.WEB_SEARCH_DOMAIN_FILTER_LIST}
 							/>
 						</div>
 					{/if}
@@ -1211,7 +1269,9 @@
 						<div class="flex items-center relative">
 							<select
 								class="w-fit pr-8 rounded-sm px-2 p-1 text-xs bg-transparent outline-hidden text-right"
-								id="web_loader_engine" name="web_loader_engine" bind:value={webConfig.WEB_LOADER_ENGINE}
+								id="web_loader_engine"
+								name="web_loader_engine"
+								bind:value={webConfig.WEB_LOADER_ENGINE}
 								placeholder={$i18n.t('Select a engine')}
 							>
 								<option value="">{$i18n.t('Default')}</option>
@@ -1231,7 +1291,9 @@
 								<input
 									class="flex-1 w-full text-sm bg-transparent outline-hidden"
 									placeholder={$i18n.t('Timeout')}
-									id="web_loader_timeout" name="web_loader_timeout" bind:value={webConfig.WEB_LOADER_TIMEOUT}
+									id="web_loader_timeout"
+									name="web_loader_timeout"
+									bind:value={webConfig.WEB_LOADER_TIMEOUT}
 								/>
 							</div>
 						</div>
@@ -1257,7 +1319,9 @@
 											class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 											type="text"
 											placeholder={$i18n.t('Enter Playwright WebSocket URL')}
-											id="playwright_ws_url" name="playwright_ws_url" bind:value={webConfig.PLAYWRIGHT_WS_URL}
+											id="playwright_ws_url"
+											name="playwright_ws_url"
+											bind:value={webConfig.PLAYWRIGHT_WS_URL}
 											autocomplete="off"
 										/>
 									</div>
@@ -1274,7 +1338,9 @@
 										<input
 											class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 											placeholder={$i18n.t('Enter Playwright Timeout')}
-											id="playwright_timeout" name="playwright_timeout" bind:value={webConfig.PLAYWRIGHT_TIMEOUT}
+											id="playwright_timeout"
+											name="playwright_timeout"
+											bind:value={webConfig.PLAYWRIGHT_TIMEOUT}
 											autocomplete="off"
 										/>
 									</div>
@@ -1287,7 +1353,9 @@
 
 								<select
 									class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
-									id="playwright_search_engine" name="playwright_search_engine" bind:value={webConfig.PLAYWRIGHT_SEARCH_ENGINE}
+									id="playwright_search_engine"
+									name="playwright_search_engine"
+									bind:value={webConfig.PLAYWRIGHT_SEARCH_ENGINE}
 								>
 									<option value="duckduckgo">DuckDuckGo</option>
 									<option value="bing">Bing</option>
@@ -1310,7 +1378,9 @@
 											class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 											type="text"
 											placeholder={$i18n.t('Enter Firecrawl API Base URL')}
-											id="firecrawl_api_base_url" name="firecrawl_api_base_url" bind:value={webConfig.FIRECRAWL_API_BASE_URL}
+											id="firecrawl_api_base_url"
+											name="firecrawl_api_base_url"
+											bind:value={webConfig.FIRECRAWL_API_BASE_URL}
 											autocomplete="off"
 										/>
 									</div>
@@ -1341,7 +1411,9 @@
 											class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 											type="text"
 											placeholder={$i18n.t('Enter Tavily Extract Depth')}
-											id="tavily_extract_depth" name="tavily_extract_depth" bind:value={webConfig.TAVILY_EXTRACT_DEPTH}
+											id="tavily_extract_depth"
+											name="tavily_extract_depth"
+											bind:value={webConfig.TAVILY_EXTRACT_DEPTH}
 											autocomplete="off"
 										/>
 									</div>
@@ -1375,7 +1447,9 @@
 												class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 												type="text"
 												placeholder={$i18n.t('Enter Microsoft Web IQ API Base URL')}
-												id="microsoft_web_iq_api_base_url" name="microsoft_web_iq_api_base_url" bind:value={webConfig.MICROSOFT_WEB_IQ_API_BASE_URL}
+												id="microsoft_web_iq_api_base_url"
+												name="microsoft_web_iq_api_base_url"
+												bind:value={webConfig.MICROSOFT_WEB_IQ_API_BASE_URL}
 												autocomplete="off"
 											/>
 										</div>
@@ -1402,7 +1476,9 @@
 										class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 										type="text"
 										placeholder={$i18n.t('Enter language')}
-										id="microsoft_web_iq_language" name="microsoft_web_iq_language" bind:value={webConfig.MICROSOFT_WEB_IQ_LANGUAGE}
+										id="microsoft_web_iq_language"
+										name="microsoft_web_iq_language"
+										bind:value={webConfig.MICROSOFT_WEB_IQ_LANGUAGE}
 										autocomplete="off"
 									/>
 								</div>
@@ -1421,7 +1497,9 @@
 											class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 											type="text"
 											placeholder={$i18n.t('Enter External Web Loader URL')}
-											id="external_web_loader_url" name="external_web_loader_url" bind:value={webConfig.EXTERNAL_WEB_LOADER_URL}
+											id="external_web_loader_url"
+											name="external_web_loader_url"
+											bind:value={webConfig.EXTERNAL_WEB_LOADER_URL}
 											autocomplete="off"
 										/>
 									</div>
@@ -1449,7 +1527,9 @@
 						<input
 							class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 							placeholder={$i18n.t('Concurrent Requests')}
-							id="web_loader_concurrent_requests" name="web_loader_concurrent_requests" bind:value={webConfig.WEB_LOADER_CONCURRENT_REQUESTS}
+							id="web_loader_concurrent_requests"
+							name="web_loader_concurrent_requests"
+							bind:value={webConfig.WEB_LOADER_CONCURRENT_REQUESTS}
 							required
 						/>
 					</div>
@@ -1463,7 +1543,9 @@
 								class="flex-1 w-full rounded-lg text-sm bg-transparent outline-hidden"
 								type="text"
 								placeholder={$i18n.t('Enter language codes')}
-								id="youtube_loader_language" name="youtube_loader_language" bind:value={webConfig.YOUTUBE_LOADER_LANGUAGE}
+								id="youtube_loader_language"
+								name="youtube_loader_language"
+								bind:value={webConfig.YOUTUBE_LOADER_LANGUAGE}
 								autocomplete="off"
 							/>
 						</div>
@@ -1478,7 +1560,9 @@
 								class="flex-1 w-full rounded-lg text-sm bg-transparent outline-hidden"
 								type="text"
 								placeholder={$i18n.t('Enter proxy URL (e.g. https://user:password@host:port)')}
-								id="youtube_loader_proxy_url" name="youtube_loader_proxy_url" bind:value={webConfig.YOUTUBE_LOADER_PROXY_URL}
+								id="youtube_loader_proxy_url"
+								name="youtube_loader_proxy_url"
+								bind:value={webConfig.YOUTUBE_LOADER_PROXY_URL}
 								autocomplete="off"
 							/>
 						</div>

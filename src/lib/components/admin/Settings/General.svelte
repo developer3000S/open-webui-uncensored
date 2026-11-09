@@ -283,7 +283,9 @@
 									type="number"
 									min="0"
 									placeholder={$i18n.t('Leave empty for unlimited')}
-									id="folder_max_file_count" name="folder_max_file_count" bind:value={adminConfig.FOLDER_MAX_FILE_COUNT}
+									id="folder_max_file_count"
+									name="folder_max_file_count"
+									bind:value={adminConfig.FOLDER_MAX_FILE_COUNT}
 								/>
 							</div>
 
@@ -379,7 +381,9 @@
 								class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 								type="text"
 								placeholder={`e.g.) "http://localhost:8083"`}
-								id="webui_url" name="webui_url" bind:value={adminConfig.WEBUI_URL}
+								id="webui_url"
+								name="webui_url"
+								bind:value={adminConfig.WEBUI_URL}
 							/>
 						</div>
 

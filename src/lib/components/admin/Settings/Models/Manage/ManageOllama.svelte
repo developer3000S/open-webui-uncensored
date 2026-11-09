@@ -658,7 +658,9 @@
 								placeholder={$i18n.t('Enter model tag (e.g. {{modelTag}})', {
 									modelTag: 'mistral:7b'
 								})}
-								id="model-tag" name="model-tag" bind:value={modelTag}
+								id="model-tag"
+								name="model-tag"
+								bind:value={modelTag}
 							/>
 						</div>
 						<Tooltip content={$i18n.t('Pull Model')} placement="top">
@@ -828,7 +830,9 @@
 						>
 							<select
 								class="w-full py-2 px-4 text-sm outline-hidden bg-transparent"
-								id="delete-model-tag" name="delete-model-tag" bind:value={deleteModelTag}
+								id="delete-model-tag"
+								name="delete-model-tag"
+								bind:value={deleteModelTag}
 								placeholder={$i18n.t('Select a model')}
 							>
 								<option value="" disabled selected>{$i18n.t('Select a model')}</option>
@@ -875,12 +879,16 @@
 								placeholder={$i18n.t('Enter model tag (e.g. {{modelTag}})', {
 									modelTag: 'my-modelfile'
 								})}
-								id="create-model-name" name="create-model-name" bind:value={createModelName}
+								id="create-model-name"
+								name="create-model-name"
+								bind:value={createModelName}
 								disabled={createModelLoading}
 							/>
 
 							<textarea
-								id="create-model-object" name="create-model-object" bind:value={createModelObject}
+								id="create-model-object"
+								name="create-model-object"
+								bind:value={createModelObject}
 								class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-100 dark:bg-gray-850 outline-hidden resize-none scrollbar-hidden"
 								rows="6"
 								placeholder={`e.g. {"model": "my-modelfile", "from": "ollama:7b"})`}
@@ -1023,7 +1031,9 @@
 												: ''}"
 											type="url"
 											required
-											id="model-file-url" name="model-file-url" bind:value={modelFileUrl}
+											id="model-file-url"
+											name="model-file-url"
+											bind:value={modelFileUrl}
 											placeholder={$i18n.t('Type Hugging Face Resolve (Download) URL')}
 										/>
 									</div>
@@ -1094,7 +1104,9 @@
 										{$i18n.t('Modelfile Content')}
 									</div>
 									<textarea
-										id="model-file-content" name="model-file-content" bind:value={modelFileContent}
+										id="model-file-content"
+										name="model-file-content"
+										bind:value={modelFileContent}
 										class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-100 dark:bg-gray-850 outline-hidden resize-none"
 										rows="6"
 									></textarea>

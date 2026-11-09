@@ -498,7 +498,9 @@
 					</div>
 					<input
 						class=" w-full text-sm py-1 rounded-r-xl outline-hidden bg-transparent"
-						id="search-value" name="search-value" bind:value={searchValue}
+						id="search-value"
+						name="search-value"
+						bind:value={searchValue}
 						placeholder={$i18n.t('Search Models')}
 					/>
 					{#if searchValue}

@@ -401,7 +401,9 @@
 							<div class="">
 								<select
 									class="w-fit pr-8 rounded-sm px-2 text-xs bg-transparent outline-hidden text-right"
-									id="content_extraction_engine" name="content_extraction_engine" bind:value={RAGConfig.CONTENT_EXTRACTION_ENGINE}
+									id="content_extraction_engine"
+									name="content_extraction_engine"
+									bind:value={RAGConfig.CONTENT_EXTRACTION_ENGINE}
 								>
 									<option value="">{$i18n.t('Default')}</option>
 									<option value="external">{$i18n.t('External')}</option>
@@ -443,7 +445,9 @@
 									<div class="">
 										<select
 											class="w-fit pr-8 rounded-sm px-2 text-xs bg-transparent outline-hidden text-right"
-											id="pdf_loader_mode" name="pdf_loader_mode" bind:value={RAGConfig.PDF_LOADER_MODE}
+											id="pdf_loader_mode"
+											name="pdf_loader_mode"
+											bind:value={RAGConfig.PDF_LOADER_MODE}
 										>
 											<option value="page">{$i18n.t('Page')}</option>
 											<option value="single">{$i18n.t('Single')}</option>
@@ -463,7 +467,9 @@
 									<input
 										class="flex-1 w-full text-sm bg-transparent outline-hidden"
 										placeholder={$i18n.t('Enter Datalab Marker API Base URL')}
-										id="datalab_marker_api_base_url" name="datalab_marker_api_base_url" bind:value={RAGConfig.DATALAB_MARKER_API_BASE_URL}
+										id="datalab_marker_api_base_url"
+										name="datalab_marker_api_base_url"
+										bind:value={RAGConfig.DATALAB_MARKER_API_BASE_URL}
 									/>
 								</Tooltip>
 							</div>
@@ -614,7 +620,9 @@
 								<div class="">
 									<select
 										class="w-fit pr-8 rounded-sm px-2 text-xs bg-transparent outline-hidden text-right"
-										id="datalab_marker_output_format" name="datalab_marker_output_format" bind:value={RAGConfig.DATALAB_MARKER_OUTPUT_FORMAT}
+										id="datalab_marker_output_format"
+										name="datalab_marker_output_format"
+										bind:value={RAGConfig.DATALAB_MARKER_OUTPUT_FORMAT}
 									>
 										<option value="markdown">{$i18n.t('Markdown')}</option>
 										<option value="json">{$i18n.t('JSON')}</option>
@@ -628,7 +636,9 @@
 									<input
 										class="flex-1 w-full text-sm bg-transparent outline-hidden"
 										placeholder={$i18n.t('Enter External Document Loader URL')}
-										id="external_document_loader_url" name="external_document_loader_url" bind:value={RAGConfig.EXTERNAL_DOCUMENT_LOADER_URL}
+										id="external_document_loader_url"
+										name="external_document_loader_url"
+										bind:value={RAGConfig.EXTERNAL_DOCUMENT_LOADER_URL}
 									/>
 									<SensitiveInput
 										placeholder={$i18n.t('Enter External Document Loader API Key')}
@@ -702,7 +712,9 @@
 									<input
 										class="flex-1 w-full text-sm bg-transparent outline-hidden"
 										placeholder={$i18n.t('Enter Tika Server URL')}
-										id="tika_server_url" name="tika_server_url" bind:value={RAGConfig.TIKA_SERVER_URL}
+										id="tika_server_url"
+										name="tika_server_url"
+										bind:value={RAGConfig.TIKA_SERVER_URL}
 									/>
 								</div>
 							</div>
@@ -711,7 +723,9 @@
 								<input
 									class="flex-1 w-full text-sm bg-transparent outline-hidden"
 									placeholder={$i18n.t('Enter Docling Server URL')}
-									id="docling_server_url" name="docling_server_url" bind:value={RAGConfig.DOCLING_SERVER_URL}
+									id="docling_server_url"
+									name="docling_server_url"
+									bind:value={RAGConfig.DOCLING_SERVER_URL}
 								/>
 								<SensitiveInput
 									placeholder={$i18n.t('Enter Docling API Key')}
@@ -739,7 +753,9 @@
 								<input
 									class="flex-1 w-full text-sm bg-transparent outline-hidden"
 									placeholder={$i18n.t('Enter Document Intelligence Endpoint')}
-									id="document_intelligence_endpoint" name="document_intelligence_endpoint" bind:value={RAGConfig.DOCUMENT_INTELLIGENCE_ENDPOINT}
+									id="document_intelligence_endpoint"
+									name="document_intelligence_endpoint"
+									bind:value={RAGConfig.DOCUMENT_INTELLIGENCE_ENDPOINT}
 								/>
 								<SensitiveInput
 									placeholder={$i18n.t('Enter Document Intelligence Key')}
@@ -756,7 +772,9 @@
 										<input
 											class="flex-1 w-full text-sm bg-transparent outline-hidden"
 											placeholder={$i18n.t('Enter Document Intelligence Model')}
-											id="document_intelligence_model" name="document_intelligence_model" bind:value={RAGConfig.DOCUMENT_INTELLIGENCE_MODEL}
+											id="document_intelligence_model"
+											name="document_intelligence_model"
+											bind:value={RAGConfig.DOCUMENT_INTELLIGENCE_MODEL}
 										/>
 									</div>
 								</div>
@@ -766,7 +784,9 @@
 								<input
 									class="flex-1 w-full text-sm bg-transparent outline-hidden"
 									placeholder={$i18n.t('Enter Mistral API Base URL')}
-									id="mistral_ocr_api_base_url" name="mistral_ocr_api_base_url" bind:value={RAGConfig.MISTRAL_OCR_API_BASE_URL}
+									id="mistral_ocr_api_base_url"
+									name="mistral_ocr_api_base_url"
+									bind:value={RAGConfig.MISTRAL_OCR_API_BASE_URL}
 								/>
 								<SensitiveInput
 									placeholder={$i18n.t('Enter Mistral API Key')}
@@ -793,7 +813,9 @@
 								<input
 									class="flex-1 w-full text-sm bg-transparent outline-hidden"
 									placeholder={$i18n.t('Enter PaddleOCR-vl API Base URL')}
-									id="paddleocr_vl_base_url" name="paddleocr_vl_base_url" bind:value={RAGConfig.PADDLEOCR_VL_BASE_URL}
+									id="paddleocr_vl_base_url"
+									name="paddleocr_vl_base_url"
+									bind:value={RAGConfig.PADDLEOCR_VL_BASE_URL}
 								/>
 								<SensitiveInput
 									placeholder={$i18n.t('Enter PaddleOCR-vl API Token')}
@@ -810,7 +832,9 @@
 									</div>
 									<select
 										class="w-fit pr-8 rounded-sm px-2 text-xs bg-transparent outline-hidden"
-										id="mineru_api_mode" name="mineru_api_mode" bind:value={RAGConfig.MINERU_API_MODE}
+										id="mineru_api_mode"
+										name="mineru_api_mode"
+										bind:value={RAGConfig.MINERU_API_MODE}
 										on:change={() => {
 											// Auto-update URL when switching modes if it's empty or matches the opposite mode's default
 											const cloudUrl = 'https://mineru.net/api/v4';
@@ -840,7 +864,9 @@
 									placeholder={RAGConfig.MINERU_API_MODE === 'cloud'
 										? $i18n.t('https://mineru.net/api/v4')
 										: $i18n.t('http://localhost:8000')}
-									id="mineru_api_url" name="mineru_api_url" bind:value={RAGConfig.MINERU_API_URL}
+									id="mineru_api_url"
+									name="mineru_api_url"
+									bind:value={RAGConfig.MINERU_API_URL}
 								/>
 							</div>
 
@@ -860,7 +886,9 @@
 										class="w-16 text-sm bg-transparent outline-hidden text-right"
 										type="number"
 										min="1"
-										id="mineru_api_timeout" name="mineru_api_timeout" bind:value={RAGConfig.MINERU_API_TIMEOUT}
+										id="mineru_api_timeout"
+										name="mineru_api_timeout"
+										bind:value={RAGConfig.MINERU_API_TIMEOUT}
 										placeholder="60"
 									/>
 								</div>
@@ -902,7 +930,9 @@
 								<input
 									class="flex-1 w-full text-sm bg-transparent outline-hidden"
 									placeholder={$i18n.t('pdf, docx, pptx, xlsx')}
-									id="mineru_file_extensions" name="mineru_file_extensions" bind:value={RAGConfig.MINERU_FILE_EXTENSIONS}
+									id="mineru_file_extensions"
+									name="mineru_file_extensions"
+									bind:value={RAGConfig.MINERU_FILE_EXTENSIONS}
 								/>
 							</div>
 						{/if}
@@ -935,7 +965,9 @@
 							<div class="flex items-center relative">
 								<select
 									class="w-fit pr-8 rounded-sm px-2 text-xs bg-transparent outline-hidden text-right"
-									id="text_splitter" name="text_splitter" bind:value={RAGConfig.TEXT_SPLITTER}
+									id="text_splitter"
+									name="text_splitter"
+									bind:value={RAGConfig.TEXT_SPLITTER}
 								>
 									<option value="">{$i18n.t('Default')} ({$i18n.t('Character')})</option>
 									<option value="token">{$i18n.t('Token')} ({$i18n.t('Tiktoken')})</option>
@@ -955,7 +987,9 @@
 									<input
 										class="w-full rounded-lg py-1.5 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 										placeholder={$i18n.t('Enter Tokenizer Model')}
-										id="rag_tokenizer_model" name="rag_tokenizer_model" bind:value={RAGConfig.RAG_TOKENIZER_MODEL}
+										id="rag_tokenizer_model"
+										name="rag_tokenizer_model"
+										bind:value={RAGConfig.RAG_TOKENIZER_MODEL}
 										autocomplete="off"
 										required={RAG_EMBEDDING_ENGINE !== ''}
 									/>
@@ -990,7 +1024,9 @@
 											class=" w-full rounded-lg py-1.5 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 											type="number"
 											placeholder={$i18n.t('Enter Chunk Size')}
-											id="chunk_size" name="chunk_size" bind:value={RAGConfig.CHUNK_SIZE}
+											id="chunk_size"
+											name="chunk_size"
+											bind:value={RAGConfig.CHUNK_SIZE}
 											autocomplete="off"
 											min="0"
 										/>
@@ -1007,7 +1043,9 @@
 											class="w-full rounded-lg py-1.5 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 											type="number"
 											placeholder={$i18n.t('Enter Chunk Overlap')}
-											id="chunk_overlap" name="chunk_overlap" bind:value={RAGConfig.CHUNK_OVERLAP}
+											id="chunk_overlap"
+											name="chunk_overlap"
+											bind:value={RAGConfig.CHUNK_OVERLAP}
 											autocomplete="off"
 											min="0"
 										/>
@@ -1035,7 +1073,9 @@
 												class="w-full rounded-lg py-1.5 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 												type="number"
 												placeholder={$i18n.t('Enter Chunk Min Size Target')}
-												id="chunk_min_size_target" name="chunk_min_size_target" bind:value={RAGConfig.CHUNK_MIN_SIZE_TARGET}
+												id="chunk_min_size_target"
+												name="chunk_min_size_target"
+												bind:value={RAGConfig.CHUNK_MIN_SIZE_TARGET}
 												autocomplete="off"
 												min="0"
 											/>
@@ -1061,7 +1101,9 @@
 								<div class="flex items-center relative">
 									<select
 										class="w-fit pr-8 rounded-sm px-2 p-1 text-xs bg-transparent outline-hidden text-right"
-										id="rag_embedding_engine" name="rag_embedding_engine" bind:value={RAG_EMBEDDING_ENGINE}
+										id="rag_embedding_engine"
+										name="rag_embedding_engine"
+										bind:value={RAG_EMBEDDING_ENGINE}
 										placeholder={$i18n.t('Select an embedding model engine')}
 										on:change={(e) => {
 											if (e.target.value === 'ollama') {
@@ -1091,7 +1133,9 @@
 									<input
 										class="flex-1 w-full text-sm bg-transparent outline-hidden"
 										placeholder={$i18n.t('API Base URL')}
-										id="open-aiurl" name="open-aiurl" bind:value={OpenAIUrl}
+										id="open-aiurl"
+										name="open-aiurl"
+										bind:value={OpenAIUrl}
 										required
 									/>
 
@@ -1106,7 +1150,9 @@
 									<input
 										class="flex-1 w-full text-sm bg-transparent outline-hidden"
 										placeholder={$i18n.t('API Base URL')}
-										id="ollama-url" name="ollama-url" bind:value={OllamaUrl}
+										id="ollama-url"
+										name="ollama-url"
+										bind:value={OllamaUrl}
 										required
 									/>
 
@@ -1121,7 +1167,9 @@
 									<input
 										class="flex-1 w-full text-sm bg-transparent outline-hidden"
 										placeholder={$i18n.t('API Base URL')}
-										id="mistral-url" name="mistral-url" bind:value={MistralUrl}
+										id="mistral-url"
+										name="mistral-url"
+										bind:value={MistralUrl}
 										required
 									/>
 
@@ -1137,7 +1185,9 @@
 										<input
 											class="flex-1 w-full text-sm bg-transparent outline-hidden"
 											placeholder={$i18n.t('API Base URL')}
-											id="azure-open-aiurl" name="azure-open-aiurl" bind:value={AzureOpenAIUrl}
+											id="azure-open-aiurl"
+											name="azure-open-aiurl"
+											bind:value={AzureOpenAIUrl}
 											required
 										/>
 										<SensitiveInput placeholder={$i18n.t('API Key')} bind:value={AzureOpenAIKey} />
@@ -1146,7 +1196,9 @@
 										<input
 											class="flex-1 w-full text-sm bg-transparent outline-hidden"
 											placeholder={$i18n.t('Version')}
-											id="azure-open-aiversion" name="azure-open-aiversion" bind:value={AzureOpenAIVersion}
+											id="azure-open-aiversion"
+											name="azure-open-aiversion"
+											bind:value={AzureOpenAIVersion}
 											required
 										/>
 									</div>
@@ -1163,7 +1215,9 @@
 										<div class="flex-1 mr-2">
 											<input
 												class="flex-1 w-full text-sm bg-transparent outline-hidden"
-												id="rag_embedding_model" name="rag_embedding_model" bind:value={RAG_EMBEDDING_MODEL}
+												id="rag_embedding_model"
+												name="rag_embedding_model"
+												bind:value={RAG_EMBEDDING_MODEL}
 												placeholder={$i18n.t('Set embedding model')}
 												required
 											/>
@@ -1177,7 +1231,9 @@
 												placeholder={$i18n.t('Set embedding model (e.g. {{model}})', {
 													model: RAG_EMBEDDING_MODEL.slice(-40)
 												})}
-												id="rag_embedding_model" name="rag_embedding_model" bind:value={RAG_EMBEDDING_MODEL}
+												id="rag_embedding_model"
+												name="rag_embedding_model"
+												bind:value={RAG_EMBEDDING_MODEL}
 											/>
 										</div>
 
@@ -1228,7 +1284,9 @@
 
 							<div class="">
 								<input
-									id="rag_embedding_batch_size" name="rag_embedding_batch_size" bind:value={RAG_EMBEDDING_BATCH_SIZE}
+									id="rag_embedding_batch_size"
+									name="rag_embedding_batch_size"
+									bind:value={RAG_EMBEDDING_BATCH_SIZE}
 									type="number"
 									class=" bg-transparent text-center w-14 outline-none"
 									min="-2"
@@ -1268,7 +1326,9 @@
 								</div>
 								<div class="">
 									<input
-										id="rag_embedding_concurrent_requests" name="rag_embedding_concurrent_requests" bind:value={RAG_EMBEDDING_CONCURRENT_REQUESTS}
+										id="rag_embedding_concurrent_requests"
+										name="rag_embedding_concurrent_requests"
+										bind:value={RAG_EMBEDDING_CONCURRENT_REQUESTS}
 										type="number"
 										class=" bg-transparent text-center w-14 outline-none"
 										min="0"
@@ -1335,7 +1395,9 @@
 										<div class="flex items-center relative">
 											<select
 												class="w-fit pr-8 rounded-sm px-2 p-1 text-xs bg-transparent outline-hidden text-right"
-												id="rag_reranking_engine" name="rag_reranking_engine" bind:value={RAGConfig.RAG_RERANKING_ENGINE}
+												id="rag_reranking_engine"
+												name="rag_reranking_engine"
+												bind:value={RAGConfig.RAG_RERANKING_ENGINE}
 												placeholder={$i18n.t('Select a reranking model engine')}
 												on:change={(e) => {
 													if (e.target.value === 'external') {
@@ -1356,7 +1418,9 @@
 											<input
 												class="flex-1 w-full text-sm bg-transparent outline-hidden"
 												placeholder={$i18n.t('API Base URL')}
-												id="rag_external_reranker_url" name="rag_external_reranker_url" bind:value={RAGConfig.RAG_EXTERNAL_RERANKER_URL}
+												id="rag_external_reranker_url"
+												name="rag_external_reranker_url"
+												bind:value={RAGConfig.RAG_EXTERNAL_RERANKER_URL}
 												required
 											/>
 
@@ -1380,7 +1444,9 @@
 													placeholder={$i18n.t('Set reranking model (e.g. {{model}})', {
 														model: 'BAAI/bge-reranker-v2-m3'
 													})}
-													id="rag_reranking_model" name="rag_reranking_model" bind:value={RAGConfig.RAG_RERANKING_MODEL}
+													id="rag_reranking_model"
+													name="rag_reranking_model"
+													bind:value={RAGConfig.RAG_RERANKING_MODEL}
 												/>
 											</div>
 										</div>
@@ -1395,7 +1461,9 @@
 
 								<div class="">
 									<input
-										id="rag_reranking_batch_size" name="rag_reranking_batch_size" bind:value={RAGConfig.RAG_RERANKING_BATCH_SIZE}
+										id="rag_reranking_batch_size"
+										name="rag_reranking_batch_size"
+										bind:value={RAGConfig.RAG_RERANKING_BATCH_SIZE}
 										type="number"
 										class=" bg-transparent text-center w-14 outline-none"
 										min="1"
@@ -1412,7 +1480,9 @@
 										class="flex-1 w-full text-sm bg-transparent outline-hidden"
 										type="number"
 										placeholder={$i18n.t('Enter Top K')}
-										id="top_k" name="top_k" bind:value={RAGConfig.TOP_K}
+										id="top_k"
+										name="top_k"
+										bind:value={RAGConfig.TOP_K}
 										autocomplete="off"
 										min="0"
 									/>
@@ -1427,7 +1497,9 @@
 											class="flex-1 w-full text-sm bg-transparent outline-hidden"
 											type="number"
 											placeholder={$i18n.t('Enter Top K Reranker')}
-											id="top_k_reranker" name="top_k_reranker" bind:value={RAGConfig.TOP_K_RERANKER}
+											id="top_k_reranker"
+											name="top_k_reranker"
+											bind:value={RAGConfig.TOP_K_RERANKER}
 											autocomplete="off"
 											min="0"
 										/>
@@ -1447,7 +1519,9 @@
 												type="number"
 												step="0.01"
 												placeholder={$i18n.t('Enter Score')}
-												id="relevance_threshold" name="relevance_threshold" bind:value={RAGConfig.RELEVANCE_THRESHOLD}
+												id="relevance_threshold"
+												name="relevance_threshold"
+												bind:value={RAGConfig.RELEVANCE_THRESHOLD}
 												autocomplete="off"
 												min="0.0"
 												title={$i18n.t(
@@ -1520,7 +1594,9 @@
 											</div>
 											<div>
 												<input
-													id="hybrid_bm25_weight" name="hybrid_bm25_weight" bind:value={RAGConfig.HYBRID_BM25_WEIGHT}
+													id="hybrid_bm25_weight"
+													name="hybrid_bm25_weight"
+													bind:value={RAGConfig.HYBRID_BM25_WEIGHT}
 													type="number"
 													class=" bg-transparent text-center w-14"
 													min="0"
@@ -1580,7 +1656,9 @@
 									class="flex-1 w-full text-sm bg-transparent outline-hidden"
 									type="text"
 									placeholder={$i18n.t('e.g. pdf, docx, txt')}
-									id="allowed_file_extensions" name="allowed_file_extensions" bind:value={RAGConfig.ALLOWED_FILE_EXTENSIONS}
+									id="allowed_file_extensions"
+									name="allowed_file_extensions"
+									bind:value={RAGConfig.ALLOWED_FILE_EXTENSIONS}
 									autocomplete="off"
 								/>
 							</Tooltip>
@@ -1600,7 +1678,9 @@
 									class="flex-1 w-full text-sm bg-transparent outline-hidden"
 									type="number"
 									placeholder={$i18n.t('Leave empty for unlimited')}
-									id="file_max_size" name="file_max_size" bind:value={RAGConfig.FILE_MAX_SIZE}
+									id="file_max_size"
+									name="file_max_size"
+									bind:value={RAGConfig.FILE_MAX_SIZE}
 									autocomplete="off"
 									min="0"
 								/>
@@ -1621,7 +1701,9 @@
 									class="flex-1 w-full text-sm bg-transparent outline-hidden"
 									type="number"
 									placeholder={$i18n.t('Leave empty for unlimited')}
-									id="file_max_count" name="file_max_count" bind:value={RAGConfig.FILE_MAX_COUNT}
+									id="file_max_count"
+									name="file_max_count"
+									bind:value={RAGConfig.FILE_MAX_COUNT}
 									autocomplete="off"
 									min="0"
 								/>
@@ -1642,7 +1724,9 @@
 									class="flex-1 w-full text-sm bg-transparent outline-hidden"
 									type="number"
 									placeholder={$i18n.t('Leave empty for no compression')}
-									id="file_image_compression_width" name="file_image_compression_width" bind:value={RAGConfig.FILE_IMAGE_COMPRESSION_WIDTH}
+									id="file_image_compression_width"
+									name="file_image_compression_width"
+									bind:value={RAGConfig.FILE_IMAGE_COMPRESSION_WIDTH}
 									autocomplete="off"
 									min="0"
 								/>
@@ -1665,7 +1749,9 @@
 									class="flex-1 w-full text-sm bg-transparent outline-hidden"
 									type="number"
 									placeholder={$i18n.t('Leave empty for no compression')}
-									id="file_image_compression_height" name="file_image_compression_height" bind:value={RAGConfig.FILE_IMAGE_COMPRESSION_HEIGHT}
+									id="file_image_compression_height"
+									name="file_image_compression_height"
+									bind:value={RAGConfig.FILE_IMAGE_COMPRESSION_HEIGHT}
 									autocomplete="off"
 									min="0"
 								/>

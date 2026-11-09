@@ -68,7 +68,9 @@
 								<div class="flex items-center relative">
 									<select
 										class="w-fit pr-8 rounded-sm px-2 p-1 text-xs bg-transparent outline-hidden text-right"
-										id="code_execution_engine" name="code_execution_engine" bind:value={config.CODE_EXECUTION_ENGINE}
+										id="code_execution_engine"
+										name="code_execution_engine"
+										bind:value={config.CODE_EXECUTION_ENGINE}
 										placeholder={$i18n.t('Select a engine')}
 										required
 									>
@@ -103,7 +105,9 @@
 											class="w-full text-sm py-0.5 placeholder:text-gray-300 dark:placeholder:text-gray-700 bg-transparent outline-hidden"
 											type="text"
 											placeholder={$i18n.t('Enter Jupyter URL')}
-											id="code_execution_jupyter_url" name="code_execution_jupyter_url" bind:value={config.CODE_EXECUTION_JUPYTER_URL}
+											id="code_execution_jupyter_url"
+											name="code_execution_jupyter_url"
+											bind:value={config.CODE_EXECUTION_JUPYTER_URL}
 											autocomplete="off"
 										/>
 									</div>
@@ -119,7 +123,9 @@
 									<div>
 										<select
 											class="w-fit pr-8 rounded-sm px-2 p-1 text-xs bg-transparent outline-hidden text-left"
-											id="code_execution_jupyter_auth" name="code_execution_jupyter_auth" bind:value={config.CODE_EXECUTION_JUPYTER_AUTH}
+											id="code_execution_jupyter_auth"
+											name="code_execution_jupyter_auth"
+											bind:value={config.CODE_EXECUTION_JUPYTER_AUTH}
 											placeholder={$i18n.t('Select an auth method')}
 										>
 											<option selected value="">{$i18n.t('None')}</option>
@@ -162,7 +168,9 @@
 										<input
 											class="w-fit rounded-sm px-2 p-1 text-xs bg-transparent outline-hidden text-right"
 											type="number"
-											id="code_execution_jupyter_timeout" name="code_execution_jupyter_timeout" bind:value={config.CODE_EXECUTION_JUPYTER_TIMEOUT}
+											id="code_execution_jupyter_timeout"
+											name="code_execution_jupyter_timeout"
+											bind:value={config.CODE_EXECUTION_JUPYTER_TIMEOUT}
 											placeholder={$i18n.t('e.g. 60')}
 											autocomplete="off"
 										/>
@@ -197,7 +205,9 @@
 								<div class="flex items-center relative">
 									<select
 										class="w-fit pr-8 rounded-sm px-2 p-1 text-xs bg-transparent outline-hidden text-right"
-										id="code_interpreter_engine" name="code_interpreter_engine" bind:value={config.CODE_INTERPRETER_ENGINE}
+										id="code_interpreter_engine"
+										name="code_interpreter_engine"
+										bind:value={config.CODE_INTERPRETER_ENGINE}
 										placeholder={$i18n.t('Select a engine')}
 										required
 									>
@@ -232,7 +242,9 @@
 											class="w-full text-sm py-0.5 placeholder:text-gray-300 dark:placeholder:text-gray-700 bg-transparent outline-hidden"
 											type="text"
 											placeholder={$i18n.t('Enter Jupyter URL')}
-											id="code_interpreter_jupyter_url" name="code_interpreter_jupyter_url" bind:value={config.CODE_INTERPRETER_JUPYTER_URL}
+											id="code_interpreter_jupyter_url"
+											name="code_interpreter_jupyter_url"
+											bind:value={config.CODE_INTERPRETER_JUPYTER_URL}
 											autocomplete="off"
 										/>
 									</div>
@@ -248,7 +260,9 @@
 									<div>
 										<select
 											class="w-fit pr-8 rounded-sm px-2 p-1 text-xs bg-transparent outline-hidden text-left"
-											id="code_interpreter_jupyter_auth" name="code_interpreter_jupyter_auth" bind:value={config.CODE_INTERPRETER_JUPYTER_AUTH}
+											id="code_interpreter_jupyter_auth"
+											name="code_interpreter_jupyter_auth"
+											bind:value={config.CODE_INTERPRETER_JUPYTER_AUTH}
 											placeholder={$i18n.t('Select an auth method')}
 										>
 											<option selected value="">{$i18n.t('None')}</option>
@@ -291,7 +305,9 @@
 										<input
 											class="w-fit rounded-sm px-2 p-1 text-xs bg-transparent outline-hidden text-right"
 											type="number"
-											id="code_interpreter_jupyter_timeout" name="code_interpreter_jupyter_timeout" bind:value={config.CODE_INTERPRETER_JUPYTER_TIMEOUT}
+											id="code_interpreter_jupyter_timeout"
+											name="code_interpreter_jupyter_timeout"
+											bind:value={config.CODE_INTERPRETER_JUPYTER_TIMEOUT}
 											placeholder={$i18n.t('e.g. 60')}
 											autocomplete="off"
 										/>

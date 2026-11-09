@@ -65,7 +65,9 @@
 		<input
 			class="w-full text-sm bg-transparent outline-hidden"
 			placeholder={$i18n.t('Enter URL (e.g. http://localhost:11434)')}
-			id="url" name="url" bind:value={url}
+			id="url"
+			name="url"
+			bind:value={url}
 			readonly={true}
 		/>
 	</Tooltip>

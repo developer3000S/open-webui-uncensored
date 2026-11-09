@@ -216,7 +216,9 @@
 							class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 							type="text"
 							placeholder={`e.g.) "30m","1h", "10d". `}
-							id="jwt_expires_in" name="jwt_expires_in" bind:value={adminConfig.JWT_EXPIRES_IN}
+							id="jwt_expires_in"
+							name="jwt_expires_in"
+							bind:value={adminConfig.JWT_EXPIRES_IN}
 						/>
 					</div>
 
@@ -270,7 +272,9 @@
 								class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 								type="email"
 								placeholder={$i18n.t('Leave empty to use first admin user')}
-								id="admin_email" name="admin_email" bind:value={adminConfig.ADMIN_EMAIL}
+								id="admin_email"
+								name="admin_email"
+								bind:value={adminConfig.ADMIN_EMAIL}
 							/>
 						</div>
 					</div>
@@ -323,7 +327,9 @@
 									class="w-full bg-transparent outline-hidden py-0.5"
 									required
 									placeholder={$i18n.t('Enter server label')}
-									id="label" name="label" bind:value={LDAP_SERVER.label}
+									id="label"
+									name="label"
+									bind:value={LDAP_SERVER.label}
 								/>
 							</div>
 							<div class="w-full"></div>
@@ -337,7 +343,9 @@
 									class="w-full bg-transparent outline-hidden py-0.5"
 									required
 									placeholder={$i18n.t('Enter server host')}
-									id="host" name="host" bind:value={LDAP_SERVER.host}
+									id="host"
+									name="host"
+									bind:value={LDAP_SERVER.host}
 								/>
 							</div>
 							<div class="w-full">
@@ -353,7 +361,9 @@
 										class="w-full bg-transparent outline-hidden py-0.5"
 										type="number"
 										placeholder={$i18n.t('Enter server port')}
-										id="port" name="port" bind:value={LDAP_SERVER.port}
+										id="port"
+										name="port"
+										bind:value={LDAP_SERVER.port}
 									/>
 								</Tooltip>
 							</div>
@@ -370,7 +380,9 @@
 									<input
 										class="w-full bg-transparent outline-hidden py-0.5"
 										placeholder={$i18n.t('Enter Application DN')}
-										id="app_dn" name="app_dn" bind:value={LDAP_SERVER.app_dn}
+										id="app_dn"
+										name="app_dn"
+										bind:value={LDAP_SERVER.app_dn}
 									/>
 								</Tooltip>
 							</div>
@@ -400,7 +412,9 @@
 										class="w-full bg-transparent outline-hidden py-0.5"
 										required
 										placeholder={$i18n.t('Example: mail')}
-										id="attribute_for_mail" name="attribute_for_mail" bind:value={LDAP_SERVER.attribute_for_mail}
+										id="attribute_for_mail"
+										name="attribute_for_mail"
+										bind:value={LDAP_SERVER.attribute_for_mail}
 									/>
 								</Tooltip>
 							</div>
@@ -420,7 +434,9 @@
 										class="w-full bg-transparent outline-hidden py-0.5"
 										required
 										placeholder={$i18n.t('Example: sAMAccountName or uid or userPrincipalName')}
-										id="attribute_for_username" name="attribute_for_username" bind:value={LDAP_SERVER.attribute_for_username}
+										id="attribute_for_username"
+										name="attribute_for_username"
+										bind:value={LDAP_SERVER.attribute_for_username}
 									/>
 								</Tooltip>
 							</div>
@@ -435,7 +451,9 @@
 										class="w-full bg-transparent outline-hidden py-0.5"
 										required
 										placeholder={$i18n.t('Example: ou=users,dc=foo,dc=example')}
-										id="search_base" name="search_base" bind:value={LDAP_SERVER.search_base}
+										id="search_base"
+										name="search_base"
+										bind:value={LDAP_SERVER.search_base}
 									/>
 								</Tooltip>
 							</div>
@@ -478,7 +496,9 @@
 										<input
 											class="w-full bg-transparent outline-hidden py-0.5"
 											placeholder={$i18n.t('Enter certificate path')}
-											id="certificate_path" name="certificate_path" bind:value={LDAP_SERVER.certificate_path}
+											id="certificate_path"
+											name="certificate_path"
+											bind:value={LDAP_SERVER.certificate_path}
 										/>
 									</div>
 								</div>
@@ -498,7 +518,9 @@
 											<input
 												class="w-full bg-transparent outline-hidden py-0.5"
 												placeholder={$i18n.t('Example: ALL')}
-												id="ciphers" name="ciphers" bind:value={LDAP_SERVER.ciphers}
+												id="ciphers"
+												name="ciphers"
+												bind:value={LDAP_SERVER.ciphers}
 											/>
 										</Tooltip>
 									</div>
@@ -526,7 +548,9 @@
 								<input
 									class="w-full bg-transparent outline-hidden py-0.5"
 									placeholder="SSO"
-									id="oauth_provider_name" name="oauth_provider_name" bind:value={oauthConfig.OAUTH_PROVIDER_NAME}
+									id="oauth_provider_name"
+									name="oauth_provider_name"
+									bind:value={oauthConfig.OAUTH_PROVIDER_NAME}
 								/>
 							</div>
 							<div class="w-full">
@@ -536,7 +560,9 @@
 								<input
 									class="w-full bg-transparent outline-hidden py-0.5"
 									placeholder="https://accounts.google.com/.well-known/openid-configuration"
-									id="openid_provider_url" name="openid_provider_url" bind:value={oauthConfig.OPENID_PROVIDER_URL}
+									id="openid_provider_url"
+									name="openid_provider_url"
+									bind:value={oauthConfig.OPENID_PROVIDER_URL}
 								/>
 							</div>
 						</div>
@@ -549,7 +575,9 @@
 								<input
 									class="w-full bg-transparent outline-hidden py-0.5"
 									placeholder={$i18n.t('Enter Client ID')}
-									id="oauth_client_id" name="oauth_client_id" bind:value={oauthConfig.OAUTH_CLIENT_ID}
+									id="oauth_client_id"
+									name="oauth_client_id"
+									bind:value={oauthConfig.OAUTH_CLIENT_ID}
 								/>
 							</div>
 							<div class="w-full">
@@ -574,7 +602,9 @@
 								<input
 									class="w-full bg-transparent outline-hidden py-0.5"
 									placeholder={$i18n.t('Enter Redirect URI')}
-									id="openid_redirect_uri" name="openid_redirect_uri" bind:value={oauthConfig.OPENID_REDIRECT_URI}
+									id="openid_redirect_uri"
+									name="openid_redirect_uri"
+									bind:value={oauthConfig.OPENID_REDIRECT_URI}
 								/>
 							</div>
 							<div class="w-full">
@@ -584,7 +614,9 @@
 								<input
 									class="w-full bg-transparent outline-hidden py-0.5"
 									placeholder="openid email profile"
-									id="oauth_scopes" name="oauth_scopes" bind:value={oauthConfig.OAUTH_SCOPES}
+									id="oauth_scopes"
+									name="oauth_scopes"
+									bind:value={oauthConfig.OAUTH_SCOPES}
 								/>
 							</div>
 						</div>
@@ -597,7 +629,9 @@
 								<input
 									class="w-full bg-transparent outline-hidden py-0.5"
 									placeholder="email"
-									id="oauth_email_claim" name="oauth_email_claim" bind:value={oauthConfig.OAUTH_EMAIL_CLAIM}
+									id="oauth_email_claim"
+									name="oauth_email_claim"
+									bind:value={oauthConfig.OAUTH_EMAIL_CLAIM}
 								/>
 							</div>
 							<div class="w-full">
@@ -607,7 +641,9 @@
 								<input
 									class="w-full bg-transparent outline-hidden py-0.5"
 									placeholder="name"
-									id="oauth_username_claim" name="oauth_username_claim" bind:value={oauthConfig.OAUTH_USERNAME_CLAIM}
+									id="oauth_username_claim"
+									name="oauth_username_claim"
+									bind:value={oauthConfig.OAUTH_USERNAME_CLAIM}
 								/>
 							</div>
 						</div>
@@ -620,7 +656,9 @@
 								<input
 									class="w-full bg-transparent outline-hidden py-0.5"
 									placeholder="picture"
-									id="oauth_picture_claim" name="oauth_picture_claim" bind:value={oauthConfig.OAUTH_PICTURE_CLAIM}
+									id="oauth_picture_claim"
+									name="oauth_picture_claim"
+									bind:value={oauthConfig.OAUTH_PICTURE_CLAIM}
 								/>
 							</div>
 							<div class="w-full">
@@ -630,7 +668,9 @@
 								<input
 									class="w-full bg-transparent outline-hidden py-0.5"
 									placeholder="sub"
-									id="oauth_sub_claim" name="oauth_sub_claim" bind:value={oauthConfig.OAUTH_SUB_CLAIM}
+									id="oauth_sub_claim"
+									name="oauth_sub_claim"
+									bind:value={oauthConfig.OAUTH_SUB_CLAIM}
 								/>
 							</div>
 						</div>
@@ -663,7 +703,9 @@
 							<input
 								class="w-full bg-transparent outline-hidden py-0.5"
 								placeholder="* (all domains)"
-								id="oauth_allowed_domains" name="oauth_allowed_domains" bind:value={oauthConfig.OAUTH_ALLOWED_DOMAINS}
+								id="oauth_allowed_domains"
+								name="oauth_allowed_domains"
+								bind:value={oauthConfig.OAUTH_ALLOWED_DOMAINS}
 							/>
 						</div>
 

@@ -337,7 +337,8 @@
 			<label class="sr-only" for="search-input-settings-modal">{$i18n.t('Search')}</label>
 			<input
 				class="w-full py-1 text-sm bg-transparent dark:text-gray-300 outline-hidden"
-				id="search" name="search" bind:value={search}
+				name="search"
+				bind:value={search}
 				id="search-input-settings-modal"
 				on:input={searchDebounceHandler}
 				placeholder={$i18n.t('Search')}

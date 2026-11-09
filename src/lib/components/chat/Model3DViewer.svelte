@@ -9,7 +9,7 @@
 
 	async function ensureThree() {
 		if (!THREE) {
-			const { THREE } = await import('three');
+			const THREE = await import('three');
 			OrbitControls = (await import('three/examples/jsm/controls/OrbitControls.js')).OrbitControls;
 			GLTFLoader = (await import('three/examples/jsm/loaders/GLTFLoader.js')).GLTFLoader;
 		}
@@ -97,9 +97,9 @@
 		// Remove existing model
 		if (model) {
 			scene.remove(model);
-			model.traverse((child: THREE.Object3D) => {
-				if ((child as THREE.Mesh).isMesh) {
-					const mesh = child as THREE.Mesh;
+			model.traverse((child: any) => {
+				if ((child as any).isMesh) {
+					const mesh = child as any;
 					if (mesh.geometry) mesh.geometry.dispose();
 					if (mesh.material) {
 						if (Array.isArray(mesh.material)) {
@@ -137,7 +137,7 @@
 					animationClip = result.animations[0];
 				}
 			} else {
-				model = result as unknown as THREE.Object3D;
+				model = result as unknown as any;
 			}
 
 			if (model) {
@@ -152,9 +152,9 @@
 				model.position.y += (size.y * scale) / 2;
 				model.scale.set(scale, scale, scale);
 
-				model.traverse((child: THREE.Object3D) => {
-					if ((child as THREE.Mesh).isMesh) {
-						const mesh = child as THREE.Mesh;
+				model.traverse((child: any) => {
+					if ((child as any).isMesh) {
+						const mesh = child as any;
 						mesh.castShadow = true;
 						mesh.receiveShadow = true;
 					}
@@ -227,9 +227,9 @@
 			renderer = null;
 		}
 		if (model) {
-			model.traverse((child: THREE.Object3D) => {
-				if ((child as THREE.Mesh).isMesh) {
-					const mesh = child as THREE.Mesh;
+			model.traverse((child: any) => {
+				if ((child as any).isMesh) {
+					const mesh = child as any;
 					if (mesh.geometry) mesh.geometry.dispose();
 					if (mesh.material) {
 						if (Array.isArray(mesh.material)) {

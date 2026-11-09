@@ -62,7 +62,9 @@
 				<input
 					class=" outline-hidden w-full bg-transparent {pipeline ? 'pr-8' : ''}"
 					placeholder={$i18n.t('API Base URL')}
-					id="url" name="url" bind:value={url}
+					id="url"
+					name="url"
+					bind:value={url}
 					autocomplete="off"
 					readonly={true}
 				/>
