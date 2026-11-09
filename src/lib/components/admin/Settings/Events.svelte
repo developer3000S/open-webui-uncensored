@@ -454,7 +454,7 @@
 						</div>
 						<select
 							class="text-xs bg-transparent outline-hidden text-gray-700 dark:text-gray-300"
-							bind:value={targetMode}
+							id="target-mode" name="target-mode" bind:value={targetMode}
 						>
 							<option value="all">{$i18n.t('All users and system events')}</option>
 							<option value="system">{$i18n.t('System events only')}</option>
@@ -520,7 +520,7 @@
 									type="text"
 									placeholder={$i18n.t('Search users or groups')}
 									autocomplete="off"
-									bind:value={targetQuery}
+									id="target-query" name="target-query" bind:value={targetQuery}
 									on:input={handleTargetSearch}
 								/>
 
@@ -606,7 +606,7 @@
 									type="text"
 									placeholder={$i18n.t('Search or add pattern')}
 									autocomplete="off"
-									bind:value={pattern}
+									id="pattern" name="pattern" bind:value={pattern}
 									on:keydown={(event) => {
 										if (event.key === 'Enter') {
 											event.preventDefault();

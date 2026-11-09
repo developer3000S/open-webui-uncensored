@@ -253,7 +253,7 @@
 									<input
 										class="w-full text-sm bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden"
 										type="text"
-										bind:value={name}
+										id="name" name="name" bind:value={name}
 										placeholder={$i18n.t('Model Name')}
 										autocomplete="off"
 										required
@@ -268,7 +268,7 @@
 									<input
 										class="w-full text-sm bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden"
 										type="text"
-										bind:value={id}
+										id="id" name="id" bind:value={id}
 										placeholder={$i18n.t('Model ID')}
 										autocomplete="off"
 										required
@@ -285,7 +285,7 @@
 								<input
 									class="w-full text-sm bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden"
 									type="text"
-									bind:value={description}
+									id="description" name="description" bind:value={description}
 									placeholder={$i18n.t('Enter description')}
 									autocomplete="off"
 								/>
@@ -355,7 +355,7 @@
 								class="w-full py-1 text-sm rounded-lg bg-transparent {selectedModelId
 									? ''
 									: 'text-gray-500'} placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden"
-								bind:value={selectedModelId}
+								id="selected-model-id" name="selected-model-id" bind:value={selectedModelId}
 							>
 								<option value="">{$i18n.t('Select a model')}</option>
 								{#each $models.filter((m) => (m?.owned_by as any) !== 'arena') as model}

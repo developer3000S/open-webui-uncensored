@@ -332,7 +332,7 @@
 									<input
 										list="model-list-image-gen"
 										class=" text-right text-sm bg-transparent outline-hidden max-w-full w-52"
-										bind:value={config.IMAGE_GENERATION_MODEL}
+										id="image_generation_model" name="image_generation_model" bind:value={config.IMAGE_GENERATION_MODEL}
 										placeholder={$i18n.t('Select a model')}
 										required
 									/>
@@ -358,7 +358,7 @@
 									<input
 										class="  text-right text-sm bg-transparent outline-hidden max-w-full w-52"
 										placeholder={$i18n.t('Enter Image Size (e.g. 512x512)')}
-										bind:value={config.IMAGE_SIZE}
+										id="image_size" name="image_size" bind:value={config.IMAGE_SIZE}
 									/>
 								</Tooltip>
 							</div>
@@ -380,7 +380,7 @@
 										<input
 											class=" text-right text-sm bg-transparent outline-hidden"
 											placeholder={$i18n.t('Enter Number of Steps (e.g. 50)')}
-											bind:value={config.IMAGE_STEPS}
+											id="image_steps" name="image_steps" bind:value={config.IMAGE_STEPS}
 											required
 										/>
 									</Tooltip>
@@ -411,7 +411,7 @@
 
 							<select
 								class="w-fit pr-8 cursor-pointer rounded-sm px-2 text-xs bg-transparent outline-hidden text-right"
-								bind:value={config.IMAGE_GENERATION_ENGINE}
+								id="image_generation_engine" name="image_generation_engine" bind:value={config.IMAGE_GENERATION_ENGINE}
 								placeholder={$i18n.t('Select Engine')}
 							>
 								<option value="openai">{$i18n.t('Default (Open AI)')}</option>
@@ -436,7 +436,7 @@
 										<input
 											class="w-full text-sm bg-transparent outline-hidden text-right"
 											placeholder={$i18n.t('API Base URL')}
-											bind:value={config.IMAGES_OPENAI_API_BASE_URL}
+											id="images_openai_api_base_url" name="images_openai_api_base_url" bind:value={config.IMAGES_OPENAI_API_BASE_URL}
 										/>
 									</div>
 								</div>
@@ -477,7 +477,7 @@
 										<input
 											class="w-full text-sm bg-transparent outline-hidden text-right"
 											placeholder={$i18n.t('API Version')}
-											bind:value={config.IMAGES_OPENAI_API_VERSION}
+											id="images_openai_api_version" name="images_openai_api_version" bind:value={config.IMAGES_OPENAI_API_VERSION}
 										/>
 									</div>
 								</div>
@@ -517,7 +517,7 @@
 										<input
 											class="w-full text-sm bg-transparent outline-hidden text-right"
 											placeholder={$i18n.t('Enter URL (e.g. http://127.0.0.1:7860/)')}
-											bind:value={config.AUTOMATIC1111_BASE_URL}
+											id="automatic1111_base_url" name="automatic1111_base_url" bind:value={config.AUTOMATIC1111_BASE_URL}
 										/>
 									</div>
 									<button
@@ -631,7 +631,7 @@
 										<input
 											class="w-full text-sm bg-transparent outline-hidden text-right"
 											placeholder={$i18n.t('Enter URL (e.g. http://127.0.0.1:7860/)')}
-											bind:value={config.COMFYUI_BASE_URL}
+											id="comfyui_base_url" name="comfyui_base_url" bind:value={config.COMFYUI_BASE_URL}
 										/>
 									</div>
 									<button
@@ -794,7 +794,7 @@
 														<input
 															class="py-1 w-24 text-xs bg-transparent outline-hidden"
 															placeholder={$i18n.t('Key')}
-															bind:value={node.key}
+															id="key" name="key" bind:value={node.key}
 															required
 														/>
 													</Tooltip>
@@ -810,7 +810,7 @@
 														<input
 															class="w-full py-1 text-xs bg-transparent outline-hidden"
 															placeholder={$i18n.t('Node Ids')}
-															bind:value={node.node_ids}
+															id="node_ids" name="node_ids" bind:value={node.node_ids}
 														/>
 													</Tooltip>
 												</div>
@@ -838,7 +838,7 @@
 										<input
 											class="w-full text-sm bg-transparent outline-hidden text-right"
 											placeholder={$i18n.t('API Base URL')}
-											bind:value={config.IMAGES_GEMINI_API_BASE_URL}
+											id="images_gemini_api_base_url" name="images_gemini_api_base_url" bind:value={config.IMAGES_GEMINI_API_BASE_URL}
 										/>
 									</div>
 								</div>
@@ -876,7 +876,7 @@
 
 								<select
 									class="w-fit pr-8 cursor-pointer rounded-sm px-2 text-xs bg-transparent outline-hidden text-right"
-									bind:value={config.IMAGES_GEMINI_ENDPOINT_METHOD}
+									id="images_gemini_endpoint_method" name="images_gemini_endpoint_method" bind:value={config.IMAGES_GEMINI_ENDPOINT_METHOD}
 									placeholder={$i18n.t('Select Method')}
 								>
 									<option value="predict">predict</option>
@@ -917,7 +917,7 @@
 									<input
 										list="model-list-image-edit"
 										class="text-right text-sm bg-transparent outline-hidden max-w-full w-52"
-										bind:value={config.IMAGE_EDIT_MODEL}
+										id="image_edit_model" name="image_edit_model" bind:value={config.IMAGE_EDIT_MODEL}
 										placeholder={$i18n.t('Select a model')}
 									/>
 
@@ -942,7 +942,7 @@
 									<input
 										class="text-right text-sm bg-transparent outline-hidden max-w-full w-52"
 										placeholder={$i18n.t('Enter Image Size (e.g. 512x512)')}
-										bind:value={config.IMAGE_EDIT_SIZE}
+										id="image_edit_size" name="image_edit_size" bind:value={config.IMAGE_EDIT_SIZE}
 									/>
 								</Tooltip>
 							</div>
@@ -959,7 +959,7 @@
 
 							<select
 								class="w-fit pr-8 cursor-pointer rounded-sm px-2 text-xs bg-transparent outline-hidden text-right"
-								bind:value={config.IMAGE_EDIT_ENGINE}
+								id="image_edit_engine" name="image_edit_engine" bind:value={config.IMAGE_EDIT_ENGINE}
 								placeholder={$i18n.t('Select Engine')}
 							>
 								<option value="openai">{$i18n.t('Default (Open AI)')}</option>
@@ -983,7 +983,7 @@
 										<input
 											class="w-full text-sm bg-transparent outline-hidden text-right"
 											placeholder={$i18n.t('API Base URL')}
-											bind:value={config.IMAGES_EDIT_OPENAI_API_BASE_URL}
+											id="images_edit_openai_api_base_url" name="images_edit_openai_api_base_url" bind:value={config.IMAGES_EDIT_OPENAI_API_BASE_URL}
 										/>
 									</div>
 								</div>
@@ -1024,7 +1024,7 @@
 										<input
 											class="w-full text-sm bg-transparent outline-hidden text-right"
 											placeholder={$i18n.t('API Version')}
-											bind:value={config.IMAGES_EDIT_OPENAI_API_VERSION}
+											id="images_edit_openai_api_version" name="images_edit_openai_api_version" bind:value={config.IMAGES_EDIT_OPENAI_API_VERSION}
 										/>
 									</div>
 								</div>
@@ -1044,7 +1044,7 @@
 										<input
 											class="w-full text-sm bg-transparent outline-hidden text-right"
 											placeholder={$i18n.t('Enter URL (e.g. http://127.0.0.1:7860/)')}
-											bind:value={config.IMAGES_EDIT_COMFYUI_BASE_URL}
+											id="images_edit_comfyui_base_url" name="images_edit_comfyui_base_url" bind:value={config.IMAGES_EDIT_COMFYUI_BASE_URL}
 										/>
 									</div>
 									<button
@@ -1215,7 +1215,7 @@
 														<input
 															class="w-full py-1 text-xs bg-transparent outline-hidden"
 															placeholder={$i18n.t('Node Ids')}
-															bind:value={node.node_ids}
+															id="node_ids" name="node_ids" bind:value={node.node_ids}
 														/>
 													</Tooltip>
 												</div>
@@ -1243,7 +1243,7 @@
 										<input
 											class="w-full text-sm bg-transparent outline-hidden text-right"
 											placeholder={$i18n.t('API Base URL')}
-											bind:value={config.IMAGES_EDIT_GEMINI_API_BASE_URL}
+											id="images_edit_gemini_api_base_url" name="images_edit_gemini_api_base_url" bind:value={config.IMAGES_EDIT_GEMINI_API_BASE_URL}
 										/>
 									</div>
 								</div>

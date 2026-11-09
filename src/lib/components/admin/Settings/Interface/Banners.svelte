@@ -64,7 +64,7 @@
 			<div class="flex flex-row flex-1 gap-2 items-start">
 				<select
 					class="w-fit capitalize rounded-xl text-xs bg-transparent outline-hidden pl-1 pr-5"
-					bind:value={banner.type}
+					id="type" name="type" bind:value={banner.type}
 					required
 				>
 					<option value="" disabled hidden class="text-gray-900">{$i18n.t('Type')}</option>

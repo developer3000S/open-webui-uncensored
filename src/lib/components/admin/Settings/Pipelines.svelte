@@ -236,7 +236,7 @@
 						<div class="flex-1">
 							<select
 								class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
-								bind:value={selectedPipelinesUrlIdx}
+								id="selected-pipelines-url-idx" name="selected-pipelines-url-idx" bind:value={selectedPipelinesUrlIdx}
 								placeholder={$i18n.t('Select a pipeline url')}
 								on:change={async () => {
 									await tick();
@@ -351,7 +351,7 @@
 							<input
 								class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 								placeholder={$i18n.t('Enter Github Raw URL')}
-								bind:value={pipelineDownloadUrl}
+								id="pipeline-download-url" name="pipeline-download-url" bind:value={pipelineDownloadUrl}
 							/>
 						</div>
 						<button
@@ -422,7 +422,7 @@
 									<div class="flex-1">
 										<select
 											class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
-											bind:value={selectedPipelineIdx}
+											id="selected-pipeline-idx" name="selected-pipeline-idx" bind:value={selectedPipelineIdx}
 											placeholder={$i18n.t('Select a pipeline')}
 											on:change={async () => {
 												await tick();
@@ -588,7 +588,7 @@
 						<div class="flex-1">
 							<select
 								class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
-								bind:value={selectedPipelinesUrlIdx}
+								id="selected-pipelines-url-idx" name="selected-pipelines-url-idx" bind:value={selectedPipelinesUrlIdx}
 								placeholder={$i18n.t('Select a pipeline url')}
 								on:change={async () => {
 									await tick();
@@ -691,7 +691,7 @@
 							<input
 								class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
 								placeholder={$i18n.t('Enter Github Raw URL')}
-								bind:value={pipelineDownloadUrl}
+								id="pipeline-download-url" name="pipeline-download-url" bind:value={pipelineDownloadUrl}
 							/>
 						</div>
 						<button
@@ -762,7 +762,7 @@
 									<div class="flex-1">
 										<select
 											class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
-											bind:value={selectedPipelineIdx}
+											id="selected-pipeline-idx" name="selected-pipeline-idx" bind:value={selectedPipelineIdx}
 											placeholder={$i18n.t('Select a pipeline')}
 											on:change={async () => {
 												await tick();

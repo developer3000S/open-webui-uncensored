@@ -144,7 +144,7 @@
 						<div class=" text-xs mb-1">{$i18n.t('Local Task Model')}</div>
 						<select
 							class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
-							bind:value={taskConfig.TASK_MODEL}
+							id="task_model" name="task_model" bind:value={taskConfig.TASK_MODEL}
 							placeholder={$i18n.t('Select a model')}
 							on:change={() => {
 								if (taskConfig.TASK_MODEL) {
@@ -187,7 +187,7 @@
 						<div class=" text-xs mb-1">{$i18n.t('External Task Model')}</div>
 						<select
 							class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
-							bind:value={taskConfig.TASK_MODEL_EXTERNAL}
+							id="task_model_external" name="task_model_external" bind:value={taskConfig.TASK_MODEL_EXTERNAL}
 							placeholder={$i18n.t('Select a model')}
 							on:change={() => {
 								if (taskConfig.TASK_MODEL_EXTERNAL) {
@@ -252,7 +252,7 @@
 								min="1"
 								step="1"
 								class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
-								bind:value={chatConfig.CONTEXT_COMPACTION_TOKEN_THRESHOLD}
+								id="context_compaction_token_threshold" name="context_compaction_token_threshold" bind:value={chatConfig.CONTEXT_COMPACTION_TOKEN_THRESHOLD}
 							/>
 						</Tooltip>
 					</div>
@@ -442,7 +442,7 @@
 						>
 							<input
 								class="w-full outline-hidden bg-transparent"
-								bind:value={taskConfig.AUTOCOMPLETE_GENERATION_INPUT_MAX_LENGTH}
+								id="autocomplete_generation_input_max_length" name="autocomplete_generation_input_max_length" bind:value={taskConfig.AUTOCOMPLETE_GENERATION_INPUT_MAX_LENGTH}
 								placeholder={$i18n.t('-1 for no limit, or a positive integer for a specific limit')}
 							/>
 						</Tooltip>

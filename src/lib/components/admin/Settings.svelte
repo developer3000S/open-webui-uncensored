@@ -337,7 +337,7 @@
 			<label class="sr-only" for="search-input-settings-modal">{$i18n.t('Search')}</label>
 			<input
 				class="w-full py-1 text-sm bg-transparent dark:text-gray-300 outline-hidden"
-				bind:value={search}
+				id="search" name="search" bind:value={search}
 				id="search-input-settings-modal"
 				on:input={searchDebounceHandler}
 				placeholder={$i18n.t('Search')}
@@ -363,6 +363,7 @@
 				id={tab.id}
 				href={tab.route}
 				draggable="false"
+				on:click|preventDefault={() => goto(tab.route)}
 				class="px-0.5 py-1 min-w-fit rounded-lg flex-1 lg:flex-none flex text-right transition select-none {selectedTab ===
 				tab.id
 					? ''
