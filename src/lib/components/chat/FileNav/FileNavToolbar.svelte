@@ -302,7 +302,7 @@
 				</svg>
 			</button>
 		</Tooltip>
-		<input
+		<input name="filenavtoolbar-305"
 			bind:this={uploadInput}
 			type="file"
 			multiple

@@ -493,7 +493,7 @@
 				<div class=" self-center ml-1 mr-3">
 					<Search className="size-3.5" />
 				</div>
-				<input
+				<input name="query"
 					class=" w-full text-sm py-1 rounded-r-xl outline-hidden bg-transparent"
 					bind:value={query}
 					aria-label={$i18n.t('Search Models')}
@@ -625,7 +625,7 @@
 
 		{#if models !== null}
 			{#if (models ?? []).length !== 0}
-				<div class=" px-3 my-2 gap-1 lg:gap-2 grid lg:grid-cols-2" id="model-list">
+				<div class=" px-3 my-2 gap-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-3 gap-y-3" id="model-list">
 					{#each models as model (model.id)}
 						<!-- svelte-ignore a11y_no_static_element_interactions -->
 						<!-- svelte-ignore a11y_click_events_have_key_events -->

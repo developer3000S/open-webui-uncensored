@@ -694,8 +694,8 @@ function Generator({
             <div className="m3-field-group">
               {/* Prompt Textarea */}
               <div className="m3-text-field">
-                <label className="m3-text-field-label">Image Prompt</label>
-                <textarea
+                <label className="m3-text-field-label" htmlFor="generator-image-prompt">Image Prompt</label>
+                <textarea id="generator-image-prompt" name="generator-698"
                   className="m3-textarea"
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
@@ -706,7 +706,7 @@ function Generator({
 
               {constraints.backendType !== "apple-npu" && constraints.backendType !== "openvino-npu" && (
                 <div className="m3-text-field">
-                  <label className="m3-text-field-label">Base Image (Optional)</label>
+                  <div className="m3-text-field-label">Base Image (Optional)</div>
                   {baseImage ? (
                     <div style={{ display: "flex", gap: "12px", alignItems: "center", padding: "12px", background: "var(--md-sys-color-surface-variant)", borderRadius: "var(--md-shape-corner-medium)", border: "1px solid var(--md-sys-color-outline-variant)" }}>
                       <img src={baseImage} alt="Base" style={{ width: "64px", height: "64px", objectFit: "cover", borderRadius: "8px", flexShrink: 0 }} />
@@ -723,7 +723,7 @@ function Generator({
                     </div>
                   ) : (
                     <label className="import-box" style={{ margin: 0, padding: "16px", cursor: isGenerating ? "not-allowed" : "pointer" }}>
-                      <input
+                      <input name="generator-726"
                         type="file"
                         accept="image/png,image/jpeg,image/webp"
                         style={{ display: "none" }}
@@ -744,7 +744,7 @@ function Generator({
                         <span>Transformation strength</span>
                         <span>{constraints.denoisingStrength.toFixed(2)}</span>
                       </div>
-                      <input
+                      <input name="generator-747"
                         type="range"
                         min="0.1"
                         max="1"
@@ -764,7 +764,7 @@ function Generator({
 
               {/* Configuration Status Chips (Material 3 style) */}
               <div className="m3-text-field">
-                <label className="m3-text-field-label">Active Image Constraints</label>
+                <div className="m3-text-field-label">Active Image Constraints</div>
                 <div className="chips-container">
                   <div className="status-chip">
                     <Sliders size={14} />

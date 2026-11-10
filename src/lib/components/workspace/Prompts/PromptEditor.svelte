@@ -337,7 +337,7 @@
 			<div class="my-2">
 				<div class="text-gray-500 text-xs">{$i18n.t('Commit Message')} ({$i18n.t('optional')})</div>
 				<div class="mt-1">
-					<input
+					<input name="commitMessage"
 						class="text-sm w-full bg-transparent outline-hidden"
 						placeholder={$i18n.t('Describe what changed...')}
 						// aria-label={$i18n.t('Commit Message')}
@@ -348,7 +348,7 @@
 
 			<div class="mt-4 flex items-center justify-between">
 				<label class="flex items-center gap-2 cursor-pointer">
-					<input
+					<input name="prompteditor-351"
 						type="checkbox"
 						bind:checked={isProduction}
 						class="w-4 h-4 rounded border-gray-300 dark:border-gray-600"
@@ -394,7 +394,7 @@
 
 				<div class="flex items-center gap-0.5 text-sm text-gray-500 w-full flex-1">
 					<span>/</span>
-					<input
+					<input name="command"
 						class="bg-transparent outline-hidden"
 						placeholder={$i18n.t('command')}
 						bind:value={command}
@@ -563,7 +563,7 @@
 						</div>
 						<div class="flex gap-0.5 items-center text-xs text-gray-500">
 							<div>/</div>
-							<input
+							<input name="command"
 								class="w-full bg-transparent outline-hidden"
 								placeholder={$i18n.t('Command')}
 								bind:value={command}

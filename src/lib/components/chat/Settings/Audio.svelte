@@ -186,7 +186,7 @@
 				<div class=" py-0.5 flex w-full justify-between">
 					<div class=" self-center text-xs font-medium">{$i18n.t('Speech-to-Text Engine')}</div>
 					<div class="flex items-center relative">
-						<select
+						<select name="STTEngine"
 							class="w-fit pr-8 rounded-sm px-2 p-1 text-xs bg-transparent outline-hidden text-right"
 							bind:value={STTEngine}
 							aria-label={$i18n.t('Speech-to-Text Engine')}
@@ -208,7 +208,7 @@
 							)}
 							placement="top"
 						>
-							<input
+							<input name="STTLanguage"
 								type="text"
 								bind:value={STTLanguage}
 								aria-label={$i18n.t('Speech-to-Text Language')}
@@ -249,7 +249,7 @@
 			<div class=" py-0.5 flex w-full justify-between">
 				<div class=" self-center text-xs font-medium">{$i18n.t('Text-to-Speech Engine')}</div>
 				<div class="flex items-center relative">
-					<select
+					<select name="TTSEngine"
 						class="w-fit pr-8 rounded-sm px-2 p-1 text-xs bg-transparent outline-hidden text-right"
 						bind:value={TTSEngine}
 						aria-label={$i18n.t('Text-to-Speech Engine')}
@@ -265,7 +265,7 @@
 				<div class=" py-0.5 flex w-full justify-between">
 					<div class=" self-center text-xs font-medium">{$i18n.t('Kokoro.js Dtype')}</div>
 					<div class="flex items-center relative">
-						<select
+						<select name="TTSEngineConfig-dtype"
 							class="w-fit pr-8 rounded-sm px-2 p-1 text-xs bg-transparent outline-hidden text-right"
 							bind:value={TTSEngineConfig.dtype}
 							aria-label={$i18n.t('Kokoro.js Dtype')}
@@ -305,7 +305,7 @@
 				<div class=" self-center text-xs font-medium">{$i18n.t('Speech Playback Speed')}</div>
 
 				<div class="flex items-center relative text-xs px-3">
-					<input
+					<input name="playbackRate"
 						type="number"
 						min="0"
 						step="0.01"
@@ -326,7 +326,7 @@
 					<div class=" mb-2.5 text-sm font-medium">{$i18n.t('Set Voice')}</div>
 					<div class="flex w-full">
 						<div class="flex-1">
-							<input
+							<input name="voice"
 								list="voice-list"
 								class="w-full text-sm bg-transparent dark:text-gray-300 outline-hidden"
 								bind:value={voice}
@@ -365,7 +365,7 @@
 				<div class=" mb-2.5 text-sm font-medium">{$i18n.t('Set Voice')}</div>
 				<div class="flex w-full">
 					<div class="flex-1">
-						<select
+						<select name="voice"
 							class="w-full text-sm bg-transparent dark:text-gray-300 outline-hidden"
 							bind:value={voice}
 							aria-label={$i18n.t('Voice')}
@@ -396,7 +396,7 @@
 				<div class=" mb-2.5 text-sm font-medium">{$i18n.t('Set Voice')}</div>
 				<div class="flex w-full">
 					<div class="flex-1">
-						<input
+						<input name="voice"
 							list="voice-list"
 							class="w-full text-sm bg-transparent dark:text-gray-300 outline-hidden"
 							bind:value={voice}

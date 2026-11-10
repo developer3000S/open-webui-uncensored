@@ -1399,7 +1399,7 @@
 					{#if creatingFolder}
 						<div class="flex items-center gap-2 px-3 py-1.5">
 							<Folder className="size-4 shrink-0 text-blue-400 dark:text-blue-300" />
-							<input
+							<input name="newFolderName"
 								bind:this={newFolderInput}
 								bind:value={newFolderName}
 								class="flex-1 text-xs bg-transparent border border-gray-200 dark:border-gray-700 rounded px-1.5 py-0.5 outline-none focus:border-blue-400 dark:focus:border-blue-500"
@@ -1418,7 +1418,7 @@
 					{#if creatingFile}
 						<div class="flex items-center gap-2 px-3 py-1.5">
 							<Document className="size-4 shrink-0 text-gray-400 dark:text-gray-500" />
-							<input
+							<input name="newFileName"
 								bind:this={newFileInput}
 								bind:value={newFileName}
 								class="flex-1 text-xs bg-transparent border border-gray-200 dark:border-gray-700 rounded px-1.5 py-0.5 outline-none focus:border-blue-400 dark:focus:border-blue-500"

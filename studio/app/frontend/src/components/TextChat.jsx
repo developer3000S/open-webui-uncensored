@@ -1191,7 +1191,7 @@ function TextChat({
           {/* Input container with vertical layout */}
           <div className="chat-composer-inner">
             <div className="chat-composer-textarea-container">
-              <textarea
+              <textarea name="textchat-1194"
                 ref={textareaRef}
                 className="chat-composer-textarea"
                 value={input}
@@ -1210,7 +1210,7 @@ function TextChat({
 
             <div className="chat-composer-toolbar">
               <div className="chat-composer-toolbar-left">
-                <input type="file" ref={fileInputRef} style={{ display: "none" }} multiple onChange={handleFileChange} />
+                <input name="textchat-1213" type="file" ref={fileInputRef} style={{ display: "none" }} multiple onChange={handleFileChange} />
                 <button
                   className="chat-composer-attach-btn"
                   onClick={() => fileInputRef.current?.click()}

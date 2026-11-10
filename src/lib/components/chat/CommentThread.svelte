@@ -151,7 +151,7 @@
 						</div>
 
 						{#if editingId === comment.id}
-							<textarea
+							<textarea name="editContent"
 								bind:value={editContent}
 								class="w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800/50"
 								rows="2"
@@ -284,7 +284,7 @@
 		</div>
 
 		<div class="flex-1 min-w-0">
-			<textarea
+			<textarea name="newCommentContent"
 				bind:value={newCommentContent}
 				class="w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800/50"
 				rows="2"

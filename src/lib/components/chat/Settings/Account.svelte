@@ -244,7 +244,7 @@
 							<div class=" mb-1 text-xs font-medium">{$i18n.t('Gender')}</div>
 
 							<div class="flex-1">
-								<select
+								<select name="_gender"
 									class="w-full text-sm dark:text-gray-300 bg-transparent outline-hidden"
 									bind:value={_gender}
 									aria-label={$i18n.t('Gender')}
@@ -267,7 +267,7 @@
 							</div>
 
 							{#if _gender === 'custom'}
-								<input
+								<input name="gender"
 									class="w-full text-sm dark:text-gray-300 bg-transparent outline-hidden mt-1"
 									type="text"
 									required
@@ -282,7 +282,7 @@
 							<div class=" mb-1 text-xs font-medium">{$i18n.t('Birth Date')}</div>
 
 							<div class="flex-1">
-								<input
+								<input name="dateOfBirth"
 									class="w-full text-sm dark:text-gray-300 dark:placeholder:text-gray-300 bg-transparent outline-hidden"
 									type="date"
 									aria-label={$i18n.t('Birth Date')}
@@ -302,7 +302,7 @@
 					<div class=" mb-1 text-xs font-medium">{$i18n.t('Notification Webhook')}</div>
 
 					<div class="flex-1">
-						<input
+						<input name="webhookUrl"
 							class="w-full text-sm outline-hidden"
 							type="url"
 							placeholder={$i18n.t('Enter your webhook URL')}
@@ -366,7 +366,7 @@
 					{mfaSecret}
 				</div>
 				<div class="mt-2">
-					<input
+					<input name="mfaCode"
 						class="w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800/50"
 						type="text"
 						bind:value={mfaCode}
@@ -643,7 +643,7 @@
 							<div class=" mb-1 text-xs font-medium">{$i18n.t('Gender')}</div>
 
 							<div class="flex-1">
-								<select
+								<select name="_gender"
 									class="w-full text-sm dark:text-gray-300 bg-transparent outline-hidden"
 									bind:value={_gender}
 									aria-label={$i18n.t('Gender')}
@@ -666,7 +666,7 @@
 							</div>
 
 							{#if _gender === 'custom'}
-								<input
+								<input name="gender"
 									class="w-full text-sm dark:text-gray-300 bg-transparent outline-hidden mt-1"
 									type="text"
 									required
@@ -681,7 +681,7 @@
 							<div class=" mb-1 text-xs font-medium">{$i18n.t('Birth Date')}</div>
 
 							<div class="flex-1">
-								<input
+								<input name="dateOfBirth"
 									class="w-full text-sm dark:text-gray-300 dark:placeholder:text-gray-300 bg-transparent outline-hidden"
 									type="date"
 									aria-label={$i18n.t('Birth Date')}
@@ -701,7 +701,7 @@
 					<div class=" mb-1 text-xs font-medium">{$i18n.t('Notification Webhook')}</div>
 
 					<div class="flex-1">
-						<input
+						<input name="webhookUrl"
 							class="w-full text-sm outline-hidden"
 							type="url"
 							placeholder={$i18n.t('Enter your webhook URL')}

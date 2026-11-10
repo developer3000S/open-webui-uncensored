@@ -70,7 +70,7 @@
 				<div class="flex mt-0.5 mb-0.5 space-x-2">
 					<div class=" flex-1">
 						{#if valvesSpec.properties[property]?.enum ?? null}
-							<select
+							<select name="valves-property"
 								class="w-full rounded-lg py-2 px-4 text-sm dark:text-gray-300 dark:bg-gray-850 outline-hidden border border-gray-100/30 dark:border-gray-850/30"
 								bind:value={valves[property]}
 								on:change={() => {
@@ -99,7 +99,7 @@
 								</div>
 							</div>
 						{:else if (valvesSpec.properties[property]?.type ?? null) !== 'string'}
-							<input
+							<input name="valves-property"
 								class="w-full rounded-lg py-2 px-4 text-sm dark:text-gray-300 dark:bg-gray-850 outline-hidden border border-gray-100/30 dark:border-gray-850/30"
 								type="text"
 								placeholder={valvesSpec.properties[property].title}
@@ -139,7 +139,7 @@
 							{:else if valvesSpec.properties[property]?.input?.type === 'color'}
 								<div class="flex items-center space-x-2">
 									<div class="relative size-6">
-										<input
+										<input name="valves-142"
 											type="color"
 											class="size-6 rounded cursor-pointer border border-gray-200 dark:border-gray-700"
 											value={valves[property] ?? '#000000'}
@@ -151,7 +151,7 @@
 										/>
 									</div>
 
-									<input
+									<input name="valves-property"
 										type="text"
 										class="flex-1 rounded-lg py-2 text-sm dark:text-gray-300 dark:bg-gray-850 outline-hidden border border-gray-100/30 dark:border-gray-850/30"
 										placeholder={$i18n.t('Enter hex color (e.g. #FF0000)')}
@@ -177,7 +177,7 @@
 									/>
 
 									{#if valves[property]}
-										<input
+										<input name="valves-property"
 											type="text"
 											class=" w-full rounded-lg py-1 text-left text-sm dark:text-gray-300 dark:bg-gray-850 outline-hidden border border-gray-100/30 dark:border-gray-850/30"
 											placeholder={$i18n.t('Enter coordinates (e.g. 51.505, -0.09)')}
@@ -191,7 +191,7 @@
 								</div>
 							{/if}
 						{:else}
-							<textarea
+							<textarea name="valves-property"
 								class="w-full rounded-lg py-2 px-4 text-sm dark:text-gray-300 dark:bg-gray-850 outline-hidden border border-gray-100/30 dark:border-gray-850/30"
 								placeholder={valvesSpec.properties[property].title}
 								bind:value={valves[property]}

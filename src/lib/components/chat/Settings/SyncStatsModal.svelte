@@ -415,7 +415,7 @@
 							placement="top-start"
 						>
 							<label class="flex items-center gap-2 text-xs cursor-pointer">
-								<input
+								<input name="syncstatsmodal-418"
 									type="checkbox"
 									checked={syncMode === 'incremental'}
 									on:change={(e) =>

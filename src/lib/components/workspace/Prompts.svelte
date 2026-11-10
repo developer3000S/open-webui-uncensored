@@ -338,7 +338,7 @@
 				<div class=" self-center ml-1 mr-3">
 					<Search className="size-3.5" />
 				</div>
-				<input
+				<input name="query"
 					class=" w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
 					bind:value={query}
 					on:input={handleSearchInput}

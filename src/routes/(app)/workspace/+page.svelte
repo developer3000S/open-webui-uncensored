@@ -4,34 +4,23 @@
 	import { onMount } from 'svelte';
 
 	onMount(() => {
-		if ($user?.role !== 'admin') {
-			if ($user?.permissions?.workspace?.knowledge) {
-				goto('/workspace/knowledge');
-			} else if ($user?.permissions?.workspace?.models) {
-				goto('/workspace/models');
-			} else if ($user?.permissions?.workspace?.prompts) {
-				goto('/workspace/prompts');
-			} else if ($user?.permissions?.workspace?.tools) {
-				goto('/workspace/tools');
-			} else if ($user?.permissions?.workspace?.skills) {
-				goto('/workspace/skills');
-			} else {
-				goto('/');
-			}
+		const workspace = $user?.permissions?.workspace;
+
+		// Admins always have access to Workspace (sidebar shows it for admins regardless of permissions).
+		if ($user?.role === 'admin') {
+			goto('/workspace/knowledge');
+		} else if (workspace?.knowledge) {
+			goto('/workspace/knowledge');
+		} else if (workspace?.models) {
+			goto('/workspace/models');
+		} else if (workspace?.prompts) {
+			goto('/workspace/prompts');
+		} else if (workspace?.tools) {
+			goto('/workspace/tools');
+		} else if (workspace?.skills) {
+			goto('/workspace/skills');
 		} else {
-			if ($user?.permissions?.workspace?.knowledge) {
-				goto('/workspace/knowledge');
-			} else if ($user?.permissions?.workspace?.models) {
-				goto('/workspace/models');
-			} else if ($user?.permissions?.workspace?.prompts) {
-				goto('/workspace/prompts');
-			} else if ($user?.permissions?.workspace?.tools) {
-				goto('/workspace/tools');
-			} else if ($user?.permissions?.workspace?.skills) {
-				goto('/workspace/skills');
-			} else {
-				goto('/');
-			}
+			goto('/');
 		}
 	});
 </script>

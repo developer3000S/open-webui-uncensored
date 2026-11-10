@@ -271,7 +271,7 @@
 					<!-- Content -->
 					<div class="flex-1 min-w-0">
 						{#if di.type === 'message'}
-							<textarea
+							<textarea name="field"
 								use:fitContent
 								class="w-full bg-transparent outline-hidden resize-none overflow-hidden text-sm p-1.5 rounded-lg"
 								value={getMessageText(di.item)}
@@ -283,7 +283,7 @@
 								rows="1"
 							></textarea>
 						{:else if di.type === 'reasoning'}
-							<textarea
+							<textarea name="field"
 								use:fitContent
 								class="w-full bg-transparent outline-hidden resize-none overflow-hidden text-sm text-gray-500 dark:text-gray-400 p-1.5 rounded-lg"
 								value={getReasoningText(di.item)}

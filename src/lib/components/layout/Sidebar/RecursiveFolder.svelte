@@ -488,7 +488,7 @@
 	</div>
 
 	<div class="flex items-center gap-1.5">
-		<input type="checkbox" bind:checked={deleteFolderContents} />
+		<input name="recursivefolder-491" type="checkbox" bind:checked={deleteFolderContents} />
 
 		<div class="text-xs text-gray-500">
 			{$i18n.t('Delete all contents inside this folder')}

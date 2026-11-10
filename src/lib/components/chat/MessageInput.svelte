@@ -1275,7 +1275,7 @@
 					: 'max-w-6xl'} px-2.5 mx-auto inset-x-0"
 			>
 				<div class="">
-					<input
+					<input name="messageinput-1278"
 						bind:this={filesInputElement}
 						bind:files={inputFiles}
 						type="file"

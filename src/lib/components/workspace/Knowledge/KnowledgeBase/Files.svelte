@@ -149,7 +149,7 @@
 					<div class="flex gap-2 items-center line-clamp-1">
 						{#if editingFileId === (file?.id ?? file?.tempId)}
 							<!-- svelte-ignore a11y-autofocus -->
-							<input
+							<input name="editName"
 								bind:this={editInput}
 								bind:value={editName}
 								class="text-sm w-full bg-transparent border-none outline-hidden"

@@ -4,7 +4,7 @@
 	const i18n = getContext<Writable<i18nType>>('i18n');
 
 	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
+	import { page } from '$lib/stores/page';
 
 	import Leaderboard from './Evaluations/Leaderboard.svelte';
 	import Feedbacks from './Evaluations/Feedbacks.svelte';
@@ -13,7 +13,7 @@
 
 	let selectedTab;
 	$: {
-		const pathParts = page.url.pathname.split('/');
+		const pathParts = $page.url.pathname.split('/');
 		const tabFromPath = pathParts[pathParts.length - 1];
 		selectedTab = ['leaderboard', 'feedback'].includes(tabFromPath) ? tabFromPath : 'leaderboard';
 	}

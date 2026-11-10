@@ -139,8 +139,11 @@ def set_xpermitted_cross_domain_policies(value: str):
 
 # Set Content-Security-Policy response header
 def set_content_security_policy(value: str):
-    if 'script-src' in value and 'unsafe-inline' not in value:
-        value = value.replace('script-src', "script-src 'unsafe-inline'", 1)
+    if 'script-src' in value:
+        if 'unsafe-inline' not in value:
+            value = value.replace('script-src', "script-src 'unsafe-inline'", 1)
+        if 'unsafe-eval' not in value:
+            value = value.replace("script-src 'unsafe-inline'", "script-src 'unsafe-inline' 'unsafe-eval'", 1)
     return {'Content-Security-Policy': value}
 
 

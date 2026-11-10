@@ -200,7 +200,7 @@
 						<button class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800">
 							<Refresh className="size-4" strokeWidth="1.5" />
 						</button>
-						<input
+						<input name="field"
 							type="text"
 							placeholder="Enter URL..."
 							class="flex-1 px-3 py-1.5 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"

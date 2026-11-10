@@ -2,6 +2,8 @@
 	import { onMount, tick } from 'svelte';
 
 	export let value: any = '';
+	export let id: string | undefined = undefined;
+	export let name: string | undefined = undefined;
 	export let placeholder: any = '';
 	export let rows: any = 1;
 	export let minSize: any = null;
@@ -77,6 +79,8 @@
 <textarea
 	bind:this={textareaElement}
 	bind:value
+	{id}
+	name={name ?? id ?? 'textarea'}
 	{placeholder}
 	aria-label={ariaLabel || placeholder}
 	class={className}

@@ -688,7 +688,7 @@
 	<FilesOverlay show={draggedOver} />
 
 	{#if acceptFiles}
-		<input
+		<input name="messageinput-691"
 			bind:this={filesInputElement}
 			bind:files={inputFiles}
 			type="file"

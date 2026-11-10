@@ -193,7 +193,7 @@
 	<div>
 		<!-- Header -->
 		<div class="flex justify-between dark:text-gray-100 px-5 pt-4 pb-2">
-			<input
+			<input name="title"
 				class="w-full text-lg bg-transparent outline-hidden font-primary placeholder:text-gray-300 dark:placeholder:text-gray-700"
 				type="text"
 				bind:value={title}
@@ -213,7 +213,7 @@
 			<!-- Calendar -->
 			<div>
 				<div class="mb-1 text-xs text-gray-500">{$i18n.t('Calendar')}</div>
-				<select
+				<select name="calendarId"
 					class="w-full text-sm bg-transparent outline-hidden cursor-pointer"
 					bind:value={calendarId}
 				>
@@ -227,14 +227,14 @@
 			<div>
 				<div class="mb-1 text-xs text-gray-500">{$i18n.t('When')}</div>
 				<div class="flex items-center gap-2 text-sm flex-wrap">
-					<input type="date" class="bg-transparent outline-hidden" bind:value={startDate} />
+					<input name="startDate" type="date" class="bg-transparent outline-hidden" bind:value={startDate} />
 					{#if !allDay}
-						<input type="time" class="bg-transparent outline-hidden" bind:value={startTime} />
+						<input name="startTime" type="time" class="bg-transparent outline-hidden" bind:value={startTime} />
 						<span class="text-gray-300 dark:text-gray-600">–</span>
-						<input type="time" class="bg-transparent outline-hidden" bind:value={endTime} />
+						<input name="endTime" type="time" class="bg-transparent outline-hidden" bind:value={endTime} />
 					{/if}
 					<label class="flex items-center gap-1.5 cursor-pointer text-xs text-gray-400 ml-auto">
-						<input type="checkbox" class="accent-blue-500" bind:checked={allDay} />
+						<input name="calendareventmodal-237" type="checkbox" class="accent-blue-500" bind:checked={allDay} />
 						{$i18n.t('All day')}
 					</label>
 				</div>
@@ -243,7 +243,7 @@
 			<!-- Location -->
 			<div>
 				<div class="mb-1 text-xs text-gray-500">{$i18n.t('Location')}</div>
-				<input
+				<input name="location"
 					class="w-full text-sm bg-transparent outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700"
 					placeholder={$i18n.t('Add location')}
 					bind:value={location}
@@ -253,7 +253,7 @@
 			<!-- Reminder -->
 			<div>
 				<div class="mb-1 text-xs text-gray-500">{$i18n.t('Reminder')}</div>
-				<select
+				<select name="alertMinutes"
 					class="w-full text-sm bg-transparent outline-hidden cursor-pointer"
 					bind:value={alertMinutes}
 				>
@@ -270,7 +270,7 @@
 			<!-- Repeat -->
 			<div>
 				<div class="mb-1 text-xs text-gray-500">{$i18n.t('Repeat')}</div>
-				<select
+				<select name="repeatFrequency"
 					class="w-full text-sm bg-transparent outline-hidden cursor-pointer"
 					bind:value={repeatFrequency}
 				>
@@ -286,7 +286,7 @@
 			<!-- Description -->
 			<div>
 				<div class="mb-1 text-xs text-gray-500">{$i18n.t('Description')}</div>
-				<textarea
+				<textarea name="description"
 					class="w-full text-sm bg-transparent outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700 resize-none min-h-[4rem]"
 					placeholder={$i18n.t('Add description')}
 					bind:value={description}

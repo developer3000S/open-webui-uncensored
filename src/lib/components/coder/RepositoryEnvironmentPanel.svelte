@@ -139,7 +139,7 @@
 
 <div class="flex flex-col gap-2">
 	<div class="flex items-center gap-1.5">
-		<input
+		<input name="query"
 			bind:value={query}
 			on:input={handleQueryInput}
 			placeholder={$i18n.t('Search a repository')}
@@ -169,7 +169,7 @@
 	{/if}
 
 	{#if organizations.length > 0}
-		<select
+		<select name="org"
 			bind:value={org}
 			on:change={handleOrgChange}
 			class="w-full rounded-xl bg-gray-50 dark:bg-gray-850 px-3 py-2 text-xs outline-hidden ring-1 ring-transparent focus:ring-gray-300 dark:focus:ring-gray-700"

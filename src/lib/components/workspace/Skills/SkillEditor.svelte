@@ -167,7 +167,7 @@
 								content={$i18n.t('e.g. code-review-guidelines')}
 								placement="top-start"
 							>
-								<input
+								<input name="id"
 									class="w-full text-sm disabled:text-gray-500 bg-transparent outline-hidden"
 									type="text"
 									placeholder={$i18n.t('Skill ID')}
@@ -184,7 +184,7 @@
 							content={$i18n.t('e.g. Step-by-step instructions for code reviews')}
 							placement="top-start"
 						>
-							<input
+							<input name="description"
 								class="w-full text-sm bg-transparent outline-hidden"
 								type="text"
 								placeholder={$i18n.t('Skill Description')}
@@ -206,7 +206,7 @@
 									<pre class="text-xs whitespace-pre-wrap font-mono">{content}</pre>
 								</div>
 							{:else}
-								<textarea
+								<textarea name="content"
 									class="w-full flex-1 text-xs bg-transparent outline-hidden resize-none font-mono px-4 py-3"
 									bind:value={content}
 									on:input={handleContentInput}

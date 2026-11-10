@@ -185,7 +185,7 @@
 	<!-- Repository selector -->
 	<div class="p-2.5 space-y-2 border-b border-gray-100 dark:border-gray-800">
 		{#if !(owner && repo)}
-			<input
+			<input name="repoQuery"
 				bind:value={repoQuery}
 				on:input={handleRepoQueryInput}
 				placeholder={$i18n.t('Search a repository')}
@@ -193,7 +193,7 @@
 			/>
 			{#if orgs.length > 0}
 				<!-- §D: filter the repository list by organization -->
-				<select
+				<select name="selectedOrg"
 					bind:value={selectedOrg}
 					on:change={searchRepos}
 					class="w-full rounded-xl bg-gray-50 dark:bg-gray-850 px-2.5 py-1.5 text-xs outline-hidden"
@@ -224,7 +224,7 @@
 				>
 			</div>
 
-			<select
+			<select name="branch"
 				bind:value={branch}
 				on:change={loadTree}
 				class="w-full rounded-xl bg-gray-50 dark:bg-gray-850 px-2.5 py-1.5 text-xs outline-hidden"

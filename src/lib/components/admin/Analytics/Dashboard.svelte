@@ -243,7 +243,7 @@
 	</div>
 	<div class="flex items-center gap-2 flex-wrap justify-end min-w-0">
 		{#if groups.length > 0}
-			<select
+			<select name="selectedGroupId"
 				bind:value={selectedGroupId}
 				class="w-fit pr-8 rounded-sm px-2 text-xs bg-transparent outline-none text-right"
 			>
@@ -254,21 +254,21 @@
 			</select>
 		{/if}
 		{#if selectedPeriod === 'custom'}
-			<input
+			<input name="customStart"
 				type="date"
 				bind:value={customStart}
 				max={customEnd || undefined}
 				class="w-fit rounded-sm px-2 text-xs bg-transparent outline-none"
 			/>
 			<span class="text-xs text-gray-400">–</span>
-			<input
+			<input name="customEnd"
 				type="date"
 				bind:value={customEnd}
 				min={customStart || undefined}
 				class="w-fit rounded-sm px-2 text-xs bg-transparent outline-none"
 			/>
 		{/if}
-		<select
+		<select name="selectedPeriod"
 			bind:value={selectedPeriod}
 			class="w-fit pr-8 rounded-sm px-2 text-xs bg-transparent outline-none text-right"
 		>

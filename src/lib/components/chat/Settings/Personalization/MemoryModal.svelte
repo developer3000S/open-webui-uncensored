@@ -91,7 +91,7 @@
 							</button>
 						</div>
 
-						<textarea
+						<textarea name="content"
 							bind:value={content}
 							class="bg-transparent w-full text-sm outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700"
 							rows="6"

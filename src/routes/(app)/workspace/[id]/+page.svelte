@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { page } from '$app/state';
+	import { page } from '$lib/stores/page';
 	import TabbedWorkspace from '$lib/components/layout/TabbedWorkspace.svelte';
 	import Chat from '$lib/components/chat/Chat.svelte';
 
-	const chatId = page.params.id;
+	$: chatId = $page.params.id;
 </script>
 
 <TabbedWorkspace>

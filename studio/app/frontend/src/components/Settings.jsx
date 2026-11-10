@@ -140,10 +140,9 @@ function _HardwareTierBadge({ specs }) {
 // ─── Premium Toggle Component ───
 function PremiumToggle({ checked, onChange, label, description }) {
   return (
-    <label className="premium-toggle" style={{ cursor: "pointer" }}>
+    <div className="premium-toggle" style={{ cursor: "pointer" }} onClick={() => onChange(!checked)}>
       <div
         className={`premium-toggle-checkbox ${checked ? "checked" : ""}`}
-        onClick={() => onChange(!checked)}
         role="checkbox"
         aria-checked={checked}
       >
@@ -153,7 +152,7 @@ function PremiumToggle({ checked, onChange, label, description }) {
         <div className="premium-toggle-label">{label}</div>
         {description && <div className="premium-toggle-desc">{description}</div>}
       </div>
-    </label>
+    </div>
   );
 }
 
@@ -754,8 +753,8 @@ function Settings({
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                 <div className="m3-text-field">
-                  <label className="m3-text-field-label">Ширина</label>
-                  <input
+                  <label className="m3-text-field-label" htmlFor="settings-width">Ширина</label>
+                  <input id="settings-width" name="settings-758"
                     type="number"
                     className="m3-input"
                     value={constraints.width}
@@ -766,8 +765,8 @@ function Settings({
                   />
                 </div>
                 <div className="m3-text-field">
-                  <label className="m3-text-field-label">Высота</label>
-                  <input
+                  <label className="m3-text-field-label" htmlFor="settings-height">Высота</label>
+                  <input id="settings-height" name="settings-770"
                     type="number"
                     className="m3-input"
                     value={constraints.height}
@@ -793,7 +792,7 @@ function Settings({
                   <span className="m3-slider-label">Шаги детализации</span>
                   <span className="settings-value-badge">{constraints.steps}</span>
                 </div>
-                <input
+                <input name="settings-796"
                   type="range"
                   className="m3-slider"
                   value={constraints.steps}
@@ -810,9 +809,9 @@ function Settings({
               </div>
 
               <div className="m3-text-field">
-                <label className="m3-text-field-label">Параметр Random Seed</label>
+                <label className="m3-text-field-label" htmlFor="settings-image-seed">Параметр Random Seed</label>
                 <div style={{ display: "flex", gap: "8px" }}>
-                  <input
+                  <input id="settings-image-seed" name="settings-815"
                     type="number"
                     className="m3-input"
                     value={constraints.seed}
@@ -982,8 +981,8 @@ function Settings({
             </div>
             <div className="m3-field-group">
               <div className="m3-text-field">
-                <label className="m3-text-field-label">Системный промпт</label>
-                <textarea
+                <label className="m3-text-field-label" htmlFor="settings-system-prompt">Системный промпт</label>
+                <textarea id="settings-system-prompt" name="settings-986"
                    className="m3-input"
                    value={pendingTextSettings.systemPrompt || ""}
                    onChange={(e) => updateTextSetting("systemPrompt", e.target.value)}
@@ -1001,7 +1000,7 @@ function Settings({
                   <span className="m3-slider-label">Размер контекста</span>
                   <span className="settings-value-badge">{pendingTextSettings.contextSize || 0}</span>
                 </div>
-                <input
+                <input name="settings-1004"
                   type="range"
                   className="m3-slider"
                   value={pendingTextSettings.contextSize || 0}
@@ -1030,7 +1029,7 @@ function Settings({
                   <span className="m3-slider-label">Температура</span>
                   <span className="settings-value-badge">{pendingTextSettings.temperature}</span>
                 </div>
-                <input
+                <input name="settings-1033"
                   type="range"
                   className="m3-slider"
                   value={pendingTextSettings.temperature}
@@ -1069,7 +1068,7 @@ function Settings({
                 </div>
                 {(pendingTextSettings.responseTokenMode || "auto") === "manual" ? (
                   <>
-                    <input
+                    <input name="settings-1072"
                       type="range"
                       className="m3-slider"
                       value={pendingTextSettings.maxTokens || 1024}
@@ -1091,8 +1090,8 @@ function Settings({
               </div>
 
               <div className="m3-text-field">
-                <label className="m3-text-field-label">Сид</label>
-                <input
+                <label className="m3-text-field-label" htmlFor="settings-text-seed">Сид</label>
+                <input id="settings-text-seed" name="settings-1095"
                   type="number"
                   className="m3-input"
                   value={pendingTextSettings.seed}
@@ -1167,7 +1166,7 @@ function Settings({
                   <span className="m3-slider-label">Потоки CPU</span>
                   <span className="settings-value-badge">{pendingTextSettings.threads || 4}</span>
                 </div>
-                <input
+                <input name="settings-1170"
                   type="range"
                   className="m3-slider"
                   value={pendingTextSettings.threads || 4}
@@ -1183,7 +1182,7 @@ function Settings({
                   <span className="m3-slider-label">Слои GPU</span>
                   <span className="settings-value-badge">{pendingTextSettings.gpuLayers === -1 ? "Все" : pendingTextSettings.gpuLayers}</span>
                 </div>
-                <input
+                <input name="settings-1186"
                   type="range"
                   className="m3-slider"
                   value={pendingTextSettings.gpuLayers === -1 ? 50 : pendingTextSettings.gpuLayers}
@@ -1205,7 +1204,7 @@ function Settings({
                   <span className="m3-slider-label">Размер батча</span>
                   <span className="settings-value-badge">{pendingTextSettings.batchSize || 512}</span>
                 </div>
-                <input
+                <input name="settings-1208"
                   type="range"
                   className="m3-slider"
                   value={pendingTextSettings.batchSize || 512}
@@ -1334,8 +1333,8 @@ function Settings({
                   </div>
                   <div className="m3-field-group">
                     <div className="m3-text-field">
-                      <label className="m3-text-field-label">Бэкенд по умолчанию</label>
-                      <select
+                      <label className="m3-text-field-label" htmlFor="settings-speech-backend">Бэкенд по умолчанию</label>
+                      <select id="settings-speech-backend" name="settings-1338"
                         className="m3-input"
                         value={speechSettings.backendPreference || "auto"}
                         onChange={(e) => updateSpeechSetting("backendPreference", e.target.value)}
@@ -1351,8 +1350,8 @@ function Settings({
                     </div>
 
                     <div className="m3-text-field">
-                      <label className="m3-text-field-label">Язык по умолчанию</label>
-                      <select 
+                      <label className="m3-text-field-label" htmlFor="settings-speech-language">Язык по умолчанию</label>
+                      <select id="settings-speech-language" name="settings-1355" 
                         className="m3-input" 
                         value={speechSettings.language || "auto"} 
                         onChange={(e) => updateSpeechSetting("language", e.target.value)}
@@ -1373,7 +1372,7 @@ function Settings({
                         <span className="m3-slider-label">Потоки CPU</span>
                         <span className="settings-value-badge">{speechSettings.threads || 4}</span>
                       </div>
-                      <input
+                      <input name="settings-1376"
                         type="range"
                         className="m3-slider"
                         value={speechSettings.threads || 4}
@@ -1450,8 +1449,8 @@ function Settings({
                   </div>
                   <div className="m3-field-group">
                     <div className="m3-text-field">
-                      <label className="m3-text-field-label">Голос по умолчанию</label>
-                      <select
+                      <label className="m3-text-field-label" htmlFor="settings-tts-voice">Голос по умолчанию</label>
+                      <select id="settings-tts-voice" name="settings-1454"
                         className="m3-input"
                         value={ttsSettings?.voice || "af_heart"}
                         onChange={(e) => updateTtsSetting("voice", e.target.value)}
@@ -1481,7 +1480,7 @@ function Settings({
                       <span className="m3-slider-label">Скорость</span>
                       <span className="settings-value-badge">{(ttsSettings?.speed || 1).toFixed(2)}x</span>
                     </div>
-                    <input
+                    <input name="settings-1484"
                       type="range"
                       className="m3-slider"
                       value={ttsSettings?.speed || 1}
@@ -1602,7 +1601,7 @@ function Settings({
                 <span className="m3-slider-label">Размер шрифта</span>
                 <span className="settings-value-badge">{fontSize || 16}px</span>
               </div>
-              <input
+              <input name="settings-1605"
                 type="range"
                 className="m3-slider"
                 value={fontSize || 16}

@@ -451,7 +451,7 @@
 	{/if}
 
 	<div class="w-full max-h-full flex justify-center">
-		<input
+		<input name="modeleditor-454"
 			bind:this={filesInputElement}
 			bind:files={inputFiles}
 			type="file"
@@ -618,7 +618,7 @@
 
 									<div class="flex-1 w-full">
 										<div>
-											<input
+											<input name="id"
 												class="text-xs w-full bg-transparent outline-hidden"
 												placeholder={$i18n.t('Model ID')}
 												bind:value={id}
@@ -952,7 +952,7 @@
 
 						{#if showPreview}
 							<div>
-								<textarea
+								<textarea name="field"
 									class="text-sm w-full bg-transparent outline-hidden resize-none"
 									rows="10"
 									value={JSON.stringify(info, null, 2)}

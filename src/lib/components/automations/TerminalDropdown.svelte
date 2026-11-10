@@ -103,7 +103,7 @@
 						{$i18n.t('Working Directory')}
 					</div>
 					<div class="px-2">
-						<input
+						<input name="terminalCwd"
 							type="text"
 							bind:value={terminalCwd}
 							placeholder="/home/user/project"

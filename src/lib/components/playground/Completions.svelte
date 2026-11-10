@@ -145,7 +145,7 @@
 
 			<div class="pb-3 flex justify-between items-center">
 				<div class="flex-1">
-					<select
+					<select name="selectedModelId"
 						class="bg-transparent border border-gray-100/30 dark:border-gray-850/30 rounded-lg py-1 px-2 -mx-0.5 text-sm outline-hidden w-full"
 						bind:value={selectedModelId}
 					>

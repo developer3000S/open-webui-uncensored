@@ -3,7 +3,7 @@
 	import { getContext, onMount, tick } from 'svelte';
 	const i18n = getContext<Writable<i18nType>>('i18n');
 
-	import { page } from '$app/state';
+	import { page } from '$lib/stores/page';
 	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 
@@ -37,7 +37,7 @@
 
 	// Get current tab from URL pathname, default to 'general'
 	$: {
-		const pathParts = page.url.pathname.split('/');
+		const pathParts = $page.url.pathname.split('/');
 		const tabFromPath = pathParts[pathParts.length - 1];
 		selectedTab = [
 			'general',

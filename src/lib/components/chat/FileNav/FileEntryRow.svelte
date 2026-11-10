@@ -262,7 +262,7 @@
 			{/if}
 			{#if renaming}
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
-				<input
+				<input name="renameValue"
 					bind:this={renameInput}
 					bind:value={renameValue}
 					class="flex-1 text-xs bg-transparent border border-gray-200 dark:border-gray-700 rounded px-1.5 py-0.5 outline-none focus:border-blue-400 dark:focus:border-blue-500 text-gray-800 dark:text-gray-200 min-w-0"

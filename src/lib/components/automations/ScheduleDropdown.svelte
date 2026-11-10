@@ -198,7 +198,7 @@
 		</div>
 
 		<div class="px-1.5 py-0.5">
-			<select
+			<select name="frequency"
 				class="w-full bg-transparent rounded-xl text-xs py-1.5 px-1.5 outline-hidden"
 				bind:value={frequency}
 				on:click={(e) => e.stopPropagation()}
@@ -212,7 +212,7 @@
 
 		{#if frequency === 'CUSTOM'}
 			<div class="px-2 pb-2">
-				<input
+				<input name="customRrule"
 					type="text"
 					bind:value={customRrule}
 					placeholder="RRULE:FREQ=DAILY;BYHOUR=9;BYMINUTE=0"
@@ -225,7 +225,7 @@
 			<div class="flex gap-2 flex-wrap items-center px-3 pb-2 text-xs">
 				{#if frequency === 'ONCE'}
 					<div class="flex items-center gap-1.5">
-						<input
+						<input name="onceDate"
 							type="date"
 							bind:value={onceDate}
 							min={new Date().toISOString().split('T')[0]}
@@ -235,7 +235,7 @@
 						/>
 					</div>
 					<div class="flex items-center gap-1.5">
-						<input
+						<input name="onceTime"
 							type="time"
 							bind:value={onceTime}
 							class="bg-transparent outline-hidden text-xs dark:color-scheme-dark"
@@ -246,7 +246,7 @@
 				{:else}
 					<div class="flex items-center gap-1.5">
 						<span class="text-xs text-gray-500 mr-0.5">{$i18n.t('Time')}</span>
-						<input
+						<input name="field"
 							type="time"
 							value={`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`}
 							on:input={(e) => {
@@ -264,7 +264,7 @@
 				{#if frequency === 'MONTHLY'}
 					<div class="flex items-center gap-1.5">
 						<span class="text-xs text-gray-500">{$i18n.t('Day')}</span>
-						<input
+						<input name="monthDay"
 							type="number"
 							bind:value={monthDay}
 							min={1}

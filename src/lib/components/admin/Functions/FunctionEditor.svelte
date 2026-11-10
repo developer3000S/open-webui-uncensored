@@ -374,7 +374,7 @@ class Pipe:
 
 						<div class="flex items-center gap-2">
 							{#if !edit}
-								<select
+								<select name="starterType"
 									class="text-xs bg-transparent border border-gray-100 dark:border-gray-800 rounded-lg px-2 py-1 outline-hidden"
 									bind:value={starterType}
 									on:change={(event) => selectStarterType(event.currentTarget.value)}
@@ -395,7 +395,7 @@ class Pipe:
 							</div>
 						{:else}
 							<Tooltip className="w-full" content={$i18n.t('e.g. my_filter')} placement="top-start">
-								<input
+								<input name="id"
 									class="w-full text-sm disabled:text-gray-500 bg-transparent outline-hidden"
 									type="text"
 									placeholder={$i18n.t('Function ID')}
@@ -411,7 +411,7 @@ class Pipe:
 							content={$i18n.t('e.g. A filter to remove profanity from text')}
 							placement="top-start"
 						>
-							<input
+							<input name="meta-description"
 								class="w-full text-sm bg-transparent outline-hidden"
 								type="text"
 								placeholder={$i18n.t('Function Description')}

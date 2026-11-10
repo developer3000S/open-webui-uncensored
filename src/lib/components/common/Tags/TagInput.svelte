@@ -38,7 +38,7 @@
 {:else if showInput}
 	<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-200/80 dark:bg-gray-700">
 		<span class="text-gray-500 dark:text-blue-400">+</span>
-		<input
+		<input name="tagName"
 			bind:this={inputElement}
 			bind:value={tagName}
 			class="w-20 text-sm bg-transparent outline-hidden text-gray-700 dark:text-blue-400 placeholder:text-gray-400 dark:placeholder:text-blue-400/50"

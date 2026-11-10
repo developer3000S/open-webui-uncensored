@@ -4,7 +4,7 @@
 	import Sortable from 'sortablejs';
 
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$lib/stores/page';
 	import {
 		user,
 		chats,
@@ -108,7 +108,7 @@
 	import Sparkles from '../icons/Sparkles.svelte';
 
 	const BREAKPOINT = 768;
-	const DEFAULT_PINNED_ITEMS = ['notes', 'coder', 'workspace', 'studio'];
+	const DEFAULT_PINNED_ITEMS = ['notes', 'coder', 'workspace'];
 
 	let scrollTop = 0;
 
@@ -173,8 +173,6 @@
 				return $config?.features?.enable_coder ?? false;
 			case 'playground':
 				return $user?.role === 'admin';
-			case 'studio':
-				return $config?.features?.enable_studio ?? false;
 			default:
 				return false;
 		}
@@ -194,14 +192,7 @@
 				openInNewWindow: true,
 				windowFeatures: 'width=1400,height=900,resizable=yes,scrollbars=yes'
 			},
-			playground: { label: 'Playground', href: '/playground', iconType: 'playground' },
-			studio: {
-				label: 'Studio',
-				href: '/studio?tab=generator',
-				iconType: 'studio',
-				// Studio opens as an embedded application
-				openInNewWindow: false
-			}
+			playground: { label: 'Playground', href: '/playground', iconType: 'playground' }
 		};
 		return items[id];
 	};
@@ -1032,8 +1023,6 @@
 											<Code className="size-4.5" />
 										{:else if itemId === 'coder'}
 											<Code className="size-4.5" />
-										{:else if itemId === 'studio'}
-											<Photo className="size-4.5" />
 										{/if}
 									</div>
 								</a>
@@ -1286,8 +1275,6 @@
 												<Code className="size-4.5" strokeWidth="2" />
 											{:else if itemId === 'coder'}
 												<Code className="size-4.5" strokeWidth="2" />
-											{:else if itemId === 'studio'}
-												<Photo className="size-4.5" strokeWidth="2" />
 											{/if}
 										</div>
 
@@ -1358,7 +1345,7 @@
 					</Folder>
 				{/if}
 
-				{#if ($config?.features?.enable_notes ?? false) && ($user?.role === 'admin' || ($user?.permissions?.features?.notes ?? true)) && $pinnedNotes.length > 0}
+				{#if ($config?.features?.enable_notes ?? false) && ($user?.role === 'admin' || ($user?.permissions?.features?.notes ?? true)) && $pinnedNotes.length > 0 && $page.url.pathname !== '/notes'}
 					<Folder
 						id="sidebar-pinned-notes"
 						bind:open={showPinnedNotes}

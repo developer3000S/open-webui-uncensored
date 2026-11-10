@@ -311,7 +311,7 @@
 		dispatch('save');
 	}}
 >
-	<input
+	<input name="interface-314"
 		bind:this={filesInputElement}
 		bind:files={inputFiles}
 		type="file"

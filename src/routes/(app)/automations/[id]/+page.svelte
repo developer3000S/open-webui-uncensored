@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { onMount, getContext } from 'svelte';
 
-	import { page } from '$app/state';
+	import { page } from '$lib/stores/page';
 	import { user, showSidebar, config } from '$lib/stores';
 	import { getAutomationById } from '$lib/apis/automations';
 
@@ -15,7 +15,7 @@
 	let automation: any = null;
 	let loaded = false;
 
-	$: automationId = page.params.id;
+	$: automationId = $page.params.id;
 
 	// @ts-ignore
 	onMount(async () => {

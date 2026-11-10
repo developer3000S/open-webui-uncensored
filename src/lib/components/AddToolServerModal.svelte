@@ -485,7 +485,7 @@
 
 		<div class="flex flex-col md:flex-row w-full px-4 pb-4 md:space-x-4 dark:text-gray-200">
 			<div class=" flex flex-col w-full sm:flex-row sm:justify-center sm:space-x-6">
-				<input
+				<input name="addtoolservermodal-488"
 					bind:this={inputElement}
 					type="file"
 					hidden
@@ -768,7 +768,7 @@
 													required={false}
 												/>
 												<div class="flex flex-1 items-center">
-													<input
+													<input name="oauthServerUrl"
 														class={`w-full text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 														type="text"
 														bind:value={oauthServerUrl}
@@ -868,7 +868,7 @@
 														class={`text-xs w-full self-center translate-y-[1px] ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
 													>
 														<label for="url-or-path" class="sr-only">{$i18n.t('JSON Spec')}</label>
-														<textarea
+														<textarea name="spec"
 															class={`w-full text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700 text-black dark:text-white'}`}
 															bind:value={spec}
 															placeholder={$i18n.t('JSON Spec')}
@@ -958,6 +958,7 @@
 												)}
 											>
 												<Textarea
+													id="headers-input"
 													className="w-full text-sm outline-hidden"
 													bind:value={headers}
 													placeholder={$i18n.t('Enter additional headers in JSON format')}

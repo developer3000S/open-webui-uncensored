@@ -22,7 +22,7 @@
 		<div class="self-center text-xs font-medium text-gray-500">{$i18n.t('Terminal')}</div>
 	</div>
 
-	<select
+	<select name="terminalId"
 		class="w-full text-sm bg-transparent outline-hidden cursor-pointer"
 		bind:value={terminalId}
 	>

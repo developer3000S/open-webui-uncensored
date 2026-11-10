@@ -140,7 +140,7 @@
 	});
 </script>
 
-<input
+<input name="knowledge-143"
 	bind:this={filesInputElement}
 	bind:files={inputFiles}
 	type="file"

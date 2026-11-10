@@ -217,7 +217,7 @@
 
 					<!-- Prompt Textarea -->
 					<div class="py-0.5">
-						<textarea
+						<textarea name="prompt"
 							bind:this={promptTextareaElement}
 							bind:value={prompt}
 							class=" w-full h-full bg-transparent resize-none outline-hidden text-sm"
@@ -239,7 +239,7 @@
 					<!-- Actions -->
 					<div class="flex justify-between items-center gap-2 mt-2">
 						<div class="shrink-0">
-							<input
+							<input name="images-242"
 								type="file"
 								accept="image/*"
 								multiple

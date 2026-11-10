@@ -93,7 +93,7 @@
 		<div class=" text-xs font-medium mb-1">{$i18n.t('Model')}</div>
 
 		<div class="w-full">
-			<select class="w-full bg-transparent text-sm outline-hidden" bind:value={selectedModelId}>
+			<select name="selectedModelId" class="w-full bg-transparent text-sm outline-hidden" bind:value={selectedModelId}>
 				<option value="" class="bg-gray-50 dark:bg-gray-700" disabled>
 					{$i18n.t('Select a model')}
 				</option>

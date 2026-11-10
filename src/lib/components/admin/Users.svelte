@@ -7,7 +7,7 @@
 
 	import { goto } from '$app/navigation';
 	import { user } from '$lib/stores';
-	import { page } from '$app/state';
+	import { page } from '$lib/stores/page';
 
 	import UserList from './Users/UserList.svelte';
 	import Groups from './Users/Groups.svelte';
@@ -16,7 +16,7 @@
 
 	let selectedTab;
 	$: {
-		const pathParts = page.url.pathname.split('/');
+		const pathParts = $page.url.pathname.split('/');
 		const tabFromPath = pathParts[pathParts.length - 1];
 		selectedTab = ['overview', 'groups'].includes(tabFromPath) ? tabFromPath : 'overview';
 	}

@@ -10,7 +10,7 @@
 
 	import { config, models, user } from '$lib/stores';
 
-	import { page } from '$app/state';
+	import { page } from '$lib/stores/page';
 
 	import {
 		getCoderConfig,
@@ -154,7 +154,7 @@
 	let auditLoading = false;
 	let auditError: string | null = null;
 	let showAuditSection = false;
-	$: showAuditSection = page.url.searchParams.get('audit') === '1' && $user?.role === 'admin';
+	$: showAuditSection = $page.url.searchParams.get('audit') === '1' && $user?.role === 'admin';
 
 	const loadAuditEvents = async () => {
 		auditLoading = true;
@@ -1168,7 +1168,7 @@ The system will execute it and return matching file snippets in your next turn. 
 
 						{#if showAddConnection}
 							<div class="flex items-center gap-2">
-								<input
+								<input name="newConnectionHost"
 									type="text"
 									bind:value={newConnectionHost}
 									placeholder="github.com or ghe.company.com"
@@ -1339,7 +1339,7 @@ The system will execute it and return matching file snippets in your next turn. 
 					{#if showCreateProject}
 						<div class="mb-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
 							<h3 class="font-semibold mb-2">{$i18n.t('Create New Project')}</h3>
-							<input
+							<input name="newProjectName"
 								type="text"
 								bind:value={newProjectName}
 								placeholder="Project name (optional)"
@@ -1465,7 +1465,7 @@ The system will execute it and return matching file snippets in your next turn. 
 					<div class="flex-1 overflow-y-auto scrollbar-thin px-4 py-3 space-y-3">
 						{#if owner && repo}
 							<div class="relative">
-								<input
+								<input name="semanticQuery"
 									type="text"
 									class="w-full text-xs rounded-lg bg-gray-50 dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-gray-700 px-2.5 py-1.5 outline-hidden focus:ring-gray-300 dark:focus:ring-gray-600"
 									placeholder={$i18n.t('Semantic search in repository…')}
@@ -1604,7 +1604,7 @@ The system will execute it and return matching file snippets in your next turn. 
 							class="flex items-end gap-2 rounded-2xl bg-gray-50 dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-gray-700 px-2 py-1.5"
 						>
 							<ModelDropdown bind:model_id={modelId} side="top" align="start" />
-							<textarea
+							<textarea name="input"
 								bind:value={input}
 								rows="1"
 								class="flex-1 resize-none bg-transparent outline-hidden text-sm max-h-40 py-1.5"
@@ -1681,7 +1681,7 @@ The system will execute it and return matching file snippets in your next turn. 
 								title={$i18n.t('Restore a sandbox from a previously exported zip archive')}
 								>{$i18n.t('Import .zip')}</button
 							>
-							<input
+							<input name="+page-1684"
 								bind:this={sandboxImportInput}
 								type="file"
 								accept=".zip,application/zip"

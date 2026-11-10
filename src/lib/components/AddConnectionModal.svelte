@@ -459,6 +459,7 @@
 											)}
 										>
 											<Textarea
+												id="headers-input"
 												className="w-full text-sm outline-hidden"
 												bind:value={headers}
 												placeholder={$i18n.t('Enter additional headers in JSON format')}

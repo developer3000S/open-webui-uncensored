@@ -6,9 +6,9 @@ export { browser, dev };
 
 export const APP_NAME = "Open WebUI";
 
-export const WEBUI_VERSION = "0.10.2";
+export const WEBUI_VERSION = "0.13.0";
 
-export const WEBUI_BUILD_HASH = "0.10.2";
+export const WEBUI_BUILD_HASH = "0.13.0";
 
 export const WEBUI_HOSTNAME = browser && dev ? location.hostname + ":8080" : "";
 export const WEBUI_BASE_URL = browser && dev ? `http://${WEBUI_HOSTNAME}` : "";

@@ -183,7 +183,7 @@
 												)}
 									placement="top-start"
 								>
-									<select
+									<select name="type"
 										class="w-full text-sm bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden"
 										bind:value={type}
 									>

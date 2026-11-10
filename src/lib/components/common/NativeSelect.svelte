@@ -10,7 +10,7 @@
 	export let required: any = false;
 </script>
 
-<select
+<select name="field"
 	class={className}
 	bind:value
 	{required}

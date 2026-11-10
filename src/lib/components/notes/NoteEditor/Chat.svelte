@@ -425,7 +425,7 @@ Based on the user's instruction, update and enhance the existing notes or select
 							</div>
 
 							<Tooltip content={selectedModelId}>
-								<select
+								<select name="selectedModelId"
 									class=" bg-transparent rounded-lg py-1 px-2 -mx-0.5 text-sm outline-hidden w-full text-right pr-5"
 									bind:value={selectedModelId}
 								>

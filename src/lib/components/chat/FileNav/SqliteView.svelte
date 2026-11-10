@@ -166,7 +166,7 @@
 		{#if queryMode}
 			<!-- Query editor -->
 			<div class="shrink-0">
-				<textarea
+				<textarea name="queryText"
 					bind:value={queryText}
 					placeholder="SELECT * FROM ..."
 					class="query-editor w-full text-xs font-mono bg-transparent text-gray-800 dark:text-gray-200 px-3 py-2 outline-none resize-none"

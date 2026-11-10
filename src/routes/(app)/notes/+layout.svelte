@@ -28,14 +28,7 @@
 	<title>
 		{$i18n.t('Notes')} • {$WEBUI_NAME}
 	</title>
-	<title>
-		{$i18n.t('Notes')} • {$WEBUI_NAME}
-	</title>
 </svelte:head>
-
-{#if loaded}
-	<slot />
-{/if}
 
 {#if loaded}
 	<slot />

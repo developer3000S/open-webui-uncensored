@@ -168,7 +168,7 @@
 			class="max-w-full w-80 border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-850 rounded-3xl z-9999 shadow-lg dark:text-white"
 		>
 			<div class="mb-1 px-4 pt-2.5 pb-2">
-				<input
+				<input name="search"
 					type="text"
 					class="w-full text-sm bg-transparent outline-hidden"
 					placeholder={$i18n.t('Search all emojis')}

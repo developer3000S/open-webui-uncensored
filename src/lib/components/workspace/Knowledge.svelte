@@ -224,7 +224,7 @@
 				<div class=" self-center ml-1 mr-3">
 					<Search className="size-3.5" />
 				</div>
-				<input
+				<input name="query"
 					class=" w-full text-sm py-1 rounded-r-xl outline-hidden bg-transparent"
 					bind:value={query}
 					on:input={handleSearchInput}
@@ -270,7 +270,7 @@
 					}}
 				/>
 
-				<select
+				<select name="sourceOption"
 					class="relative w-full flex items-center gap-0.5 px-2.5 py-1.5 bg-gray-50 dark:bg-gray-850 rounded-xl outline-hidden"
 					bind:value={sourceOption}
 					on:change={async () => {

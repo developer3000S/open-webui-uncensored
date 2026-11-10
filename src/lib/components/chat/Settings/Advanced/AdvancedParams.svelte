@@ -137,7 +137,7 @@
 						/>
 					</div>
 					<div>
-						<input
+						<input name="params-stream_delta_chunk_size"
 							bind:value={params.stream_delta_chunk_size}
 							type="number"
 							class=" bg-transparent text-center w-14"
@@ -181,7 +181,7 @@
 			{#if (params?.compact_token_threshold ?? null) !== null}
 				<div class="flex mt-0.5 space-x-2">
 					<div class=" flex-1">
-						<input
+						<input name="params-compact_token_threshold"
 							class="text-sm w-full bg-transparent outline-hidden outline-none"
 							type="number"
 							placeholder={$i18n.t('Enter token threshold')}
@@ -276,7 +276,7 @@
 		{#if ![true, false, null].includes(params?.reasoning_tags ?? null) && (params?.reasoning_tags ?? []).length === 2}
 			<div class="flex mt-0.5 space-x-2">
 				<div class=" flex-1">
-					<input
+					<input name="params-reasoning_tags-0"
 						class="text-sm w-full bg-transparent outline-hidden outline-none"
 						type="text"
 						placeholder={$i18n.t('Start Tag')}
@@ -286,7 +286,7 @@
 				</div>
 
 				<div class=" flex-1">
-					<input
+					<input name="params-reasoning_tags-1"
 						class="text-sm w-full bg-transparent outline-hidden outline-none"
 						type="text"
 						placeholder={$i18n.t('End Tag')}
@@ -330,7 +330,7 @@
 		{#if (params?.seed ?? null) !== null}
 			<div class="flex mt-0.5 space-x-2">
 				<div class=" flex-1">
-					<input
+					<input name="params-seed"
 						class="text-sm w-full bg-transparent outline-hidden outline-none"
 						type="number"
 						placeholder={$i18n.t('Enter Seed')}
@@ -375,7 +375,7 @@
 		{#if (params?.stop ?? null) !== null}
 			<div class="flex mt-0.5 space-x-2">
 				<div class=" flex-1">
-					<input
+					<input name="params-stop"
 						class="text-sm w-full bg-transparent outline-hidden outline-none"
 						type="text"
 						placeholder={$i18n.t('Enter stop sequence')}
@@ -429,7 +429,7 @@
 					/>
 				</div>
 				<div>
-					<input
+					<input name="params-temperature"
 						bind:value={params.temperature}
 						type="number"
 						class=" bg-transparent text-center w-14"
@@ -473,7 +473,7 @@
 		{#if (params?.reasoning_effort ?? null) !== null}
 			<div class="flex mt-0.5 space-x-2">
 				<div class=" flex-1">
-					<input
+					<input name="params-reasoning_effort"
 						class="text-sm w-full bg-transparent outline-hidden outline-none"
 						type="text"
 						placeholder={$i18n.t('Enter reasoning effort')}
@@ -516,7 +516,7 @@
 		{#if (params?.logit_bias ?? null) !== null}
 			<div class="flex mt-0.5 space-x-2">
 				<div class=" flex-1">
-					<input
+					<input name="params-logit_bias"
 						class="text-sm w-full bg-transparent outline-hidden outline-none"
 						type="text"
 						placeholder={$i18n.t(
@@ -573,7 +573,7 @@
 					/>
 				</div>
 				<div>
-					<input
+					<input name="params-max_tokens"
 						bind:value={params.max_tokens}
 						type="number"
 						class=" bg-transparent text-center w-14"
@@ -627,7 +627,7 @@
 					/>
 				</div>
 				<div>
-					<input
+					<input name="params-top_k"
 						bind:value={params.top_k}
 						type="number"
 						class=" bg-transparent text-center w-14"
@@ -683,7 +683,7 @@
 					/>
 				</div>
 				<div>
-					<input
+					<input name="params-top_p"
 						bind:value={params.top_p}
 						type="number"
 						class=" bg-transparent text-center w-14"
@@ -738,7 +738,7 @@
 					/>
 				</div>
 				<div>
-					<input
+					<input name="params-min_p"
 						bind:value={params.min_p}
 						type="number"
 						class=" bg-transparent text-center w-14"
@@ -794,7 +794,7 @@
 					/>
 				</div>
 				<div>
-					<input
+					<input name="params-frequency_penalty"
 						bind:value={params.frequency_penalty}
 						type="number"
 						class=" bg-transparent text-center w-14"
@@ -850,7 +850,7 @@
 					/>
 				</div>
 				<div>
-					<input
+					<input name="params-presence_penalty"
 						bind:value={params.presence_penalty}
 						type="number"
 						class=" bg-transparent text-center w-14"
@@ -903,7 +903,7 @@
 					/>
 				</div>
 				<div>
-					<input
+					<input name="params-mirostat"
 						bind:value={params.mirostat}
 						type="number"
 						class=" bg-transparent text-center w-14"
@@ -958,7 +958,7 @@
 					/>
 				</div>
 				<div>
-					<input
+					<input name="params-mirostat_eta"
 						bind:value={params.mirostat_eta}
 						type="number"
 						class=" bg-transparent text-center w-14"
@@ -1014,7 +1014,7 @@
 					/>
 				</div>
 				<div>
-					<input
+					<input name="params-mirostat_tau"
 						bind:value={params.mirostat_tau}
 						type="number"
 						class=" bg-transparent text-center w-14"
@@ -1068,7 +1068,7 @@
 					/>
 				</div>
 				<div>
-					<input
+					<input name="params-repeat_last_n"
 						bind:value={params.repeat_last_n}
 						type="number"
 						class=" bg-transparent text-center w-14"
@@ -1124,7 +1124,7 @@
 					/>
 				</div>
 				<div>
-					<input
+					<input name="params-tfs_z"
 						bind:value={params.tfs_z}
 						type="number"
 						class=" bg-transparent text-center w-14"
@@ -1180,7 +1180,7 @@
 					/>
 				</div>
 				<div>
-					<input
+					<input name="params-repeat_penalty"
 						bind:value={params.repeat_penalty}
 						type="number"
 						class=" bg-transparent text-center w-14"
@@ -1320,7 +1320,7 @@
 		{#if typeof params.think === 'string'}
 			<div class="flex mt-0.5 space-x-2">
 				<div class=" flex-1">
-					<input
+					<input name="params-think"
 						class="text-sm w-full bg-transparent outline-hidden outline-none"
 						type="text"
 						placeholder={$i18n.t("e.g. 'low', 'medium', 'high'")}
@@ -1412,7 +1412,7 @@
 					/>
 				</div>
 				<div class="">
-					<input
+					<input name="params-num_keep"
 						bind:value={params.num_keep}
 						type="number"
 						class=" bg-transparent text-center w-14"
@@ -1465,7 +1465,7 @@
 					/>
 				</div>
 				<div class="">
-					<input
+					<input name="params-num_ctx"
 						bind:value={params.num_ctx}
 						type="number"
 						class=" bg-transparent text-center w-14"
@@ -1520,7 +1520,7 @@
 					/>
 				</div>
 				<div>
-					<input
+					<input name="params-num_batch"
 						bind:value={params.num_batch}
 						type="number"
 						class=" bg-transparent text-center w-14"
@@ -1576,7 +1576,7 @@
 						/>
 					</div>
 					<div class="">
-						<input
+						<input name="params-num_thread"
 							bind:value={params.num_thread}
 							type="number"
 							class=" bg-transparent text-center w-14"
@@ -1632,7 +1632,7 @@
 						/>
 					</div>
 					<div class="">
-						<input
+						<input name="params-num_gpu"
 							bind:value={params.num_gpu}
 							type="number"
 							class=" bg-transparent text-center w-14"
@@ -1675,7 +1675,7 @@
 
 			{#if (params?.keep_alive ?? null) !== null}
 				<div class="flex mt-0.5 space-x-2">
-					<input
+					<input name="params-keep_alive"
 						class="w-full text-sm bg-transparent outline-hidden"
 						type="text"
 						placeholder={$i18n.t("e.g. '30s','10m'. Valid time units are 's', 'm', 'h'.")}
@@ -1691,7 +1691,7 @@
 					<div class=" py-0.5 w-full justify-between mb-1">
 						<div class="flex w-full justify-between">
 							<div class=" self-center text-xs">
-								<input
+								<input name="field"
 									type="text"
 									class=" text-xs w-full bg-transparent outline-none"
 									placeholder={$i18n.t('Custom Parameter Name')}
@@ -1725,7 +1725,7 @@
 						</div>
 						<div class="flex mt-0.5 space-x-2">
 							<div class=" flex-1">
-								<input
+								<input name="params-custom_params-key"
 									bind:value={params.custom_params[key]}
 									type="text"
 									class="text-sm w-full bg-transparent outline-hidden outline-none"

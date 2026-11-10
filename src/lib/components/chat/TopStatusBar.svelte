@@ -8,6 +8,7 @@
 	import { ACCENT_THEMES, applyAccentTheme, getStoredAccentTheme } from '$lib/themes';
 
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
+	import Spinner from '$lib/components/common/Spinner.svelte';
 	import Sun from '$lib/components/icons/Sun.svelte';
 	import Moon from '$lib/components/icons/Moon.svelte';
 	import Palette from '$lib/components/icons/Palette.svelte';
@@ -113,6 +114,8 @@
 		ram_total_gb: null as null | number
 	};
 
+	let telemetryLoading = true;
+
 	let pollInterval: ReturnType<typeof setInterval>;
 
 	const formatGb = (value: null | number) => {
@@ -123,10 +126,15 @@
 	const refreshTelemetry = async () => {
 		try {
 			const token = localStorage.token;
-			if (!token) return;
+			if (!token) {
+				telemetryLoading = false;
+				return;
+			}
 			telemetry = await getTelemetry(token);
 		} catch (err) {
 			console.error('Failed to fetch telemetry', err);
+		} finally {
+			telemetryLoading = false;
 		}
 	};
 
@@ -234,15 +242,23 @@
 				title={$i18n.t('CPU Utilization')}
 			>
 				<Cpu className="size-3" strokeWidth="1.5" />
-				<span class="tabular-nums">{$i18n.t('CPU')}: {telemetry.cpu_usage ?? '--'}%</span>
+				{#if telemetryLoading}
+					<Spinner className="size-3" />
+				{:else}
+					<span class="tabular-nums">{$i18n.t('CPU')}: {telemetry.cpu_usage ?? '--'}%</span>
+				{/if}
 			</div>
 			<div
 				class="flex items-center gap-1 px-1.5 py-0.5 ml-1 rounded-md bg-gray-50 dark:bg-gray-850 text-gray-600 dark:text-gray-400"
 				title={$i18n.t('System Memory Usage')}
 			>
-				<span class="tabular-nums"
-					>{$i18n.t('RAM')}: {formatGb(telemetry.ram_used_gb)} / {formatGb(telemetry.ram_total_gb)} GB</span
-				>
+				{#if telemetryLoading}
+					<Spinner className="size-3" />
+				{:else}
+					<span class="tabular-nums"
+						>{$i18n.t('RAM')}: {formatGb(telemetry.ram_used_gb)} / {formatGb(telemetry.ram_total_gb)} GB</span
+					>
+				{/if}
 			</div>
 		</div>
 	</div>

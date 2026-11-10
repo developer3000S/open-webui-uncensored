@@ -287,7 +287,7 @@
 				{#each token.items as item, itemIdx}
 					<li class="text-start">
 						{#if item?.task}
-							<input
+							<input name="markdowntokens-290"
 								class=" translate-y-[1px] -translate-x-1 flex-shrink-0"
 								type="checkbox"
 								checked={item.checked}
@@ -322,7 +322,7 @@
 				{#each token.items as item, itemIdx}
 					<li class="text-start {item?.task ? 'flex -translate-x-6.5 gap-3 ' : ''}">
 						{#if item?.task}
-							<input
+							<input name="markdowntokens-325"
 								class="flex-shrink-0"
 								type="checkbox"
 								checked={item.checked}

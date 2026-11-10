@@ -59,7 +59,7 @@
 		{/if}
 		<div class="flex w-full gap-2">
 			<div class="flex-1 relative">
-				<input
+				<input name="url"
 					class={`w-full bg-transparent ${($settings?.highContrastMode ?? false) ? '' : 'outline-hidden'} ${pipeline ? 'pr-8' : ''}`}
 					placeholder={$i18n.t('API Base URL')}
 					bind:value={url}

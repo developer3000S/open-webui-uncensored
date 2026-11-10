@@ -90,7 +90,7 @@
 							<div class=" mb-1 text-xs text-gray-500">{$i18n.t('URL')}</div>
 
 							<div class="flex-1">
-								<input
+								<input name="url"
 									class="w-full text-sm bg-transparent disabled:text-gray-500 dark:disabled:text-gray-500 outline-hidden"
 									type="url"
 									bind:value={url}

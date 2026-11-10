@@ -75,7 +75,7 @@
 	};
 </script>
 
-<input
+<input name="webhookitem-78"
 	bind:this={filesInputElement}
 	bind:files={inputFiles}
 	type="file"

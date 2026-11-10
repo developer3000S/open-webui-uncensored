@@ -117,7 +117,7 @@
 						style="background-color: {color};"
 						title={$i18n.t('Custom color')}
 					>
-						<input type="color" bind:value={color} class="opacity-0 w-0 h-0 absolute" />
+						<input name="createcalendarmodal-120" type="color" bind:value={color} class="opacity-0 w-0 h-0 absolute" />
 					</label>
 				</div>
 			</div>

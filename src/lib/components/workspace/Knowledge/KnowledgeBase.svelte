@@ -1470,7 +1470,7 @@
 				<div class="flex-1">
 					<div class="flex items-center justify-between w-full">
 						<div class="w-full flex justify-between items-center">
-							<input
+							<input name="knowledge-name"
 								type="text"
 								class="text-left w-full text-lg bg-transparent outline-hidden flex-1"
 								bind:value={knowledge.name}
@@ -1518,7 +1518,7 @@
 					</div>
 
 					<div class="flex w-full items-center">
-						<input
+						<input name="knowledge-description"
 							type="text"
 							class="text-left text-xs w-full text-gray-500 bg-transparent outline-hidden flex-1"
 							bind:value={knowledge.description}
@@ -1592,7 +1592,7 @@
 					<div class="flex flex-col gap-2">
 						<div class="font-medium text-sm">{$i18n.t('Test Query')}</div>
 						<div class="flex gap-2">
-							<input
+							<input name="externalTestQuery"
 								class="w-full text-sm rounded-xl bg-gray-50 dark:bg-gray-850 px-3 py-2 outline-hidden"
 								bind:value={externalTestQuery}
 								placeholder={$i18n.t('Ask this knowledge source a test question')}
@@ -1626,7 +1626,7 @@
 						<div class=" self-center ml-1 mr-3">
 							<Search className="size-3.5" />
 						</div>
-						<input
+						<input name="query"
 							class=" w-full text-sm pr-4 py-1 rounded-r-xl outline-hidden bg-transparent"
 							bind:value={query}
 							on:input={handleSearchInput}
@@ -1898,7 +1898,7 @@
 										</div>
 
 										{#key selectedFile?.id}
-											<textarea
+											<textarea name="selectedFileContent"
 												class="w-full h-full text-sm outline-none resize-none px-3 py-2"
 												bind:value={selectedFileContent}
 												disabled={!knowledge?.write_access || loadingFileContent}
@@ -1938,7 +1938,7 @@
 	</div>
 
 	<div class="flex items-center gap-1.5">
-		<input type="checkbox" bind:checked={deleteDirectoryContents} />
+		<input name="knowledgebase-1941" type="checkbox" bind:checked={deleteDirectoryContents} />
 
 		<div class="text-xs text-gray-500">
 			{$i18n.t('Delete all contents inside this directory')}

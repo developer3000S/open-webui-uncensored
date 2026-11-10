@@ -97,7 +97,7 @@
 
 	{#if !disabled}
 		<div class="flex-1 min-w-24">
-			<input
+			<input name="inputValue"
 				bind:this={inputElement}
 				bind:value={inputValue}
 				class="w-full {tags.length > 0

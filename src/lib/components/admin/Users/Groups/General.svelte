@@ -41,7 +41,7 @@
 			<div class="flex gap-0.5">
 				<div class="text-gray-500">#</div>
 
-				<input
+				<input name="color"
 					class="w-full text-sm bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden"
 					type="text"
 					bind:value={color}
@@ -78,7 +78,7 @@
 			</div>
 
 			<div class="flex items-center gap-2 p-1">
-				<select
+				<select name="field"
 					class="text-sm bg-transparent outline-hidden rounded-lg px-2"
 					value={data?.config?.share ?? 'members'}
 					on:change={(e) => {

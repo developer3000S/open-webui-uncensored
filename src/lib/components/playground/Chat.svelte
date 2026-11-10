@@ -375,7 +375,7 @@
 
 					<div slot="content">
 						<div class="pt-1 px-1.5">
-							<textarea
+							<textarea name="system"
 								bind:this={systemTextareaElement}
 								class="w-full h-full bg-transparent resize-none outline-hidden text-sm"
 								bind:value={system}
@@ -454,7 +454,7 @@
 					<div class="py-0.5">
 						<!-- $i18n.t('a user') -->
 						<!-- $i18n.t('an assistant') -->
-						<textarea
+						<textarea name="message"
 							bind:value={message}
 							class=" w-full h-full bg-transparent resize-none outline-hidden text-sm"
 							placeholder={$i18n.t(`Enter {{role}} message here`, {
@@ -497,7 +497,7 @@
 
 						<div class="flex items-center justify-between gap-2 w-full sm:w-auto">
 							<div class="flex-1">
-								<select
+								<select name="selectedModelId"
 									class="bg-transparent border border-black/10 dark:border-white/20 rounded-lg py-1 px-2 -mx-0.5 text-sm outline-hidden w-full"
 									bind:value={selectedModelId}
 								>

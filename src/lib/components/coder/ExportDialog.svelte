@@ -324,7 +324,7 @@
 					{$i18n.t('Export as Gist')}
 				</div>
 				<label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-					<input type="checkbox" bind:checked={gistPublic} class="rounded" />
+					<input name="exportdialog-327" type="checkbox" bind:checked={gistPublic} class="rounded" />
 					{$i18n.t('Public gist')}
 				</label>
 				{#if gistUrl}

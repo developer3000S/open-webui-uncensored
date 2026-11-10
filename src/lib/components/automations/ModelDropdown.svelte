@@ -75,7 +75,7 @@
 	>
 		<div class="flex items-center gap-2 px-2.5 py-1.5">
 			<Search className="size-3.5" strokeWidth="2.5" />
-			<input
+			<input name="modelSearch"
 				bind:value={modelSearch}
 				class="w-full text-sm bg-transparent outline-hidden"
 				placeholder={$i18n.t('Search a model')}

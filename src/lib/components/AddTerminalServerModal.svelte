@@ -557,7 +557,7 @@
 									</div>
 									<div class="flex gap-2">
 										<div class="flex-shrink-0 self-start">
-											<select
+											<select name="policyStorage"
 												class={`dark:bg-gray-900 w-full text-sm bg-transparent pr-5 ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 												bind:value={policyStorage}
 											>
@@ -623,13 +623,13 @@
 									</div>
 									{#each policyEnvPairs as pair, idx}
 										<div class="flex gap-1.5 mb-1">
-											<input
+											<input name="pair-key"
 												class={`flex-1 text-sm bg-transparent font-mono ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 												type="text"
 												bind:value={pair.key}
 												placeholder="KEY"
 											/>
-											<input
+											<input name="pair-value"
 												class={`flex-[2] text-sm bg-transparent font-mono ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 												type="text"
 												bind:value={pair.value}
@@ -670,11 +670,11 @@
 							<div class="flex flex-wrap items-center justify-between gap-2 mt-2">
 								<div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
 									<label class="flex items-center gap-1.5">
-										<input type="checkbox" bind:checked={refreshOnlyIdle} />
+										<input name="addterminalservermodal-673" type="checkbox" bind:checked={refreshOnlyIdle} />
 										<span>{$i18n.t('Idle only')}</span>
 									</label>
 									<label class="flex items-center gap-1.5">
-										<input type="checkbox" bind:checked={refreshReset} />
+										<input name="addterminalservermodal-677" type="checkbox" bind:checked={refreshReset} />
 										<span>{$i18n.t('Reset persisted files')}</span>
 									</label>
 								</div>
@@ -786,7 +786,7 @@
 
 								<div class="flex gap-2">
 									<div class="flex-shrink-0 self-start">
-										<select
+										<select name="auth_type"
 											class={`dark:bg-gray-900 w-full text-sm bg-transparent pr-5 ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 											bind:value={auth_type}
 										>

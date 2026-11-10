@@ -277,7 +277,7 @@ class Tools:
 							</div>
 						{:else}
 							<Tooltip className="w-full" content={$i18n.t('e.g. my_tools')} placement="top-start">
-								<input
+								<input name="id"
 									class="w-full text-sm disabled:text-gray-500 bg-transparent outline-hidden"
 									type="text"
 									placeholder={$i18n.t('Tool ID')}
@@ -294,7 +294,7 @@ class Tools:
 							content={$i18n.t('e.g. Tools for performing various operations')}
 							placement="top-start"
 						>
-							<input
+							<input name="meta-description"
 								class="w-full text-sm bg-transparent outline-hidden"
 								type="text"
 								placeholder={$i18n.t('Tool Description')}

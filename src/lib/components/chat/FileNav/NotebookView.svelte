@@ -282,7 +282,7 @@
 		<div class="nb-cell nb-cell-{cell.cell_type}">
 			{#if cell.cell_type === 'markdown'}
 				{#if editingCell[i]}
-					<textarea
+					<textarea name="editedSources-i"
 						class="nb-edit-textarea text-sm"
 						bind:value={editedSources[i]}
 						on:input={autoResize}

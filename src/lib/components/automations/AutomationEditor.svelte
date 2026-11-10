@@ -307,7 +307,7 @@
 					<div
 						class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 border border-gray-100/50 dark:border-gray-850/50 h-full"
 					>
-						<textarea
+						<textarea name="prompt"
 							class="w-full h-full text-sm bg-transparent outline-hidden resize-none placeholder:text-gray-300 dark:placeholder:text-gray-700"
 							bind:value={prompt}
 							on:input={markDirty}

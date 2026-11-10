@@ -141,7 +141,7 @@
 															>
 														</div>
 
-														<input
+														<input name="variableValues-variable"
 															type="text"
 															class="flex-1 py-1 text-sm dark:text-gray-300 bg-transparent outline-hidden"
 															placeholder={$i18n.t('Enter value (true/false)')}
@@ -166,7 +166,7 @@
 															/>
 														</div>
 
-														<input
+														<input name="variableValues-variable"
 															type="text"
 															class="flex-1 py-2 text-sm dark:text-gray-300 bg-transparent outline-hidden"
 															placeholder={$i18n.t('Enter hex color (e.g. #FF0000)')}
@@ -242,7 +242,7 @@
 															/>
 														</div>
 
-														<input
+														<input name="variableValues-variable"
 															type="text"
 															class=" py-1 text-sm dark:text-gray-300 bg-transparent outline-hidden text-right"
 															placeholder={$i18n.t('Enter value')}
@@ -318,7 +318,7 @@
 															}}
 														/>
 
-														<input
+														<input name="variableValues-variable"
 															type="text"
 															class=" w-full py-1 text-left text-sm dark:text-gray-300 bg-transparent outline-hidden"
 															placeholder={$i18n.t('Enter coordinates (e.g. 51.505, -0.09)')}

@@ -57,7 +57,7 @@
 				<div class="flex items-center gap-2.5 px-5 mt-3.5 mb-3">
 					<Search className="size-4" strokeWidth="2.5" />
 
-					<input
+					<input name="searchValue"
 						bind:value={searchValue}
 						class="w-full text-sm bg-transparent outline-hidden"
 						placeholder={searchPlaceholder}

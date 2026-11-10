@@ -129,14 +129,14 @@
 							{#each floatingActionButtons as button, buttonIdx}
 								<div class=" py-1 flex w-full justify-between items-start">
 									<div class="flex flex-col items-start pr-2">
-										<input
+										<input name="button-label"
 											class=" self-center text-xs outline-none w-20"
 											placeholder={$i18n.t('Button Label')}
 											aria-label={$i18n.t('Button Label')}
 											bind:value={button.label}
 										/>
 
-										<input
+										<input name="button-id"
 											class=" self-center text-xs outline-none w-20 text-gray-600 dark:text-gray-400"
 											placeholder={$i18n.t('Button ID')}
 											aria-label={$i18n.t('Button ID')}
