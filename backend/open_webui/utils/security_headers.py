@@ -143,7 +143,7 @@ def set_content_security_policy(value: str):
         if 'unsafe-inline' not in value:
             value = value.replace('script-src', "script-src 'unsafe-inline'", 1)
         if 'unsafe-eval' not in value:
-            value = value.replace("script-src 'unsafe-inline'", "script-src 'unsafe-inline' 'unsafe-eval'", 1)
+            value = value.replace('script-src', "script-src 'unsafe-eval'", 1)
     return {'Content-Security-Policy': value}
 
 
