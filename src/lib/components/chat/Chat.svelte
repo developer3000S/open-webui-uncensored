@@ -755,13 +755,47 @@
 					eventCallback = cb;
 
 					try {
-						// Use Function constructor to evaluate code in a safer way
-						const asyncFunction = new Function(`return (async () => { ${data.code} })()`);
-						const result = await asyncFunction(); // Await the result of the async function
+						// Execute untrusted code in an isolated Web Worker so that
+						// new Function() / eval() never runs in the main document.
+						// This keeps the page working under a strict CSP (no unsafe-eval).
+						const workerSource = `
+							self.onmessage = async function (e) {
+								try {
+									const asyncFunction = new Function(
+										'return (async () => { ' + e.data.code + ' })()'
+									);
+									const result = await asyncFunction();
+									self.postMessage({ ok: true, result });
+								} catch (error) {
+									self.postMessage({ ok: false, error: String(error) });
+								}
+							};
+						`;
+						const blob = new Blob([workerSource], {
+							type: 'application/javascript'
+						});
+						const workerUrl = URL.createObjectURL(blob);
+						const worker = new Worker(workerUrl);
 
-						if (cb) {
-							cb(result);
-						}
+						worker.onmessage = (e) => {
+							URL.revokeObjectURL(workerUrl);
+							worker.terminate();
+							if (e.data.ok) {
+								if (cb) {
+									cb(e.data.result);
+								}
+							} else {
+								console.error('Error executing code:', e.data.error);
+							}
+						};
+
+						worker.onerror = (error) => {
+							URL.revokeObjectURL(workerUrl);
+							worker.terminate();
+							console.error('Error executing code:', error);
+						};
+
+						worker.postMessage({ code: data.code });
 					} catch (error) {
 						console.error('Error executing code:', error);
 					}
