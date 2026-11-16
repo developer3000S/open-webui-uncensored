@@ -15,7 +15,7 @@ pyotp==2.9.0
 qrcode[pil]==7.4.2
 
 requests==2.34.2
-aiohttp==3.14.5 # do not update to 3.13.3 - broken
+aiohttp==3.14.4 # do not update to 3.13.3 - broken
 async-timeout==5.0.1
 aiocache==0.12.3
 aiofiles==25.1.0
@@ -72,7 +72,7 @@ einops==0.8.2
 
 ftfy==6.3.1
 chardet==7.4.3
-pypdf==6.21.2
+pypdf==6.21.4
 fpdf2==2.8.8
 pymdown-extensions==10.21.3
 docx2txt==0.9
@@ -154,7 +154,7 @@ pytest-docker~=3.2.5
 ldap3==2.9.1
 
 ## Trace
-opentelemetry-api==1.45.1
+opentelemetry-api==1.45.2
 opentelemetry-sdk==1.45.1
 opentelemetry-exporter-otlp==1.45.1
 opentelemetry-instrumentation==0.66b1
