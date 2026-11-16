@@ -8,10 +8,10 @@ python-jose==3.5.0
 cryptography==48.0.0
 bcrypt==5.0.0
 argon2-cffi==25.1.0
-PyJWT[crypto]==2.13.0
+PyJWT[crypto]==2.15.0
 authlib==1.9.1
 requests==2.34.2
-aiohttp==3.14.1
+aiohttp==3.14.4
 async-timeout==5.0.1
 aiocache==0.12.3
 aiofiles==25.1.0
@@ -35,7 +35,7 @@ openpyxl==3.1.5
 psutil==7.2.2
 validators==0.35.0
 chardet==7.4.3
-pypdf==6.21.2
+pypdf==6.21.4
 pymdown-extensions==10.21.3
 beautifulsoup4==4.14.3
 pytesseract
